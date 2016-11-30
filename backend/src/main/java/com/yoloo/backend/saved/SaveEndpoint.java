@@ -78,7 +78,7 @@ final class SaveEndpoint {
      */
     @ApiMethod(
             name = "questions.save.delete",
-            path = "questions/{questionId}",
+            path = "questions/{questionId}/save",
             httpMethod = ApiMethod.HttpMethod.DELETE)
     public void delete(@Named("questionId") String websafeQuestionId,
                        HttpServletRequest request, User user)
@@ -103,7 +103,7 @@ final class SaveEndpoint {
      */
     @ApiMethod(
             name = "questions.save.list",
-            path = "questions",
+            path = "questions/save",
             httpMethod = ApiMethod.HttpMethod.GET)
     public CollectionResponse<Question> list(@Nullable @Named("cursor") String cursor,
                                              @Nullable @Named("limit") Integer limit,
