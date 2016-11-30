@@ -43,9 +43,6 @@
 
     <listener>
         <listener-class>com.yoloo.backend.FirebaseHelper</listener-class>
-    </listener>
-
-    <listener>
         <listener-class>com.yoloo.backend.OfyService</listener-class>
     </listener>
 
