@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "yoloo-app",
+  "private_key_id": "54395d676fdb093db546800768251903afebb6af",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCSWtEfuSxGtVPi\nT0dkDggi3qwYB52ABxYl/kTFSs2ZXiaiw/Ietgm0AxnjdqLWqUFP15rqNtNYJTpC\nsTia+MGjgLU1UsRYf8GWiTh+PaSLdMyDo1ovlpf+KwfEQtJgrjRlzZA//rBWSiCn\n0YA0kFRM/d9ZJVtEbJgP/kVrXPPkF/d9aVIR4KxFyV/0MQRr8zWLZAhuzrXNZdfL\nTRI0aiPYOtJ1fE7odUv6y6tNEzyxRmEXZLvo9h/JE+GcFcIcXQz+pT0PhT8oJp1W\nNedc2iuCqvXBMMUmK8wQ5xbiHWQCyL58CR7Ht7DoT4ms5Y1xGylFL3BI3XFl8woN\nx05jNCGfAgMBAAECggEABgnZNwXc3c39eAjtWSN7EnU9hIBL70xbjZXAIKPFd956\nmZycEMhR/itilg//B/xTxYePzLoWXjyq+rV1MG+zDZvx3hFcKIqc4iknO44vi9F1\n3riOsAf2nXYJC//1zidh4hFpMjq/68+DKWlrcL/Duql+3Z689UXFwGMtWhCrv21t\nv5vj326JCZxlLxtPv3Fc9bh5lm/zE3XdstX1jtTjKxQ0BX5GhLyutBf5iYAC28hH\n3dZmQIL8bQwtDC19sYUB//4ZpIne0P+57Fg/2iSkjLDqDD/PVHVqxcUvy64euVDs\nKLFZeZXhQuRjdvRwxQodOpnzKmkYjpcKqR1xKH54AQKBgQDCe9Rj1X2z3ML4Hres\nknY42v/+YMuS+npTtl/2eNHbpRUruDY0hT9/IxP/V/ECkjv7cupK9les7cSwIURo\nzagTmApcDlLMAv+BqEr6kc1SRSokHHZDYdagY4hriUvQp15YW7tEz6t10NCeYv0X\nq/yszaqvBcWg1gS5bO0aNIvP3wKBgQDApcgam5cvr7S4izPFaUnTHnTEeiymSb32\nYdWXfgOkmvhK7wtnW1VI+3CzZFMLj5hxLn0VZ+XvEQcK0a2S9pfcJXWcltQ3CgZD\nb5sAQksUMN4ZG3bCf7e0dtdTaCn2oSErp1tHg3hE3WYUoQSCgXAR/CQFA9NeOaAv\nSb33B07mQQKBgCuPfs/ppqEdplHa13sAxxgO/V2lopNGJRYQ+EeFYkPXIvnK5eE3\nozQ/0B/WO7Y+uM6mO5IUwSiLjQ2CNgdfYPEakd9ymdr2JPKOllSvSZTOxxSVh2uq\nQ19jS9ACTYfrpPcXfMd52EaoQcHoHBYsQIkX+8399fkDVsWNf0HqWRJzAoGAEiMJ\ndcfUMf8eyokAdMN22dNyNtUxwu4KXlnTnBGXEjYszhE3R6HHo7lYYOs/DkWUmoM/\n73X6pck6moAnEUD6BxXXvshMbmoZMNwfAaU8IEiBgGefhKw1hV3y471YxglhcBSv\neUodVo5pf+Ow4wCAppDQa1By49oVBJ6yrcEYYoECgYEAqEnNtIvIMD1e6aWsBxHn\nhh5/vDZEo6r8Zgb5Mhs7E2Qkzb/zNM3tl7tcG2nipuZklniK4ZBUbU2BB9a5cN2/\nFFU0DlqWWmYAsNekKkW3zBjA7QpS5pdA9/IP8ByByk+ItrfbmnGbVFGlEsMnNb8P\nDEHPtuWZdCjcd/61rx50Zto=\n-----END PRIVATE KEY-----\n",
+  "client_email": "yoloo-app@appspot.gserviceaccount.com",
+  "client_id": "118363815612655156828",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/yoloo-app%40appspot.gserviceaccount.com"
+}

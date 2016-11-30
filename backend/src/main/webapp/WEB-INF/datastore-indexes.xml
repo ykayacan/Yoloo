@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<datastore-indexes autoGenerate="true">
+    <datastore-index ancestor="true" kind="Vote">
+        <property name="parentUserKey" direction="asc"/>
+        <property name="created" direction="asc"/>
+    </datastore-index>
+
+    <datastore-index ancestor="false" kind="Question">
+        <property name="created" direction="desc" />
+        <property name="rank" direction="desc"/>
+    </datastore-index>
+
+    <datastore-index ancestor="false" kind="Question">
+        <property name="bounty" direction="desc"/>
+        <property name="created" direction="desc" />
+    </datastore-index>
+
+    <datastore-index ancestor="false" kind="Comment">
+        <property name="created" direction="desc"/>
+        <property name="questionKey" direction="asc"/>
+    </datastore-index>
+</datastore-indexes>

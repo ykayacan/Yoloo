@@ -1,0 +1,29 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+
+group = 'com.backpackers.android.backend.modal'
+archivesBaseName = 'yolooApi'
+version = 'v1-1.22.0-SNAPSHOT'
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+jar.manifest.attributes("Built-By": "Google")
+jar.manifest.attributes("Build-Jdk": "1.6.x")
+
+task sourceJar(type: Jar) {
+  classifier = 'sources'
+  from sourceSets.main.allJava
+}
+
+artifacts {
+    archives sourceJar
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile ([group: 'com.google.api-client', name: 'google-api-client', version: '1.22.0'])
+}

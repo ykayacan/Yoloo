@@ -1,0 +1,459 @@
+{
+ "kind": "discovery#restDescription",
+ "etag": "\"zRMgE0l9nVDW4S28VYYcYQF9UW4/LN-cflXWsz5TLwYiD4f9gWQT3_M\"",
+ "discoveryVersion": "v1",
+ "id": "yolooApi:v1",
+ "name": "yolooApi",
+ "version": "v1",
+ "description": "This is an API",
+ "ownerDomain": "modal.backend.android.backpackers.com",
+ "ownerName": "modal.backend.android.backpackers.com",
+ "icons": {
+  "x16": "http://www.google.com/images/icons/product/search-16.gif",
+  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+ },
+ "protocol": "rest",
+ "baseUrl": "https://yoloo-app.appspot.com/_ah/api/yolooApi/v1/",
+ "basePath": "/_ah/api/yolooApi/v1/",
+ "rootUrl": "https://yoloo-app.appspot.com/_ah/api/",
+ "servicePath": "yolooApi/v1/",
+ "batchPath": "batch",
+ "parameters": {
+  "alt": {
+   "type": "string",
+   "description": "Data format for the response.",
+   "default": "json",
+   "enum": [
+    "json"
+   ],
+   "enumDescriptions": [
+    "Responses with Content-Type of application/json"
+   ],
+   "location": "query"
+  },
+  "fields": {
+   "type": "string",
+   "description": "Selector specifying which fields to include in a partial response.",
+   "location": "query"
+  },
+  "key": {
+   "type": "string",
+   "description": "API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token.",
+   "location": "query"
+  },
+  "oauth_token": {
+   "type": "string",
+   "description": "OAuth 2.0 token for the current user.",
+   "location": "query"
+  },
+  "prettyPrint": {
+   "type": "boolean",
+   "description": "Returns response with indentations and line breaks.",
+   "default": "true",
+   "location": "query"
+  },
+  "quotaUser": {
+   "type": "string",
+   "description": "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters. Overrides userIp if both are provided.",
+   "location": "query"
+  },
+  "userIp": {
+   "type": "string",
+   "description": "IP address of the site where the request originates. Use this if you want to enforce per-user limits.",
+   "location": "query"
+  }
+ },
+ "auth": {
+  "oauth2": {
+   "scopes": {
+    "https://www.googleapis.com/auth/userinfo.email": {
+     "description": "View your email address"
+    }
+   }
+  }
+ },
+ "schemas": {
+  "Chronology": {
+   "id": "Chronology",
+   "type": "object",
+   "properties": {
+    "zone": {
+     "$ref": "DateTimeZone"
+    }
+   }
+  },
+  "CollectionResponse_Question": {
+   "id": "CollectionResponse_Question",
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "Question"
+     }
+    },
+    "nextPageToken": {
+     "type": "string"
+    }
+   }
+  },
+  "DateTime": {
+   "id": "DateTime",
+   "type": "object",
+   "properties": {
+    "afterNow": {
+     "type": "boolean"
+    },
+    "beforeNow": {
+     "type": "boolean"
+    },
+    "centuryOfEra": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "chronology": {
+     "$ref": "Chronology"
+    },
+    "dayOfMonth": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "dayOfWeek": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "dayOfYear": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "equalNow": {
+     "type": "boolean"
+    },
+    "era": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "hourOfDay": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "millis": {
+     "type": "string",
+     "format": "int64"
+    },
+    "millisOfDay": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "millisOfSecond": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "minuteOfDay": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "minuteOfHour": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "monthOfYear": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "secondOfDay": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "secondOfMinute": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "weekOfWeekyear": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "weekyear": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "year": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "yearOfCentury": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "yearOfEra": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "zone": {
+     "$ref": "DateTimeZone"
+    }
+   }
+  },
+  "DateTimeZone": {
+   "id": "DateTimeZone",
+   "type": "object",
+   "properties": {
+    "fixed": {
+     "type": "boolean"
+    },
+    "id": {
+     "type": "string"
+    }
+   }
+  },
+  "Direction": {
+   "id": "Direction",
+   "type": "string",
+   "enum": [
+    "DEFAULT",
+    "DOWN",
+    "UP"
+   ],
+   "enumDescriptions": [
+    "",
+    "",
+    ""
+   ]
+  },
+  "Link": {
+   "id": "Link",
+   "type": "object",
+   "properties": {
+    "value": {
+     "type": "string"
+    }
+   }
+  },
+  "Media": {
+   "id": "Media",
+   "type": "object"
+  },
+  "Question": {
+   "id": "Question",
+   "type": "object",
+   "properties": {
+    "acceptedCommentId": {
+     "type": "string"
+    },
+    "avatarUrl": {
+     "$ref": "Link"
+    },
+    "bounty": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "categories": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "comments": {
+     "type": "string",
+     "format": "int64"
+    },
+    "content": {
+     "type": "string"
+    },
+    "created": {
+     "$ref": "DateTime"
+    },
+    "dir": {
+     "$ref": "Direction"
+    },
+    "firstComment": {
+     "type": "boolean"
+    },
+    "hashTags": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    },
+    "id": {
+     "type": "string"
+    },
+    "media": {
+     "$ref": "Media"
+    },
+    "reports": {
+     "type": "integer",
+     "format": "int32"
+    },
+    "username": {
+     "type": "string"
+    },
+    "votes": {
+     "type": "string",
+     "format": "int64"
+    }
+   }
+  }
+ },
+ "resources": {
+  "questions": {
+   "methods": {
+    "add": {
+     "id": "yolooApi.questions.add",
+     "path": "questions",
+     "httpMethod": "POST",
+     "parameters": {
+      "bounty": {
+       "type": "integer",
+       "format": "int32",
+       "location": "query"
+      },
+      "categoryIds": {
+       "type": "string",
+       "required": true,
+       "location": "query"
+      },
+      "content": {
+       "type": "string",
+       "required": true,
+       "location": "query"
+      },
+      "hashtags": {
+       "type": "string",
+       "required": true,
+       "location": "query"
+      },
+      "mediaId": {
+       "type": "string",
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "categoryIds",
+      "content",
+      "hashtags"
+     ],
+     "response": {
+      "$ref": "Question"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
+     ]
+    },
+    "delete": {
+     "id": "yolooApi.questions.delete",
+     "path": "questions/{questionId}",
+     "httpMethod": "DELETE",
+     "parameters": {
+      "questionId": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "questionId"
+     ],
+     "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
+     ]
+    },
+    "get": {
+     "id": "yolooApi.questions.get",
+     "path": "questions/{questionId}",
+     "httpMethod": "GET",
+     "parameters": {
+      "questionId": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "questionId"
+     ],
+     "response": {
+      "$ref": "Question"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
+     ]
+    },
+    "list": {
+     "id": "yolooApi.questions.list",
+     "path": "questions",
+     "httpMethod": "GET",
+     "parameters": {
+      "cursor": {
+       "type": "string",
+       "location": "query"
+      },
+      "limit": {
+       "type": "integer",
+       "format": "int32",
+       "location": "query"
+      },
+      "sort": {
+       "type": "string",
+       "enum": [
+        "HOT",
+        "NEWEST",
+        "UNANSWERED"
+       ],
+       "enumDescriptions": [
+        "",
+        "",
+        ""
+       ],
+       "location": "query"
+      }
+     },
+     "response": {
+      "$ref": "CollectionResponse_Question"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
+     ]
+    },
+    "update": {
+     "id": "yolooApi.questions.update",
+     "path": "questions/{questionId}",
+     "httpMethod": "PUT",
+     "parameters": {
+      "bounty": {
+       "type": "integer",
+       "format": "int32",
+       "location": "query"
+      },
+      "content": {
+       "type": "string",
+       "location": "query"
+      },
+      "hashTags": {
+       "type": "string",
+       "location": "query"
+      },
+      "mediaId": {
+       "type": "string",
+       "location": "query"
+      },
+      "questionId": {
+       "type": "string",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "questionId"
+     ],
+     "response": {
+      "$ref": "Question"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email"
+     ]
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,89 @@
+apply plugin: 'com.android.application'
+apply from: '../config/quality/quality.gradle'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.1"
+    defaultConfig {
+        applicationId "com.yoloo.android"
+        minSdkVersion 16
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        // You must set up an environment var before release signing
+        // Run: export APP_KEY={password}
+        // TODO Add your release keystore in /keystore folder
+        release {
+            storeFile file('keystore/release.keystore')
+            keyAlias 'alias'
+            storePassword "$System.env.APP_KEY"
+            keyPassword "$System.env.APP_KEY"
+        }
+
+        debug {
+            storeFile file('keystore/debug.keystore')
+            keyAlias 'androiddebugkey'
+            storePassword 'android'
+            keyPassword 'android'
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            versionNameSuffix " Debug"
+            debuggable true
+        }
+    }
+
+    configurations.all {
+        resolutionStrategy.force 'com.google.code.findbugs:jsr305:3.0.1'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile project(path: ':backend', configuration: 'android-endpoints')
+    compile 'com.android.support:appcompat-v7:25.0.1'
+    compile 'com.google.firebase:firebase-core:10.0.0'
+    compile 'com.google.firebase:firebase-auth:10.0.0'
+    compile 'com.google.firebase:firebase-messaging:10.0.0'
+    compile 'com.google.firebase:firebase-crash:10.0.0'
+    compile 'com.google.firebase:firebase-invites:10.0.0'
+
+    compile 'com.bluelinelabs:conductor:2.0.5-SNAPSHOT'
+    compile 'com.bluelinelabs:conductor-support:2.0.5-SNAPSHOT'
+
+    compile 'com.jakewharton:butterknife:8.4.0'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
+
+    compile 'io.reactivex.rxjava2:rxjava:2.0.1'
+    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+
+    compile 'org.magicwerk:brownies-collections:0.9.13'
+
+    compile 'com.google.code.findbugs:jsr305:3.0.1'
+    testCompile 'junit:junit:4.12'
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+}
+
+// Put google_services.json
+//apply plugin: 'com.google.gms.google-services'
