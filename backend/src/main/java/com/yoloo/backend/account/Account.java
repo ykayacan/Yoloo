@@ -53,6 +53,7 @@ public class Account {
     private Link avatarUrl;
 
     @Load
+    @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
     private Ref<AccountDetail> detail;
 
     @Index
