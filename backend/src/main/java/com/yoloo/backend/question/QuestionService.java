@@ -29,7 +29,7 @@ public class QuestionService {
                 .avatarUrl(account.getAvatarUrl())
                 .username(account.getUsername())
                 .content(wrapper.getContent())
-                .shardKeys(service.getShardKeys(questionKey))
+                .shardKeys(service.createShardKeys(questionKey))
                 .hashTags(StringUtil.splitToSet(wrapper.getHashTags(), ","))
                 .dir(Vote.Direction.DEFAULT)
                 .bounty(wrapper.getBounty())

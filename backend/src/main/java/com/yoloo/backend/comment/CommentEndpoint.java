@@ -10,13 +10,11 @@ import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 
 import com.yoloo.backend.Constants;
-import com.yoloo.backend.authentication.authenticators.FacebookAuthenticator;
-import com.yoloo.backend.authentication.authenticators.GoogleAuthenticator;
-import com.yoloo.backend.authentication.authenticators.YolooAuthenticator;
-import com.yoloo.backend.question.QuestionService;
-import com.yoloo.backend.question.QuestionShardService;
+import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
 import com.yoloo.backend.gamification.GamificationService;
 import com.yoloo.backend.notification.NotificationService;
+import com.yoloo.backend.question.QuestionService;
+import com.yoloo.backend.question.QuestionShardService;
 import com.yoloo.backend.validator.Validator;
 import com.yoloo.backend.validator.rule.comment.CommentCreateRule;
 import com.yoloo.backend.validator.rule.common.AuthenticationRule;
@@ -46,9 +44,7 @@ import javax.servlet.http.HttpServletRequest;
                 Constants.WEB_CLIENT_ID},
         audiences = {Constants.AUDIENCE_ID},
         authenticators = {
-                GoogleAuthenticator.class,
-                FacebookAuthenticator.class,
-                YolooAuthenticator.class
+                FirebaseAuthenticator.class
         }
 )
 final class CommentEndpoint {
@@ -135,7 +131,7 @@ final class CommentEndpoint {
             name = "questions.comments.delete",
             path = "questions/{questionId}/comments/{commentId}",
             httpMethod = ApiMethod.HttpMethod.DELETE)
-    public void remove(@Named("questionId") String websafeQuestionId,
+    public void delete(@Named("questionId") String websafeQuestionId,
                        @Named("commentId") String websafeCommentId,
                        HttpServletRequest request,
                        User user)
@@ -147,7 +143,7 @@ final class CommentEndpoint {
                 .addRule(new NotFoundRule(websafeQuestionId))
                 .validate();
 
-        getCommentController().remove(websafeQuestionId, websafeCommentId, user);
+        getCommentController().delete(websafeQuestionId, websafeCommentId, user);
     }
 
     /**
@@ -164,10 +160,10 @@ final class CommentEndpoint {
             name = "questions.comments.list",
             path = "questions/{questionId}/comments",
             httpMethod = ApiMethod.HttpMethod.GET)
-    public CollectionResponse<Comment> list(@Named("questionId") final String websafeQuestionId,
+    public CollectionResponse<Comment> list(@Named("questionId") String websafeQuestionId,
                                             @Nullable @Named("cursor") String cursor,
                                             @Nullable @Named("limit") Integer limit,
-                                            final User user) throws ServiceException {
+                                            User user) throws ServiceException {
 
         Validator.builder()
                 .addRule(new IdValidationRule(websafeQuestionId))

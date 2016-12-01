@@ -1,4 +1,4 @@
-package com.yoloo.backend.saved;
+package com.yoloo.backend.bookmark;
 
 import com.google.api.server.spi.response.CollectionResponse;
 import com.google.appengine.api.datastore.Cursor;
@@ -25,10 +25,10 @@ import lombok.RequiredArgsConstructor;
 import static com.yoloo.backend.OfyService.ofy;
 
 @RequiredArgsConstructor(staticName = "newInstance")
-public class SavedQuestionController extends Controller {
+public class BookmarkController extends Controller {
 
     private static final Logger logger =
-            Logger.getLogger(SavedQuestionController.class.getName());
+            Logger.getLogger(BookmarkController.class.getName());
 
     /**
      * Maximum number of questions to return.
@@ -36,7 +36,7 @@ public class SavedQuestionController extends Controller {
     private static final int DEFAULT_LIST_LIMIT = 20;
 
     @NonNull
-    private SavedQuestionService savedQuestionService;
+    private BookmarkService bookmarkService;
 
     @NonNull
     private QuestionShardService questionShardService;
@@ -53,7 +53,7 @@ public class SavedQuestionController extends Controller {
 
         final Key<Question> questionKey = Key.create(websafeQuestionId);
 
-        SavedQuestion saved = savedQuestionService.create(questionKey, authKey);
+        Bookmark saved = bookmarkService.create(questionKey, authKey);
 
         ofy().save().entity(saved);
     }
@@ -68,8 +68,8 @@ public class SavedQuestionController extends Controller {
         // Create user key from user id.
         final Key<Account> authKey = Key.create(user.getUserId());
 
-        final Key<SavedQuestion> savedQuestionKey =
-                Key.create(authKey, SavedQuestion.class, websafeQuestionId);
+        final Key<Bookmark> savedQuestionKey =
+                Key.create(authKey, Bookmark.class, websafeQuestionId);
 
         ofy().delete().key(savedQuestionKey);
     }
@@ -89,11 +89,11 @@ public class SavedQuestionController extends Controller {
         final Key<Account> authKey = Key.create(user.getUserId());
 
         // Init query fetch request.
-        Query<SavedQuestion> query = ofy()
+        Query<Bookmark> query = ofy()
                 .load()
-                .type(SavedQuestion.class)
+                .type(Bookmark.class)
                 .ancestor(authKey)
-                .order("-" + SavedQuestion.FIELD_CREATED);
+                .order("-" + Bookmark.FIELD_CREATED);
 
         // Fetch items from beginning from cursor.
         query = cursor.isPresent()
@@ -103,7 +103,7 @@ public class SavedQuestionController extends Controller {
         // Limit items.
         query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
 
-        final QueryResultIterator<SavedQuestion> qi = query.iterator();
+        final QueryResultIterator<Bookmark> qi = query.iterator();
 
         ImmutableList.Builder<Key<Question>> builder = ImmutableList.builder();
 

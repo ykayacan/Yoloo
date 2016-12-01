@@ -27,7 +27,7 @@ public final class QuestionUtil {
         Collection<Question> questions = map.values();
 
         final Map<Key<QuestionCounterShard>, QuestionCounterShard> shardMap =
-                ofy().load().keys(service.getShardKeys(questions));
+                ofy().load().keys(service.createShardKeys(map.keySet()));
 
         for (Question question : questions) {
             long comments = 0L;
@@ -58,8 +58,7 @@ public final class QuestionUtil {
         long votes = 0L;
 
         for (int i = 1; i <= QuestionCounterShard.SHARD_COUNT; i++) {
-            Key<QuestionCounterShard> shardKey =
-                    Key.create(QuestionCounterShard.class, createShardId(question.getKey(), i));
+            Key<QuestionCounterShard> shardKey = question.getShardKeys().get(i - 1);
 
             if (map.containsKey(shardKey)) {
                 QuestionCounterShard shard = map.get(shardKey);
@@ -95,10 +94,6 @@ public final class QuestionUtil {
         }
 
         return map;
-    }
-
-    public static String createShardId(Key<Question> postKey, int shardNum) {
-        return postKey.toWebSafeString() + ":" + String.valueOf(shardNum);
     }
 
     /**

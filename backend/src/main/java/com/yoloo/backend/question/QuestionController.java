@@ -24,7 +24,6 @@ import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentService;
 import com.yoloo.backend.comment.CommentShardService;
 import com.yoloo.backend.gamification.GamificationService;
-import com.yoloo.backend.hashtag.HashTag;
 import com.yoloo.backend.hashtag.HashTagService;
 import com.yoloo.backend.media.MediaService;
 import com.yoloo.backend.notification.NotificationService;
@@ -140,7 +139,7 @@ public final class QuestionController extends Controller {
                 questionService.create((Account) map.get(authKey), wrapper, questionShardService);
 
         // Create a list of shard entities for given post object.
-        ImmutableList<QuestionCounterShard> shards =
+        List<QuestionCounterShard> shards =
                 questionShardService.createShards(question.getKey());
 
         question = categoryService
@@ -155,7 +154,7 @@ public final class QuestionController extends Controller {
         // TODO: 28.11.2016 Increase counter shards.
 
         // Add generated hashTags to save list.
-        ImmutableSet<HashTag> hashTags = hashTagService.createHashTags(wrapper.getHashTags());
+        //ImmutableSet<HashTag> hashTags = hashTagService.createHashTag(wrapper.getHashTags());
 
         // Add updated account shard counter to save list.
         @SuppressWarnings("SuspiciousMethodCalls")
@@ -169,7 +168,6 @@ public final class QuestionController extends Controller {
         ImmutableList<Object> saveList = ImmutableList.builder()
                 .add(question)
                 .addAll(shards)
-                .addAll(hashTags)
                 .add(shard)
                 .build();
 
@@ -227,11 +225,11 @@ public final class QuestionController extends Controller {
         List<Key<Comment>> commentKeys = questionService.getCommentKeys(questionKey);
 
         final ImmutableList<Key<?>> deleteList = ImmutableList.<Key<?>>builder()
-                .addAll(commentShardService.getShardKeys(commentKeys))
+                .addAll(commentShardService.createShardKeys(commentKeys))
                 .addAll(commentService.getVoteKeys(commentKeys))
                 .addAll(commentKeys)
                 .addAll(questionService.getVoteKeys(questionKey))
-                .addAll(questionShardService.getShardKeys(questionKey))
+                .addAll(questionShardService.createShardKeys(questionKey))
                 .add(questionKey)
                 .build();
 

@@ -25,7 +25,8 @@ import static com.yoloo.backend.OfyService.ofy;
 @RequiredArgsConstructor(staticName = "newInstance")
 public class CommentService {
 
-    public Comment create(Account account, Key<Question> questionKey, String content) {
+    public Comment create(Account account, Key<Question> questionKey, String content,
+                          CommentShardService service) {
         final Key<Comment> commentKey = ofy().factory()
                 .allocateId(account.getKey(), Comment.class);
 
@@ -37,6 +38,7 @@ public class CommentService {
                 .username(account.getUsername())
                 .avatarUrl(account.getAvatarUrl())
                 .dir(Vote.Direction.DEFAULT)
+                .shardKeys(service.createShardKeys(commentKey))
                 .accepted(false)
                 .votes(0)
                 .created(DateTime.now())

@@ -18,7 +18,6 @@ public class CategoryRankAlgorithm implements RankAlgorithm {
      * Number of milliseconds in one hour.
      */
     private static final double RATE = 1/3.6e6;
-    public static final double RATE2 = 1/30000;
 
     /**
      *

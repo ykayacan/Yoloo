@@ -22,6 +22,7 @@ import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.vote.Votable;
 
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -72,7 +73,7 @@ public class CommentController extends Controller {
 
         Comment comment = ofy().load().key(commentKey).now();
 
-        comment = CommentUtil.aggregateCounts(comment, commentShardService);
+        comment = CommentUtil.aggregateCounts(comment);
         comment = CommentUtil.aggregateVote(authKey, comment);
 
         return comment;
@@ -94,12 +95,12 @@ public class CommentController extends Controller {
         final Key<Question> questionKey = Key.create(websafeQuestionId);
 
         // Get a random shard key.
-        final Key<QuestionCounterShard> randPostShardCounterKey =
+        final Key<QuestionCounterShard> questionShardKey =
                 questionShardService.getRandomShardKey(questionKey);
 
         // Make a batch load.
         Map<Key<Object>, Object> map = ofy().load()
-                .keys(userKey, questionKey, randPostShardCounterKey);
+                .keys(userKey, questionKey, questionShardKey);
 
         // Immutable helper list object to save all entities in a single db write.
         // For each single object use builder.add() method.
@@ -108,17 +109,18 @@ public class CommentController extends Controller {
 
         // Create a new post object from given inputs.
         //noinspection SuspiciousMethodCalls
-        Comment comment = commentService.create((Account) map.get(userKey), questionKey, content);
+        Comment comment = commentService
+                .create((Account) map.get(userKey), questionKey, content, commentShardService);
         builder.add(comment);
 
         // Create a list of new shard entities for given comment.
-        ImmutableList<CommentCounterShard> shards =
+        List<CommentCounterShard> shards =
                 commentShardService.createShards(comment.getKey());
         builder.addAll(shards);
 
         // Get counter shard from map.
         //noinspection SuspiciousMethodCalls
-        QuestionCounterShard shard = (QuestionCounterShard) map.get(randPostShardCounterKey);
+        QuestionCounterShard shard = (QuestionCounterShard) map.get(questionShardKey);
 
         // Increase total comment number.
         shard.increaseComments();
@@ -195,9 +197,9 @@ public class CommentController extends Controller {
      * @param websafeCommentId  the websafe comment id
      * @param user              the user
      */
-    public void remove(String websafeQuestionId, String websafeCommentId, User user) {
+    public void delete(String websafeQuestionId, String websafeCommentId, User user) {
         // Create user key from user id.
-        //final Key<Account> userKey = Key.create(user.getUserId());
+        //final Key<Account> userKey = Key.createHashTag(user.getUserId());
 
         // Create comment key from websafe id.
         final Key<Comment> commentKey = Key.create(websafeCommentId);
@@ -205,7 +207,7 @@ public class CommentController extends Controller {
         // Immutable helper list object to save all entities in a single db write.
         final ImmutableList<Key<?>> saveList = ImmutableList.<Key<?>>builder()
                 .add(commentKey)
-                .addAll(commentShardService.getShardKeys(commentKey))
+                .addAll(commentShardService.createShardKeys(commentKey))
                 .addAll(commentService.getVoteKeys(commentKey))
                 .build();
 

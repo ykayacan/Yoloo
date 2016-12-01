@@ -1,93 +1,114 @@
 package com.yoloo.backend.comment;
 
-import com.google.common.collect.ImmutableList;
-
 import com.googlecode.objectify.Key;
+import com.yoloo.backend.shard.ShardService;
+import com.yoloo.backend.shard.ShardUtil;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
 import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import lombok.AllArgsConstructor;
 
-import static com.yoloo.backend.comment.CommentCounterShard.SHARD_COUNT;
-
 @AllArgsConstructor(staticName = "newInstance")
-public class CommentShardService {
+public class CommentShardService implements ShardService<Comment, CommentCounterShard> {
 
-    public ImmutableList<CommentCounterShard> createShards(final Key<Comment> commentKey) {
-        return Observable.range(1, SHARD_COUNT)
+    @Override
+    public List<Key<CommentCounterShard>> createShardKeys(Iterable<Key<Comment>> keys) {
+        return Observable
+                .fromIterable(keys)
+                .concatMapIterable(new Function<Key<Comment>,
+                        Iterable<Key<CommentCounterShard>>>() {
+                    @Override
+                    public Iterable<Key<CommentCounterShard>> apply(Key<Comment> key)
+                            throws Exception {
+                        return createShardKeys(key);
+                    }
+                })
+                .toList()
+                .blockingGet();
+    }
+
+    @Override
+    public List<Key<CommentCounterShard>> createShardKeys(final Key<Comment> entityKey) {
+        return Observable
+                .range(1, CommentCounterShard.SHARD_COUNT)
+                .map(new Function<Integer, Key<CommentCounterShard>>() {
+                    @Override
+                    public Key<CommentCounterShard> apply(Integer id)
+                            throws Exception {
+                        return createShardKey(entityKey, id);
+                    }
+                })
+                .toList()
+                .blockingGet();
+    }
+
+    @Override
+    public List<Key<CommentCounterShard>> getShardKeys(Iterable<Comment> entities) {
+        return Observable
+                .fromIterable(entities)
+                .concatMapIterable(new Function<Comment, Iterable<Key<CommentCounterShard>>>() {
+                    @Override
+                    public Iterable<Key<CommentCounterShard>> apply(Comment comment) throws Exception {
+                        return getShardKeys(comment);
+                    }
+                })
+                .toList()
+                .blockingGet();
+    }
+
+    @Override
+    public List<Key<CommentCounterShard>> getShardKeys(Comment entity) {
+        return entity.getShardKeys();
+    }
+
+    @Override
+    public Key<CommentCounterShard> createShardKey(Key<Comment> entityKey, int shardNum) {
+        return Key.create(CommentCounterShard.class,
+                ShardUtil.generateShardId(entityKey, shardNum));
+    }
+
+    @Override
+    public List<CommentCounterShard> createShards(Iterable<Key<Comment>> keys) {
+        return Observable
+                .fromIterable(keys)
+                .concatMapIterable(new Function<Key<Comment>, Iterable<CommentCounterShard>>() {
+                    @Override
+                    public Iterable<CommentCounterShard> apply(Key<Comment> key) throws Exception {
+                        return createShards(key);
+                    }
+                })
+                .toList()
+                .blockingGet();
+    }
+
+    @Override
+    public List<CommentCounterShard> createShards(final Key<Comment> entityKey) {
+        return Observable
+                .range(1, CommentCounterShard.SHARD_COUNT)
                 .map(new Function<Integer, CommentCounterShard>() {
                     @Override
                     public CommentCounterShard apply(Integer shardId) throws Exception {
-                        return createShard(commentKey, shardId);
+                        return createShard(entityKey, shardId);
                     }
                 })
-                .to(new Function<Observable<CommentCounterShard>,
-                        ImmutableList<CommentCounterShard>>() {
-                    @Override
-                    public ImmutableList<CommentCounterShard> apply(Observable<CommentCounterShard> o)
-                            throws Exception {
-                        return ImmutableList.copyOf(o.toList().blockingGet());
-                    }
-                });
+                .toList()
+                .blockingGet();
     }
 
-    public CommentCounterShard createShard(Key<Comment> commentKey, int shardId) {
+    @Override
+    public CommentCounterShard createShard(Key<Comment> entityKey, int shardNum) {
         return CommentCounterShard.builder()
-                .id(CommentUtil.createShardId(commentKey, shardId))
+                .id(ShardUtil.generateShardId(entityKey, shardNum))
                 .votes(0)
                 .build();
     }
 
-    public ImmutableList<Key<CommentCounterShard>> getShardKeys(Key<Comment> key) {
-        return getShardKeys(Collections.singletonList(key));
-    }
-
-    public ImmutableList<Key<CommentCounterShard>> getShardKeys(Collection<Key<Comment>> keys) {
-        return Observable.fromIterable(keys)
-                .map(new Function<Key<Comment>, List<Key<CommentCounterShard>>>() {
-                    @Override
-                    public List<Key<CommentCounterShard>> apply(final Key<Comment> key)
-                            throws Exception {
-                        return Observable.range(1, SHARD_COUNT)
-                                .map(new Function<Integer, Key<CommentCounterShard>>() {
-                                    @Override
-                                    public Key<CommentCounterShard> apply(Integer shardId)
-                                            throws Exception {
-                                        return Key.create(
-                                                CommentCounterShard.class,
-                                                CommentUtil.createShardId(key, shardId));
-                                    }
-                                }).toList().blockingGet();
-                    }
-                })
-                .toList()
-                .to(new Function<Single<List<List<Key<CommentCounterShard>>>>,
-                        ImmutableList<Key<CommentCounterShard>>>() {
-                    @Override
-                    public ImmutableList<Key<CommentCounterShard>> apply(
-                            Single<List<List<Key<CommentCounterShard>>>> listSingle)
-                            throws Exception {
-                        ImmutableList.Builder<Key<CommentCounterShard>> builder =
-                                ImmutableList.builder();
-
-                        for (List<Key<CommentCounterShard>> keys : listSingle.blockingGet()) {
-                            builder = builder.addAll(keys);
-                        }
-
-                        return builder.build();
-                    }
-                });
-    }
-
-    public Key<CommentCounterShard> getRandomShardKey(final Key<Comment> commentKey) {
+    @Override
+    public Key<CommentCounterShard> getRandomShardKey(Key<Comment> entityKey) {
         final int shardNum = new Random().nextInt(CommentCounterShard.SHARD_COUNT - 1 + 1) + 1;
-        return Key.create(CommentCounterShard.class,
-                CommentUtil.createShardId(commentKey, shardNum));
+        return createShardKey(entityKey, shardNum);
     }
 }

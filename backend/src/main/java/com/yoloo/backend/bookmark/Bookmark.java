@@ -1,4 +1,4 @@
-package com.yoloo.backend.saved;
+package com.yoloo.backend.bookmark;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cache;
@@ -23,7 +23,7 @@ import lombok.experimental.Wither;
 @Builder
 @Wither
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class SavedQuestion {
+public class Bookmark {
 
     public static final String FIELD_CREATED = "created";
 

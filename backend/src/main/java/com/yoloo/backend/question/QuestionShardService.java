@@ -1,111 +1,118 @@
 package com.yoloo.backend.question;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
 import com.googlecode.objectify.Key;
+import com.yoloo.backend.shard.ShardService;
+import com.yoloo.backend.shard.ShardUtil;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.reactivex.functions.Function;
 import lombok.AllArgsConstructor;
 
-import static com.yoloo.backend.question.QuestionCounterShard.SHARD_COUNT;
-
 @AllArgsConstructor(staticName = "newInstance")
-public class QuestionShardService {
+public class QuestionShardService implements ShardService<Question, QuestionCounterShard> {
 
-    public ImmutableList<QuestionCounterShard> createShards(final Key<Question> postKey) {
-        return Observable.range(1, SHARD_COUNT)
+    @Override
+    public List<Key<QuestionCounterShard>> createShardKeys(Iterable<Key<Question>> keys) {
+        return Observable
+                .fromIterable(keys)
+                .concatMapIterable(new Function<Key<Question>,
+                        Iterable<Key<QuestionCounterShard>>>() {
+                    @Override
+                    public Iterable<Key<QuestionCounterShard>> apply(Key<Question> key)
+                            throws Exception {
+                        return createShardKeys(key);
+                    }
+                })
+                .toList()
+                .blockingGet();
+    }
+
+    @Override
+    public List<Key<QuestionCounterShard>> createShardKeys(final Key<Question> entityKey) {
+        return Observable
+                .range(1, QuestionCounterShard.SHARD_COUNT)
+                .map(new Function<Integer, Key<QuestionCounterShard>>() {
+                    @Override
+                    public Key<QuestionCounterShard> apply(Integer id)
+                            throws Exception {
+                        return createShardKey(entityKey, id);
+                    }
+                })
+                .toList()
+                .blockingGet();
+    }
+
+    @Override
+    public List<Key<QuestionCounterShard>> getShardKeys(Iterable<Question> entities) {
+        return Observable
+                .fromIterable(entities)
+                .concatMapIterable(new Function<Question, Iterable<Key<QuestionCounterShard>>>() {
+                    @Override
+                    public Iterable<Key<QuestionCounterShard>> apply(Question question)
+                            throws Exception {
+                        return getShardKeys(question);
+                    }
+                })
+                .toList()
+                .blockingGet();
+    }
+
+    @Override
+    public List<Key<QuestionCounterShard>> getShardKeys(Question entity) {
+        return entity.getShardKeys();
+    }
+
+    @Override
+    public Key<QuestionCounterShard> createShardKey(Key<Question> entityKey, int shardNum) {
+        return Key.create(QuestionCounterShard.class,
+                ShardUtil.generateShardId(entityKey, shardNum));
+    }
+
+    @Override
+    public List<QuestionCounterShard> createShards(Iterable<Key<Question>> keys) {
+        return Observable
+                .fromIterable(keys)
+                .concatMapIterable(new Function<Key<Question>, Iterable<QuestionCounterShard>>() {
+                    @Override
+                    public Iterable<QuestionCounterShard> apply(Key<Question> key)
+                            throws Exception {
+                        return createShards(key);
+                    }
+                })
+                .toList()
+                .blockingGet();
+    }
+
+    @Override
+    public List<QuestionCounterShard> createShards(final Key<Question> entityKey) {
+        return Observable
+                .range(1, QuestionCounterShard.SHARD_COUNT)
                 .map(new Function<Integer, QuestionCounterShard>() {
                     @Override
                     public QuestionCounterShard apply(Integer shardId) throws Exception {
-                        return createShard(postKey, shardId);
+                        return createShard(entityKey, shardId);
                     }
                 })
-                .to(new Function<Observable<QuestionCounterShard>,
-                        ImmutableList<QuestionCounterShard>>() {
-                    @Override
-                    public ImmutableList<QuestionCounterShard> apply(
-                            Observable<QuestionCounterShard> o)
-                            throws Exception {
-                        return ImmutableList.copyOf(o.toList().blockingGet());
-                    }
-                });
+                .toList()
+                .blockingGet();
     }
 
-    public QuestionCounterShard createShard(Key<Question> postKey, int shardId) {
+    @Override
+    public QuestionCounterShard createShard(Key<Question> entityKey, int shardNum) {
         return QuestionCounterShard.builder()
-                .id(QuestionUtil.createShardId(postKey, shardId))
+                .id(ShardUtil.generateShardId(entityKey, shardNum))
                 .comments(0)
                 .reports(0)
                 .votes(0)
                 .build();
     }
 
-    public ImmutableSet<Key<QuestionCounterShard>> getShardKeys(Collection<Question> questions) {
-        return Observable.fromIterable(questions)
-                .map(new Function<Question, Set<Key<QuestionCounterShard>>>() {
-                    @Override
-                    public Set<Key<QuestionCounterShard>> apply(Question question)
-                            throws Exception {
-                        return ImmutableSet.copyOf(question.getShardKeys());
-                    }
-                })
-                .toList()
-                .to(new Function<Single<List<Set<Key<QuestionCounterShard>>>>,
-                        ImmutableSet<Key<QuestionCounterShard>>>() {
-                    @Override
-                    public ImmutableSet<Key<QuestionCounterShard>> apply(
-                            Single<List<Set<Key<QuestionCounterShard>>>> listSingle)
-                            throws Exception {
-                        ImmutableSet.Builder<Key<QuestionCounterShard>> builder =
-                                ImmutableSet.builder();
-
-                        for (Set<Key<QuestionCounterShard>> keys : listSingle.blockingGet()) {
-                            builder = builder.addAll(keys);
-                        }
-                        return builder.build();
-                    }
-                });
-    }
-
-    public ImmutableList<Key<QuestionCounterShard>> getShardKeys(Key<Question> key) {
-        return Observable.just(key)
-                .map(new Function<Key<Question>, List<Key<QuestionCounterShard>>>() {
-                    @Override
-                    public List<Key<QuestionCounterShard>> apply(
-                            final Key<Question> questionKey) throws Exception {
-                        return Observable.range(1, SHARD_COUNT)
-                                .map(new Function<Integer, Key<QuestionCounterShard>>() {
-                                    @Override
-                                    public Key<QuestionCounterShard> apply(Integer shardId)
-                                            throws Exception {
-                                        return Key.create(
-                                                QuestionCounterShard.class,
-                                                QuestionUtil.createShardId(questionKey, shardId));
-                                    }
-                                }).toList().blockingGet();
-                    }
-                })
-                .to(new Function<Observable<List<Key<QuestionCounterShard>>>,
-                        ImmutableList<Key<QuestionCounterShard>>>() {
-                    @Override
-                    public ImmutableList<Key<QuestionCounterShard>> apply(
-                            Observable<List<Key<QuestionCounterShard>>> listObservable)
-                            throws Exception {
-                        return ImmutableList.copyOf(listObservable.blockingFirst());
-                    }
-                });
-    }
-
-    public Key<QuestionCounterShard> getRandomShardKey(final Key<Question> postKey) {
+    @Override
+    public Key<QuestionCounterShard> getRandomShardKey(Key<Question> entityKey) {
         final int shardNum = new Random().nextInt(QuestionCounterShard.SHARD_COUNT - 1 + 1) + 1;
-        return Key.create(QuestionCounterShard.class, QuestionUtil.createShardId(postKey, shardNum));
+        return createShardKey(entityKey, shardNum);
     }
 }

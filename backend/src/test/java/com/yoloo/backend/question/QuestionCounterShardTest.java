@@ -14,6 +14,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.util.List;
+
 import static com.googlecode.objectify.ObjectifyService.ofy;
 import static org.junit.Assert.assertEquals;
 
@@ -45,7 +47,7 @@ public class QuestionCounterShardTest extends GaeTestBase {
         Key<Account> userKey = ofy().factory().allocateId(Account.class);
         Key<Question> postKey = ofy().factory().allocateId(userKey, Question.class);
 
-        ImmutableList<QuestionCounterShard> shards =
+        List<QuestionCounterShard> shards =
                 QuestionShardService.newInstance().createShards(postKey);
 
         assertEquals(5, shards.size());
@@ -75,8 +77,8 @@ public class QuestionCounterShardTest extends GaeTestBase {
         Key<Account> userKey = ofy().factory().allocateId(Account.class);
         Key<Question> questionKey = ofy().factory().allocateId(userKey, Question.class);
 
-        ImmutableList<Key<QuestionCounterShard>> shardKeys =
-                QuestionShardService.newInstance().getShardKeys(questionKey);
+        List<Key<QuestionCounterShard>> shardKeys =
+                QuestionShardService.newInstance().createShardKeys(questionKey);
 
         assertEquals(5, shardKeys.size());
     }

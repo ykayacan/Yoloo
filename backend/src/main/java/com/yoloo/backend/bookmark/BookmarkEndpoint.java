@@ -1,4 +1,4 @@
-package com.yoloo.backend.saved;
+package com.yoloo.backend.bookmark;
 
 import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.config.Api;
@@ -46,10 +46,10 @@ import javax.servlet.http.HttpServletRequest;
                 FirebaseAuthenticator.class
         }
 )
-final class SaveEndpoint {
+final class BookmarkEndpoint {
 
     private static final Logger logger =
-            Logger.getLogger(SaveEndpoint.class.getSimpleName());
+            Logger.getLogger(BookmarkEndpoint.class.getSimpleName());
 
     /**
      * Saves a new {@code Question}.
@@ -118,9 +118,9 @@ final class SaveEndpoint {
                 user);
     }
 
-    private SavedQuestionController getSavedQuestionController() {
-        return SavedQuestionController.newInstance(
-                SavedQuestionService.newInstance(),
+    private BookmarkController getSavedQuestionController() {
+        return BookmarkController.newInstance(
+                BookmarkService.newInstance(),
                 QuestionShardService.newInstance()
         );
     }

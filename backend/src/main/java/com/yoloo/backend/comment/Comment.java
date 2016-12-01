@@ -22,6 +22,8 @@ import com.yoloo.backend.vote.Vote;
 
 import org.joda.time.DateTime;
 
+import java.util.List;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -62,6 +64,9 @@ public class Comment implements Votable {
 
     @Index(IfNotDefault.class)
     boolean accepted;
+
+    @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+    private List<Key<CommentCounterShard>> shardKeys;
 
     @Index
     @NonFinal

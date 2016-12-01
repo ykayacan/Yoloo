@@ -14,12 +14,12 @@ import com.yoloo.backend.comment.CommentCounterShard;
 import com.yoloo.backend.comment.CommentService;
 import com.yoloo.backend.comment.CommentShardService;
 import com.yoloo.backend.comment.CommentUtil;
+import com.yoloo.backend.gamification.GamificationService;
+import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.question.Question;
 import com.yoloo.backend.question.QuestionCounterShard;
 import com.yoloo.backend.question.QuestionService;
 import com.yoloo.backend.question.QuestionShardService;
-import com.yoloo.backend.gamification.GamificationService;
-import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.util.TestBase;
 
 import org.joda.time.DateTime;
@@ -61,17 +61,16 @@ public class VoteControllerTest extends TestBase {
         fact().register(QuestionCounterShard.class);
         fact().register(Vote.class);
 
-        Key<Account> ownerKey = ofy().factory().allocateId(Account.class);
-        Key<Question> questionKey = ofy().factory().allocateId(ownerKey, Question.class);
+        QuestionShardService service = QuestionShardService.newInstance();
 
-        owner = createAccount(ownerKey);
-        question = createQuestion(ownerKey, questionKey);
+        owner = createAccount();
+        question = createQuestion(owner.getKey(), service);
 
         ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
         builder.add(owner)
                 .add(question)
-                .addAll(QuestionShardService.newInstance().createShards(questionKey));
+                .addAll(service.createShards(question.getKey()));
 
         ofy().save().entities(builder.build()).now();
     }
@@ -86,7 +85,7 @@ public class VoteControllerTest extends TestBase {
         getVoteController().vote(comment.getWebsafeId(), Vote.Direction.UP, user);
 
         comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment, CommentShardService.newInstance());
+        comment = CommentUtil.aggregateCounts(comment);
         assertEquals(Vote.Direction.UP, comment.getDir());
         assertEquals(1, comment.getVotes());
     }
@@ -101,7 +100,7 @@ public class VoteControllerTest extends TestBase {
         getVoteController().vote(comment.getWebsafeId(), Vote.Direction.DOWN, user);
 
         comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment, CommentShardService.newInstance());
+        comment = CommentUtil.aggregateCounts(comment);
         assertEquals(Vote.Direction.DOWN, comment.getDir());
         assertEquals(-1, comment.getVotes());
     }
@@ -116,7 +115,7 @@ public class VoteControllerTest extends TestBase {
         getVoteController().vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
 
         comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment, CommentShardService.newInstance());
+        comment = CommentUtil.aggregateCounts(comment);
         assertEquals(Vote.Direction.DEFAULT, comment.getDir());
         assertEquals(0, comment.getVotes());
     }
@@ -131,14 +130,14 @@ public class VoteControllerTest extends TestBase {
         getVoteController().vote(comment.getWebsafeId(), Vote.Direction.UP, user);
 
         comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment, CommentShardService.newInstance());
+        comment = CommentUtil.aggregateCounts(comment);
         assertEquals(Vote.Direction.UP, comment.getDir());
         assertEquals(1, comment.getVotes());
 
         getVoteController().vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
 
         comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment, CommentShardService.newInstance());
+        comment = CommentUtil.aggregateCounts(comment);
         assertEquals(Vote.Direction.DEFAULT, comment.getDir());
         assertEquals(0, comment.getVotes());
     }
@@ -153,14 +152,14 @@ public class VoteControllerTest extends TestBase {
         getVoteController().vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
 
         comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment, CommentShardService.newInstance());
+        comment = CommentUtil.aggregateCounts(comment);
         assertEquals(Vote.Direction.DEFAULT, comment.getDir());
         assertEquals(0, comment.getVotes());
 
         getVoteController().vote(comment.getWebsafeId(), Vote.Direction.UP, user);
 
         comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment, CommentShardService.newInstance());
+        comment = CommentUtil.aggregateCounts(comment);
         assertEquals(Vote.Direction.UP, comment.getDir());
         assertEquals(1, comment.getVotes());
     }
@@ -175,14 +174,14 @@ public class VoteControllerTest extends TestBase {
         getVoteController().vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
 
         comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment, CommentShardService.newInstance());
+        comment = CommentUtil.aggregateCounts(comment);
         assertEquals(Vote.Direction.DEFAULT, comment.getDir());
         assertEquals(0, comment.getVotes());
 
         getVoteController().vote(comment.getWebsafeId(), Vote.Direction.DOWN, user);
 
         comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment, CommentShardService.newInstance());
+        comment = CommentUtil.aggregateCounts(comment);
         assertEquals(Vote.Direction.DOWN, comment.getDir());
         assertEquals(-1, comment.getVotes());
     }
@@ -197,21 +196,23 @@ public class VoteControllerTest extends TestBase {
         getVoteController().vote(comment.getWebsafeId(), Vote.Direction.DOWN, user);
 
         comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment, CommentShardService.newInstance());
+        comment = CommentUtil.aggregateCounts(comment);
         assertEquals(Vote.Direction.DOWN, comment.getDir());
         assertEquals(-1, comment.getVotes());
 
         getVoteController().vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
 
         comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment, CommentShardService.newInstance());
+        comment = CommentUtil.aggregateCounts(comment);
         assertEquals(Vote.Direction.DEFAULT, comment.getDir());
         assertEquals(0, comment.getVotes());
     }
 
-    private Account createAccount(Key<Account> userKey) {
+    private Account createAccount() {
+        Key<Account> ownerKey = ofy().factory().allocateId(Account.class);
+
         return Account.builder()
-                .id(userKey.getId())
+                .id(ownerKey.getId())
                 .avatarUrl(new Link("Test avatar"))
                 .email(new Email(USER_EMAIL))
                 .username("Test user")
@@ -219,14 +220,17 @@ public class VoteControllerTest extends TestBase {
                 .build();
     }
 
-    private Question createQuestion(Key<Account> userKey, Key<Question> postKey) {
+    private Question createQuestion(Key<Account> userKey, QuestionShardService service) {
+        Key<Question> questionKey = ofy().factory().allocateId(userKey, Question.class);
+
         return Question.builder()
-                .id(postKey.getId())
+                .id(questionKey.getId())
                 .parentUserKey(userKey)
                 .acceptedComment(null)
                 .avatarUrl(new Link("test"))
                 .username("testUser")
                 .firstComment(false)
+                .shardKeys(service.createShardKeys(questionKey))
                 .bounty(0)
                 .comments(0)
                 .votes(0)

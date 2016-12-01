@@ -19,7 +19,7 @@ import static com.yoloo.backend.OfyService.ofy;
 public class CategoryRankUpdateServlet extends HttpServlet {
 
     public static final String UPDATE_CATEGORY_RANK_QUEUE = "update-category-rank-queue";
-    private static final String URL = "/tasks/rank/category/update";
+    private static final String URL = "/tasks/update/category/rank";
 
     public static void create() {
         Queue queue = QueueFactory.getQueue(UPDATE_CATEGORY_RANK_QUEUE);

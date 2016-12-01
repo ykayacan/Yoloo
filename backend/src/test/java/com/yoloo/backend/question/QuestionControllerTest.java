@@ -23,6 +23,7 @@ import com.yoloo.backend.hashtag.HashTag;
 import com.yoloo.backend.hashtag.HashTagService;
 import com.yoloo.backend.media.MediaService;
 import com.yoloo.backend.notification.NotificationService;
+import com.yoloo.backend.shard.ShardUtil;
 import com.yoloo.backend.vote.Vote;
 
 import org.joda.time.DateTime;
@@ -188,7 +189,7 @@ public class QuestionControllerTest extends GaeTestBase {
 
     private QuestionCounterShard createShard(Key<Question> postKey, int i) {
         return QuestionCounterShard.builder()
-                .id(QuestionUtil.createShardId(postKey, i))
+                .id(ShardUtil.generateShardId(postKey, i))
                 .comments(20)
                 .votes(10)
                 .reports(0)

@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee">
 
+    <!-- Begin Listeners -->
+
+    <listener>
+        <listener-class>com.yoloo.backend.FirebaseHelper</listener-class>
+    </listener>
+
+    <listener>
+        <listener-class>com.yoloo.backend.OfyService</listener-class>
+    </listener>
+
+    <!-- End Listeners -->
+
     <!-- Begin Servlets -->
 
     <servlet>
@@ -13,7 +25,8 @@
                 com.yoloo.backend.comment.CommentEndpoint,
                 com.yoloo.backend.follow.FollowEndpoint,
                 com.yoloo.backend.vote.VoteEndpoint,
-                com.yoloo.backend.saved.SaveEndpoint
+                com.yoloo.backend.bookmark.BookmarkEndpoint,
+                com.yoloo.backend.hashtag.HashTagEndpoint
             </param-value>
         </init-param>
         <init-param>
@@ -34,19 +47,20 @@
 
     <servlet-mapping>
         <servlet-name>CategoryRankUpdateServlet</servlet-name>
-        <url-pattern>/tasks/rank/category/update</url-pattern>
+        <url-pattern>/tasks/update/category/rank</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>HashTagCounterUpdateServlet</servlet-name>
+        <servlet-class>com.yoloo.backend.hashtag.HashTagCounterUpdateServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>HashTagCounterUpdateServlet</servlet-name>
+        <url-pattern>/tasks/update/hashtag/counter</url-pattern>
     </servlet-mapping>
 
     <!-- End Servlets -->
-
-    <!-- Begin Listeners -->
-
-    <listener>
-        <listener-class>com.yoloo.backend.FirebaseHelper</listener-class>
-        <listener-class>com.yoloo.backend.OfyService</listener-class>
-    </listener>
-
-    <!-- End Listeners -->
 
     <!-- Begin Filters -->
 
@@ -89,7 +103,11 @@
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>CategoryRankUpdateServlet</web-resource-name>
-            <url-pattern>/tasks/rank/category/update</url-pattern>
+            <url-pattern>/tasks/update/category/rank</url-pattern>
+        </web-resource-collection>
+        <web-resource-collection>
+            <web-resource-name>HashTagCounterUpdateServlet</web-resource-name>
+            <url-pattern>/tasks/update/hashtag/counter</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <role-name>admin</role-name>

@@ -64,17 +64,16 @@ public class CommentControllerTest extends TestBase {
         Key<Account> ownerKey = ofy().factory().allocateId(Account.class);
         Key<Question> questionKey = ofy().factory().allocateId(ownerKey, Question.class);
 
-        ImmutableList<Key<QuestionCounterShard>> shardKeys =
-                QuestionShardService.newInstance().getShardKeys(questionKey);
+        QuestionShardService shardService = QuestionShardService.newInstance();
 
         owner = createAccount(ownerKey);
-        question = createQuestion(ownerKey, questionKey, shardKeys);
+        question = createQuestion(ownerKey, questionKey, shardService);
 
         ImmutableList.Builder<Object> builder = ImmutableList.builder();
 
         builder.add(owner)
                 .add(question)
-                .addAll(QuestionShardService.newInstance().createShards(questionKey));
+                .addAll(shardService.createShards(questionKey));
 
         ofy().save().entities(builder.build()).now();
     }
@@ -162,7 +161,7 @@ public class CommentControllerTest extends TestBase {
 
         Comment comment = controller.add(question.getWebsafeId(), "Test comment", user);
 
-        controller.remove(question.getWebsafeId(), comment.getWebsafeId(), user);
+        controller.delete(question.getWebsafeId(), comment.getWebsafeId(), user);
 
         ofy().load().key(comment.getKey()).safe();
     }
@@ -177,13 +176,11 @@ public class CommentControllerTest extends TestBase {
 
         getVoteController().vote(comment.getWebsafeId(), Vote.Direction.UP, user);
 
-        controller.remove(question.getWebsafeId(), comment.getWebsafeId(), user);
+        controller.delete(question.getWebsafeId(), comment.getWebsafeId(), user);
 
         assertEquals(null, ofy().load().key(comment.getKey()).now());
 
-        ImmutableList<Key<CommentCounterShard>> shardKeys =
-                CommentShardService.newInstance().getShardKeys(comment.getKey());
-        assertEquals(0, ofy().load().keys(shardKeys).size());
+        assertEquals(0, ofy().load().keys(comment.getShardKeys()).size());
 
         ImmutableList<Key<Vote>> voteKeys =
                 CommentService.newInstance().getVoteKeys(comment.getKey());
@@ -200,16 +197,16 @@ public class CommentControllerTest extends TestBase {
                 .build();
     }
 
-    private Question createQuestion(Key<Account> userKey, Key<Question> postKey,
-                                    ImmutableList<Key<QuestionCounterShard>> shardKeys) {
+    private Question createQuestion(Key<Account> userKey, Key<Question> questionKey,
+                                    QuestionShardService service) {
         return Question.builder()
-                .id(postKey.getId())
+                .id(questionKey.getId())
                 .parentUserKey(userKey)
                 .acceptedComment(null)
                 .avatarUrl(new Link("test"))
                 .username("testUser")
                 .firstComment(false)
-                .shardKeys(shardKeys)
+                .shardKeys(service.createShardKeys(questionKey))
                 .bounty(0)
                 .comments(0)
                 .votes(0)

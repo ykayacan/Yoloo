@@ -8,6 +8,8 @@ import com.googlecode.objectify.Key;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.vote.Vote;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -20,18 +22,20 @@ import static com.yoloo.backend.OfyService.ofy;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CommentUtil {
 
-    public static Map<Key<Comment>, Comment> aggregateCounts(Map<Key<Comment>, Comment> commentMap,
+    public static Map<Key<Comment>, Comment> aggregateCounts(Map<Key<Comment>, Comment> map,
                                                              CommentShardService service) {
-        List<Key<CommentCounterShard>> shardKeys = service.getShardKeys(commentMap.keySet());
+        Collection<Comment> comments = map.values();
+
+        List<Key<CommentCounterShard>> shardKeys = service.getShardKeys(comments);
+
         final Map<Key<CommentCounterShard>, CommentCounterShard> shardMap =
                 ofy().load().keys(shardKeys);
 
-        for (Comment comment : commentMap.values()) {
+        for (Comment comment : comments) {
             long votes = 0L;
 
             for (int i = 1; i <= CommentCounterShard.SHARD_COUNT; i++) {
-                Key<CommentCounterShard> shardKey =
-                        Key.create(CommentCounterShard.class, createShardId(comment.getKey(), i));
+                Key<CommentCounterShard> shardKey = comment.getShardKeys().get(i - 1);
 
                 if (shardMap.containsKey(shardKey)) {
                     CommentCounterShard shard = shardMap.get(shardKey);
@@ -39,23 +43,20 @@ public final class CommentUtil {
                 }
             }
 
-            commentMap.put(comment.getKey(), comment.withVotes(votes));
+            map.put(comment.getKey(), comment.withVotes(votes));
         }
 
-        return commentMap;
+        return map;
     }
 
-    public static Comment aggregateCounts(Comment comment, CommentShardService service) {
-        List<Key<CommentCounterShard>> shardKeys = service.getShardKeys(comment.getKey());
-        final Map<Key<CommentCounterShard>, CommentCounterShard> shardMap =
-                ofy().load().keys(shardKeys);
+    public static Comment aggregateCounts(Comment comment) {
+        final Map<Key<CommentCounterShard>, CommentCounterShard> map =
+                ofy().load().keys(comment.getShardKeys());
 
         long votes = 0L;
 
         for (int i = 1; i <= CommentCounterShard.SHARD_COUNT; i++) {
-            Key<CommentCounterShard> shardKey =
-                    Key.create(CommentCounterShard.class, createShardId(comment.getKey(), i));
-            CommentCounterShard shard = shardMap.get(shardKey);
+            CommentCounterShard shard = map.get(comment.getShardKeys().get(i - 1));
             votes += shard.getVotes();
         }
 
@@ -63,38 +64,39 @@ public final class CommentUtil {
     }
 
     public static Map<Key<Comment>, Comment> aggregateVote(Key<Account> parentKey,
-                                                           Map<Key<Comment>, Comment> commentMap) {
-        Pair<Comment, Comment> pair = getCommentPairOrderedByDate(
-                Lists.newArrayList(commentMap.values()));
+                                                           Map<Key<Comment>, Comment> map) {
+        final Pair<Key<Vote>, Key<Vote>> votePair =
+                sortAndGetVoteKeyPair(parentKey, Lists.newArrayList(map.values()));
 
         QueryResultIterable<Vote> votes = ofy().load().type(Vote.class)
                 .ancestor(parentKey)
-                .filterKey(">=", Key.create(parentKey, Vote.class, pair.first.getWebsafeId()))
-                .filterKey("<=", Key.create(parentKey, Vote.class, pair.second.getWebsafeId()))
+                .filterKey(">=", votePair.first)
+                .filterKey("<=", votePair.second)
                 .iterable();
 
         for (Vote vote : votes) {
             //noinspection SuspiciousMethodCalls
-            if (commentMap.containsKey(vote.<Comment>getVotableKey())) {
+            if (map.containsKey(vote.<Comment>getVotableKey())) {
                 //noinspection SuspiciousMethodCalls
-                Comment comment = commentMap
+                Comment comment = map
                         .get(vote.<Comment>getVotableKey())
                         .withDir(vote.getDir());
-                commentMap.put(comment.getKey(), comment);
+                map.put(comment.getKey(), comment);
             }
         }
 
-        return commentMap;
+        return map;
     }
 
     @SuppressWarnings("unchecked")
     public static Comment aggregateVote(Key<Account> parentKey, Comment comment) {
-        Pair<Comment, Comment> pair = getCommentPairOrderedByDate(Lists.newArrayList(comment));
+        Pair<Key<Vote>, Key<Vote>> votePair =
+                sortAndGetVoteKeyPair(parentKey, Collections.singletonList(comment));
 
         QueryResultIterable<Vote> votes = ofy().load().type(Vote.class)
                 .ancestor(parentKey)
-                .filterKey(">=", Key.create(parentKey, Vote.class, pair.first.getWebsafeId()))
-                .filterKey("<=", Key.create(parentKey, Vote.class, pair.second.getWebsafeId()))
+                .filterKey(">=", votePair.first)
+                .filterKey("<=", votePair.second)
                 .iterable();
 
         for (Vote vote : votes) {
@@ -106,10 +108,6 @@ public final class CommentUtil {
         return comment;
     }
 
-    public static String createShardId(Key<Comment> commentKey, int shardNum) {
-        return commentKey.toWebSafeString() + ":" + String.valueOf(shardNum);
-    }
-
     /**
      * Uses an optimized linear time search
      * to find min and max Question which ordered by {@link Date}
@@ -119,7 +117,8 @@ public final class CommentUtil {
      *
      * @return Pair from Question (min, max)
      */
-    public static Pair<Comment, Comment> getCommentPairOrderedByDate(List<Comment> comments) {
+    public static Pair<Key<Vote>, Key<Vote>> sortAndGetVoteKeyPair(Key<Account> parentKey,
+                                                                   List<Comment> comments) {
         final int size = comments.size();
         final boolean odd = size % 2 == 1;
         final int till = odd ? size - 1 : size;
@@ -156,6 +155,9 @@ public final class CommentUtil {
                     : upper;
         }
 
-        return Pair.of(lower, upper);
+        Key<Vote> lowerVoteKey = Key.create(parentKey, Vote.class, lower.getWebsafeId());
+        Key<Vote> upperVoteKey = Key.create(parentKey, Vote.class, upper.getWebsafeId());
+
+        return Pair.of(lowerVoteKey, upperVoteKey);
     }
 }

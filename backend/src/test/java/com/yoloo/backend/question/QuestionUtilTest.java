@@ -11,6 +11,7 @@ import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.GaeTestBase;
 import com.yoloo.backend.category.Category;
 import com.yoloo.backend.question.sort_strategy.QuestionSorter;
+import com.yoloo.backend.shard.ShardUtil;
 import com.yoloo.backend.vote.Vote;
 
 import org.joda.time.DateTime;
@@ -69,9 +70,9 @@ public class QuestionUtilTest extends GaeTestBase {
 
         int shardNum = new Random().nextInt(QuestionCounterShard.SHARD_COUNT - 1 + 1) + 1;
 
-        QuestionCounterShard shard =
-                ofy().load().type(QuestionCounterShard.class)
-                        .id(QuestionUtil.createShardId(postKey, shardNum)).now();
+        QuestionCounterShard shard = ofy().load()
+                .type(QuestionCounterShard.class)
+                .id(ShardUtil.generateShardId(postKey, shardNum)).now();
         shard.addVotes(10);
 
         ofy().save().entity(shard).now();
