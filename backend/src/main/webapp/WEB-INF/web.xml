@@ -26,7 +26,7 @@
                 com.yoloo.backend.follow.FollowEndpoint,
                 com.yoloo.backend.vote.VoteEndpoint,
                 com.yoloo.backend.bookmark.BookmarkEndpoint,
-                com.yoloo.backend.hashtag.HashTagEndpoint
+                com.yoloo.backend.tag.TagEndpoint
             </param-value>
         </init-param>
         <init-param>
@@ -51,13 +51,13 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>HashTagCounterUpdateServlet</servlet-name>
-        <servlet-class>com.yoloo.backend.hashtag.HashTagCounterUpdateServlet</servlet-class>
+        <servlet-name>TagCounterUpdateServlet</servlet-name>
+        <servlet-class>com.yoloo.backend.tag.TagCounterUpdateServlet</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>HashTagCounterUpdateServlet</servlet-name>
-        <url-pattern>/tasks/update/hashtag/counter</url-pattern>
+        <servlet-name>TagCounterUpdateServlet</servlet-name>
+        <url-pattern>/tasks/update/tag/counter</url-pattern>
     </servlet-mapping>
 
     <!-- End Servlets -->
@@ -106,8 +106,8 @@
             <url-pattern>/tasks/update/category/rank</url-pattern>
         </web-resource-collection>
         <web-resource-collection>
-            <web-resource-name>HashTagCounterUpdateServlet</web-resource-name>
-            <url-pattern>/tasks/update/hashtag/counter</url-pattern>
+            <web-resource-name>TagCounterUpdateServlet</web-resource-name>
+            <url-pattern>/tasks/update/tag/counter</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <role-name>admin</role-name>

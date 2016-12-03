@@ -87,7 +87,7 @@ public class CommentControllerTest extends TestBase {
         Comment comment = controller.add(question.getWebsafeId(), "Test comment", user);
 
         assertEquals("Test comment", comment.getContent());
-        assertEquals(Ref.create(Key.create(user.getUserId())), comment.getParentUser());
+        assertEquals(Key.create(user.getUserId()), comment.getParentUserKey());
         assertEquals(owner.getUsername(), comment.getUsername());
         assertEquals(owner.getAvatarUrl(), comment.getAvatarUrl());
         assertEquals(Vote.Direction.DEFAULT, comment.getDir());

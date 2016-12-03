@@ -32,7 +32,7 @@ public class CommentService {
 
         return Comment.builder()
                 .id(commentKey.getId())
-                .parentUser(Ref.create(account))
+                .parentUserKey(account.getKey())
                 .questionKey(questionKey)
                 .content(content)
                 .username(account.getUsername())

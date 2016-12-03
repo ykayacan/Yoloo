@@ -24,7 +24,7 @@ import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentService;
 import com.yoloo.backend.comment.CommentShardService;
 import com.yoloo.backend.gamification.GamificationService;
-import com.yoloo.backend.hashtag.HashTagService;
+import com.yoloo.backend.tag.HashTagService;
 import com.yoloo.backend.media.MediaService;
 import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.question.sort_strategy.QuestionSorter;
@@ -154,7 +154,7 @@ public final class QuestionController extends Controller {
         // TODO: 28.11.2016 Increase counter shards.
 
         // Add generated hashTags to save list.
-        //ImmutableSet<HashTag> hashTags = hashTagService.createHashTag(wrapper.getHashTags());
+        //ImmutableSet<Tag> hashTags = hashTagService.createHashTag(wrapper.getHashTags());
 
         // Add updated account shard counter to save list.
         @SuppressWarnings("SuspiciousMethodCalls")
@@ -185,7 +185,6 @@ public final class QuestionController extends Controller {
      * Update question.
      *
      * @param wrapper the wrapper
-     * @param user
      * @return the question
      */
     public Question update(QuestionWrapper wrapper, User user) {

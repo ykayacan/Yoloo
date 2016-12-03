@@ -17,10 +17,10 @@ import com.yoloo.backend.base.GaeTestBase;
 import com.yoloo.backend.category.CategoryService;
 import com.yoloo.backend.comment.CommentService;
 import com.yoloo.backend.comment.CommentShardService;
+import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.question.sort_strategy.QuestionSorter;
 import com.yoloo.backend.gamification.GamificationService;
-import com.yoloo.backend.hashtag.HashTag;
-import com.yoloo.backend.hashtag.HashTagService;
+import com.yoloo.backend.tag.HashTagService;
 import com.yoloo.backend.media.MediaService;
 import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.shard.ShardUtil;
@@ -98,7 +98,7 @@ public class QuestionControllerTest extends GaeTestBase {
                 .add(Account.class)
                 .add(QuestionCounterShard.class)
                 .add(AccountCounterShard.class)
-                .add(HashTag.class)
+                .add(Tag.class)
                 .add(Vote.class);
     }
 

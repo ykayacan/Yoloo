@@ -6,13 +6,11 @@ import com.google.appengine.api.datastore.Link;
 import com.google.appengine.repackaged.org.codehaus.jackson.annotate.JsonProperty;
 
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Index;
-import com.googlecode.objectify.annotation.Load;
 import com.googlecode.objectify.annotation.Parent;
 import com.googlecode.objectify.condition.IfNotDefault;
 import com.yoloo.backend.account.Account;
@@ -47,9 +45,8 @@ public class Comment implements Votable {
     private long id;
 
     @Parent
-    @Load
     @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-    private Ref<Account> parentUser;
+    private Key<Account> parentUserKey;
 
     @Index
     @NonFinal
@@ -82,7 +79,7 @@ public class Comment implements Votable {
 
     @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
     public Key<Comment> getKey() {
-        return Key.create(parentUser.getKey(), getClass(), id);
+        return Key.create(parentUserKey, getClass(), id);
     }
 
     @JsonProperty("id")

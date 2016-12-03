@@ -1,14 +1,11 @@
-package com.yoloo.backend.hashtag;
+package com.yoloo.backend.tag;
 
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
 
-import com.googlecode.objectify.Key;
-
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -17,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import static com.yoloo.backend.OfyService.ofy;
 
-public class HashTagCounterUpdateServlet extends HttpServlet {
+public class TagCounterUpdateServlet extends HttpServlet {
 
     public static final String UPDATE_HASHTAG_COUNTER_QUEUE = "update-hashtag-counter-queue";
     private static final String URL = "/tasks/update/hashtag/counter";
@@ -31,30 +28,46 @@ public class HashTagCounterUpdateServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        List<HashTag> hashTags = ofy().load().type(HashTag.class).list();
-
-        HashTagShardService service = HashTagShardService.newInstance();
-
-        Map<Key<HashTagCounterShard>, HashTagCounterShard> map =
-                ofy().load().keys(service.getShardKeys(hashTags));
+        List<Tag> tagEntities = ofy().load().type(Tag.class).list();
 
         int index = 0;
-        for (HashTag hashTag : hashTags) {
+        for (Tag tag : tagEntities) {
+            long questions = 0;
+
+            for (TagCounterShard shard : tag.getShards()) {
+                questions += shard.getQuestions();
+            }
+
+            tagEntities.add(index, tag.withQuestions(questions));
+            index++;
+        }
+
+
+
+        ofy().save().entities(tagEntities);
+
+        /*TagShardService service = TagShardService.newInstance();
+
+        Map<Key<TagCounterShard>, TagCounterShard> map =
+                ofy().load().keys(service.getShardKeys(tagEntities));
+
+        int index = 0;
+        for (Tag hashTag : tagEntities) {
             long questions = 0L;
 
-            for (int i = 1; i <= HashTagCounterShard.SHARD_COUNT; i++) {
-                Key<HashTagCounterShard> shardKey = hashTag.getShardKeys().get(i - 1);
+            for (int i = 1; i <= TagCounterShard.SHARD_COUNT; i++) {
+                Key<TagCounterShard> shardKey = hashTag.getShardKeys().get(i - 1);
 
                 if (map.containsKey(shardKey)) {
-                    HashTagCounterShard shard = map.get(shardKey);
+                    TagCounterShard shard = map.get(shardKey);
                     questions += shard.getQuestions();
                 }
             }
 
-            hashTags.add(index, hashTag.withQuestions(questions));
+            tagEntities.add(index, hashTag.withQuestions(questions));
             index++;
         }
 
-        ofy().save().entities(hashTags);
+        ofy().save().entities(tagEntities);*/
     }
 }

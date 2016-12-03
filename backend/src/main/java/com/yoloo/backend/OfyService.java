@@ -10,9 +10,11 @@ import com.yoloo.backend.account.AccountDetail;
 import com.yoloo.backend.authentication.Token;
 import com.yoloo.backend.comment.CommentCounterShard;
 import com.yoloo.backend.fcm.RegistrationRecord;
+import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.question.Question;
 import com.yoloo.backend.question.QuestionCounterShard;
-import com.yoloo.backend.hashtag.HashTag;
+import com.yoloo.backend.tag.TagCounterShard;
+import com.yoloo.backend.tag.TagGroup;
 import com.yoloo.backend.vote.Vote;
 
 import lombok.AccessLevel;
@@ -37,7 +39,9 @@ public final class OfyService {
         factory().register(Question.class);
         factory().register(QuestionCounterShard.class);
 
-        factory().register(HashTag.class);
+        factory().register(Tag.class);
+        factory().register(TagCounterShard.class);
+        factory().register(TagGroup.class);
 
         //factory().register(Comment.class);
         factory().register(CommentCounterShard.class);

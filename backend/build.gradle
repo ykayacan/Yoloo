@@ -21,7 +21,7 @@ apply plugin: 'appengine'
 sourceCompatibility = JavaVersion.VERSION_1_7
 targetCompatibility = JavaVersion.VERSION_1_7
 
-final APP_ENGINE_VERSION = '1.9.46'
+final APP_ENGINE_VERSION = '1.9.48'
 
 dependencies {
     // App Engine
@@ -46,7 +46,7 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.16.10'
     compile 'org.hibernate:hibernate-validator:5.3.3.Final'
     compile 'io.reactivex.rxjava2:rxjava:2.0.1'
-    compile 'com.google.firebase:firebase-admin:4.0.0'
+    compile 'com.google.firebase:firebase-admin:4.0.2'
     compile 'org.apache.httpcomponents:httpclient:4.5.2'
 
     // Collections

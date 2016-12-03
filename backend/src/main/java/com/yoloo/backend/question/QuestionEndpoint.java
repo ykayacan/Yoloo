@@ -19,7 +19,7 @@ import com.yoloo.backend.comment.CommentService;
 import com.yoloo.backend.comment.CommentShardService;
 import com.yoloo.backend.question.sort_strategy.QuestionSorter;
 import com.yoloo.backend.gamification.GamificationService;
-import com.yoloo.backend.hashtag.HashTagService;
+import com.yoloo.backend.tag.HashTagService;
 import com.yoloo.backend.media.MediaService;
 import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.validator.Validator;

@@ -24,7 +24,7 @@ public class QuestionCreateRule implements Rule<BadRequestException> {
             throw new BadRequestException("Content can not be empty.");
         }*/
         if (Strings.isNullOrEmpty(hashtags)) {
-            throw new BadRequestException("Hashtag cannot be empty.");
+            throw new BadRequestException("Tag cannot be empty.");
         }
         /*if (!Pattern.compile(LAT_LNG_PATTERN).matcher(latLng).matches()) {
             throw new BadRequestException("Invalid latitude or longitude value.");

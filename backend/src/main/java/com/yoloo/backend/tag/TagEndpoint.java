@@ -1,4 +1,4 @@
-package com.yoloo.backend.hashtag;
+package com.yoloo.backend.tag;
 
 import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.config.Api;
@@ -23,6 +23,9 @@ import javax.annotation.Nullable;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * The type Tag endpoint.
+ */
 @Api(
         name = "yolooApi",
         version = "v1",
@@ -33,7 +36,7 @@ import javax.servlet.http.HttpServletRequest;
         )
 )
 @ApiClass(
-        resource = "hashtags",
+        resource = "tags",
         clientIds = {
                 Constants.ANDROID_CLIENT_ID,
                 Constants.IOS_CLIENT_ID,
@@ -43,13 +46,13 @@ import javax.servlet.http.HttpServletRequest;
                 FirebaseAuthenticator.class
         }
 )
-final class HashTagEndpoint {
+final class TagEndpoint {
 
     private static final Logger logger =
-            Logger.getLogger(HashTagEndpoint.class.getSimpleName());
+            Logger.getLogger(TagEndpoint.class.getSimpleName());
 
     /**
-     * Inserts a new {@code HashTag}.
+     * Inserts a new {@code Tag}.
      *
      * @param name         the name
      * @param languageCode the language code
@@ -60,41 +63,41 @@ final class HashTagEndpoint {
      * @throws ServiceException the service exception
      */
     @ApiMethod(
-            name = "hashtags.add",
-            path = "hashtags",
+            name = "tags.add",
+            path = "tags",
             httpMethod = ApiMethod.HttpMethod.POST)
-    public HashTag addHashTag(@Named("name") String name,
-                              @Named("languageCode") String languageCode,
-                              @Named("groupIds") String groupIds,
-                              HttpServletRequest request,
-                              User user)
+    public Tag addTag(@Named("name") String name,
+                      @Named("languageCode") String languageCode,
+                      @Named("groupIds") String groupIds,
+                      HttpServletRequest request,
+                      User user)
             throws ServiceException {
 
         Validator.builder()
                 .addRule(new AuthenticationRule(user))
                 .validate();
 
-        return getHashTagController().addHashTag(name, languageCode, groupIds, user);
+        return getHashTagController().addTag(name, languageCode, groupIds, user);
     }
 
     /**
-     * Updates an existing {@code HashTag}.
+     * Updates an existing {@code Tag}.
      *
-     * @param websafeHashTagId the websafe hash tag id
-     * @param name             the name
-     * @param request          the desired state from the entity
-     * @param user             the user
+     * @param websafeTagId the websafe hash tag id
+     * @param name         the name
+     * @param request      the desired state from the entity
+     * @param user         the user
      * @return the updated version from the entity
      * @throws ServiceException the service exception
      */
     @ApiMethod(
-            name = "hashtags.update",
-            path = "hashtags/{hashtagId}",
+            name = "tags.update",
+            path = "tags/{tagId}",
             httpMethod = ApiMethod.HttpMethod.PUT)
-    public HashTag updateHashTag(@Named("hashtagId") String websafeHashTagId,
-                                 @Nullable @Named("name") String name,
-                                 HttpServletRequest request,
-                                 User user)
+    public Tag updateTag(@Named("tagId") String websafeTagId,
+                         @Nullable @Named("name") String name,
+                         HttpServletRequest request,
+                         User user)
             throws ServiceException {
 
         Validator.builder()
@@ -102,51 +105,49 @@ final class HashTagEndpoint {
                 .validate();
 
         return getHashTagController()
-                .updateHashTag(websafeHashTagId, Optional.fromNullable(name), user);
+                .updateTag(websafeTagId, Optional.fromNullable(name), user);
     }
 
     /**
-     * Deletes the specified {@code HashTag}.
+     * Deletes the specified {@code Tag}.
      *
-     * @param websafeHashTagId the websafe hash tag id
-     * @param user             the user
+     * @param websafeTagId the websafe hash tag id
+     * @param user         the user
      * @throws ServiceException the service exception
      */
     @ApiMethod(
-            name = "hashtags.delete",
-            path = "hashtags/{hashtagId}",
+            name = "tags.delete",
+            path = "tags/{tagId}",
             httpMethod = ApiMethod.HttpMethod.DELETE)
-    public void deleteHashTag(@Named("hashtagId") String websafeHashTagId, User user)
+    public void deleteTag(@Named("tagId") String websafeTagId, User user)
             throws ServiceException {
 
         Validator.builder()
-                .addRule(new IdValidationRule(websafeHashTagId))
+                .addRule(new IdValidationRule(websafeTagId))
                 .addRule(new AuthenticationRule(user))
-                .addRule(new NotFoundRule(websafeHashTagId))
-                .addRule(new AllowedToOperate(user, websafeHashTagId, AllowedToOperate.Operation.DELETE))
+                .addRule(new NotFoundRule(websafeTagId))
+                .addRule(new AllowedToOperate(user, websafeTagId, AllowedToOperate.Operation.DELETE))
                 .validate();
 
-        getHashTagController().deleteHashTag(websafeHashTagId, user);
+        getHashTagController().deleteTag(websafeTagId, user);
     }
 
     /**
-     * List all {@code Comment} entities.
+     * List all {@code Tag} entities.
      *
-     * @param websafeQuestionId the websafe question id
-     * @param cursor            used for pagination to determine which page to return
-     * @param limit             the maximum number of entries to return
-     * @param user              the user
+     * @param name  the name
+     * @param limit the maximum number of entries to return
+     * @param user  the user
      * @return a response that encapsulates the result list and the next page token/cursor
      * @throws ServiceException the service exception
      */
     @ApiMethod(
-            name = "hashtags.list",
-            path = "hashtags",
+            name = "tags.list",
+            path = "tags",
             httpMethod = ApiMethod.HttpMethod.GET)
-    public CollectionResponse<HashTag> list(@Named("name") String name,
-                                            @Nullable @Named("cursor") String cursor,
-                                            @Nullable @Named("limit") Integer limit,
-                                            User user) throws ServiceException {
+    public CollectionResponse<Tag> list(@Named("name") String name,
+                                        @Nullable @Named("limit") Integer limit,
+                                        User user) throws ServiceException {
 
         Validator.builder()
                 .addRule(new AuthenticationRule(user))
@@ -154,13 +155,12 @@ final class HashTagEndpoint {
 
         return getHashTagController().list(
                 name,
-                Optional.fromNullable(cursor),
                 Optional.fromNullable(limit),
                 user);
     }
 
     /**
-     * Inserts a new {@code HashTagGroup}.
+     * Inserts a new {@code TagGroup}.
      *
      * @param name    the name
      * @param request the request
@@ -169,12 +169,12 @@ final class HashTagEndpoint {
      * @throws ServiceException the service exception
      */
     @ApiMethod(
-            name = "hashtagGroups.add",
-            path = "hashtagGroups",
+            name = "tagGroups.add",
+            path = "tagGroups",
             httpMethod = ApiMethod.HttpMethod.POST)
-    public HashTagGroup addGroup(@Named("name") String name,
-                                 HttpServletRequest request,
-                                 User user)
+    public TagGroup addGroup(@Named("name") String name,
+                             HttpServletRequest request,
+                             User user)
             throws ServiceException {
 
         Validator.builder()
@@ -185,7 +185,7 @@ final class HashTagEndpoint {
     }
 
     /**
-     * Updates an existing {@code HashTagGroup}.
+     * Updates an existing {@code TagGroup}.
      *
      * @param websafeGroupId the websafe group id
      * @param name           the name
@@ -195,13 +195,13 @@ final class HashTagEndpoint {
      * @throws ServiceException the service exception
      */
     @ApiMethod(
-            name = "hashtagGroups.update",
-            path = "hashtagGroups/{groupId}",
+            name = "tagGroups.update",
+            path = "tagGroups/{groupId}",
             httpMethod = ApiMethod.HttpMethod.PUT)
-    public HashTagGroup updateGroup(@Named("groupId") String websafeGroupId,
-                                    @Nullable @Named("name") String name,
-                                    HttpServletRequest request,
-                                    User user)
+    public TagGroup updateGroup(@Named("groupId") String websafeGroupId,
+                                @Nullable @Named("name") String name,
+                                HttpServletRequest request,
+                                User user)
             throws ServiceException {
 
         Validator.builder()
@@ -213,15 +213,15 @@ final class HashTagEndpoint {
     }
 
     /**
-     * Deletes the specified {@code HashTagGroup}.
+     * Deletes the specified {@code TagGroup}.
      *
      * @param websafeGroupId the websafe group id
      * @param user           the user
      * @throws ServiceException the service exception
      */
     @ApiMethod(
-            name = "hashtagGroups.delete",
-            path = "hashtagGroups/{groupId}",
+            name = "tagGroups.delete",
+            path = "tagGroups/{groupId}",
             httpMethod = ApiMethod.HttpMethod.DELETE)
     public void deleteGroup(@Named("groupId") String websafeGroupId, User user)
             throws ServiceException {
@@ -236,10 +236,10 @@ final class HashTagEndpoint {
         getHashTagController().deleteGroup(websafeGroupId, user);
     }
 
-    private HashTagController getHashTagController() {
-        return HashTagController.newInstance(
-                HashTagService.newInstance(),
-                HashTagShardService.newInstance()
+    private TagController getHashTagController() {
+        return TagController.create(
+                TagService.create(),
+                TagShardService.create()
         );
     }
 }

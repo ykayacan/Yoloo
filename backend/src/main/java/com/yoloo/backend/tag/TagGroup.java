@@ -1,4 +1,4 @@
-package com.yoloo.backend.hashtag;
+package com.yoloo.backend.tag;
 
 import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.ApiResourceProperty;
@@ -23,7 +23,7 @@ import lombok.experimental.Wither;
 @Builder
 @Wither
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class HashTagGroup {
+public class TagGroup {
 
     public static final String FIELD_NAME = "name";
 
@@ -35,13 +35,13 @@ public class HashTagGroup {
     private String name;
 
     /**
-     * Total number of hashTags in the group.
+     * Total number of Tags in the group.
      *
      * Updated in a given interval.
      */
     @Index
     @NonFinal
-    private long totalHashTagCount;
+    private long totalTagCount;
 
     /**
      * Total number of questions in hashTag group.
@@ -53,8 +53,8 @@ public class HashTagGroup {
     private long totalQuestionCount;
 
     @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-    public Key<HashTagGroup> getKey() {
-        return Key.create(HashTagGroup.class, id);
+    public Key<TagGroup> getKey() {
+        return Key.create(TagGroup.class, id);
     }
 
     @JsonProperty("id")

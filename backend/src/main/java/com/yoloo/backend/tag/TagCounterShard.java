@@ -1,4 +1,4 @@
-package com.yoloo.backend.hashtag;
+package com.yoloo.backend.tag;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cache;
@@ -20,7 +20,7 @@ import lombok.experimental.Wither;
 @Builder
 @Wither
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class HashTagCounterShard {
+public class TagCounterShard {
 
     public static final int SHARD_COUNT = ShardConfig.HASHTAG_SHARD_COUNTER;
 
@@ -33,7 +33,7 @@ public class HashTagCounterShard {
     @Min(0)
     private long questions;
 
-    public Key<HashTagCounterShard> getKey() {
-        return Key.create(HashTagCounterShard.class, id);
+    public Key<TagCounterShard> getKey() {
+        return Key.create(TagCounterShard.class, id);
     }
 }
