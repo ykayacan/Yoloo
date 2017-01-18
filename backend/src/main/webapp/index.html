@@ -130,10 +130,10 @@
             // We're probably running against the DevAppServer
             apiRoot = 'http://' + window.location.host + '/_ah/api';
       }
-      var callback = function() {
+      var value = function() {
         enableClick();
       }
-      gapi.client.load(apiName, apiVersion, callback, apiRoot);
+      gapi.client.load(apiName, apiVersion, value, apiRoot);
     }
 
 </script>

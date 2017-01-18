@@ -11,6 +11,11 @@
     </datastore-index>
 
     <datastore-index ancestor="false" kind="Question">
+        <property name="created" direction="desc" />
+        <property name="categories" direction="asc"/>
+    </datastore-index>
+
+    <datastore-index ancestor="false" kind="Question">
         <property name="bounty" direction="desc"/>
         <property name="created" direction="desc" />
     </datastore-index>

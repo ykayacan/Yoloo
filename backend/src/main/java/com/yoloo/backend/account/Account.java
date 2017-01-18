@@ -4,8 +4,6 @@ import com.google.api.server.spi.config.AnnotationBoolean;
 import com.google.api.server.spi.config.ApiResourceProperty;
 import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Link;
-import com.google.appengine.repackaged.org.codehaus.jackson.annotate.JsonProperty;
-
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.annotation.Cache;
@@ -14,97 +12,166 @@ import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
-import com.yoloo.backend.algorithm.bcrypt.BCrypt;
-
-import org.joda.time.DateTime;
-
+import com.yoloo.backend.topic.Topic;
+import com.yoloo.backend.util.Deref;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 import lombok.experimental.Wither;
+import org.joda.time.DateTime;
 
 @Entity
 @Cache
 @Value
 @Builder
-@Wither
+@NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Account {
 
-    public static final String FIELD_EMAIL = "email";
+  public static final String FIELD_EMAIL = "email";
+  public static final String FIELD_USERNAME = "username";
+  public static final String FIELD_FIREBASE_UUID = "firebaseUUID";
 
-    @Id
-    @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-    private long id;
+  @Id
+  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+  private long id;
 
-    @Index
-    private String username;
+  @Index
+  @Wither
+  @NonFinal
+  private String username;
 
-    @Index
-    private Email email;
+  @Wither
+  private String realname;
 
-    @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-    private String password;
+  @Index
+  @Wither
+  @NonFinal
+  private Email email;
 
-    @Index
-    private Provider provider;
+  @Index
+  @NonFinal
+  private String firebaseUUID;
 
-    private Link avatarUrl;
+  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+  private String password;
 
-    @Load
-    @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-    private Ref<AccountDetail> detail;
+  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+  private Provider provider;
 
-    @Index
-    private DateTime created;
+  @Wither
+  private Link avatarUrl;
 
-    // Extra fields
+  @Load(ShardGroup.class)
+  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+  private List<Ref<AccountCounterShard>> shardRefs;
 
-    @Ignore
+  @Index
+  @NonFinal
+  private DateTime created;
+
+  private String locale;
+
+  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+  private Gender gender;
+
+  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+  private DateTime birthDate;
+
+  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+  private List<Key<Topic>> topicKeys;
+
+  // Extra fields
+
+  @Wither
+  @Ignore
+  private boolean isFollowing;
+
+  @Wither
+  @Ignore
+  private Counts counts;
+
+  @Ignore
+  @Wither
+  private Achievements achievements;
+
+  @ApiResourceProperty(name = "id")
+  public String getWebsafeId() {
+    return getKey().toWebSafeString();
+  }
+
+  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+  public Key<Account> getKey() {
+    return Key.create(Account.class, id);
+  }
+
+  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+  public List<AccountCounterShard> getShards() {
+    return Deref.deref(getShardRefs());
+  }
+
+  public enum Provider {
+    /**
+     * Google provider.
+     */
+    GOOGLE(1),
+    /**
+     * Facebook provider.
+     */
+    FACEBOOK(2),
+    /**
+     * Yoloo provider.
+     */
+    YOLOO(3);
+
+    private final int provider;
+
+    Provider(int provider) {
+      this.provider = provider;
+    }
+  }
+
+  public enum Gender {
+    /**
+     * Male gender.
+     */
+    MALE,
+    /**
+     * Female gender.
+     */
+    FEMALE,
+    /**
+     * Unspecified gender.
+     */
+    UNSPECIFIED
+  }
+
+  @NoArgsConstructor(access = AccessLevel.PRIVATE)
+  public static class ShardGroup {
+  }
+
+  @Data
+  @Builder
+  @NoArgsConstructor(access = AccessLevel.PRIVATE)
+  @AllArgsConstructor(access = AccessLevel.PRIVATE)
+  public static final class Counts {
     private long followings;
-
-    @Ignore
     private long followers;
-
-    @Ignore
     private long questions;
+  }
 
-    @Ignore
-    private boolean isFollowing;
-
-    @JsonProperty("id")
-    public String getWebsafeId() {
-        return getKey().toWebSafeString();
-    }
-
-    @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-    public Key<Account> getKey() {
-        return Key.create(Account.class, id);
-    }
-
-    public boolean isValidPassword(String password) {
-        return BCrypt.checkpw(password, this.password);
-    }
-
-    public enum Provider {
-        /**
-         * Google provider.
-         */
-        GOOGLE(1),
-        /**
-         * Facebook provider.
-         */
-        FACEBOOK(2),
-        /**
-         * Yoloo provider.
-         */
-        YOLOO(3);
-
-        private final int provider;
-
-        Provider(int provider) {
-            this.provider = provider;
-        }
-    }
+  @Data
+  @Builder
+  @NoArgsConstructor(access = AccessLevel.PRIVATE)
+  @AllArgsConstructor(access = AccessLevel.PRIVATE)
+  public static final class Achievements {
+    private int level;
+    private int points;
+    private int bounties;
+  }
 }

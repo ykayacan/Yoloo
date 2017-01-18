@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+
+  <android.support.constraint.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="40dp"
+    android:paddingBottom="16dp">
+
+    <ImageView
+      android:id="@+id/iv_login_yoloo_logo"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      app:layout_constraintDimensionRatio="1:1"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      app:srcCompat="@drawable/ic_yoloo_logo_white" />
+
+    <TextView
+      android:id="@+id/tv_login_welcome_title"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="8dp"
+      android:text="@string/label_welcome_title"
+      android:textAppearance="@style/TextAppearance.AppCompat.Title.Inverse"
+      android:textSize="30sp"
+      app:layout_constraintLeft_toLeftOf="@+id/iv_login_yoloo_logo"
+      app:layout_constraintRight_toRightOf="@+id/iv_login_yoloo_logo"
+      app:layout_constraintTop_toBottomOf="@+id/iv_login_yoloo_logo" />
+
+    <TextView
+      android:id="@+id/tv_login_welcome_desc"
+      android:layout_width="295dp"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="16dp"
+      android:text="@string/label_welcome_description"
+      android:textAlignment="center"
+      android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+      android:textColor="@android:color/white"
+      android:textSize="16sp"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/tv_login_welcome_title" />
+
+    <Button
+      android:id="@+id/btn_login_start_using"
+      style="@style/Widget.AppCompat.Button.Colored"
+      android:layout_width="168dp"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="24dp"
+      android:text="@string/action_start_using"
+      app:layout_constraintLeft_toLeftOf="@+id/tv_login_welcome_desc"
+      app:layout_constraintRight_toRightOf="@+id/tv_login_welcome_desc"
+      app:layout_constraintTop_toBottomOf="@+id/tv_login_welcome_desc" />
+
+    <TextView
+      android:id="@+id/tv_login_action_login"
+      style="@style/TextAppearance.AppCompat.Body1"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="8dp"
+      android:text="@string/action_login_text"
+      android:textColor="@android:color/white"
+      app:layout_constraintLeft_toLeftOf="@+id/btn_login_start_using"
+      app:layout_constraintRight_toRightOf="@+id/btn_login_start_using"
+      app:layout_constraintTop_toBottomOf="@+id/btn_login_start_using" />
+
+  </android.support.constraint.ConstraintLayout>
+
+</ScrollView>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Labels -->
+  <string name="label_feed_toolbar_title">Home</string>
+  <string name="label_feed_bookmark_item">Bookmark</string>
+  <string name="label_feed_edit_item">Edit</string>
+  <string name="label_feed_delete_item">Delete</string>
+
+  <string name="label_feed_trending_now">Trending now</string>
+  <string name="label_feed_explore">Explore</string>
+
+  <!-- Hints -->
+  <string name="hint_feed_item_username">Demo user</string>
+  <string name="hint_feed_item_text">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+    Aliquam ac neque eget erat facilisis mollis. Duis in volutpat mi.
+    In egestas suscipit auctor.
+  </string>
+
+  <!-- Actions -->
+  <string name="action_share">Share</string>
+  <string name="action_bounty_questions">Bounty Questions</string>
+  <string name="action_ask_question">Ask question</string>
+  <string name="action_share_trip">Share trip</string>
+
+  <!-- Transitions -->
+  <string name="transition_content_photo">transition_content_photo</string>
+</resources>

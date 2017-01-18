@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "175355244637",
+    "firebase_url": "https://yoloo-151719.firebaseio.com",
+    "project_id": "yoloo-151719",
+    "storage_bucket": "yoloo-151719.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:175355244637:android:9ba7b4c8da97a4ad",
+        "android_client_info": {
+          "package_name": "com.yoloo.android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "175355244637-3aq6ffehp3lqch8l91h77k1a1g4ghbj1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.yoloo.android",
+            "certificate_hash": "4DF762525E62EC0961403E7929E8689E34E16994"
+          }
+        },
+        {
+          "client_id": "175355244637-485ebjcca507s7rgfvehf39idg9cchmj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3W6DWYfKLip7l-7bmnucFSPAbg2OciRE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "175355244637-485ebjcca507s7rgfvehf39idg9cchmj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

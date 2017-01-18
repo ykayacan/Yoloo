@@ -3,7 +3,7 @@ package com.yoloo.backend.validator.rule.notification;
 import com.google.api.server.spi.response.ConflictException;
 
 import com.googlecode.objectify.Key;
-import com.yoloo.backend.fcm.RegistrationRecord;
+import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.validator.Rule;
 
 import static com.yoloo.backend.OfyService.ofy;
@@ -18,7 +18,7 @@ public class DeviceRegistrationConflictRule implements Rule<ConflictException> {
 
     @Override
     public void validate() throws ConflictException {
-        final Key<?> key = ofy().load().type(RegistrationRecord.class)
+        final Key<?> key = ofy().load().type(DeviceRecord.class)
                 .filter("regId =", regId)
                 .keys().first().now();
 

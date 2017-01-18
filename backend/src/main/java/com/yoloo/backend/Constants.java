@@ -15,12 +15,12 @@ public final class Constants {
     /**
      * Firebase app url.
      */
-    public static final String FIREBASE_APP_URL = "https://yoloo-app.firebaseio.com";
+    public static final String FIREBASE_APP_URL = "https://yoloo-151719.firebaseio.com";
 
     /**
      * Firebase secret path.
      */
-    public static final String FIREBASE_SECRET_JSON_PATH = "/WEB-INF/yolooapp-server.json";
+    public static final String FIREBASE_SECRET_JSON_PATH = "/WEB-INF/yoloo_service_account.json";
 
     /**
      * Google Cloud Messaging API key.
@@ -55,7 +55,7 @@ public final class Constants {
     /**
      * API package name.
      */
-    public static final String API_OWNER = "modal.backend.android.backpackers.com";
+    public static final String API_OWNER = "modal.backend.android.yoloo.com";
 
     /**
      * API package path.

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <group android:id="@+id/group1">
+    <item
+      android:id="@+id/action_post_bookmark"
+      android:title="@string/label_feed_bookmark_item" />
+    <item
+      android:id="@+id/action_post_update"
+      android:title="@string/label_feed_edit_item" />
+  </group>
+  <group android:id="@+id/group2">
+    <item
+      android:id="@+id/action_post_delete"
+      android:title="@string/label_feed_delete_item" />
+  </group>
+</menu>

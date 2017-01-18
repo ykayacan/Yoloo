@@ -1,3 +1,10 @@
 <resources>
-    <string name="app_name">Yoloo</string>
+  <string name="app_name">Yoloo</string>
+
+  <string name="lorem_ipsum">
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eget mi massa.
+    Proin interdum malesuada sodales. Quisque porta nisl eu dui consequat tempor.
+    Nulla ligula nulla, ullamcorper eu dictum non, commodo et ex. Nullam sit amet leo pharetra,
+    gravida erat non, hendrerit nulla.
+  </string>
 </resources>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="48dp"
+  android:layout_height="48dp"
+  android:background="?attr/actionBarItemBackground"
+  android:clickable="true"
+  android:focusable="true"
+  android:minHeight="48dp"
+  android:minWidth="48dp">
+
+  <ImageView
+    android:id="@+id/menu_badge_icon"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:layout_marginLeft="12dp"
+    android:layout_marginRight="12dp"
+    android:scaleType="center"
+    android:tint="@android:color/white" />
+
+  <com.yoloo.android.feature.ui.widget.badgeview.MaterialBadgeTextView
+    android:id="@+id/menu_badge"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="top|end"
+    android:ellipsize="none"
+    android:gravity="center"
+    android:maxLines="1"
+    android:textColor="@android:color/white"
+    android:textSize="12sp"
+    android:textStyle="bold"
+    app:badge_backgroundColor="#EF4738" />
+
+</FrameLayout>

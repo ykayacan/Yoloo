@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="label_bounty_desc">
+    You will increase the chance of getting answered by asking bounty questions.
+  </string>
+</resources>

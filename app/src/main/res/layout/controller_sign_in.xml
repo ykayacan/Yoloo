@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+
+  <android.support.constraint.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <android.support.constraint.Guideline
+      android:id="@+id/gl_login_top"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      app:layout_constraintGuide_percent=".2" />
+
+    <LinearLayout
+      android:id="@+id/layout_login_input_container"
+      android:layout_width="280dp"
+      android:layout_height="wrap_content"
+      android:background="@drawable/linearlayout_login_input_container_bg"
+      android:orientation="vertical"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/gl_login_top">
+
+      <EditText
+        android:id="@+id/et_login_email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/edittext_login_bg"
+        android:hint="@string/hint_email"
+        android:inputType="textEmailAddress" />
+
+      <EditText
+        android:id="@+id/et_login_password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/edittext_login_bg"
+        android:hint="@string/hint_password"
+        android:inputType="textPassword" />
+
+      <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/background_lightish" />
+
+      <Button
+        android:id="@+id/btn_login_ready"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/action_sign_in"
+        android:textAllCaps="false"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+        android:textColor="@color/accent"
+        android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <TextView
+      android:id="@+id/tv_login_or"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:padding="16dp"
+      android:text="@string/label_or"
+      android:textColor="@android:color/white"
+      app:layout_constraintLeft_toLeftOf="@+id/btn_facebook_sign_in"
+      app:layout_constraintRight_toRightOf="@+id/btn_facebook_sign_in"
+      app:layout_constraintTop_toBottomOf="@+id/layout_login_input_container" />
+
+    <Button
+      android:id="@+id/btn_facebook_sign_in"
+      style="@style/Yoloo.Button.AccountChooser.FacebookButton"
+      android:layout_width="240dp"
+      android:layout_height="48dp"
+      android:text="@string/action_facebook_sing_in"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/tv_login_or" />
+
+    <Button
+      android:id="@+id/btn_google_sign_in"
+      style="@style/Yoloo.Button.AccountChooser.GoogleButton"
+      android:layout_width="240dp"
+      android:layout_height="48dp"
+      android:layout_marginTop="8dp"
+      android:text="@string/action_google_sign_in"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/btn_facebook_sign_in" />
+
+  </android.support.constraint.ConstraintLayout>
+
+</ScrollView>

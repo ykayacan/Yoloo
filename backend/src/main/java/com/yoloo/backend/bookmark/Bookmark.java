@@ -8,14 +8,12 @@ import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Parent;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.question.Question;
-
-import org.joda.time.DateTime;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.Wither;
+import org.joda.time.DateTime;
 
 @Entity
 @Cache
@@ -25,21 +23,21 @@ import lombok.experimental.Wither;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Bookmark {
 
-    public static final String FIELD_CREATED = "created";
+  public static final String FIELD_CREATED = "created";
 
-    /**
-     * websafe question id.
-     */
-    @Id
-    private String id;
+  /**
+   * websafe question id.
+   */
+  @Id
+  private String id;
 
-    @Parent
-    private Key<Account> parentUserKey;
+  @Parent
+  private Key<Account> parentUserKey;
 
-    @Index
-    private DateTime created;
+  @Index
+  private DateTime created;
 
-    public Key<Question> getSavedQuestionKey() {
-        return Key.create(id);
-    }
+  public Key<Question> getSavedQuestionKey() {
+    return Key.create(id);
+  }
 }

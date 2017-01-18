@@ -1,89 +1,157 @@
 apply plugin: 'com.android.application'
+apply plugin: 'me.tatarka.retrolambda'
+apply plugin: 'realm-android'
 apply from: '../config/quality/quality.gradle'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.1"
-    defaultConfig {
-        applicationId "com.yoloo.android"
-        minSdkVersion 16
-        targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+  compileSdkVersion 25
+  buildToolsVersion "25.0.2"
+  defaultConfig {
+    applicationId "com.yoloo.android"
+    minSdkVersion 16
+    targetSdkVersion 25
+    versionCode 1
+    versionName "1.0"
+    testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    // Enabling multidex support.
+    multiDexEnabled true
+
+    vectorDrawables.useSupportLibrary = true;
+  }
+
+  dexOptions {
+    javaMaxHeapSize "4g"
+  }
+
+  productFlavors {
+    // Define separate dev and prod product flavors.
+    dev {
+      // dev utilizes minSDKVersion = 21 to allow the Android gradle plugin
+      // to pre-dex each module and produce an APK that can be tested on
+      // Android Lollipop without time consuming dex merging processes.
+      minSdkVersion 21
+    }
+    prod {
+      // The actual minSdkVersion for the application.
+      minSdkVersion 16
+    }
+  }
+
+  signingConfigs {
+    // You must set up an environment var before release signing
+    // Run: export APP_KEY={password}
+    release {
+      storeFile file('keystore/release.keystore')
+      keyAlias 'alias'
+      storePassword "$System.env.APP_KEY"
+      keyPassword "$System.env.APP_KEY"
     }
 
-    signingConfigs {
-        // You must set up an environment var before release signing
-        // Run: export APP_KEY={password}
-        // TODO Add your release keystore in /keystore folder
-        release {
-            storeFile file('keystore/release.keystore')
-            keyAlias 'alias'
-            storePassword "$System.env.APP_KEY"
-            keyPassword "$System.env.APP_KEY"
-        }
+    debug {
+      storeFile file('keystore/debug.keystore')
+      keyAlias 'androiddebugkey'
+      storePassword 'android'
+      keyPassword 'android'
+    }
+  }
 
-        debug {
-            storeFile file('keystore/debug.keystore')
-            keyAlias 'androiddebugkey'
-            storePassword 'android'
-            keyPassword 'android'
-        }
+  buildTypes {
+    release {
+      signingConfig signingConfigs.release
+
+      minifyEnabled true
+      shrinkResources true
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
 
-    buildTypes {
-        release {
-            signingConfig signingConfigs.release
-
-            minifyEnabled true
-            shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-
-        debug {
-            versionNameSuffix " Debug"
-            debuggable true
-        }
+    debug {
+      versionNameSuffix " Debug"
+      debuggable true
     }
+  }
 
-    configurations.all {
-        resolutionStrategy.force 'com.google.code.findbugs:jsr305:3.0.1'
-    }
+  lintOptions {
+    checkReleaseBuilds true
+    abortOnError false
+  }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
-    }
+  configurations.all {
+    resolutionStrategy.force 'com.google.code.findbugs:jsr305:3.0.1'
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
 }
 
+def SUPPORT_LIBRARY_VERSION = "25.1.0"
+def FIREBASE_VERSION = "10.0.1"
+def PLAY_SERVICES_VERSION = "10.0.1"
+
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile project(path: ':backend', configuration: 'android-endpoints')
-    compile 'com.android.support:appcompat-v7:25.0.1'
-    compile 'com.google.firebase:firebase-core:10.0.0'
-    compile 'com.google.firebase:firebase-auth:10.0.0'
-    compile 'com.google.firebase:firebase-messaging:10.0.0'
-    compile 'com.google.firebase:firebase-crash:10.0.0'
-    compile 'com.google.firebase:firebase-invites:10.0.0'
+  compile fileTree(include: ['*.jar'], dir: 'libs')
+  compile project(path: ':backend', configuration: 'android-endpoints')
 
-    compile 'com.bluelinelabs:conductor:2.0.5-SNAPSHOT'
-    compile 'com.bluelinelabs:conductor-support:2.0.5-SNAPSHOT'
+  compile "com.android.support:appcompat-v7:$SUPPORT_LIBRARY_VERSION"
+  compile "com.android.support:recyclerview-v7:$SUPPORT_LIBRARY_VERSION"
+  compile "com.android.support:design:$SUPPORT_LIBRARY_VERSION"
+  compile "com.android.support:cardview-v7:$SUPPORT_LIBRARY_VERSION"
 
-    compile 'com.jakewharton:butterknife:8.4.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
+  compile 'com.android.support:multidex:1.0.1'
 
-    compile 'io.reactivex.rxjava2:rxjava:2.0.1'
-    compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+  compile "com.google.firebase:firebase-core:$FIREBASE_VERSION"
+  compile "com.google.firebase:firebase-auth:$FIREBASE_VERSION"
+  /*compile "com.google.firebase:firebase-messaging:$FIREBASE_VERSION"
+  compile "com.google.firebase:firebase-crash:$FIREBASE_VERSION"
+  compile "com.google.firebase:firebase-invites:$FIREBASE_VERSION"*/
 
-    compile 'org.magicwerk:brownies-collections:0.9.13'
+  compile "com.google.android.gms:play-services-auth:$PLAY_SERVICES_VERSION"
+  compile "com.google.android.gms:play-services-plus:$PLAY_SERVICES_VERSION"
 
-    compile 'com.google.code.findbugs:jsr305:3.0.1'
-    testCompile 'junit:junit:4.12'
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
+  compile('com.facebook.android:facebook-android-sdk:4.18.0', {
+    exclude group: 'com.android.support'
+  })
+
+  compile('com.bluelinelabs:conductor:2.0.6-SNAPSHOT', {
+    exclude group: 'com.android.support', module: 'support-annotations'
+  })
+  compile 'com.bluelinelabs:conductor-support:2.0.6-SNAPSHOT'
+
+  compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
+  compile 'com.github.bumptech.glide:glide:3.7.0'
+  compile 'com.squareup.okhttp3:okhttp:3.5.0'
+  compile 'com.jakewharton:butterknife:8.4.0'
+  compile 'io.reactivex.rxjava2:rxjava:2.0.4'
+  compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+  compile 'com.airbnb.android:epoxy:1.5.0'
+  compile 'com.jakewharton.timber:timber:4.5.0'
+  compile('com.yalantis:ucrop:2.2.0', {
+    exclude group: 'com.square.okhttp3'
+  })
+  compile 'com.github.jksiezni.permissive:permissive:0.2'
+  compile('com.sandrios.android:sandriosCamera:1.0.8', {
+    exclude group: 'com.yalantis'
+    exclude group: 'com.squareup.otto'
+    exclude group: 'com.bumptech.glide'
+    exclude group: 'gun0912.ted'
+  })
+
+  annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
+  annotationProcessor 'com.airbnb.android:epoxy-processor:1.5.0'
+  annotationProcessor 'dk.ilios:realmfieldnameshelper:1.1.0'
+
+  debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5'
+
+  testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
+  testCompile 'com.google.code.findbugs:jsr305:3.0.1'
+  testCompile 'junit:junit:4.12'
+
+  androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    exclude group: 'com.android.support', module: 'support-annotations'
+  })
 }
 
 // Put google_services.json
-//apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.gms.google-services'

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/root_view"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:foreground="?android:attr/selectableItemBackgroundBorderless">
+
+  <ImageView
+    android:id="@+id/iv_category_bg"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:layout_gravity="center"
+    android:foreground="@drawable/selector_category"
+    android:scaleType="centerCrop"
+    app:layout_constraintDimensionRatio="1:1"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    tools:src="@drawable/america" />
+
+  <View
+    android:id="@+id/view_category_checkmark"
+    android:layout_width="36dp"
+    android:layout_height="36dp"
+    android:layout_gravity="end"
+    android:layout_marginEnd="16dp"
+    android:layout_marginRight="16dp"
+    android:layout_marginTop="16dp"
+    android:background="@drawable/layer_checkmark"
+    android:visibility="gone"
+    app:layout_constraintRight_toRightOf="@+id/iv_category_bg"
+    app:layout_constraintTop_toTopOf="parent"
+    tools:visibility="visible" />
+
+  <com.yoloo.android.feature.ui.widget.CompatTextView
+    android:id="@+id/tv_category_text"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:gravity="center"
+    android:textAppearance="@style/TextAppearance.AppCompat.Title"
+    android:textColor="@color/catalog_category_text"
+    app:layout_constraintBottom_toBottomOf="@+id/iv_category_bg"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintVertical_bias="0.72"
+    tools:text="@string/topic_america" />
+
+</android.support.constraint.ConstraintLayout>

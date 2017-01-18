@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Labels -->
+  <string name="label_catalog_title">Select a Category</string>
+  <string name="label_main_catalog_title">All Categories</string>
+  <string name="label_destination">Destination</string>
+  <string name="label_theme">Theme</string>
+</resources>

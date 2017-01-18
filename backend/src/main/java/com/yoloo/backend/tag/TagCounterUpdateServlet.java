@@ -28,23 +28,23 @@ public class TagCounterUpdateServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
-        List<Tag> tagEntities = ofy().load().type(Tag.class).list();
+        List<Tag> tags = ofy().load().type(Tag.class).list();
 
         int index = 0;
-        for (Tag tag : tagEntities) {
+        for (Tag tag : tags) {
             long questions = 0;
 
             for (TagCounterShard shard : tag.getShards()) {
                 questions += shard.getQuestions();
             }
 
-            tagEntities.add(index, tag.withQuestions(questions));
+            tags.add(index, tag.withQuestions(questions));
             index++;
         }
 
 
 
-        ofy().save().entities(tagEntities);
+        ofy().save().entities(tags);
 
         /*TagShardService service = TagShardService.newInstance();
 

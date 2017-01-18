@@ -1,195 +1,187 @@
 package com.yoloo.backend.question;
 
+import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Link;
-import com.google.appengine.repackaged.com.google.common.base.Pair;
+import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
-
+import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.KeyRange;
+import com.googlecode.objectify.Ref;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.base.GaeTestBase;
-import com.yoloo.backend.category.Category;
-import com.yoloo.backend.question.sort_strategy.QuestionSorter;
+import com.yoloo.backend.account.AccountCounterShard;
+import com.yoloo.backend.account.AccountModel;
+import com.yoloo.backend.account.AccountShardService;
+import com.yoloo.backend.comment.CommentController;
+import com.yoloo.backend.comment.CommentControllerFactory;
+import com.yoloo.backend.device.DeviceRecord;
+import com.yoloo.backend.gamification.GamificationService;
+import com.yoloo.backend.gamification.Tracker;
 import com.yoloo.backend.shard.ShardUtil;
+import com.yoloo.backend.tag.Tag;
+import com.yoloo.backend.tag.TagController;
+import com.yoloo.backend.tag.TagControllerFactory;
+import com.yoloo.backend.tag.TagGroup;
+import com.yoloo.backend.topic.Topic;
+import com.yoloo.backend.topic.TopicController;
+import com.yoloo.backend.topic.TopicControllerFactory;
+import com.yoloo.backend.util.TestBase;
+import com.yoloo.backend.util.TestObjectifyService;
 import com.yoloo.backend.vote.Vote;
-
-import org.joda.time.DateTime;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-
-import java.util.ArrayList;
-import java.util.Collections;
+import com.yoloo.backend.vote.VoteController;
+import com.yoloo.backend.vote.VoteControllerFactory;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.UUID;
+import org.joda.time.DateTime;
+import org.junit.Test;
 
-import static com.yoloo.backend.OfyService.ofy;
+import static com.yoloo.backend.util.TestObjectifyService.fact;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 
-@RunWith(JUnit4.class)
-public class QuestionUtilTest extends GaeTestBase {
+public class QuestionUtilTest extends TestBase {
 
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-    }
+  private static final String USER_EMAIL = "test@gmail.com";
+  private static final String USER_AUTH_DOMAIN = "gmail.com";
 
-    @Override
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-    }
+  private Account owner;
+  private Question question;
 
-    @Override
-    protected void registerClasses(ImmutableList.Builder<Class<?>> builder) {
-        builder.add(Question.class)
-                .add(Account.class)
-                .add(QuestionCounterShard.class)
-                .add(Category.class)
-                .add(Vote.class);
-    }
+  private QuestionController questionController;
+  private CommentController commentController;
+  private TagController tagController;
+  private TopicController topicController;
+  private VoteController voteController;
 
-    @Test
-    public void testIfCountAggregationIsCorrectForSinglePost() throws Exception {
-        Key<Account> userKey = ofy().factory().allocateId(Account.class);
-        Key<Question> postKey = ofy().factory().allocateId(userKey, Question.class);
+  @Override
+  public void setUpGAE() {
+    super.setUpGAE();
 
-        ImmutableList.Builder<Object> builder = ImmutableList.builder();
+    helper.setEnvIsLoggedIn(true)
+        .setEnvIsAdmin(true)
+        .setEnvAuthDomain(USER_AUTH_DOMAIN)
+        .setEnvEmail(USER_EMAIL);
+  }
 
-        Question post = createPost(userKey, postKey);
+  @Override
+  public void setUp() {
+    super.setUp();
 
-        builder.add(post).addAll(QuestionShardService.newInstance().createShards(postKey));
+    questionController = QuestionControllerFactory.of().create();
+    commentController = CommentControllerFactory.of().create();
+    tagController = TagControllerFactory.of().create();
+    topicController = TopicControllerFactory.of().create();
+    voteController = VoteControllerFactory.of().create();
 
-        ofy().save().entities(builder.build()).now();
+    AccountModel model = createAccount();
 
-        int shardNum = new Random().nextInt(QuestionCounterShard.SHARD_COUNT - 1 + 1) + 1;
+    owner = model.getAccount();
+    DeviceRecord record = createRecord(owner);
+    Tracker tracker = GamificationService.create().create(owner.getKey());
 
-        QuestionCounterShard shard = ofy().load()
-                .type(QuestionCounterShard.class)
-                .id(ShardUtil.generateShardId(postKey, shardNum)).now();
-        shard.addVotes(10);
+    ImmutableList<Object> saveList = ImmutableList.builder()
+        .add(owner)
+        .addAll(model.getShards())
+        .add(record)
+        .add(tracker)
+        .build();
 
-        ofy().save().entity(shard).now();
+    TestObjectifyService.ofy().save().entities(saveList).now();
 
-        Map<Key<Question>, Question> map = Maps.newLinkedHashMap();
-        map.put(postKey, post);
+    User user = new User(USER_EMAIL, USER_AUTH_DOMAIN, owner.getWebsafeId());
 
-        map = QuestionUtil.aggregateCounts(map, QuestionShardService.newInstance());
+    Topic europe = topicController.add("europe", Topic.Type.THEME, user);
 
-        assertEquals(10, map.get(postKey).getVotes());
-    }
+    TagGroup passport = tagController.addGroup("passport", user);
 
-    @Test
-    public void testMinAndMaxDatedPostPairByHotOrder() throws Exception {
-        Key<Account> userKey = ofy().factory().allocateId(Account.class);
-        KeyRange<Question> postKeyRange = ofy().factory().allocateIds(userKey, Question.class, 6);
+    Tag visa = tagController.addTag("visa", "en", passport.getWebsafeId(), user);
 
-        List<Question> list = new ArrayList<>();
+    question = questionController.add(createQuestionWrapper(), user);
+  }
 
-        for (Key<Question> postKey : postKeyRange) {
-            list.add(createPost(userKey, postKey));
+  @Test
+  public void testMergeCountsSingleQuestion() throws Exception {
+    final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-            Thread.sleep(50);
-        }
+    voteController.vote(question.getWebsafeId(), Vote.Direction.UP, user);
+    commentController.add(question.getWebsafeId(), "Hello", Optional.absent(), user);
 
-        Collections.shuffle(list);
+    Question merged = QuestionUtil.mergeCounts(question).blockingSingle();
 
-        Pair<Question, Question> pair =
-                QuestionUtil.getPostPairOrderedByDate(list, QuestionSorter.HOT);
+    assertNotNull(merged);
+    assertEquals(1, merged.getComments());
+    assertEquals(1, merged.getVotes());
+  }
 
-        assertTrue(pair.first.getCreated().isBefore(pair.second.getCreated()));
-    }
+  @Test
+  public void testMergeCountsMultipleQuestions() throws Exception {
+    final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    @Test
-    public void testMinAndMaxDatedPostPairByNewestOrder() throws Exception {
-        Key<Account> userKey = ofy().factory().allocateId(Account.class);
-        KeyRange<Question> postKeyRange = ofy().factory().allocateIds(userKey, Question.class, 6);
+    List<Question> questions = Lists.newArrayList();
+    questions.add(question);
 
-        List<Question> list = new ArrayList<>();
+    voteController.vote(question.getWebsafeId(), Vote.Direction.UP, user);
+    commentController.add(question.getWebsafeId(), "Hello", Optional.absent(), user);
 
-        for (Key<Question> postKey : postKeyRange) {
-            list.add(createPost(userKey, postKey));
+    Question question2 = questionController.add(createQuestionWrapper(), user);
+    questions.add(question2);
 
-            Thread.sleep(50);
-        }
+    voteController.vote(question2.getWebsafeId(), Vote.Direction.UP, user);
+    commentController.add(question2.getWebsafeId(), "Hello", Optional.absent(), user);
 
-        Pair<Question, Question> pair =
-                QuestionUtil.getPostPairOrderedByDate(list, QuestionSorter.NEWEST);
+    Question question3 = questionController.add(createQuestionWrapper(), user);
+    questions.add(question3);
 
-        assertTrue(pair.first.getCreated().isBefore(pair.second.getCreated()));
-    }
+    voteController.vote(question3.getWebsafeId(), Vote.Direction.UP, user);
+    commentController.add(question3.getWebsafeId(), "Hello", Optional.absent(), user);
 
-    @Test
-    public void testMinAndMaxDatedPostPairByUnansweredOrder() throws Exception {
-        Key<Account> userKey = ofy().factory().allocateId(Account.class);
-        KeyRange<Question> postKeyRange = ofy().factory().allocateIds(userKey, Question.class, 6);
+    QuestionUtil.mergeCounts(questions)
+        .forEach(question1 -> {
+          assertNotNull(question1);
+          assertEquals(1, question1.getComments());
+          assertEquals(1, question1.getVotes());
+        });
+  }
 
-        List<Question> list = new ArrayList<>();
+  private AccountModel createAccount() {
+    final Key<Account> ownerKey = fact().allocateId(Account.class);
 
-        for (Key<Question> postKey : postKeyRange) {
-            list.add(createPost(userKey, postKey));
+    AccountShardService ass = AccountShardService.create();
 
-            Thread.sleep(50);
-        }
+    List<AccountCounterShard> shards = ass.createShards(ownerKey);
 
-        Collections.shuffle(list);
+    List<Ref<AccountCounterShard>> refs = ShardUtil.createRefs(shards).toList().blockingGet();
 
-        Pair<Question, Question> pair =
-                QuestionUtil.getPostPairOrderedByDate(list, QuestionSorter.UNANSWERED);
+    Account account = Account.builder()
+        .id(ownerKey.getId())
+        .avatarUrl(new Link("Test avatar"))
+        .email(new Email(USER_EMAIL))
+        .username("Test user")
+        .shardRefs(refs)
+        .created(DateTime.now())
+        .build();
 
-        assertTrue(pair.first.getCreated().isBefore(pair.second.getCreated()));
-    }
+    return AccountModel.builder()
+        .account(account)
+        .shards(shards)
+        .build();
+  }
 
-    @Test
-    public void testShowVoteDirectionOfAuthenticatedUser() throws Exception {
-        Key<Account> userKey = ofy().factory().allocateId(Account.class);
-        Key<Question> postKey = ofy().factory().allocateId(userKey, Question.class);
+  private QuestionWrapper createQuestionWrapper() {
+    return QuestionWrapper.builder()
+        .content("Test content")
+        .tags("visa,passport")
+        .topics("europe")
+        .bounty(0)
+        .build();
+  }
 
-        ImmutableList.Builder<Object> builder = ImmutableList.builder();
-
-        Question post = createPost(userKey, postKey);
-        Vote vote = createVote(userKey, postKey);
-
-        builder.add(post).add(vote);
-
-        ofy().save().entities(builder.build()).now();
-
-        Map<Key<Question>, Question> questionMap = Maps.newLinkedHashMap();
-        questionMap.put(postKey, post);
-
-        questionMap = QuestionUtil.aggregateVote(userKey, QuestionSorter.NEWEST, questionMap);
-
-        assertTrue(questionMap.get(postKey).getDir().compareTo(Vote.Direction.UP) == 0);
-    }
-
-    private Vote createVote(Key<Account> userKey, Key<Question> postKey) {
-        return Vote.builder()
-                .id(postKey.toWebSafeString())
-                .parentUserKey(userKey)
-                .dir(Vote.Direction.UP)
-                .build();
-    }
-
-    private Question createPost(Key<Account> userKey, Key<Question> postKey) {
-        return Question.builder()
-                .id(postKey.getId())
-                .parentUserKey(userKey)
-                .acceptedComment(null)
-                .avatarUrl(new Link("test"))
-                .username("testUser")
-                .bounty(0)
-                .comments(0)
-                .votes(0)
-                .firstComment(false)
-                .content("demo content")
-                .dir(Vote.Direction.DEFAULT)
-                .created(DateTime.now())
-                .build();
-    }
+  private DeviceRecord createRecord(Account owner) {
+    return DeviceRecord.builder()
+        .id(owner.getWebsafeId())
+        .parentUserKey(owner.getKey())
+        .regId(UUID.randomUUID().toString())
+        .build();
+  }
 }

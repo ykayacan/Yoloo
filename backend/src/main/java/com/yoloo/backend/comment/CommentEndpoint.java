@@ -8,185 +8,150 @@ import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.response.CollectionResponse;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
-
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
-import com.yoloo.backend.gamification.GamificationService;
-import com.yoloo.backend.notification.NotificationService;
-import com.yoloo.backend.question.QuestionService;
-import com.yoloo.backend.question.QuestionShardService;
 import com.yoloo.backend.validator.Validator;
 import com.yoloo.backend.validator.rule.comment.CommentCreateRule;
-import com.yoloo.backend.validator.rule.common.AuthenticationRule;
+import com.yoloo.backend.validator.rule.common.AuthValidator;
 import com.yoloo.backend.validator.rule.common.IdValidationRule;
 import com.yoloo.backend.validator.rule.common.NotFoundRule;
-
 import java.util.logging.Logger;
-
 import javax.annotation.Nullable;
 import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
 
 @Api(
-        name = "yolooApi",
-        version = "v1",
-        namespace = @ApiNamespace(
-                ownerDomain = Constants.API_OWNER,
-                ownerName = Constants.API_OWNER,
-                packagePath = Constants.API_PACKAGE_PATH
-        )
+    name = "yolooApi",
+    version = "v1",
+    namespace = @ApiNamespace(
+        ownerDomain = Constants.API_OWNER,
+        ownerName = Constants.API_OWNER,
+        packagePath = Constants.API_PACKAGE_PATH
+    )
 )
 @ApiClass(
-        resource = "comments",
-        clientIds = {
-                Constants.ANDROID_CLIENT_ID,
-                Constants.IOS_CLIENT_ID,
-                Constants.WEB_CLIENT_ID},
-        audiences = {Constants.AUDIENCE_ID},
-        authenticators = {
-                FirebaseAuthenticator.class
-        }
+    resource = "comments",
+    clientIds = {
+        Constants.ANDROID_CLIENT_ID,
+        Constants.IOS_CLIENT_ID,
+        Constants.WEB_CLIENT_ID},
+    audiences = {Constants.AUDIENCE_ID},
+    authenticators = {
+        FirebaseAuthenticator.class
+    }
 )
-final class CommentEndpoint {
+public class CommentEndpoint {
 
-    private static final Logger logger =
-            Logger.getLogger(CommentEndpoint.class.getSimpleName());
+  private static final Logger logger =
+      Logger.getLogger(CommentEndpoint.class.getSimpleName());
 
-    /**
-     * Inserts a new {@code Comment}.
-     *
-     * @param websafeQuestionId the websafe question id
-     * @param content           the content
-     * @param request           the request
-     * @param user              the user
-     * @return the comment
-     * @throws ServiceException the service exception
-     */
-    @ApiMethod(
-            name = "questions.comments.add",
-            path = "questions/{questionId}/comments",
-            httpMethod = ApiMethod.HttpMethod.POST)
-    public Comment add(@Named("questionId") String websafeQuestionId,
-                       @Named("content") String content,
-                       HttpServletRequest request,
-                       User user)
-            throws ServiceException {
+  private final CommentController commentController = CommentControllerFactory.of().create();
 
-        Validator.builder()
-                .addRule(new IdValidationRule(websafeQuestionId))
-                .addRule(new AuthenticationRule(user))
-                .addRule(new CommentCreateRule(content))
-                .addRule(new NotFoundRule(websafeQuestionId))
-                .validate();
+  /**
+   * Inserts a new {@code Comment}.
+   *
+   * @param questionId the websafe question id
+   * @param content the content
+   * @param mentionIds the mention ids
+   * @param user the user
+   * @return the comment
+   * @throws ServiceException the service exception
+   */
+  @ApiMethod(
+      name = "questions.comments.add",
+      path = "questions/{questionId}/comments",
+      httpMethod = ApiMethod.HttpMethod.POST)
+  public Comment add(@Named("questionId") String questionId, @Named("content") String content,
+      @Nullable @Named("mentionIds") String mentionIds, User user) throws ServiceException {
 
-        return getCommentController().add(websafeQuestionId, content, user);
-    }
+    Validator.builder()
+        .addRule(new IdValidationRule(questionId))
+        .addRule(new AuthValidator(user))
+        .addRule(new CommentCreateRule(content))
+        .addRule(new NotFoundRule(questionId))
+        .validate();
 
-    /**
-     * Updates an existing {@code Comment}.
-     *
-     * @param websafeQuestionId the ID from the entity to be updated
-     * @param websafeCommentId  the websafe comment id
-     * @param content           the content
-     * @param accepted          the accepted
-     * @param request           the desired state from the entity
-     * @param user              the user
-     * @return the updated version from the entity
-     * @throws ServiceException the service exception
-     */
-    @ApiMethod(
-            name = "questions.comments.update",
-            path = "questions/{questionId}/comments/{commentId}",
-            httpMethod = ApiMethod.HttpMethod.PUT)
-    public Comment update(@Named("questionId") String websafeQuestionId,
-                          @Named("commentId") String websafeCommentId,
-                          @Nullable @Named("content") String content,
-                          @Nullable @Named("accepted") Boolean accepted,
-                          HttpServletRequest request,
-                          User user)
-            throws ServiceException {
+    return commentController.add(questionId, content, Optional.fromNullable(mentionIds), user);
+  }
 
-        Validator.builder()
-                .addRule(new IdValidationRule(websafeQuestionId))
-                .addRule(new AuthenticationRule(user))
-                .addRule(new NotFoundRule(websafeQuestionId))
-                .validate();
+  /**
+   * Updates an existing {@code Comment}.
+   *
+   * @param questionId the ID from the entity to be updated
+   * @param commentId the websafe comment id
+   * @param content the content
+   * @param accepted the accepted
+   * @param user the user
+   * @return the updated version from the entity
+   * @throws ServiceException the service exception
+   */
+  @ApiMethod(
+      name = "questions.comments.update",
+      path = "questions/{questionId}/comments/{commentId}",
+      httpMethod = ApiMethod.HttpMethod.PUT)
+  public Comment update(@Named("questionId") String questionId,
+      @Named("commentId") String commentId, @Nullable @Named("content") String content,
+      @Nullable @Named("accepted") Boolean accepted, User user) throws ServiceException {
 
-        return getCommentController().update(
-                websafeQuestionId, websafeCommentId, Optional.fromNullable(content),
-                Optional.fromNullable(accepted), user);
-    }
+    Validator.builder()
+        .addRule(new IdValidationRule(questionId))
+        .addRule(new AuthValidator(user))
+        .addRule(new NotFoundRule(questionId))
+        .validate();
 
-    /**
-     * Deletes the specified {@code Comment}.
-     *
-     * @param websafeQuestionId the ID from the entity to be updated
-     * @param websafeCommentId  the websafe comment id
-     * @param request           the desired state from the entity
-     * @param user              the user
-     * @return the updated version from the entity
-     * @throws ServiceException the service exception
-     */
-    @ApiMethod(
-            name = "questions.comments.delete",
-            path = "questions/{questionId}/comments/{commentId}",
-            httpMethod = ApiMethod.HttpMethod.DELETE)
-    public void delete(@Named("questionId") String websafeQuestionId,
-                       @Named("commentId") String websafeCommentId,
-                       HttpServletRequest request,
-                       User user)
-            throws ServiceException {
+    return commentController.update(questionId, commentId, Optional.fromNullable(content),
+        Optional.fromNullable(accepted), user);
+  }
 
-        Validator.builder()
-                .addRule(new IdValidationRule(websafeQuestionId))
-                .addRule(new AuthenticationRule(user))
-                .addRule(new NotFoundRule(websafeQuestionId))
-                .validate();
+  /**
+   * Deletes the specified {@code Comment}.
+   *
+   * @param questionId the ID from the entity to be updated
+   * @param commentId the websafe comment id
+   * @param user the user
+   * @return the updated version from the entity
+   * @throws ServiceException the service exception
+   */
+  @ApiMethod(
+      name = "questions.comments.delete",
+      path = "questions/{questionId}/comments/{commentId}",
+      httpMethod = ApiMethod.HttpMethod.DELETE)
+  public void delete(@Named("questionId") String questionId, @Named("commentId") String commentId,
+      User user) throws ServiceException {
 
-        getCommentController().delete(websafeQuestionId, websafeCommentId, user);
-    }
+    Validator.builder()
+        .addRule(new IdValidationRule(questionId))
+        .addRule(new AuthValidator(user))
+        .addRule(new NotFoundRule(questionId))
+        .validate();
 
-    /**
-     * List all {@code Comment} entities.
-     *
-     * @param websafeQuestionId the websafe question id
-     * @param cursor            used for pagination to determine which page to return
-     * @param limit             the maximum number of entries to return
-     * @param user              the user
-     * @return a response that encapsulates the result list and the next page token/cursor
-     * @throws ServiceException the service exception
-     */
-    @ApiMethod(
-            name = "questions.comments.list",
-            path = "questions/{questionId}/comments",
-            httpMethod = ApiMethod.HttpMethod.GET)
-    public CollectionResponse<Comment> list(@Named("questionId") String websafeQuestionId,
-                                            @Nullable @Named("cursor") String cursor,
-                                            @Nullable @Named("limit") Integer limit,
-                                            User user) throws ServiceException {
+    commentController.delete(questionId, commentId, user);
+  }
 
-        Validator.builder()
-                .addRule(new IdValidationRule(websafeQuestionId))
-                .addRule(new AuthenticationRule(user))
-                .addRule(new NotFoundRule(websafeQuestionId))
-                .validate();
+  /**
+   * List all {@code Comment} entities.
+   *
+   * @param questionId the websafe question id
+   * @param cursor used for pagination to determine which page to return
+   * @param limit the maximum number of entries to return
+   * @param user the user
+   * @return a response that encapsulates the result list and the next page token/cursor
+   * @throws ServiceException the service exception
+   */
+  @ApiMethod(
+      name = "questions.comments.list",
+      path = "questions/{questionId}/comments",
+      httpMethod = ApiMethod.HttpMethod.GET)
+  public CollectionResponse<Comment> list(@Named("questionId") String questionId,
+      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
+      throws ServiceException {
 
-        // TODO: 29.11.2016 Add sorting by upvotes.
+    Validator.builder()
+        .addRule(new IdValidationRule(questionId))
+        .addRule(new AuthValidator(user))
+        .addRule(new NotFoundRule(questionId))
+        .validate();
 
-        return getCommentController().list(
-                websafeQuestionId,
-                Optional.fromNullable(cursor),
-                Optional.fromNullable(limit),
-                user);
-    }
-
-    private CommentController getCommentController() {
-        return CommentController.newInstance(
-                CommentService.newInstance(),
-                CommentShardService.newInstance(),
-                QuestionService.newInstance(),
-                QuestionShardService.newInstance(),
-                GamificationService.newInstance(),
-                NotificationService.newInstance());
-    }
+    return commentController.list(questionId, Optional.fromNullable(cursor),
+        Optional.fromNullable(limit), user);
+  }
 }

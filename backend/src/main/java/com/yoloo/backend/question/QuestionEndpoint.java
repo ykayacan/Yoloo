@@ -6,219 +6,213 @@ import com.google.api.server.spi.config.ApiClass;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.response.CollectionResponse;
-import com.google.api.server.spi.response.NotFoundException;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
-
 import com.yoloo.backend.Constants;
-import com.yoloo.backend.account.AccountService;
-import com.yoloo.backend.account.AccountShardService;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
-import com.yoloo.backend.category.CategoryService;
-import com.yoloo.backend.comment.CommentService;
-import com.yoloo.backend.comment.CommentShardService;
 import com.yoloo.backend.question.sort_strategy.QuestionSorter;
-import com.yoloo.backend.gamification.GamificationService;
-import com.yoloo.backend.tag.HashTagService;
-import com.yoloo.backend.media.MediaService;
-import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.validator.Validator;
-import com.yoloo.backend.validator.rule.common.AllowedToOperate;
-import com.yoloo.backend.validator.rule.common.AuthenticationRule;
-import com.yoloo.backend.validator.rule.common.IdValidationRule;
-import com.yoloo.backend.validator.rule.common.NotFoundRule;
-import com.yoloo.backend.validator.rule.question.QuestionCreateRule;
-
+import com.yoloo.backend.validator.rule.common.AuthValidator;
+import com.yoloo.backend.validator.rule.common.BadRequestValidator;
+import com.yoloo.backend.validator.rule.common.ForbiddenValidator;
 import java.util.logging.Logger;
-
 import javax.annotation.Nullable;
 import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
 
 @Api(
-        name = "yolooApi",
-        version = "v1",
-        namespace = @ApiNamespace(
-                ownerDomain = Constants.API_OWNER,
-                ownerName = Constants.API_OWNER,
-                packagePath = Constants.API_PACKAGE_PATH
-        )
+    name = "yolooApi",
+    version = "v1",
+    namespace = @ApiNamespace(
+        ownerDomain = Constants.API_OWNER,
+        ownerName = Constants.API_OWNER,
+        packagePath = Constants.API_PACKAGE_PATH
+    )
 )
 @ApiClass(
-        resource = "questions",
-        clientIds = {
-                Constants.ANDROID_CLIENT_ID,
-                Constants.IOS_CLIENT_ID,
-                Constants.WEB_CLIENT_ID},
-        audiences = {Constants.AUDIENCE_ID},
-        authenticators = {
-                FirebaseAuthenticator.class
-        }
+    resource = "questions",
+    clientIds = {
+        Constants.ANDROID_CLIENT_ID,
+        Constants.IOS_CLIENT_ID,
+        Constants.WEB_CLIENT_ID},
+    audiences = {Constants.AUDIENCE_ID},
+    authenticators = {
+        FirebaseAuthenticator.class
+    }
 )
-final class QuestionEndpoint {
+public class QuestionEndpoint {
 
-    private static final Logger logger =
-            Logger.getLogger(QuestionEndpoint.class.getSimpleName());
+  private static final Logger logger =
+      Logger.getLogger(QuestionEndpoint.class.getSimpleName());
 
-    /**
-     * Returns the {@link Question} with the corresponding ID.
-     *
-     * @param websafeQuestionId the ID from the entity to be retrieved
-     * @return the entity with the corresponding ID
-     * @throws NotFoundException if there is no {@code Feed} with the provided ID.
-     */
-    @ApiMethod(
-            name = "questions.get",
-            path = "questions/{questionId}",
-            httpMethod = ApiMethod.HttpMethod.GET)
-    public Question get(@Named("questionId") String websafeQuestionId, User user)
-            throws ServiceException {
+  private final QuestionController questionController = QuestionControllerFactory.of().create();
 
-        Validator.builder()
-                .addRule(new IdValidationRule(websafeQuestionId))
-                .addRule(new AuthenticationRule(user))
-                .addRule(new NotFoundRule(websafeQuestionId))
-                .validate();
+  /**
+   * Returns the {@code Question} with the corresponding ID.
+   *
+   * @param questionId the ID from the entity to be retrieved
+   * @param user the user
+   * @return the entity with the corresponding ID
+   * @throws ServiceException the service exception
+   */
+  @ApiMethod(
+      name = "questions.get",
+      path = "questions/{questionId}",
+      httpMethod = ApiMethod.HttpMethod.GET)
+  public Question get(@Named("questionId") String questionId, User user) throws ServiceException {
 
-        return getForumController().get(websafeQuestionId, user);
-    }
+    Validator.builder()
+        .addRule(new BadRequestValidator(questionId))
+        .addRule(new AuthValidator(user))
+        .validate();
 
-    /**
-     * Inserts a new {@code Question}.
-     */
-    @ApiMethod(
-            name = "questions.add",
-            path = "questions",
-            httpMethod = ApiMethod.HttpMethod.POST)
-    public Question add(@Named("hashtags") String hashTags,
-                        @Named("content") String content,
-                        @Named("categoryIds") String categoryIds,
-                        @Nullable @Named("mediaId") String mediaId,
-                        @Nullable @Named("bounty") Integer bounty,
-                        HttpServletRequest request,
-                        User user)
-            throws ServiceException {
+    return questionController.get(questionId, user);
+  }
 
-        Validator.builder()
-                .addRule(new QuestionCreateRule(content, hashTags))
-                .addRule(new AuthenticationRule(user))
-                .validate();
+  /**
+   * Inserts a new {@code Question}.
+   *
+   * @param tags the tags
+   * @param content the content
+   * @param categories the categories
+   * @param mediaId the media id
+   * @param bounty the bounty
+   * @param user the user
+   * @return the question
+   * @throws ServiceException the service exception
+   */
+  @ApiMethod(
+      name = "questions.add",
+      path = "questions",
+      httpMethod = ApiMethod.HttpMethod.POST)
+  public Question add(@Named("tags") String tags, @Named("content") String content,
+      @Named("categories") String categories, @Nullable @Named("mediaId") String mediaId,
+      @Nullable @Named("bounty") Integer bounty, User user) throws ServiceException {
 
-        QuestionWrapper wrapper = QuestionWrapper.builder()
-                .content(content)
-                .hashTags(hashTags)
-                .categoryIds(categoryIds)
-                .mediaId(Optional.fromNullable(mediaId).orNull())
-                .bounty(Optional.fromNullable(bounty).or(0))
-                .request(request)
-                .build();
+    Validator.builder()
+        .addRule(new BadRequestValidator(tags, content, categories))
+        .addRule(new AuthValidator(user))
+        .validate();
 
-        return getForumController().add(wrapper, user);
-    }
+    QuestionWrapper wrapper = QuestionWrapper.builder()
+        .content(content)
+        .tags(tags)
+        .topics(categories)
+        .mediaId(mediaId)
+        .bounty(Optional.fromNullable(bounty).or(0))
+        .build();
 
-    /**
-     * Updates an existing {@code Question}.
-     *
-     * @param websafeQuestionId the ID from the entity to be updated
-     * @param request           the desired state from the entity
-     * @return the updated version from the entity
-     * @throws NotFoundException if the {@code id} does not correspond to an existing {@code
-     *                           Question}
-     */
-    @ApiMethod(
-            name = "questions.update",
-            path = "questions/{questionId}",
-            httpMethod = ApiMethod.HttpMethod.PUT)
-    public Question update(@Named("questionId") String websafeQuestionId,
-                           @Nullable @Named("bounty") Integer bounty,
-                           @Nullable @Named("content") String content,
-                           @Nullable @Named("hashTags") String hashTags,
-                           @Nullable @Named("mediaId") String mediaId,
-                           HttpServletRequest request,
-                           User user)
-            throws ServiceException {
+    return questionController.add(wrapper, user);
+  }
 
-        Validator.builder()
-                .addRule(new IdValidationRule(websafeQuestionId))
-                .addRule(new AuthenticationRule(user))
-                .addRule(new NotFoundRule(websafeQuestionId))
-                .addRule(new AllowedToOperate(user, websafeQuestionId, AllowedToOperate.Operation.UPDATE))
-                .validate();
+  /**
+   * Updates an existing {@code Question}.
+   *
+   * @param questionId the ID from the entity to be updated
+   * @param bounty the bounty
+   * @param content the content
+   * @param tags the tags
+   * @param mediaId the media id
+   * @param user the user
+   * @return the updated version from the entity
+   * @throws ServiceException the service exception
+   */
+  @ApiMethod(
+      name = "questions.update",
+      path = "questions/{questionId}",
+      httpMethod = ApiMethod.HttpMethod.PUT)
+  public Question update(@Named("questionId") String questionId,
+      @Nullable @Named("bounty") Integer bounty, @Nullable @Named("content") String content,
+      @Nullable @Named("tags") String tags, @Nullable @Named("mediaId") String mediaId, User user)
+      throws ServiceException {
 
-        QuestionWrapper wrapper = QuestionWrapper.builder()
-                .websafeQuestionId(websafeQuestionId)
-                .content(content)
-                .hashTags(hashTags)
-                .mediaId(mediaId)
-                .bounty(Optional.fromNullable(bounty).or(0))
-                .request(request)
-                .build();
+    Validator.builder()
+        .addRule(new BadRequestValidator(questionId))
+        .addRule(new AuthValidator(user))
+        .addRule(new ForbiddenValidator(user, questionId, ForbiddenValidator.Operation.UPDATE))
+        .validate();
 
-        return getForumController().update(wrapper, user);
-    }
+    QuestionWrapper wrapper = QuestionWrapper.builder()
+        .questionId(questionId)
+        .content(content)
+        .tags(tags)
+        .mediaId(mediaId)
+        .bounty(Optional.fromNullable(bounty).or(0))
+        .build();
 
-    /**
-     * Deletes the specified {@code Feed}.
-     *
-     * @param websafeQuestionId the ID from the entity to delete
-     * @throws NotFoundException if the {@code id} does not correspond to an existing
-     *                           {@code Feed}
-     */
-    @ApiMethod(
-            name = "questions.delete",
-            path = "questions/{questionId}",
-            httpMethod = ApiMethod.HttpMethod.DELETE)
-    public void delete(@Named("questionId") String websafeQuestionId, User user)
-            throws ServiceException {
+    return questionController.update(wrapper, user);
+  }
 
-        Validator.builder()
-                .addRule(new IdValidationRule(websafeQuestionId))
-                .addRule(new AuthenticationRule(user))
-                .addRule(new NotFoundRule(websafeQuestionId))
-                .addRule(new AllowedToOperate(user, websafeQuestionId, AllowedToOperate.Operation.DELETE))
-                .validate();
+  /**
+   * Deletes the specified {@code Question}.
+   *
+   * @param questionId the ID from the entity to delete
+   * @param user the user
+   * @throws ServiceException the service exception
+   */
+  @ApiMethod(
+      name = "questions.delete",
+      path = "questions/{questionId}",
+      httpMethod = ApiMethod.HttpMethod.DELETE)
+  public void delete(@Named("questionId") String questionId, User user) throws ServiceException {
 
-        getForumController().delete(websafeQuestionId, user);
-    }
+    Validator.builder()
+        .addRule(new BadRequestValidator(questionId))
+        .addRule(new AuthValidator(user))
+        .addRule(new ForbiddenValidator(user, questionId, ForbiddenValidator.Operation.DELETE))
+        .validate();
 
-    /**
-     * List all entities.
-     *
-     * @param cursor used for pagination to determine which page to return
-     * @param limit  the maximum number from entries to return
-     * @return a response that encapsulates the result list and the next page token/cursor
-     */
-    @ApiMethod(
-            name = "questions.list",
-            path = "questions",
-            httpMethod = ApiMethod.HttpMethod.GET)
-    public CollectionResponse<Question> list(@Nullable @Named("sort") QuestionSorter sorter,
-                                             @Nullable @Named("cursor") String cursor,
-                                             @Nullable @Named("limit") Integer limit,
-                                             User user) throws ServiceException {
-        Validator.builder()
-                .addRule(new AuthenticationRule(user))
-                .validate();
+    questionController.delete(questionId, user);
+  }
 
-        return getForumController().list(
-                Optional.fromNullable(sorter),
-                Optional.fromNullable(limit),
-                Optional.fromNullable(cursor),
-                user);
-    }
+  /**
+   * List all entities.
+   *
+   * @param sorter the sorter
+   * @param category the category
+   * @param cursor used for pagination to determine which page to return
+   * @param limit the maximum number from entries to return
+   * @param user the user
+   * @return a response that encapsulates the result list and the next page token/cursor
+   * @throws ServiceException the service exception
+   */
+  @ApiMethod(
+      name = "questions.list",
+      path = "questions",
+      httpMethod = ApiMethod.HttpMethod.GET)
+  public CollectionResponse<Question> list(@Nullable @Named("sort") QuestionSorter sorter,
+      @Nullable @Named("category") String category, @Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
 
-    private QuestionController getForumController() {
-        return QuestionController.newInstance(
-                QuestionService.newInstance(),
-                QuestionShardService.newInstance(),
-                CommentService.newInstance(),
-                CommentShardService.newInstance(),
-                HashTagService.newInstance(),
-                CategoryService.newInstance(),
-                AccountService.newInstance(),
-                AccountShardService.newInstance(),
-                GamificationService.newInstance(),
-                MediaService.newInstance(),
-                NotificationService.newInstance());
-    }
+    Validator.builder()
+        .addRule(new AuthValidator(user))
+        .validate();
+
+    return questionController.list(
+        Optional.fromNullable(sorter),
+        Optional.fromNullable(category),
+        Optional.fromNullable(limit),
+        Optional.fromNullable(cursor),
+        user);
+  }
+
+  /**
+   * Reports the {@code Question} with the corresponding ID.
+   *
+   * @param questionId the websafe question id
+   * @param user the user
+   * @throws ServiceException the service exception
+   */
+  @ApiMethod(
+      name = "questions.report",
+      path = "questions/{questionId}",
+      httpMethod = ApiMethod.HttpMethod.POST)
+  public void report(@Named("questionId") String questionId, User user) throws ServiceException {
+
+    Validator.builder()
+        .addRule(new BadRequestValidator(questionId))
+        .addRule(new AuthValidator(user))
+        .validate();
+
+    questionController.report(questionId, user);
+  }
 }

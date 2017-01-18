@@ -1,150 +1,113 @@
 package com.yoloo.backend.account;
 
-import com.google.common.collect.ImmutableList;
-
 import com.googlecode.objectify.Key;
-
-import java.util.Collection;
+import com.yoloo.backend.shard.ShardService;
+import com.yoloo.backend.shard.ShardUtil;
+import io.reactivex.Observable;
 import java.util.List;
 import java.util.Random;
+import lombok.NoArgsConstructor;
 
-import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.reactivex.functions.Function;
-import lombok.AllArgsConstructor;
+@NoArgsConstructor(staticName = "create")
+public class AccountShardService implements ShardService<Account, AccountCounterShard> {
 
-import static com.yoloo.backend.account.AccountCounterShard.SHARD_COUNT;
+  @Override
+  public List<Key<AccountCounterShard>> createShardKeys(Iterable<Key<Account>> keys) {
+    return Observable
+        .fromIterable(keys)
+        .concatMapIterable(this::createShardKeys)
+        .toList()
+        .blockingGet();
+  }
 
-@AllArgsConstructor(staticName = "newInstance")
-public class AccountShardService {
+  @Override
+  public List<Key<AccountCounterShard>> createShardKeys(final Key<Account> entityKey) {
+    return Observable
+        .range(1, AccountCounterShard.SHARD_COUNT)
+        .map(id -> AccountCounterShard.createKey(entityKey, id))
+        .toList()
+        .blockingGet();
+  }
 
-    public ImmutableList<AccountCounterShard> createShards(final Key<Account> accountKey) {
-        return Observable.range(1, SHARD_COUNT)
-                .map(new Function<Integer, AccountCounterShard>() {
-                    @Override
-                    public AccountCounterShard apply(Integer shardId) throws Exception {
-                        return createShard(accountKey, shardId);
-                    }
-                })
-                .to(new Function<Observable<AccountCounterShard>, ImmutableList<AccountCounterShard>>() {
-                    @Override
-                    public ImmutableList<AccountCounterShard> apply(Observable<AccountCounterShard> o)
-                            throws Exception {
-                        return ImmutableList.copyOf(o.toList().blockingGet());
-                    }
-                });
+  @Override
+  public List<AccountCounterShard> createShards(Iterable<Key<Account>> keys) {
+    return Observable
+        .fromIterable(keys)
+        .concatMapIterable(this::createShards)
+        .toList()
+        .blockingGet();
+  }
+
+  @Override
+  public List<AccountCounterShard> createShards(final Key<Account> entityKey) {
+    return Observable
+        .range(1, AccountCounterShard.SHARD_COUNT)
+        .map(shardId -> createShard(entityKey, shardId))
+        .toList()
+        .blockingGet();
+  }
+
+  @Override
+  public AccountCounterShard createShard(Key<Account> entityKey, int shardNum) {
+    return AccountCounterShard.builder()
+        .id(ShardUtil.generateShardId(entityKey, shardNum))
+        .followers(0)
+        .followings(0)
+        .questions(0)
+        .build();
+  }
+
+  @Override
+  public Key<AccountCounterShard> getRandomShardKey(Key<Account> entityKey) {
+    final int shardNum = new Random().nextInt(AccountCounterShard.SHARD_COUNT - 1 + 1) + 1;
+    return AccountCounterShard.createKey(entityKey, shardNum);
+  }
+
+  public AccountCounterShard updateCounter(AccountCounterShard shard, Update type) {
+    switch (type) {
+      case FOLLOWING_UP:
+        shard.increaseFollowings();
+        break;
+      case FOLLOWING_DOWN:
+        shard.decreaseFollowings();
+        break;
+      case FOLLOWER_UP:
+        shard.increaseFollowers();
+        break;
+      case FOLLOWER_DOWN:
+        shard.decreaseFollowers();
+        break;
+      case POST_UP:
+        shard.increaseQuestions();
+        break;
+      case POST_DOWN:
+        shard.decreaseQuestions();
+        break;
     }
+    return shard;
+  }
 
-    public AccountCounterShard createShard(Key<Account> accountKey, int shardId) {
-        return AccountCounterShard.builder()
-                .id(AccountUtil.createShardId(accountKey, shardId))
-                .followers(0)
-                .followings(0)
-                .questions(0)
-                .build();
-    }
+  public Observable<AccountCounterShard> merge(Account account) {
+    return Observable.fromIterable(account.getShards())
+        .reduce(this::reduceCounters)
+        .toObservable();
+  }
 
-    public ImmutableList<Key<AccountCounterShard>> getShardKeys(Collection<Key<Account>> keys) {
-        return Observable.fromIterable(keys)
-                .map(new Function<Key<Account>, List<Key<AccountCounterShard>>>() {
-                    @Override
-                    public List<Key<AccountCounterShard>> apply(final Key<Account> key)
-                            throws Exception {
-                        return Observable.range(1, SHARD_COUNT)
-                                .map(new Function<Integer, Key<AccountCounterShard>>() {
-                                    @Override
-                                    public Key<AccountCounterShard> apply(Integer shardId)
-                                            throws Exception {
-                                        return Key.create(
-                                                AccountCounterShard.class,
-                                                AccountUtil.createShardId(key, shardId));
-                                    }
-                                }).toList().blockingGet();
-                    }
-                })
-                .toList()
-                .to(new Function<Single<List<List<Key<AccountCounterShard>>>>,
-                        ImmutableList<Key<AccountCounterShard>>>() {
-                    @Override
-                    public ImmutableList<Key<AccountCounterShard>> apply(
-                            Single<List<List<Key<AccountCounterShard>>>> listSingle)
-                            throws Exception {
-                        ImmutableList.Builder<Key<AccountCounterShard>> builder =
-                                ImmutableList.builder();
+  private AccountCounterShard reduceCounters(AccountCounterShard s1,
+      AccountCounterShard s2) {
+    return AccountCounterShard.builder()
+        .followers(s1.getFollowers() + s2.getFollowers())
+        .followings(s1.getFollowings() + s2.getFollowings())
+        .questions(s1.getQuestions() + s2.getQuestions())
+        .build();
+  }
 
-                        for (List<Key<AccountCounterShard>> keys : listSingle.blockingGet()) {
-                            builder = builder.addAll(keys);
-                        }
-
-                        return builder.build();
-                    }
-                });
-    }
-
-    public ImmutableList<Key<AccountCounterShard>> getShardKeys(Key<Account> key) {
-        return Observable.just(key)
-                .map(new Function<Key<Account>, List<Key<AccountCounterShard>>>() {
-                    @Override
-                    public List<Key<AccountCounterShard>> apply(final Key<Account> accountKey)
-                            throws Exception {
-                        return Observable.range(1, SHARD_COUNT)
-                                .map(new Function<Integer, Key<AccountCounterShard>>() {
-                                    @Override
-                                    public Key<AccountCounterShard> apply(Integer shardId)
-                                            throws Exception {
-                                        return Key.create(
-                                                AccountCounterShard.class,
-                                                AccountUtil.createShardId(accountKey, shardId));
-                                    }
-                                }).toList().blockingGet();
-                    }
-                })
-                .to(new Function<Observable<List<Key<AccountCounterShard>>>,
-                        ImmutableList<Key<AccountCounterShard>>>() {
-                    @Override
-                    public ImmutableList<Key<AccountCounterShard>> apply(
-                            Observable<List<Key<AccountCounterShard>>> listObservable)
-                            throws Exception {
-                        return ImmutableList.copyOf(listObservable.blockingFirst());
-                    }
-                });
-    }
-
-    public Key<AccountCounterShard> getRandomShardKey(final Key<Account> accountKey) {
-        final int shardNum = new Random().nextInt(AccountCounterShard.SHARD_COUNT - 1 + 1) + 1;
-        return Key.create(AccountCounterShard.class, AccountUtil.createShardId(accountKey, shardNum));
-    }
-
-    public AccountCounterShard updateCounter(AccountCounterShard shard, UpdateType type) {
-        switch (type) {
-            case FOLLOWING_UP:
-                shard.increaseFollowings();
-                break;
-            case FOLLOWING_DOWN:
-                shard.decreaseFollowings();
-                break;
-            case FOLLOWER_UP:
-                shard.increaseFollowers();
-                break;
-            case FOLLOWER_DOWN:
-                shard.decreaseFollowers();
-                break;
-            case POST_UP:
-                shard.increaseQuestions();
-                break;
-            case POST_DOWN:
-                shard.decreaseQuestions();
-                break;
-        }
-        return shard;
-    }
-
-    public enum UpdateType {
-        FOLLOWING_UP,
-        FOLLOWING_DOWN,
-        FOLLOWER_UP,
-        FOLLOWER_DOWN,
-        POST_UP,
-        POST_DOWN
-    }
+  public enum Update {
+    FOLLOWING_UP,
+    FOLLOWING_DOWN,
+    FOLLOWER_UP,
+    FOLLOWER_DOWN,
+    POST_UP,
+    POST_DOWN
+  }
 }

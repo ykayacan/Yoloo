@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android" android:enterFadeDuration="@android:integer/config_shortAnimTime" android:exitFadeDuration="@android:integer/config_shortAnimTime">
+  <item android:drawable="@color/tag_bg_selected" android:state_selected="true">
+    <shape android:shape="rectangle">
+      <corners android:radius="6dp"/>
+    </shape>
+  </item>
+  <item android:drawable="@color/primary">
+    <shape android:shape="rectangle">
+      <corners android:radius="6dp"/>
+    </shape>
+  </item>
+</selector>

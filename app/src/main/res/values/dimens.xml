@@ -1,5 +1,28 @@
 <resources>
-    <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="activity_horizontal_margin">16dp</dimen>
-    <dimen name="activity_vertical_margin">16dp</dimen>
+  <!-- Default screen margins, per the Android Design guidelines. -->
+  <dimen name="activity_horizontal_margin">16dp</dimen>
+  <dimen name="activity_vertical_margin">16dp</dimen>
+
+  <dimen name="grid_inset">16dp</dimen>
+
+  <dimen name="min_item_width">0dp</dimen>
+  <dimen name="default_text_size">14sp</dimen>
+  <dimen name="default_item_margin">2dp</dimen>
+  <dimen name="default_item_padding">4dp</dimen>
+  <dimen name="default_row_margin">2dp</dimen>
+  <dimen name="fab_margin">16dp</dimen>
+  <dimen name="nav_header_vertical_spacing">16dp</dimen>
+  <dimen name="nav_header_height">196dp</dimen>
+
+  <!-- FloatingActionMenu -->
+  <dimen name="fam_spacing">16dp</dimen>
+  <dimen name="fam_label_spacing">16dp</dimen>
+  <dimen name="dim_elevation">5dp</dimen>
+
+  <!-- LabelView -->
+  <dimen name="label_inset_shadow">1dp</dimen>
+
+  <dimen name="defaultTagsTextSize">16sp</dimen>
+  <dimen name="defaultTagsCloseImagePadding">10dp</dimen>
+  <dimen name="defaultTagsPadding">0dp</dimen>
 </resources>

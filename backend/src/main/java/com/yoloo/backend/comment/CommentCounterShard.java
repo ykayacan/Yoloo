@@ -5,7 +5,6 @@ import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.yoloo.backend.config.ShardConfig;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,25 +19,29 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CommentCounterShard {
 
-    public static final int SHARD_COUNT = ShardConfig.COMMENT_SHARD_COUNTER;
+  public static final int SHARD_COUNT = ShardConfig.COMMENT_SHARD_COUNTER;
 
-    /**
-     * Websafe commentId:shard_num
-     */
-    @Id
-    private String id;
+  /**
+   * Websafe commentId:shard_num
+   */
+  @Id
+  private String id;
 
-    private long votes;
+  private long votes;
 
-    public Key<CommentCounterShard> getKey() {
-        return Key.create(CommentCounterShard.class, id);
-    }
+  public static Key<CommentCounterShard> createKey(Key<Comment> commentKey, int shardId) {
+    return Key.create(CommentCounterShard.class, commentKey.toWebSafeString() + ":" + shardId);
+  }
 
-    public void increaseVotes() {
-        ++this.votes;
-    }
+  public Key<CommentCounterShard> getKey() {
+    return Key.create(CommentCounterShard.class, id);
+  }
 
-    public void decreaseVotes() {
-        --this.votes;
-    }
+  public void increaseVotes() {
+    ++this.votes;
+  }
+
+  public void decreaseVotes() {
+    --this.votes;
+  }
 }

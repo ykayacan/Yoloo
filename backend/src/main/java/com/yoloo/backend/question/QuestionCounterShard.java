@@ -5,10 +5,7 @@ import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.yoloo.backend.config.ShardConfig;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.Size;
-
+import com.yoloo.backend.feed.FeedShard;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,46 +18,50 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class QuestionCounterShard {
+public final class QuestionCounterShard implements FeedShard {
 
-    public static final int SHARD_COUNT = ShardConfig.FORUM_SHARD_COUNTER;
+  public static final int SHARD_COUNT = ShardConfig.QUESTION_SHARD_COUNTER;
 
-    /**
-     * Websafe questionId:shard_num
-     */
-    @Id
-    private String id;
+  /**
+   * Websafe questionId:shard_num
+   */
+  @Id
+  private String id;
 
-    @Min(0)
-    private long comments;
+  private long comments;
 
-    private long votes;
+  private long votes;
 
-    @Size(max = 3)
-    private long reports;
+  private int reports;
 
-    public Key<QuestionCounterShard> getKey() {
-        return Key.create(QuestionCounterShard.class, id);
-    }
+  public static Key<QuestionCounterShard> createKey(Key<Question> questionKey, int shardId) {
+    return Key.create(QuestionCounterShard.class, questionKey.toWebSafeString() + ":" + shardId);
+  }
 
-    public long addVotes(long votes) {
-        this.votes += votes;
-        return this.votes;
-    }
+  public Key<QuestionCounterShard> getKey() {
+    return Key.create(QuestionCounterShard.class, this.id);
+  }
 
-    public void increaseVotes() {
-        this.votes++;
-    }
+  public void increaseVotes() {
+    this.votes++;
+  }
 
-    public void decreaseVotes() {
-        this.votes--;
-    }
+  public void decreaseVotes() {
+    this.votes--;
+  }
 
-    public void increaseComments() {
-        this.comments++;
-    }
+  public void increaseComments() {
+    this.comments++;
+  }
 
-    public void decreaseComments() {
-        this.comments--;
-    }
+  public void decreaseComments() {
+    this.comments--;
+  }
+
+  public QuestionCounterShard addValues(long comments, long votes, int reports) {
+    this.comments += comments;
+    this.votes += votes;
+    this.reports += reports;
+    return this;
+  }
 }

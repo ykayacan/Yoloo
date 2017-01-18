@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:background="@android:color/white"
+  android:paddingBottom="8dp">
+
+  <include layout="@layout/merge_item_question_header" />
+
+  <TextView
+    android:id="@+id/tv_question_content"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="8dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginTop="64dp"
+    android:lineSpacingMultiplier="1.1"
+    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toLeftOf="@+id/iv_question_content_image"
+    app:layout_constraintTop_toTopOf="parent"
+    tools:text="@string/hint_feed_item_text" />
+
+  <ImageView
+    android:id="@+id/iv_question_content_image"
+    android:layout_width="64dp"
+    android:layout_height="64dp"
+    android:layout_marginEnd="16dp"
+    android:scaleType="centerCrop"
+    android:transitionName="@string/transition_content_photo"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toTopOf="@+id/tv_question_content"
+    tools:src="@drawable/login_bg" />
+
+  <ImageButton
+    android:id="@+id/ib_question_options"
+    style="@style/Widget.AppCompat.ActionButton.Overflow"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:tint="@android:color/secondary_text_dark"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:srcCompat="@drawable/ic_more_vert_black_24dp" />
+
+  <Space
+    android:id="@+id/spacer"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/tv_question_content" />
+
+  <include layout="@layout/merge_item_question_footer" />
+
+</android.support.constraint.ConstraintLayout>

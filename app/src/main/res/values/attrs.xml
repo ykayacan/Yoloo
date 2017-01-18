@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+  <declare-styleable name="BaselineGridTextView">
+    <attr name="lineHeightMultiplierHint" format="float" />
+    <attr name="lineHeightHint" format="float" />
+    <attr name="maxLinesByHeight" format="boolean" />
+  </declare-styleable>
+
+  <declare-styleable name="TagView">
+    <attr name="tagTextColor" format="color|reference" />
+    <attr name="tagTextSize" format="dimension" />
+    <attr name="tagTextGravity" format="enum">
+      <enum name="left" value="3" />
+      <enum name="right" value="5" />
+      <enum name="center" value="17" />
+    </attr>
+    <attr name="tagEllipsize" format="enum">
+      <enum name="start" value="0" />
+      <enum name="middle" value="1" />
+      <enum name="end" value="2" />
+      <enum name="marquee" value="3" />
+    </attr>
+    <attr name="tagBackground" format="color|reference" />
+    <attr name="tagForeground" format="color|reference" />
+    <attr name="tagDrawableLeft" format="reference" />
+    <attr name="tagSelectedDrawableLeft" format="reference" />
+    <attr name="tagDrawableRight" format="reference" />
+    <attr name="tagSelectedDrawableRight" format="reference" />
+    <attr name="tagDrawablePadding" format="dimension" />
+    <attr name="tagMargin" format="dimension" />
+    <attr name="tagPaddingLeft" format="dimension" />
+    <attr name="tagPaddingRight" format="dimension" />
+    <attr name="tagPaddingTop" format="dimension" />
+    <attr name="tagPaddingBottom" format="dimension" />
+    <attr name="tagMinWidth" format="dimension" />
+    <attr name="tagMaxWidth" format="dimension" />
+    <attr name="rowMargin" format="dimension" />
+    <attr name="rowGravity" format="enum">
+      <enum name="left" value="3" />
+      <enum name="right" value="5" />
+      <enum name="center" value="17" />
+    </attr>
+    <attr name="rowDistribution" format="enum">
+      <enum name="none" value="-1" />
+      <enum name="left" value="0" />
+      <enum name="middle" value="1" />
+      <enum name="right" value="2" />
+      <enum name="random" value="3" />
+    </attr>
+    <attr name="rowMode" format="enum">
+      <enum name="wrap" value="0" />
+      <enum name="stretch" value="1" />
+      <enum name="equal" value="2" />
+    </attr>
+    <attr name="rowsQuantity" format="integer" />
+    <attr name="selectionMode" format="boolean" />
+    <attr name="dynamicMode" format="boolean" />
+  </declare-styleable>
+
+  <declare-styleable name="CompatTextView">
+    <attr name="drawableStart" format="reference" />
+    <attr name="drawableTop" format="reference" />
+    <attr name="drawableEnd" format="reference" />
+    <attr name="drawableBottom" format="reference" />
+  </declare-styleable>
+
+  <declare-styleable name="MaterialBadgeTextView">
+    <attr name="badge_backgroundColor" format="color" />
+    <attr name="badge_border_width" format="dimension" />
+    <attr name="badge_border_color" format="color" />
+    <attr name="badge_border_alpha" format="float" />
+    <attr name="badge_type" format="enum">
+      <enum name="shadow_gradual" value="1" />
+      <enum name="shadow_alpha" value="2" />
+    </attr>
+  </declare-styleable>
+
+  <bool name="is_rtl">false</bool>
+
+  <declare-styleable name="xuanimageview">
+    <attr name="RotationToggle" format="boolean" />
+    <attr name="AutoRotateCategory" format="integer" />
+    <attr name="MaxScaleMultiple" format="float" />
+    <attr name="DoubleTabScaleMultiple" format="float" />
+    <attr name="SpringBackGradientScaleUpLevel" format="float" />
+    <attr name="SpringBackGradientScaleDownLevel" format="float" />
+    <attr name="DoubleTapGradientScaleUpLevel" format="float" />
+    <attr name="DoubleTapGradientScaleDownLevel" format="float" />
+    <attr name="AutoRotationTrigger" format="float" />
+    <attr name="SpringBackRunnableDelay" format="integer" />
+    <attr name="DoubleTapScaleRunnableDelay" format="integer" />
+    <attr name="AutoRotationRunnableDelay" format="integer" />
+    <attr name="AutoRotationRunnableTimes" format="integer" />
+  </declare-styleable>
+
+  <!-- FloatingActionMenu -->
+  <declare-styleable name="FloatingActionMenu">
+    <attr name="fabMenuExpandDirection" format="enum">
+      <enum name="up" value="0" />
+      <enum name="down" value="1" />
+      <enum name="left" value="2" />
+      <enum name="right" value="3" />
+    </attr>
+    <attr name="fabMenuLabelPosition" format="enum">
+      <enum name="left" value="0" />
+      <enum name="right" value="1" />
+    </attr>
+    <attr name="fabMenuLabelStyle" format="reference" />
+    <attr name="fabMenuCloseIconSrc" format="reference" />
+    <attr name="fabMenuCloseIconAngle" format="float" />
+    <attr name="fabMenuSpacing" format="dimension" />
+  </declare-styleable>
+
+  <declare-styleable name="LabelView">
+    <attr name="labelBackgroundColor" format="color" />
+    <attr name="labelRippleColor" format="color" />
+    <attr name="labelCornerRadius" format="dimension" />
+    <attr name="labelElevation" format="dimension" />
+    <attr name="labelPaddingHorizontal" format="dimension" />
+    <attr name="labelPaddingVertical" format="dimension" />
+  </declare-styleable>
+
+  <declare-styleable name="LinkableTextView">
+    <attr name="pattern_hashtag" format="string" />
+    <attr name="pattern_mention" format="string" />
+    <attr name="enabledLinks" format="boolean" />
+    <attr name="enabledMention" format="boolean" />
+    <attr name="enabledHashtag" format="boolean" />
+    <attr name="enabledEmail_address" format="boolean" />
+    <attr name="enabledPhone" format="boolean" />
+    <attr name="enabledWeb_url" format="boolean" />
+    <attr name="enabledIp_address" format="boolean" />
+    <attr name="enabledUnderlines" format="boolean" />
+    <attr name="enabledMentionUnderline" format="boolean" />
+    <attr name="enabledHashtagUnderline" format="boolean" />
+    <attr name="enabledEmail_addressUnderline" format="boolean" />
+    <attr name="enabledPhoneUnderline" format="boolean" />
+    <attr name="enabledWeb_urlUnderline" format="boolean" />
+    <attr name="enabledIp_addressUnderline" format="boolean" />
+  </declare-styleable>
+
+  <declare-styleable name="TagsEditText">
+    <attr name="allowSpaceInTag" format="boolean"/>
+    <attr name="tagsTextColor" format="color"/>
+    <attr name="tagsTextSize" format="dimension"/>
+    <attr name="tagsBackground" format="integer"/>
+    <attr name="tagsCloseImageLeft" format="integer"/>
+    <attr name="tagsCloseImageRight" format="integer"/>
+    <attr name="tagsCloseImagePadding" format="dimension" />
+    <attr name="tagsPaddingLeft" format="dimension"/>
+    <attr name="tagsPaddingRight" format="dimension"/>
+    <attr name="tagsPaddingTop" format="dimension"/>
+    <attr name="tagsPaddingBottom" format="dimension"/>
+  </declare-styleable>
+
+</resources>

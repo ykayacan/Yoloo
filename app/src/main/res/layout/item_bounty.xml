@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.yoloo.android.feature.ui.widget.CompatTextView xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content"
+  android:background="@drawable/shape_bounty"
+  android:drawablePadding="16dp"
+  android:gravity="center"
+  android:text="10"
+  android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+  android:textColor="@android:color/white"
+  app:drawableStart="@drawable/ic_bounty_1" />

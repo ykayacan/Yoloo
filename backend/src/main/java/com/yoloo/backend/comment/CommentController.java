@@ -7,259 +7,325 @@ import com.google.appengine.api.users.User;
 import com.google.appengine.repackaged.com.google.common.base.Pair;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
-
+import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.VoidWork;
 import com.googlecode.objectify.cmd.Query;
+import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
+import com.yoloo.backend.device.DeviceRecord;
+import com.yoloo.backend.gamification.GamificationService;
+import com.yoloo.backend.gamification.Tracker;
+import com.yoloo.backend.gamification.reward.CommentTimeOutReward;
+import com.yoloo.backend.gamification.reward.FirstCommentForQuestionReward;
+import com.yoloo.backend.gamification.reward.FirstCommentReward;
+import com.yoloo.backend.notification.NotificationService;
+import com.yoloo.backend.notification.type.AcceptNotification;
+import com.yoloo.backend.notification.type.CommentNotification;
 import com.yoloo.backend.question.Question;
 import com.yoloo.backend.question.QuestionCounterShard;
-import com.yoloo.backend.question.QuestionService;
 import com.yoloo.backend.question.QuestionShardService;
-import com.yoloo.backend.gamification.GamificationService;
-import com.yoloo.backend.notification.NotificationService;
-import com.yoloo.backend.account.Account;
-import com.yoloo.backend.vote.Votable;
-
+import com.yoloo.backend.util.Group;
+import com.yoloo.backend.vote.Vote;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import static com.yoloo.backend.OfyService.ofy;
 
-@RequiredArgsConstructor(staticName = "newInstance")
+@RequiredArgsConstructor(staticName = "create")
 public class CommentController extends Controller {
 
-    private static final Logger logger =
-            Logger.getLogger(CommentController.class.getName());
+  private static final Logger logger =
+      Logger.getLogger(CommentController.class.getName());
 
-    /**
-     * Maximum number of comments to return.
-     */
-    private static final int DEFAULT_LIST_LIMIT = 20;
+  /**
+   * Maximum number of comments to return.
+   */
+  private static final int DEFAULT_LIST_LIMIT = 20;
 
-    @NonNull
-    private CommentService commentService;
+  @NonNull
+  private CommentService commentService;
 
-    @NonNull
-    private CommentShardService commentShardService;
+  @NonNull
+  private CommentShardService commentShardService;
 
-    @NonNull
-    private QuestionService questionService;
+  @NonNull
+  private QuestionShardService questionShardService;
 
-    @NonNull
-    private QuestionShardService questionShardService;
+  @NonNull
+  private GamificationService gameService;
 
-    @NonNull
-    private GamificationService gamificationService;
+  @NonNull
+  private NotificationService notificationService;
 
-    @NonNull
-    private NotificationService notificationService;
+  /**
+   * Get comment.
+   *
+   * @param commentId the websafe comment id
+   * @param user the user
+   * @return the comment
+   */
+  public Comment get(String commentId, User user) {
+    // Create account key from websafe id.
+    final Key<Account> accountKey = Key.create(user.getUserId());
+    // Create comment key from websafe id.
+    final Key<Comment> commentKey = Key.create(commentId);
 
-    /**
-     * Get comment.
-     *
-     * @param websafeCommentId the websafe comment id
-     * @param user             the user
-     * @return the comment
-     */
-    public Comment get(String websafeCommentId, User user) {
-        final Key<Account> authKey = Key.create(user.getUserId());
-        final Key<Comment> commentKey = Key.create(websafeCommentId);
+    // Fetch comment.
+    Comment comment = ofy().load()
+        .group(Comment.ShardGroup.class).key(commentKey).now();
 
-        Comment comment = ofy().load().key(commentKey).now();
+    return CommentUtil
+        .mergeCommentCounts(comment)
+        .flatMap(comment1 -> CommentUtil.mergeVoteDirection(comment1, accountKey))
+        .blockingSingle();
+  }
 
-        comment = CommentUtil.aggregateCounts(comment);
-        comment = CommentUtil.aggregateVote(authKey, comment);
+  /**
+   * Add comment.
+   *
+   * @param questionId the websafe question id
+   * @param content the content
+   * @param mendtionIds the mendtion ids
+   * @param user the user  @return the comment
+   * @return the comment
+   */
+  public Comment add(String questionId, String content, Optional<String> mendtionIds, User user) {
+    // Create user key from user id.
+    final Key<Account> accountKey = Key.create(user.getUserId());
 
-        return comment;
+    // Create post key from websafe id.
+    final Key<Question> questionKey = Key.create(questionId);
+
+    // Get a random shard key.
+    final Key<QuestionCounterShard> questionShardKey =
+        questionShardService.getRandomShardKey(questionKey);
+
+    // Create tracker key.
+    final Key<Tracker> trackerKey = Tracker.createKey(accountKey);
+
+    // Create record key.
+    final Key<DeviceRecord> recordKey =
+        DeviceRecord.createKey(questionKey.getParent());
+
+    /*List<Key<Account>> mentionedKeys = MentionHelper.mentionedAccountKeys(mendtionIds);
+    List<Key<DeviceRecord>> mentionedRecordKeys = Lists.newArrayListWithCapacity(2);
+    if (mentionedKeys != null) {
+      for (Key<Account> key : mentionedKeys) {
+        mentionedRecordKeys.add(DeviceRecord.createKey(key));
+      }
+    }*/
+
+    ImmutableList<Key<?>> keys = ImmutableList.<Key<?>>builder()
+        .add(accountKey)
+        .add(questionKey)
+        .add(questionShardKey)
+        .add(trackerKey)
+        .add(recordKey)
+        .build();
+
+    // Make a batch load.
+    Map<Key<Object>, Object> fetched =
+        ofy().load().keys(keys.toArray(new Key[keys.size()]));
+
+    //noinspection SuspiciousMethodCalls
+    Account account = (Account) fetched.get(accountKey);
+    //noinspection SuspiciousMethodCalls
+    Question question = (Question) fetched.get(questionKey);
+    //noinspection SuspiciousMethodCalls
+    QuestionCounterShard qqs = (QuestionCounterShard) fetched.get(questionShardKey);
+    //noinspection SuspiciousMethodCalls
+    Tracker tracker = (Tracker) fetched.get(trackerKey);
+    //noinspection SuspiciousMethodCalls
+    DeviceRecord record = (DeviceRecord) fetched.get(recordKey);
+
+    CommentModel model = commentService.create(account, questionKey, content);
+
+    // Increase total comment number.
+    qqs.increaseComments();
+
+    // Start gamification check.
+    tracker = FirstCommentReward.of(tracker).getTracker();
+
+    tracker = FirstCommentForQuestionReward.of(tracker, question).getTracker();
+
+    tracker = CommentTimeOutReward.of(question, tracker).getTracker();
+
+    if (!question.isCommented()) {
+      question = question.withCommented(true);
     }
 
-    /**
-     * Add comment.
-     *
-     * @param websafeQuestionId the websafe question id
-     * @param content           the content
-     * @param user              the user
-     * @return the comment
-     */
-    public Comment add(String websafeQuestionId, String content, User user) {
-        // Create user key from user id.
-        final Key<Account> userKey = Key.create(user.getUserId());
+    CommentNotification commentNotification =
+        CommentNotification.create(account, questionKey.getParent(), record, model.getComment());
 
-        // Create post key from websafe id.
-        final Key<Question> questionKey = Key.create(websafeQuestionId);
+    // Immutable helper list object to save all entities in a single db write.
+    // For each single object use builder.add() method.
+    // For each list object use builder.addAll() method.
+    ImmutableList<Object> saveList = ImmutableList.builder()
+        .add(model.getComment())
+        .addAll(model.getShards())
+        .add(qqs)
+        .add(question)
+        .add(tracker)
+        .add(commentNotification.getNotification())
+        .build();
 
-        // Get a random shard key.
-        final Key<QuestionCounterShard> questionShardKey =
-                questionShardService.getRandomShardKey(questionKey);
+    ofy().save().entities(saveList).now();
 
-        // Make a batch load.
-        Map<Key<Object>, Object> map = ofy().load()
-                .keys(userKey, questionKey, questionShardKey);
+    notificationService.send(commentNotification);
 
-        // Immutable helper list object to save all entities in a single db write.
-        // For each single object use builder.add() method.
-        // For each list object use builder.addAll() method.
-        ImmutableList.Builder<Object> builder = ImmutableList.builder();
+    return model.getComment();
+  }
 
-        // Create a new post object from given inputs.
-        //noinspection SuspiciousMethodCalls
-        Comment comment = commentService
-                .create((Account) map.get(userKey), questionKey, content, commentShardService);
-        builder.add(comment);
+  /**
+   * Update comment.
+   *
+   * @param questionId the websafe question id
+   * @param commentId the websafe comment id
+   * @param content the content
+   * @param accepted the accepted
+   * @param user the user
+   * @return the comment
+   */
+  public Comment update(String questionId, String commentId, Optional<String> content,
+      Optional<Boolean> accepted, User user) {
+    // Immutable helper list object to save all entities in a single db write.
+    ImmutableList.Builder<Object> saveBuilder = ImmutableList.builder();
 
-        // Create a list of new shard entities for given comment.
-        List<CommentCounterShard> shards =
-                commentShardService.createShards(comment.getKey());
-        builder.addAll(shards);
+    // Create question key from websafe id.
+    final Key<Question> questionKey = Key.create(questionId);
 
-        // Get counter shard from map.
-        //noinspection SuspiciousMethodCalls
-        QuestionCounterShard shard = (QuestionCounterShard) map.get(questionShardKey);
+    // Create comment key from websafe id.
+    final Key<Comment> commentKey = Key.create(commentId);
 
-        // Increase total comment number.
-        shard.increaseComments();
-        builder.add(shard);
+    // Create device key from comment owner.
+    final Key<DeviceRecord> recordKey = DeviceRecord.createKey(commentKey.getParent());
 
-        //noinspection SuspiciousMethodCalls
-        Question question = (Question) map.get(questionKey);
+    // Create tracker key from comment owner.
+    final Key<Tracker> receiverTrackerKey = Tracker.createKey(commentKey.getParent());
 
-        if (!question.isFirstComment()) {
-            question = question.withFirstComment(true);
-            builder.add(question);
+    // Make a batch load.
+    //noinspection unchecked
+    Map<Key<Object>, Object> fetched =
+        ofy().load().keys(questionKey, commentKey, recordKey, receiverTrackerKey);
 
-            // TODO: 27.11.2016 Gamification.
-        }
+    //noinspection SuspiciousMethodCalls
+    Comment comment = (Comment) fetched.get(commentKey);
+    //noinspection SuspiciousMethodCalls
+    Question question = (Question) fetched.get(questionKey);
+    //noinspection SuspiciousMethodCalls
+    DeviceRecord record = (DeviceRecord) fetched.get(recordKey);
+    //noinspection SuspiciousMethodCalls
+    Tracker receiverTracker = (Tracker) fetched.get(receiverTrackerKey);
 
-        ofy().save().entities(builder.build()).now();
+    comment = commentService.update(comment, content, accepted);
+    Pair<Question, Comment> pair = commentService.accept(question, comment, accepted);
 
-        // TODO: 27.11.2016 Implement notification service.
+    ofy().transact(() -> {
+      // If comment is accepted, then send notification to comment owner.
+      if (accepted.isPresent()) {
+        Group.OfTwo<Tracker, Question> group =
+            gameService.exchangeBounties(receiverTracker, pair.first);
 
-        return comment;
+        saveBuilder.add(group.first);
+        saveBuilder.add(group.second);
+        saveBuilder.add(pair.second);
+
+        AcceptNotification acceptNotification =
+            AcceptNotification.create(commentKey.getParent(), record, question);
+        saveBuilder.add(acceptNotification.getNotification());
+
+        notificationService.send(acceptNotification);
+      } else {
+        saveBuilder.add(pair.first);
+        saveBuilder.add(pair.second);
+      }
+
+      ofy().save().entities(saveBuilder.build()).now();
+    });
+
+    return comment;
+  }
+
+  /**
+   * Remove.
+   *
+   * @param questionId the websafe question id
+   * @param commentId the websafe comment id
+   * @param user the user
+   */
+  public void delete(String questionId, String commentId, User user) {
+    // Create comment key from websafe id.
+    final Key<Comment> commentKey = Key.create(commentId);
+    final Key<Question> questionKey = Key.create(questionId);
+    final Key<QuestionCounterShard> shardKey =
+        questionShardService.getRandomShardKey(questionKey);
+
+    final List<Key<Vote>> voteKeys = ofy().load().type(Vote.class)
+        .filter(Vote.FIELD_VOTABLE_KEY + " =", commentKey)
+        .keys()
+        .list();
+
+    QuestionCounterShard shard = ofy().load().key(shardKey).now();
+    shard.decreaseComments();
+
+    // Immutable helper list object to save all entities in a single db write.
+    final ImmutableList<Key<?>> deleteList = ImmutableList.<Key<?>>builder()
+        .add(commentKey)
+        .addAll(commentShardService.createShardKeys(commentKey))
+        .addAll(voteKeys)
+        .build();
+
+    ofy().transact(() -> {
+      ofy().delete().keys(deleteList).now();
+      ofy().save().entity(shard).now();
+    });
+  }
+
+  /**
+   * List collection response.
+   *
+   * @param questionId the websafe question id
+   * @param cursor the cursor
+   * @param limit the limit
+   * @param user the user
+   * @return the collection response
+   */
+  public CollectionResponse<Comment> list(String questionId, Optional<String> cursor,
+      Optional<Integer> limit, User user) {
+    final Key<Account> authKey = Key.create(user.getUserId());
+    final Key<Question> questionKey = Key.create(questionId);
+
+    Query<Comment> query = ofy().load()
+        .group(Comment.ShardGroup.class)
+        .type(Comment.class)
+        .filter(Comment.FIELD_QUESTION_KEY + " =", questionKey)
+        .order("-" + Comment.FIELD_CREATED);
+
+    query = cursor.isPresent()
+        ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
+        : query;
+
+    query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
+
+    final QueryResultIterator<Comment> qi = query.iterator();
+
+    List<Comment> comments = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
+
+    while (qi.hasNext()) {
+      comments.add(qi.next());
     }
 
-    /**
-     * Update comment.
-     *
-     * @param websafeQuestionId the websafe question id
-     * @param websafeCommentId  the websafe comment id
-     * @param content           the content
-     * @param accepted          the accepted
-     * @param user              the user
-     * @return the comment
-     */
-    public Comment update(String websafeQuestionId, String websafeCommentId,
-                          Optional<String> content, Optional<Boolean> accepted, User user) {
-        // Create user key from user id.
-        final Key<Account> userKey = Key.create(user.getUserId());
+    comments = CommentUtil.mergeCommentCounts(comments)
+        .toList(DEFAULT_LIST_LIMIT)
+        .flatMap(comments1 -> CommentUtil.mergeVoteDirection(comments1, authKey).toList())
+        .blockingGet();
 
-        // Create question key from websafe id.
-        final Key<Question> questionKey = Key.create(websafeQuestionId);
-
-        // Create comment key from websafe id.
-        final Key<Comment> commentKey = Key.create(websafeCommentId);
-
-        // Make a batch load.
-        @SuppressWarnings("unchecked")
-        Map<Key<Votable>, Votable> map = ofy().load().keys(questionKey, commentKey);
-
-        @SuppressWarnings("SuspiciousMethodCalls")
-        Comment comment = (Comment) map.get(commentKey);
-        comment = commentService.update(comment, content, accepted);
-
-        @SuppressWarnings("SuspiciousMethodCalls")
-        Question question = (Question) map.get(questionKey);
-        Pair<Question, Comment> pair = commentService.accept(question, comment, accepted);
-
-        // Immutable helper list object to save all entities in a single db write.
-        ImmutableList<Object> saveList = ImmutableList.builder()
-                .add(pair.first)
-                .add(pair.second)
-                .build();
-
-        ofy().save().entities(saveList).now();
-
-        // TODO: 27.11.2016 Send bounty to taker.
-        // TODO: 27.11.2016 Implement notification service.
-
-        return comment;
-    }
-
-    /**
-     * Remove.
-     *
-     * @param websafeQuestionId the websafe question id
-     * @param websafeCommentId  the websafe comment id
-     * @param user              the user
-     */
-    public void delete(String websafeQuestionId, String websafeCommentId, User user) {
-        // Create user key from user id.
-        //final Key<Account> userKey = Key.createHashTag(user.getUserId());
-
-        // Create comment key from websafe id.
-        final Key<Comment> commentKey = Key.create(websafeCommentId);
-
-        // Immutable helper list object to save all entities in a single db write.
-        final ImmutableList<Key<?>> saveList = ImmutableList.<Key<?>>builder()
-                .add(commentKey)
-                .addAll(commentShardService.createShardKeys(commentKey))
-                .addAll(commentService.getVoteKeys(commentKey))
-                .build();
-
-        ofy().transact(new VoidWork() {
-            @Override
-            public void vrun() {
-                ofy().delete().keys(saveList);
-            }
-        });
-    }
-
-    /**
-     * List collection response.
-     *
-     * @param websafeQuestionId the websafe question id
-     * @param cursor            the cursor
-     * @param limit             the limit
-     * @param user              the user
-     * @return the collection response
-     */
-    public CollectionResponse<Comment> list(String websafeQuestionId,
-                                            Optional<String> cursor,
-                                            Optional<Integer> limit,
-                                            User user) {
-        final Key<Account> authKey = Key.create(user.getUserId());
-        final Key<Question> questionKey = Key.create(websafeQuestionId);
-
-        Query<Comment> query = ofy().load().type(Comment.class);
-        query = query.filter(Comment.FIELD_QUESTION_KEY + " =", questionKey);
-        query = query.order("-" + Comment.FIELD_CREATED);
-        query = cursor.isPresent()
-                ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
-                : query;
-        query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
-
-        final QueryResultIterator<Comment> iterator = query.iterator();
-
-        Map<Key<Comment>, Comment> commentMap = Maps.newLinkedHashMap();
-
-        while (iterator.hasNext()) {
-            Comment item = iterator.next();
-            commentMap.put(item.getKey(), item);
-        }
-
-        if (!commentMap.isEmpty()) {
-            commentMap = CommentUtil.aggregateCounts(commentMap, commentShardService);
-            commentMap = CommentUtil.aggregateVote(authKey, commentMap);
-        }
-
-        return CollectionResponse.<Comment>builder()
-                .setItems(commentMap.values())
-                .setNextPageToken(iterator.getCursor().toWebSafeString())
-                .build();
-    }
+    return CollectionResponse.<Comment>builder()
+        .setItems(comments)
+        .setNextPageToken(qi.getCursor().toWebSafeString())
+        .build();
+  }
 }

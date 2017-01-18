@@ -1,8 +1,5 @@
 package com.yoloo.backend.vote;
 
-import com.google.api.server.spi.config.AnnotationBoolean;
-import com.google.api.server.spi.config.ApiResourceProperty;
-
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
@@ -10,7 +7,7 @@ import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Parent;
 import com.yoloo.backend.account.Account;
-
+import com.yoloo.backend.question.Question;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,36 +20,101 @@ import lombok.experimental.Wither;
 @Cache
 @Value
 @Builder
-@Wither
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Vote {
 
-    public static final String FIELD_VOTABLE_KEY = "votableKey";
+  /**
+   * The constant FIELD_VOTABLE_KEY.
+   */
+  public static final String FIELD_VOTABLE_KEY = "votableKey";
 
-    // Websafe voteable id.
-    @Id
-    private String id;
+  // Websafe voteable id.
+  @Id
+  private String id;
 
-    @Parent
-    private Key<Account> parentUserKey;
+  @Parent
+  private Key<Account> parentUserKey;
 
-    @Index
-    @NonFinal
-    @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-    private Key<? extends Votable> votableKey;
+  @Wither
+  private Direction dir;
 
-    private Direction dir;
+  @Index
+  @NonFinal
+  private Key<Votable> votableKey;
 
-    @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-    public Key<Vote> getKey() {
-        return Key.create(parentUserKey, Vote.class, id);
-    }
+  /**
+   * Create key key.
+   *
+   * @param questionKey the question key
+   * @param accountKey the account key
+   * @return the key
+   */
+  public static Key<Vote> createKey(Key<Question> questionKey, Key<Account> accountKey) {
+    return Key.create(accountKey, Vote.class, questionKey.toWebSafeString());
+  }
 
-    @AllArgsConstructor
-    @Getter
-    public enum Direction {
-        DEFAULT(0), UP(1), DOWN(-1);
+  /**
+   * Gets key.
+   *
+   * @return the key
+   */
+  public Key<Vote> getKey() {
+    return Key.create(parentUserKey, Vote.class, id);
+  }
 
-        private int value;
-    }
+  /**
+   * Is up vote boolean.
+   *
+   * @return the boolean
+   */
+  public boolean isUpVote() {
+    return this.dir == Direction.UP;
+  }
+
+  /**
+   * Is down vote boolean.
+   *
+   * @return the boolean
+   */
+  public boolean isDownVote() {
+    return this.dir == Direction.DOWN;
+  }
+
+  /**
+   * Is un vote boolean.
+   *
+   * @return the boolean
+   */
+  public boolean isDefault() {
+    return this.dir == Direction.DEFAULT;
+  }
+
+  /**
+   * Whether the voter is also the author of the thing voted on.
+   *
+   * @return boolean boolean
+   */
+  public boolean isSelfVote() {
+    return this.parentUserKey.equivalent(votableKey.getParent());
+  }
+
+  /**
+   * The enum Direction.
+   */
+  @AllArgsConstructor
+  @Getter
+  public enum Direction {
+    /**
+     * Unvote direction.
+     */
+    DEFAULT(0), /**
+     * Up direction.
+     */
+    UP(1), /**
+     * Down direction.
+     */
+    DOWN(-1);
+
+    private int value;
+  }
 }

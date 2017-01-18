@@ -4,257 +4,298 @@ import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.Ref;
 import com.yoloo.backend.account.Account;
+import com.yoloo.backend.account.AccountCounterShard;
+import com.yoloo.backend.account.AccountModel;
+import com.yoloo.backend.account.AccountShardService;
 import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentController;
-import com.yoloo.backend.comment.CommentCounterShard;
-import com.yoloo.backend.comment.CommentService;
-import com.yoloo.backend.comment.CommentShardService;
+import com.yoloo.backend.comment.CommentControllerFactory;
 import com.yoloo.backend.comment.CommentUtil;
+import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.gamification.GamificationService;
-import com.yoloo.backend.notification.NotificationService;
+import com.yoloo.backend.gamification.Tracker;
 import com.yoloo.backend.question.Question;
-import com.yoloo.backend.question.QuestionCounterShard;
-import com.yoloo.backend.question.QuestionService;
-import com.yoloo.backend.question.QuestionShardService;
+import com.yoloo.backend.question.QuestionController;
+import com.yoloo.backend.question.QuestionControllerFactory;
+import com.yoloo.backend.question.QuestionWrapper;
+import com.yoloo.backend.shard.ShardUtil;
+import com.yoloo.backend.tag.Tag;
+import com.yoloo.backend.tag.TagController;
+import com.yoloo.backend.tag.TagControllerFactory;
+import com.yoloo.backend.tag.TagGroup;
+import com.yoloo.backend.topic.Topic;
+import com.yoloo.backend.topic.TopicController;
+import com.yoloo.backend.topic.TopicControllerFactory;
 import com.yoloo.backend.util.TestBase;
-
+import java.util.List;
+import java.util.UUID;
 import org.joda.time.DateTime;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import static com.yoloo.backend.util.TestObjectifyService.fact;
 import static com.yoloo.backend.util.TestObjectifyService.ofy;
 import static org.junit.Assert.assertEquals;
 
-@RunWith(JUnit4.class)
 public class VoteControllerTest extends TestBase {
 
-    private static final String USER_EMAIL = "test@gmail.com";
-    private static final String USER_AUTH_DOMAIN = "gmail.com";
+  private static final String USER_EMAIL = "test@gmail.com";
+  private static final String USER_AUTH_DOMAIN = "gmail.com";
 
-    private Account owner;
-    private Question question;
+  private Account owner;
+  private Question question;
 
-    @Override
-    public void setUpGAE() {
-        super.setUpGAE();
+  private QuestionController questionController;
+  private CommentController commentController;
+  private TagController tagController;
+  private TopicController topicController;
+  private VoteController voteController;
 
-        helper.setEnvIsLoggedIn(true)
-                .setEnvIsAdmin(true)
-                .setEnvAuthDomain(USER_AUTH_DOMAIN)
-                .setEnvEmail(USER_EMAIL);
-    }
+  @Override
+  public void setUpGAE() {
+    super.setUpGAE();
 
-    @Override
-    public void setUp() {
-        super.setUp();
+    helper.setEnvIsLoggedIn(true)
+        .setEnvIsAdmin(true)
+        .setEnvAuthDomain(USER_AUTH_DOMAIN)
+        .setEnvEmail(USER_EMAIL);
+  }
 
-        fact().register(Account.class);
-        fact().register(Comment.class);
-        fact().register(CommentCounterShard.class);
-        fact().register(Question.class);
-        fact().register(QuestionCounterShard.class);
-        fact().register(Vote.class);
+  @Override
+  public void setUp() {
+    super.setUp();
 
-        QuestionShardService service = QuestionShardService.newInstance();
+    questionController = QuestionControllerFactory.of().create();
+    commentController = CommentControllerFactory.of().create();
+    tagController = TagControllerFactory.of().create();
+    topicController = TopicControllerFactory.of().create();
+    voteController = VoteControllerFactory.of().create();
 
-        owner = createAccount();
-        question = createQuestion(owner.getKey(), service);
+    AccountModel model = createAccount();
+    owner = model.getAccount();
+    DeviceRecord record = createRecord(owner);
+    Tracker tracker = GamificationService.create().create(owner.getKey());
 
-        ImmutableList.Builder<Object> builder = ImmutableList.builder();
+    User user = new User(USER_EMAIL, USER_AUTH_DOMAIN, owner.getWebsafeId());
 
-        builder.add(owner)
-                .add(question)
-                .addAll(service.createShards(question.getKey()));
+    Topic europe = topicController.add("europe", Topic.Type.THEME, user);
 
-        ofy().save().entities(builder.build()).now();
-    }
+    TagGroup passport = tagController.addGroup("passport", user);
 
-    @Test
-    public void testVoteComment_Up() throws Exception {
-        final User user = UserServiceFactory.getUserService().getCurrentUser();
+    Tag visa = tagController.addTag("visa", "en", passport.getWebsafeId(), user);
 
-        Comment comment = getCommentController()
-                .add(question.getWebsafeId(), "Test comment", user);
+    ImmutableList<Object> saveList = ImmutableList.builder()
+        .add(owner)
+        .addAll(model.getShards())
+        .add(record)
+        .add(tracker)
+        .add(europe)
+        .add(passport)
+        .add(visa)
+        .build();
 
-        getVoteController().vote(comment.getWebsafeId(), Vote.Direction.UP, user);
+    ofy().save().entities(saveList).now();
 
-        comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment);
-        assertEquals(Vote.Direction.UP, comment.getDir());
-        assertEquals(1, comment.getVotes());
-    }
+    question = questionController.add(createQuestionWrapper(), user);
+  }
 
-    @Test
-    public void testVoteComment_Down() throws Exception {
-        final User user = UserServiceFactory.getUserService().getCurrentUser();
+  @Test
+  public void testVoteComment_Up() throws Exception {
+    final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-        Comment comment = getCommentController()
-                .add(question.getWebsafeId(), "Test comment", user);
+    Comment comment =
+        commentController.add(question.getWebsafeId(), "Test comment", Optional.absent(), user);
 
-        getVoteController().vote(comment.getWebsafeId(), Vote.Direction.DOWN, user);
+    voteController.vote(comment.getWebsafeId(), Vote.Direction.UP, user);
 
-        comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment);
-        assertEquals(Vote.Direction.DOWN, comment.getDir());
-        assertEquals(-1, comment.getVotes());
-    }
+    comment = CommentUtil.mergeVoteDirection(comment, Key.create(user.getUserId()))
+        .flatMap(CommentUtil::mergeCommentCounts)
+        .blockingSingle();
 
-    @Test
-    public void testVoteComment_Default() throws Exception {
-        final User user = UserServiceFactory.getUserService().getCurrentUser();
+    assertEquals(Vote.Direction.UP, comment.getDir());
+    assertEquals(1, comment.getVotes());
+  }
 
-        Comment comment = getCommentController()
-                .add(question.getWebsafeId(), "Test comment", user);
+  @Test
+  public void testVoteComment_Down() throws Exception {
+    final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-        getVoteController().vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
+    Comment comment =
+        commentController.add(question.getWebsafeId(), "Test comment", Optional.absent(), user);
 
-        comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment);
-        assertEquals(Vote.Direction.DEFAULT, comment.getDir());
-        assertEquals(0, comment.getVotes());
-    }
+    voteController.vote(comment.getWebsafeId(), Vote.Direction.DOWN, user);
 
-    @Test
-    public void testVoteComment_UpToDefault() throws Exception {
-        final User user = UserServiceFactory.getUserService().getCurrentUser();
+    comment = CommentUtil.mergeVoteDirection(comment, Key.create(user.getUserId()))
+        .flatMap(CommentUtil::mergeCommentCounts)
+        .blockingSingle();
 
-        Comment comment = getCommentController()
-                .add(question.getWebsafeId(), "Test comment", user);
+    assertEquals(Vote.Direction.DOWN, comment.getDir());
+    assertEquals(-1, comment.getVotes());
+  }
 
-        getVoteController().vote(comment.getWebsafeId(), Vote.Direction.UP, user);
+  @Test
+  public void testVoteComment_Default() throws Exception {
+    final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-        comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment);
-        assertEquals(Vote.Direction.UP, comment.getDir());
-        assertEquals(1, comment.getVotes());
+    Comment comment =
+        commentController.add(question.getWebsafeId(), "Test comment", Optional.absent(), user);
 
-        getVoteController().vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
+    voteController.vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
 
-        comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment);
-        assertEquals(Vote.Direction.DEFAULT, comment.getDir());
-        assertEquals(0, comment.getVotes());
-    }
+    comment = CommentUtil.mergeVoteDirection(comment, Key.create(user.getUserId()))
+        .flatMap(CommentUtil::mergeCommentCounts)
+        .blockingSingle();
 
-    @Test
-    public void testVoteComment_DefaultToUp() throws Exception {
-        final User user = UserServiceFactory.getUserService().getCurrentUser();
+    assertEquals(Vote.Direction.DEFAULT, comment.getDir());
+    assertEquals(0, comment.getVotes());
+  }
 
-        Comment comment = getCommentController()
-                .add(question.getWebsafeId(), "Test comment", user);
+  @Test
+  public void testVoteComment_UpToDefault() throws Exception {
+    final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-        getVoteController().vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
+    Comment comment =
+        commentController.add(question.getWebsafeId(), "Test comment", Optional.absent(), user);
 
-        comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment);
-        assertEquals(Vote.Direction.DEFAULT, comment.getDir());
-        assertEquals(0, comment.getVotes());
+    voteController.vote(comment.getWebsafeId(), Vote.Direction.UP, user);
 
-        getVoteController().vote(comment.getWebsafeId(), Vote.Direction.UP, user);
+    comment = CommentUtil.mergeVoteDirection(comment, Key.create(user.getUserId()))
+        .flatMap(CommentUtil::mergeCommentCounts)
+        .blockingSingle();
 
-        comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment);
-        assertEquals(Vote.Direction.UP, comment.getDir());
-        assertEquals(1, comment.getVotes());
-    }
+    assertEquals(Vote.Direction.UP, comment.getDir());
+    assertEquals(1, comment.getVotes());
 
-    @Test
-    public void testVoteComment_DefaultToDown() throws Exception {
-        final User user = UserServiceFactory.getUserService().getCurrentUser();
+    voteController.vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
 
-        Comment comment = getCommentController()
-                .add(question.getWebsafeId(), "Test comment", user);
+    comment = CommentUtil.mergeVoteDirection(comment, Key.create(user.getUserId()))
+        .flatMap(CommentUtil::mergeCommentCounts)
+        .blockingSingle();
 
-        getVoteController().vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
+    assertEquals(Vote.Direction.DEFAULT, comment.getDir());
+    assertEquals(0, comment.getVotes());
+  }
 
-        comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment);
-        assertEquals(Vote.Direction.DEFAULT, comment.getDir());
-        assertEquals(0, comment.getVotes());
+  @Test
+  public void testVoteComment_DefaultToUp() throws Exception {
+    final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-        getVoteController().vote(comment.getWebsafeId(), Vote.Direction.DOWN, user);
+    Comment comment =
+        commentController.add(question.getWebsafeId(), "Test comment", Optional.absent(), user);
 
-        comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment);
-        assertEquals(Vote.Direction.DOWN, comment.getDir());
-        assertEquals(-1, comment.getVotes());
-    }
+    voteController.vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
 
-    @Test
-    public void testVoteComment_DownToDefault() throws Exception {
-        final User user = UserServiceFactory.getUserService().getCurrentUser();
+    comment = CommentUtil.mergeVoteDirection(comment, Key.create(user.getUserId()))
+        .flatMap(CommentUtil::mergeCommentCounts)
+        .blockingSingle();
 
-        Comment comment = getCommentController()
-                .add(question.getWebsafeId(), "Test comment", user);
+    assertEquals(Vote.Direction.DEFAULT, comment.getDir());
+    assertEquals(0, comment.getVotes());
 
-        getVoteController().vote(comment.getWebsafeId(), Vote.Direction.DOWN, user);
+    voteController.vote(comment.getWebsafeId(), Vote.Direction.UP, user);
 
-        comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment);
-        assertEquals(Vote.Direction.DOWN, comment.getDir());
-        assertEquals(-1, comment.getVotes());
+    comment = CommentUtil.mergeVoteDirection(comment, Key.create(user.getUserId()))
+        .flatMap(CommentUtil::mergeCommentCounts)
+        .blockingSingle();
 
-        getVoteController().vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
+    assertEquals(Vote.Direction.UP, comment.getDir());
+    assertEquals(1, comment.getVotes());
+  }
 
-        comment = CommentUtil.aggregateVote(Key.<Account>create(user.getUserId()), comment);
-        comment = CommentUtil.aggregateCounts(comment);
-        assertEquals(Vote.Direction.DEFAULT, comment.getDir());
-        assertEquals(0, comment.getVotes());
-    }
+  @Test
+  public void testVoteComment_DefaultToDown() throws Exception {
+    final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    private Account createAccount() {
-        Key<Account> ownerKey = ofy().factory().allocateId(Account.class);
+    Comment comment =
+        commentController.add(question.getWebsafeId(), "Test comment", Optional.absent(), user);
 
-        return Account.builder()
-                .id(ownerKey.getId())
-                .avatarUrl(new Link("Test avatar"))
-                .email(new Email(USER_EMAIL))
-                .username("Test user")
-                .created(DateTime.now())
-                .build();
-    }
+    voteController.vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
 
-    private Question createQuestion(Key<Account> userKey, QuestionShardService service) {
-        Key<Question> questionKey = ofy().factory().allocateId(userKey, Question.class);
+    comment = CommentUtil.mergeVoteDirection(comment, Key.create(user.getUserId()))
+        .flatMap(CommentUtil::mergeCommentCounts)
+        .blockingSingle();
 
-        return Question.builder()
-                .id(questionKey.getId())
-                .parentUserKey(userKey)
-                .acceptedComment(null)
-                .avatarUrl(new Link("test"))
-                .username("testUser")
-                .firstComment(false)
-                .shardKeys(service.createShardKeys(questionKey))
-                .bounty(0)
-                .comments(0)
-                .votes(0)
-                .content("demo content")
-                .dir(Vote.Direction.DEFAULT)
-                .created(DateTime.now())
-                .build();
-    }
+    assertEquals(Vote.Direction.DEFAULT, comment.getDir());
+    assertEquals(0, comment.getVotes());
 
-    private CommentController getCommentController() {
-        return CommentController
-                .newInstance(
-                        CommentService.newInstance(),
-                        CommentShardService.newInstance(),
-                        QuestionService.newInstance(),
-                        QuestionShardService.newInstance(),
-                        GamificationService.newInstance(),
-                        NotificationService.newInstance());
-    }
+    voteController.vote(comment.getWebsafeId(), Vote.Direction.DOWN, user);
 
-    private VoteController getVoteController() {
-        return VoteController.newInstance(
-                QuestionShardService.newInstance(),
-                CommentShardService.newInstance()
-        );
-    }
+    comment = CommentUtil.mergeVoteDirection(comment, Key.create(user.getUserId()))
+        .flatMap(CommentUtil::mergeCommentCounts)
+        .blockingSingle();
+
+    assertEquals(Vote.Direction.DOWN, comment.getDir());
+    assertEquals(-1, comment.getVotes());
+  }
+
+  @Test
+  public void testVoteComment_DownToDefault() throws Exception {
+    final User user = UserServiceFactory.getUserService().getCurrentUser();
+
+    Comment comment =
+        commentController.add(question.getWebsafeId(), "Test comment", Optional.absent(), user);
+
+    voteController.vote(comment.getWebsafeId(), Vote.Direction.DOWN, user);
+
+    comment = CommentUtil.mergeVoteDirection(comment, Key.create(user.getUserId()))
+        .flatMap(CommentUtil::mergeCommentCounts)
+        .blockingSingle();
+
+    assertEquals(Vote.Direction.DOWN, comment.getDir());
+    assertEquals(-1, comment.getVotes());
+
+    voteController.vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
+
+    comment = CommentUtil.mergeVoteDirection(comment, Key.create(user.getUserId()))
+        .flatMap(CommentUtil::mergeCommentCounts)
+        .blockingSingle();
+
+    assertEquals(Vote.Direction.DEFAULT, comment.getDir());
+    assertEquals(0, comment.getVotes());
+  }
+
+  private AccountModel createAccount() {
+    final Key<Account> ownerKey = fact().allocateId(Account.class);
+
+    AccountShardService ass = AccountShardService.create();
+
+    List<AccountCounterShard> shards = ass.createShards(ownerKey);
+
+    List<Ref<AccountCounterShard>> refs = ShardUtil.createRefs(shards).toList().blockingGet();
+
+    Account account = Account.builder()
+        .id(ownerKey.getId())
+        .avatarUrl(new Link("Test avatar"))
+        .email(new Email(USER_EMAIL))
+        .username("Test user")
+        .shardRefs(refs)
+        .created(DateTime.now())
+        .build();
+
+    return AccountModel.builder()
+        .account(account)
+        .shards(shards)
+        .build();
+  }
+
+  private QuestionWrapper createQuestionWrapper() {
+    return QuestionWrapper.builder()
+        .content("Test content")
+        .tags("visa,passport")
+        .topics("europe")
+        .bounty(0)
+        .build();
+  }
+
+  private DeviceRecord createRecord(Account owner) {
+    return DeviceRecord.builder()
+        .id(owner.getWebsafeId())
+        .parentUserKey(owner.getKey())
+        .regId(UUID.randomUUID().toString())
+        .build();
+  }
 }

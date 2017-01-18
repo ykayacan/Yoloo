@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:clipChildren="false"
+  android:clipToPadding="false">
+
+  <TextView
+    android:id="@+id/tv_category_trending_now"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:paddingBottom="8dp"
+    android:paddingEnd="16dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingStart="16dp"
+    android:paddingTop="8dp"
+    android:text="@string/label_feed_trending_now"
+    android:textAllCaps="true"
+    android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+    android:textColor="@color/inactive_icon_dark" />
+
+  <TextView
+    android:id="@+id/tv_category_explore"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="end"
+    android:background="?android:attr/selectableItemBackground"
+    android:paddingBottom="8dp"
+    android:paddingEnd="16dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingStart="16dp"
+    android:paddingTop="8dp"
+    android:text="@string/label_feed_explore"
+    android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+    android:textColor="@color/primary_blue" />
+
+  <android.support.v7.widget.RecyclerView
+    android:id="@+id/rv_category_trending"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="40dp"
+    android:clipToPadding="false"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    tools:listitem="@layout/item_feed_category" />
+</FrameLayout>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical">
+
+  <com.yoloo.android.feature.ui.widget.TagAutoCompleteTextView
+    android:id="@+id/tv_tag_autocomplete"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="24dp"
+    android:layout_marginLeft="24dp"
+    android:layout_marginRight="24dp"
+    android:layout_marginStart="24dp"
+    android:layout_marginTop="20dp"
+    android:hint="@string/hint_max_tags"
+    app:allowSpaceInTag="true" />
+
+  <TextView
+    android:id="@+id/tv_overlay_recommended_tags"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:layout_marginEnd="24dp"
+    android:layout_marginLeft="24dp"
+    android:layout_marginRight="24dp"
+    android:layout_marginStart="24dp"
+    android:layout_marginTop="8dp"
+    android:text="@string/label_tag_overlay_recommended"
+    android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+    android:textColor="@color/primary_blue" />
+
+  <com.yoloo.android.feature.ui.widget.tagview.TagView
+    android:id="@+id/tagview_overlay_recommended_tags"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="24dp"
+    android:layout_marginLeft="24dp"
+    android:layout_marginRight="24dp"
+    android:layout_marginStart="24dp"
+    app:rowGravity="left"
+    app:rowMode="wrap"
+    app:selectionMode="true"
+    app:tagBackground="@drawable/editor_tag_bg"
+    app:tagTextColor="@color/topic_text"
+    app:tagTextGravity="center" />
+
+</LinearLayout>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="hint_editor">Ask anything about your trip here…</string>
+
+  <string name="label_ask_bounty">Ask a bounty question</string>
+  <string name="label_select_media_source_title">Select media</string>
+  <string name="label_select_media">Select media</string>
+  <string name="label_crop_image_title">Crop Image</string>
+
+  <string-array name="action_list_add_media">
+    <item>From gallery</item>
+    <item>From camera</item>
+  </string-array>
+
+  <string name="label_tag"># %1$s</string>
+</resources>

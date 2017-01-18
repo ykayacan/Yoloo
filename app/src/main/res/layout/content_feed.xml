@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  tools:context=".feature.feed.userfeed.UserFeedController">
+
+  <android.support.design.widget.AppBarLayout
+    android:id="@+id/appbar_feed"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:theme="@style/Yoloo.AppBarOverlay">
+
+    <android.support.v7.widget.Toolbar
+      android:id="@+id/toolbar_feed"
+      android:layout_width="match_parent"
+      android:layout_height="?attr/actionBarSize"
+      android:background="?attr/colorPrimary"
+      app:popupTheme="@style/Yoloo.PopupOverlay" />
+
+  </android.support.design.widget.AppBarLayout>
+
+  <android.support.v4.widget.SwipeRefreshLayout
+    android:id="@+id/swipe_feed"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <android.support.v7.widget.RecyclerView
+      android:id="@+id/rv_feed"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+
+  </android.support.v4.widget.SwipeRefreshLayout>
+
+  <View
+    android:id="@+id/view_feed_action"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:visibility="gone" />
+
+  <View
+    android:id="@+id/dimming_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+  <com.yoloo.android.feature.ui.widget.floatingactionmenu.widget.FloatingActionMenu
+    android:id="@+id/fab_menu_feed"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="end|bottom"
+    app:fabMenuCloseIconAngle="135"
+    app:fabMenuCloseIconSrc="@drawable/ic_close_white_24dp"
+    app:fabMenuLabelStyle="@style/Yoloo.LightLabel">
+
+    <android.support.design.widget.FloatingActionButton
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_margin="@dimen/fab_margin"
+      android:tint="@android:color/white"
+      app:srcCompat="@drawable/ic_add_black_24dp" />
+
+    <android.support.design.widget.FloatingActionButton
+      android:id="@+id/fab_ask_question"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:contentDescription="@string/action_ask_question"
+      app:fabSize="mini"
+      app:srcCompat="@drawable/ic_edit_white_18dp" />
+
+    <android.support.design.widget.FloatingActionButton
+      android:id="@+id/fab_share_trip"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:contentDescription="@string/action_share_trip"
+      app:fabSize="mini"
+      app:srcCompat="@drawable/ic_edit_white_18dp" />
+
+  </com.yoloo.android.feature.ui.widget.floatingactionmenu.widget.FloatingActionMenu>
+
+</android.support.design.widget.CoordinatorLayout>

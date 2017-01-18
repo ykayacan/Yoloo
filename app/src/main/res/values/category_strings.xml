@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+  <!-- Labels -->
+  <string name="topic_africa">Africa</string>
+  <string name="topic_america">America</string>
+  <string name="topic_asia">Asia</string>
+  <string name="topic_canada">Canada</string>
+  <string name="topic_europe">Europe</string>
+  <string name="topic_middle_east">Middle East</string>
+  <string name="topic_south_pacific">South Pacific</string>
+  <string name="topic_united_kingdom">United Kingdom</string>
+
+  <string name="topic_activities">Activities</string>
+  <string name="topic_adventure">Adventure</string>
+  <string name="topic_camping">Camping</string>
+  <string name="topic_culture">Culture</string>
+  <string name="topic_events">Events</string>
+  <string name="topic_food_drink">Food &amp; Drink</string>
+  <string name="topic_nightlife">Nightlife</string>
+  <string name="topic_solo_travel">Solo Travel</string>
+  <string name="topic_study_abroad">Study Abroad</string>
+  <string name="topic_tours">Tours</string>
+
+</resources>

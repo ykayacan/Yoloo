@@ -6,176 +6,171 @@ import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.VoidWork;
 import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.account.AccountCounterShard;
 import com.yoloo.backend.account.AccountShardService;
+import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.notification.NotificationService;
-
+import com.yoloo.backend.notification.type.FollowNotification;
 import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Logger;
-
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 
 import static com.yoloo.backend.OfyService.ofy;
 
-@RequiredArgsConstructor(staticName = "newInstance")
+@AllArgsConstructor(staticName = "create")
 public class FollowController extends Controller {
 
-    private static final Logger logger =
-            Logger.getLogger(FollowController.class.getName());
+  private static final Logger logger =
+      Logger.getLogger(FollowController.class.getName());
 
-    /**
-     * Maximum number of follow entity to return.
-     */
-    private static final int DEFAULT_LIST_LIMIT = 20;
+  /**
+   * Maximum number of follow entity to return.
+   */
+  private static final int DEFAULT_LIST_LIMIT = 20;
 
-    @NonNull
-    private FollowService followService;
+  @NonNull
+  private FollowService followService;
 
-    @NonNull
-    private AccountShardService accountShardService;
+  @NonNull
+  private AccountShardService accountShardService;
 
-    @NonNull
-    private NotificationService notificationService;
+  @NonNull
+  private NotificationService notificationService;
 
-    public void follow(String websafeFollowId, User user) {
-        // Create user key from user id.
-        final Key<Account> followerKey = Key.create(user.getUserId());
+  public void follow(String followingId, User user) {
+    // Create user key from user id.
+    final Key<Account> followerKey = Key.create(user.getUserId());
 
-        // Create target user key from user id.
-        final Key<Account> followingKey = Key.create(websafeFollowId);
+    // Create target user key from user id.
+    final Key<Account> followingKey = Key.create(followingId);
 
-        Follow follow = followService.create(followerKey, followingKey);
+    // Create record key for following account.
+    final Key<DeviceRecord> recordKey = DeviceRecord.createKey(followingKey);
 
-        Key<AccountCounterShard> followerShardKey =
-                accountShardService.getRandomShardKey(followerKey);
-        Key<AccountCounterShard> followingShardKey =
-                accountShardService.getRandomShardKey(followingKey);
+    Follow follow = followService.create(followerKey, followingKey);
 
-        Map<Key<Object>, Object> map = ofy().load()
-                .keys(followerKey, followerShardKey, followingShardKey);
+    Key<AccountCounterShard> followerShardKey =
+        accountShardService.getRandomShardKey(followerKey);
+    Key<AccountCounterShard> followingShardKey =
+        accountShardService.getRandomShardKey(followingKey);
 
-        //noinspection SuspiciousMethodCalls
-        AccountCounterShard followerShard = (AccountCounterShard) map.get(followerShardKey);
-        //noinspection SuspiciousMethodCalls
-        AccountCounterShard followingShard = (AccountCounterShard) map.get(followingShardKey);
+    Map<Key<Object>, Object> fetched = ofy().load()
+        .keys(followerKey, recordKey, followerShardKey, followingShardKey);
 
-        followerShard = accountShardService
-                .updateCounter(followerShard, AccountShardService.UpdateType.FOLLOWING_UP);
-        followingShard = accountShardService
-                .updateCounter(followingShard, AccountShardService.UpdateType.FOLLOWER_UP);
+    //noinspection SuspiciousMethodCalls
+    Account follower = (Account) fetched.get(followerKey);
+    //noinspection SuspiciousMethodCalls
+    DeviceRecord record = (DeviceRecord) fetched.get(recordKey);
+    //noinspection SuspiciousMethodCalls
+    AccountCounterShard followerShard = (AccountCounterShard) fetched.get(followerShardKey);
+    //noinspection SuspiciousMethodCalls
+    AccountCounterShard followingShard = (AccountCounterShard) fetched.get(followingShardKey);
 
-        // TODO: 29.11.2016 Send notification to following user.
+    followerShard = accountShardService
+        .updateCounter(followerShard, AccountShardService.Update.FOLLOWING_UP);
+    followingShard = accountShardService
+        .updateCounter(followingShard, AccountShardService.Update.FOLLOWER_UP);
 
-        final ImmutableList<Object> saveList = ImmutableList.builder()
-                .add(follow)
-                .add(followerShard)
-                .add(followingShard)
-                .build();
+    FollowNotification notification =
+        FollowNotification.create(follower, followingKey, record);
 
-        ofy().transact(new VoidWork() {
-            @Override
-            public void vrun() {
-                ofy().save().entities(saveList).now();
-            }
-        });
+    ImmutableList<Object> saveList = ImmutableList.builder()
+        .add(follow)
+        .add(followerShard)
+        .add(followingShard)
+        .add(notification.getNotification())
+        .build();
+
+    ofy().transact(() -> ofy().save().entities(saveList).now());
+
+    notificationService.send(notification);
+  }
+
+  public void unfollow(String followingId, User user) {
+    // Create user key from user id.
+    final Key<Account> followerKey = Key.create(user.getUserId());
+
+    // Create target user key from user id.
+    final Key<Account> followingKey = Key.create(followingId);
+
+    final Key<Follow> followKey = ofy().load().type(Follow.class)
+        .ancestor(followerKey).filter(Follow.FIELD_FOLLOWING_KEY + " =", followingKey)
+        .keys().first().now();
+
+    Key<AccountCounterShard> followerShardKey =
+        accountShardService.getRandomShardKey(followerKey);
+    Key<AccountCounterShard> followingShardKey =
+        accountShardService.getRandomShardKey(followingKey);
+
+    Map<Key<Object>, Object> fetched = ofy().load()
+        .keys(followerKey, followerShardKey, followingShardKey);
+
+    //noinspection SuspiciousMethodCalls
+    AccountCounterShard followerShard = (AccountCounterShard) fetched.get(followerShardKey);
+    //noinspection SuspiciousMethodCalls
+    AccountCounterShard followingShard = (AccountCounterShard) fetched.get(followingShardKey);
+
+    followerShard = accountShardService
+        .updateCounter(followerShard, AccountShardService.Update.FOLLOWING_DOWN);
+    followingShard = accountShardService
+        .updateCounter(followingShard, AccountShardService.Update.FOLLOWER_DOWN);
+
+    final ImmutableList<Object> saveList = ImmutableList.builder()
+        .add(followerShard)
+        .add(followingShard)
+        .build();
+
+    ofy().transact(() -> {
+      ofy().defer().delete().key(followKey);
+      ofy().defer().save().entities(saveList);
+    });
+  }
+
+  public CollectionResponse<Account> list(String accountId, ListType type, Optional<Integer> limit,
+      Optional<String> cursor, User user) {
+    // Create account key from websafe id.
+    final Key<Account> followerKey = Key.create(accountId);
+
+    // Init query fetch request.
+    Query<Follow> query = ofy().load().type(Follow.class);
+
+    if (type.equals(ListType.FOLLOWING)) {
+      query = query.ancestor(followerKey);
+    } else if (type.equals(ListType.FOLLOWER)) {
+      query = query.filter(Follow.FIELD_FOLLOWING_KEY + " =", followerKey);
     }
 
-    public void unfollow(String websafeFollowId, User user) {
-        // Create user key from user id.
-        final Key<Account> followerKey = Key.create(user.getUserId());
+    // Fetch items from beginning from cursor.
+    query = cursor.isPresent()
+        ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
+        : query;
 
-        // Create target user key from user id.
-        final Key<Account> followingKey = Key.create(websafeFollowId);
+    // Limit items.
+    query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
 
-        final Key<Follow> followKey = ofy().load().type(Follow.class)
-                .ancestor(followerKey).filter(Follow.FIELD_FOLLOWING_KEY + " =", followingKey)
-                .keys().first().now();
+    final QueryResultIterator<Follow> qi = query.iterator();
 
-        Key<AccountCounterShard> followerShardKey =
-                accountShardService.getRandomShardKey(followerKey);
-        Key<AccountCounterShard> followingShardKey =
-                accountShardService.getRandomShardKey(followingKey);
+    ImmutableList.Builder<Key<Account>> builder = ImmutableList.builder();
 
-        Map<Key<Object>, Object> map = ofy().load()
-                .keys(followerKey, followerShardKey, followingShardKey);
-
-        //noinspection SuspiciousMethodCalls
-        AccountCounterShard followerShard = (AccountCounterShard) map.get(followerShardKey);
-        //noinspection SuspiciousMethodCalls
-        AccountCounterShard followingShard = (AccountCounterShard) map.get(followingShardKey);
-
-        followerShard = accountShardService
-                .updateCounter(followerShard, AccountShardService.UpdateType.FOLLOWING_DOWN);
-        followingShard = accountShardService
-                .updateCounter(followingShard, AccountShardService.UpdateType.FOLLOWER_DOWN);
-
-        final ImmutableList<Object> saveList = ImmutableList.builder()
-                .add(followerShard)
-                .add(followingShard)
-                .build();
-
-        ofy().transact(new VoidWork() {
-            @Override
-            public void vrun() {
-                ofy().defer().delete().key(followKey);
-                ofy().defer().save().entities(saveList);
-            }
-        });
+    while (qi.hasNext()) {
+      if (type.equals(ListType.FOLLOWING)) {
+        builder.add(qi.next().getFollowingKey());
+      } else if (type.equals(ListType.FOLLOWER)) {
+        builder.add(qi.next().getParentUserKey());
+      }
     }
 
-    public CollectionResponse<Account> list(String websafeAccountId,
-                                             FollowListType type,
-                                             Optional<Integer> limit,
-                                             Optional<String> cursor,
-                                             User user) {
-        // Create account key from websafe id.
-        final Key<Account> followerKey = Key.create(websafeAccountId);
+    final Collection<Account> accounts = ofy().load().keys(builder.build()).values();
 
-        // Init query fetch request.
-        Query<Follow> query = ofy().load().type(Follow.class);
-
-        if (type.equals(FollowListType.FOLLOWING)) {
-            query = query.ancestor(followerKey);
-        } else if (type.equals(FollowListType.FOLLOWER)) {
-            query = query.filter(Follow.FIELD_FOLLOWING_KEY + " =", followerKey);
-        }
-
-        // Fetch items from beginning from cursor.
-        query = cursor.isPresent()
-                ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
-                : query;
-
-        // Limit items.
-        query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
-
-        final QueryResultIterator<Follow> qi = query.iterator();
-
-        ImmutableList.Builder<Key<Account>> builder = ImmutableList.builder();
-        while (qi.hasNext()) {
-            if (type.equals(FollowListType.FOLLOWING)) {
-                builder.add(qi.next().getFollowingKey());
-            } else if (type.equals(FollowListType.FOLLOWER)) {
-                builder.add(qi.next().getParentUserKey());
-            }
-        }
-
-        final Collection<Account> accounts = ofy().load().keys(builder.build()).values();
-
-        return CollectionResponse.<Account>builder()
-                .setItems(accounts)
-                .setNextPageToken(qi.getCursor().toWebSafeString())
-                .build();
-    }
-
-    enum FollowListType {
-        FOLLOWER, FOLLOWING
-    }
+    return CollectionResponse.<Account>builder()
+        .setItems(accounts)
+        .setNextPageToken(qi.getCursor().toWebSafeString())
+        .build();
+  }
 }

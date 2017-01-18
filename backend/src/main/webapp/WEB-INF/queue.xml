@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <queue-entries>
     <queue>
-        <name>update-category-rank-queue</name>
+        <name>update-categories-rank-queue</name>
         <rate>1/h</rate>
+    </queue>
+    <queue>
+        <name>update-feed-queue</name>
+        <rate>100/s</rate>
     </queue>
 </queue-entries>

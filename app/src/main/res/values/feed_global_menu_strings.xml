@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="action_sort">Sort</string>
+  <string name="action_sort_newest">Newest</string>
+  <string name="action_sort_hot">Hot</string>
+  <string name="action_sort_unanswered">Unanswered</string>
+</resources>
