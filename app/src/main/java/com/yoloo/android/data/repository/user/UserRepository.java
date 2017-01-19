@@ -1,5 +1,6 @@
 package com.yoloo.android.data.repository.user;
 
+import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
@@ -74,7 +75,12 @@ public class UserRepository {
    * @param name the name
    * @return the observable
    */
-  public Observable<List<AccountRealm>> listByName(String name) {
-    return remoteDataStore.list(name).subscribeOn(Schedulers.io());
+  public Observable<Response<List<AccountRealm>>> list(String name, String cursor, int limit) {
+    return remoteDataStore.list(name, cursor, limit)
+        .subscribeOn(Schedulers.io());
+  }
+
+  public Observable<List<AccountRealm>> listRecent() {
+    return diskDataStore.listRecent();
   }
 }

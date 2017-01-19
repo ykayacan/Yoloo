@@ -118,7 +118,6 @@ public class Question implements FeedItem {
   @Index(value = IfNotDefault.class)
   @Wither
   @NonFinal
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private double rank;
 
   @Wither

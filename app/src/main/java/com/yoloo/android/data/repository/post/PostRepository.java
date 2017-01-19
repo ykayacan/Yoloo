@@ -23,13 +23,6 @@ public class PostRepository {
     this.diskDataStore = diskDataStore;
   }
 
-  /**
-   * Gets instance.
-   *
-   * @param remoteDataStore the remote data store
-   * @param diskDataStore the disk data store
-   * @return the instance
-   */
   public static PostRepository getInstance(PostRemoteDataStore remoteDataStore,
       PostDiskDataStore diskDataStore) {
     if (INSTANCE == null) {
@@ -95,10 +88,16 @@ public class PostRepository {
   public Observable<Response<List<PostRealm>>> list(String cursor, String eTag, int limit,
       PostSorter sorter, String category) {
     return Observable.mergeDelayError(
-        diskDataStore.list(category),
+        diskDataStore.list(sorter, category),
         remoteDataStore.list(sorter, category, cursor, eTag, limit)
             .subscribeOn(Schedulers.io())
             .doOnNext(response -> diskDataStore.addAll(response.getData())));
+  }
+
+  public Observable<Response<List<PostRealm>>> list(String cursor, String eTag, int limit,
+      String category) {
+    return remoteDataStore.list(PostSorter.NEWEST, category, cursor, eTag, limit)
+        .subscribeOn(Schedulers.io());
   }
 
   /**
@@ -111,7 +110,7 @@ public class PostRepository {
    */
   public Observable<Response<List<PostRealm>>> listFeed(String cursor, String eTag, int limit) {
     return Observable.mergeDelayError(
-        diskDataStore.list(null),
+        diskDataStore.list(PostSorter.NEWEST, null),
         remoteDataStore.listFeed(cursor, eTag, limit)
             .subscribeOn(Schedulers.io())
             .filter(listResponse -> !listResponse.getData().isEmpty())

@@ -6,6 +6,7 @@ import com.airbnb.epoxy.EpoxyModel;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CategoryRealm;
 import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.feature.feed.common.annotation.FeedAction;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnOptionsClickListener;
@@ -14,7 +15,9 @@ import com.yoloo.android.feature.feed.common.listener.OnReadMoreClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.feature.feed.common.model.BountyButtonModel_;
+import com.yoloo.android.feature.feed.common.model.NormalQuestionModel;
 import com.yoloo.android.feature.feed.common.model.NormalQuestionModel_;
+import com.yoloo.android.feature.feed.common.model.RichQuestionModel;
 import com.yoloo.android.feature.feed.common.model.RichQuestionModel_;
 import com.yoloo.android.feature.feed.common.model.TrendingCategoryModel_;
 import java.util.List;
@@ -121,12 +124,31 @@ public class FeedAdapter extends EpoxyAdapter {
     removeModel(model);
   }
 
-  public void update(long modelId, Object payload) {
-    for (EpoxyModel<?> model : models) {
-      if (model.id() == modelId) {
-        notifyModelChanged(model, payload);
-        break;
+  public void update(String itemId, @FeedAction int action, Object payload) {
+    if (action == FeedAction.UNSPECIFIED) {
+      return;
+    }
+
+    for (final EpoxyModel<?> model : models) {
+      if (model instanceof NormalQuestionModel) {
+        if (((NormalQuestionModel) model).getItemId().equals(itemId)) {
+          setAction(action, payload, model);
+          break;
+        }
+      } else if (model instanceof RichQuestionModel) {
+        if (((RichQuestionModel) model).getItemId().equals(itemId)) {
+          setAction(action, payload, model);
+          break;
+        }
       }
+    }
+  }
+
+  private void setAction(@FeedAction int action, Object payload, EpoxyModel<?> model) {
+    if (action == FeedAction.DELETE) {
+      removeModel(model);
+    } else if (action == FeedAction.UPDATE) {
+      notifyModelChanged(model, payload);
     }
   }
 

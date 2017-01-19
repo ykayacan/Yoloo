@@ -119,21 +119,30 @@ public class RichQuestionModel extends EpoxyModelWithHolder<RichQuestionModel.Ri
   private void setupClickListeners(RichQuestionHolder holder) {
     holder.ivUserAvatar.setOnClickListener(
         v -> onProfileClickListener.onProfileClick(v, post.getOwnerId()));
+
     holder.tvUsername.setOnClickListener(
         v -> onProfileClickListener.onProfileClick(v, post.getOwnerId()));
-    holder.tvContent.setOnClickListener(
-        v -> onReadMoreClickListener.onReadMoreClickListener(v, post.getId(),
-            post.getAcceptedCommentId(), id()));
+
+    if (onReadMoreClickListener != null) {
+      holder.tvContent.setOnClickListener(
+          v -> onReadMoreClickListener.onReadMoreClickListener(v, post.getId(),
+              post.getAcceptedCommentId(), id()));
+    }
+
     holder.tvShare.setOnClickListener(v -> onShareClickListener.onShareClick(v));
+
     holder.tvComment.setOnClickListener(v -> {
       v.setTag(post.getComments());
       onCommentClickListener.onCommentClick(v, post.getId(), post.getAcceptedCommentId());
     });
+
     holder.ibOptions.setOnClickListener(
         v -> onOptionsClickListener.onOptionsClick(v, this, post.getId(), post.isSelf()));
+
     holder.voteView.setOnVoteEventListener(
         direction -> onVoteClickListener.onVoteClick(post.getId(), direction,
             OnVoteClickListener.VotableType.POST));
+
     holder.ivContentImage.setOnClickListener(
         v -> onContentImageClickListener.onContentImageClick(v, post.getMediaUrl()));
   }
@@ -163,6 +172,10 @@ public class RichQuestionModel extends EpoxyModelWithHolder<RichQuestionModel.Ri
 
   private boolean isNormal() {
     return getLayout() == R.layout.item_question_rich;
+  }
+
+  public String getItemId() {
+    return post.getId();
   }
 
   static class RichQuestionHolder extends BaseEpoxyHolder {

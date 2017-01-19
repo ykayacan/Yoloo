@@ -61,15 +61,20 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
   private static final int REQUEST_SELECT_MEDIA = 1;
   private static final int REQUEST_CAPTURE_MEDIA = 2;
 
-  @BindView(R.id.toolbar_editor) Toolbar toolbar;
+  @BindView(R.id.toolbar_editor)
+  Toolbar toolbar;
 
-  @BindView(R.id.et_editor) EditText etEditor;
+  @BindView(R.id.et_editor)
+  EditText etEditor;
 
-  @BindView(R.id.image_area_layout) ViewGroup imageArea;
+  @BindView(R.id.image_area_layout)
+  ViewGroup imageArea;
 
-  @BindColor(R.color.primary) int primaryColor;
+  @BindColor(R.color.primary)
+  int primaryColor;
 
-  @BindColor(R.color.primary_dark) int primaryDarkColor;
+  @BindColor(R.color.primary_dark)
+  int primaryDarkColor;
 
   private View tagDialogView;
 
@@ -93,7 +98,8 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
     return inflater.inflate(R.layout.controller_editor, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
+  @Override
+  protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
     setupToolbar();
     setHasOptionsMenu(true);
@@ -101,36 +107,19 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
     setupTagAutoCompleteAdapter();
   }
 
-  @NonNull @Override public EditorPresenter createPresenter() {
-    return new EditorPresenter(TagRepository.getInstance(TagRemoteDataStore.getInstance(),
-        TagDiskDataStore.getInstance()));
-  }
-
-  @Override public void onRecommendedTagsLoaded(List<TagRealm> tags) {
-    final TagView tagView =
-        ButterKnife.findById(tagDialogView, R.id.tagview_overlay_recommended_tags);
-    tagView.setData(tags, TRANSFORMER);
-  }
-
-  @Override public void onSuggestedTagsLoaded(List<TagRealm> tags) {
-    tagAdapter.setItems(tags);
-    handler.post(tagDropdownRunnable);
-  }
-
-  @Override public void onError(Throwable t) {
-
-  }
-
-  @Override public void onPrepareOptionsMenu(@NonNull Menu menu) {
+  @Override
+  public void onPrepareOptionsMenu(@NonNull Menu menu) {
     menu.getItem(0).setEnabled(hasContent);
     super.onPrepareOptionsMenu(menu);
   }
 
-  @Override public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+  @Override
+  public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
     inflater.inflate(R.menu.menu_editor, menu);
   }
 
-  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+  @Override
+  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     // handle arrow click here
     final int itemId = item.getItemId();
     switch (itemId) {
@@ -145,7 +134,8 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
     }
   }
 
-  @Override public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+  @Override
+  public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
     if (requestCode == REQUEST_SELECT_MEDIA) {
       if (resultCode == Activity.RESULT_OK) {
         handleGalleryResult(data);
@@ -163,26 +153,56 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
     }
   }
 
-  @Override public void onAutoCompleteFilter(String filtered) {
+  @NonNull
+  @Override
+  public EditorPresenter createPresenter() {
+    return new EditorPresenter(TagRepository.getInstance(TagRemoteDataStore.getInstance(),
+        TagDiskDataStore.getInstance()));
+  }
+
+  @Override
+  public void onRecommendedTagsLoaded(List<TagRealm> tags) {
+    final TagView tagView =
+        ButterKnife.findById(tagDialogView, R.id.tagview_overlay_recommended_tags);
+    tagView.setData(tags, TRANSFORMER);
+  }
+
+  @Override
+  public void onSuggestedTagsLoaded(List<TagRealm> tags) {
+    tagAdapter.setItems(tags);
+    handler.post(tagDropdownRunnable);
+  }
+
+  @Override
+  public void onError(Throwable t) {
+
+  }
+
+  @Override
+  public void onAutoCompleteFilter(String filtered) {
     getPresenter().loadSuggestedTags(filtered);
   }
 
-  @OnTextChanged(R.id.et_editor) void listenInputChanges(CharSequence text) {
+  @OnTextChanged(R.id.et_editor)
+  void listenInputChanges(CharSequence text) {
     hasContent = !TextUtils.isEmpty(text.toString().trim());
     getActivity().invalidateOptionsMenu();
   }
 
-  @OnClick(R.id.tv_ask_bounty) void showBounties() {
+  @OnClick(R.id.tv_ask_bounty)
+  void showBounties() {
 
   }
 
-  @OnClick(R.id.ib_add_tag) void showTagDialog() {
+  @OnClick(R.id.ib_add_tag)
+  void showTagDialog() {
     tagDialog.show();
 
     getPresenter().loadRecommendedTags();
   }
 
-  @OnClick(R.id.ib_add_photo) void showAddPhotoDialog() {
+  @OnClick(R.id.ib_add_photo)
+  void showAddPhotoDialog() {
     tagDialog =
         new AlertDialog.Builder(getActivity()).setTitle(R.string.label_select_media_source_title)
             .setItems(R.array.action_list_add_media, (dialog, which) -> {
@@ -295,7 +315,8 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
     imageArea.addView(thumbView);
   }
 
-  @NonNull private UCrop.Options createUCropOptions() {
+  @NonNull
+  private UCrop.Options createUCropOptions() {
     final UCrop.Options options = new UCrop.Options();
     options.setCompressionFormat(Bitmap.CompressFormat.JPEG);
     options.setCompressionQuality(85);
@@ -305,7 +326,8 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
     return options;
   }
 
-  @NonNull private String createImageName() {
+  @NonNull
+  private String createImageName() {
     return "IMG_" + UUID.randomUUID().toString() + "_" + new SimpleDateFormat("yyyyMMdd_HHmmss",
         Locale.US).format(new Date(System.currentTimeMillis())) + ".jpg";
   }

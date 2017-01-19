@@ -14,6 +14,8 @@ public class TagRealm extends RealmObject {
   private long posts;
   @Index
   private boolean isRecommended;
+  @Index
+  private boolean recent;
 
   public String getId() {
     return id;
@@ -57,6 +59,15 @@ public class TagRealm extends RealmObject {
 
   public TagRealm setRecommended(boolean recommended) {
     isRecommended = recommended;
+    return this;
+  }
+
+  public boolean isRecent() {
+    return recent;
+  }
+
+  public TagRealm setRecent(boolean recent) {
+    this.recent = recent;
     return this;
   }
 }

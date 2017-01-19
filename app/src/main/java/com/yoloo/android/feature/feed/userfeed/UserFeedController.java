@@ -2,8 +2,8 @@ package com.yoloo.android.feature.feed.userfeed;
 
 import android.graphics.Color;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -29,6 +29,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.RouterTransaction;
+import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
@@ -49,18 +50,23 @@ import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.feature.base.framework.MvpController;
 import com.yoloo.android.feature.category.MainCatalogController;
 import com.yoloo.android.feature.comment.CommentController;
+import com.yoloo.android.feature.feed.bountyfeed.BountyFeedController;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
+import com.yoloo.android.feature.feed.common.annotation.FeedAction;
+import com.yoloo.android.feature.feed.common.listener.OnChangeListener;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnModelUpdateListener;
 import com.yoloo.android.feature.feed.common.listener.OnOptionsClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnReadMoreClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.feature.feed.globalfeed.GlobalFeedController;
+import com.yoloo.android.feature.login.AuthController;
+import com.yoloo.android.feature.login.AuthUI;
 import com.yoloo.android.feature.photo.PhotoController;
 import com.yoloo.android.feature.postdetail.PostDetailController;
+import com.yoloo.android.feature.search.SearchController;
 import com.yoloo.android.feature.ui.recyclerview.EndlessRecyclerViewScrollListener;
 import com.yoloo.android.feature.ui.recyclerview.SlideInItemAnimator;
 import com.yoloo.android.feature.ui.recyclerview.SpaceItemDecoration;
@@ -70,7 +76,6 @@ import com.yoloo.android.feature.write.catalog.CatalogController;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.MenuHelper;
 import com.yoloo.android.util.VersionUtil;
-import com.yoloo.android.util.WeakHandler;
 import com.yoloo.android.util.glide.CropCircleTransformation;
 import java.util.List;
 import timber.log.Timber;
@@ -78,29 +83,44 @@ import timber.log.Timber;
 public class UserFeedController extends MvpController<UserFeedView, UserFeedPresenter>
     implements UserFeedView, SwipeRefreshLayout.OnRefreshListener,
     EndlessRecyclerViewScrollListener.OnLoadMoreListener,
-    NavigationView.OnNavigationItemSelectedListener, OnProfileClickListener, OnOptionsClickListener,
-    OnReadMoreClickListener, OnShareClickListener, OnCommentClickListener,
-    FeedAdapter.OnBountyClickListener, FeedAdapter.OnCategoryClickListener,
-    FeedAdapter.OnExploreCategoriesClickListener, OnVoteClickListener, OnContentImageClickListener,
-    OnModelUpdateListener {
+    NavigationView.OnNavigationItemSelectedListener, OnProfileClickListener,
+    OnOptionsClickListener, OnReadMoreClickListener, OnShareClickListener,
+    OnCommentClickListener, FeedAdapter.OnBountyClickListener,
+    FeedAdapter.OnCategoryClickListener, FeedAdapter.OnExploreCategoriesClickListener,
+    OnVoteClickListener, OnContentImageClickListener, OnChangeListener {
 
-  @BindView(R.id.drawer_layout_feed) DrawerLayout drawerLayout;
+  static {
+    AccountFaker.generate();
+    PostFaker.generate();
+    CommentFaker.generate();
+  }
 
-  @BindView(R.id.nav_view_feed) NavigationView navigationView;
+  @BindView(R.id.drawer_layout_feed)
+  DrawerLayout drawerLayout;
 
-  @BindView(R.id.toolbar_feed) Toolbar toolbar;
+  @BindView(R.id.nav_view_feed)
+  NavigationView navigationView;
 
-  @BindView(R.id.rv_feed) RecyclerView rvFeed;
+  @BindView(R.id.toolbar_feed)
+  Toolbar toolbar;
 
-  @BindView(R.id.swipe_feed) SwipeRefreshLayout swipeRefreshLayout;
+  @BindView(R.id.rv_feed)
+  RecyclerView rvFeed;
 
-  @BindView(R.id.view_feed_action) View actionView;
+  @BindView(R.id.swipe_feed)
+  SwipeRefreshLayout swipeRefreshLayout;
 
-  @BindView(R.id.dimming_view) View dimmingView;
+  @BindView(R.id.view_feed_action)
+  View actionView;
 
-  @BindView(R.id.fab_menu_feed) FloatingActionMenu fabMenu;
+  @BindView(R.id.dimming_view)
+  View dimmingView;
 
-  @BindColor(R.color.primary_dark) int primaryDarkColor;
+  @BindView(R.id.fab_menu_feed)
+  FloatingActionMenu fabMenu;
+
+  @BindColor(R.color.primary_dark)
+  int primaryDarkColor;
 
   private FeedAdapter adapter;
 
@@ -120,7 +140,8 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     return inflater.inflate(R.layout.controller_feed_user, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
+  @Override
+  protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
     setupPullToRefresh();
     setupToolbar();
@@ -132,7 +153,8 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
         ContextCompat.getColor(getActivity(), R.color.fab_dim));
   }
 
-  @Override protected void onAttach(@NonNull View view) {
+  @Override
+  protected void onAttach(@NonNull View view) {
     super.onAttach(view);
     if (VersionUtil.hasL()) {
       getActivity().getWindow().setStatusBarColor(primaryDarkColor);
@@ -144,9 +166,18 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
 
       reEnter = true;
     }
+
+    rvFeed.addOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
-  @Override public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+  @Override
+  protected void onDetach(@NonNull View view) {
+    super.onDetach(view);
+    rvFeed.removeOnScrollListener(endlessRecyclerViewScrollListener);
+  }
+
+  @Override
+  public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
     inflater.inflate(R.menu.menu_feed_user, menu);
 
     DrawableHelper.withContext(getActivity()).withColor(android.R.color.white).applyTo(menu);
@@ -158,41 +189,45 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
         .textColor(Color.WHITE));
   }
 
-  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+  @Override
+  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     final int itemId = item.getItemId();
 
     switch (itemId) {
       case R.id.action_feed_notification:
-        CommentFaker.generate();
-        AccountFaker.generate();
-        new WeakHandler().postDelayed(() -> getPresenter().loadTrendingCategories(), 250);
         return true;
       case R.id.action_feed_search:
-        PostFaker.generate();
-        new WeakHandler().postDelayed(() -> getPresenter().loadFeed(false, null, null, 20), 250);
+        getRouter().pushController(RouterTransaction.with(new SearchController())
+            .pushChangeHandler(new VerticalChangeHandler())
+            .popChangeHandler(new VerticalChangeHandler()));
         return true;
       default:
         return super.onOptionsItemSelected(item);
     }
   }
 
-  @Override public void onPostingSuccessful(PostRealm item) {
+  @Override
+  public void onPostingSuccessful(PostRealm item) {
 
   }
 
-  @Override public void onPostingFailed(Throwable t) {
+  @Override
+  public void onPostingFailed(Throwable t) {
 
   }
 
-  @Override public void onTrendingCategoriesLoaded(List<CategoryRealm> topics) {
+  @Override
+  public void onTrendingCategoriesLoaded(List<CategoryRealm> topics) {
     adapter.updateTrendingCategories(topics);
   }
 
-  @Override public void onLoading(boolean pullToRefresh) {
+  @Override
+  public void onLoading(boolean pullToRefresh) {
     swipeRefreshLayout.setRefreshing(pullToRefresh);
   }
 
-  @Override public void onLoaded(Response<List<PostRealm>> value) {
+  @Override
+  public void onLoaded(Response<List<PostRealm>> value) {
     swipeRefreshLayout.setRefreshing(false);
 
     cursor = value.getCursor();
@@ -200,44 +235,59 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     adapter.addPosts(value.getData());
   }
 
-  @Override public void onError(Throwable e) {
+  @Override
+  public void onError(Throwable e) {
 
   }
 
-  @Override public void onEmpty() {
+  @Override
+  public void onEmpty() {
     actionView.setVisibility(View.VISIBLE);
   }
 
-  @Override public void onRefresh() {
+  @Override
+  public void onRefresh() {
     endlessRecyclerViewScrollListener.resetState();
     adapter.clear();
 
     getPresenter().loadFeed(true, cursor, eTag, 20);
   }
 
-  @Override public void onLoadMore() {
+  @Override
+  public void onLoadMore() {
     Timber.d("onLoadMore");
   }
 
-  @NonNull @Override public UserFeedPresenter createPresenter() {
-    return new UserFeedPresenter(PostRepository.getInstance(PostRemoteDataStore.getInstance(),
-        PostDiskDataStore.getInstance()),
-        CategoryRepository.getInstance(CategoryRemoteDataStore.getInstance(),
+  @NonNull
+  @Override
+  public UserFeedPresenter createPresenter() {
+    return new UserFeedPresenter(
+        PostRepository.getInstance(
+            PostRemoteDataStore.getInstance(),
+            PostDiskDataStore.getInstance()),
+        CategoryRepository.getInstance(
+            CategoryRemoteDataStore.getInstance(),
             CategoryDiskDataStore.getInstance()));
   }
 
-  @Override public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+  @Override
+  public boolean onNavigationItemSelected(@NonNull MenuItem item) {
     final int id = item.getItemId();
 
     switch (id) {
-
+      case R.id.action_nav_settings:
+        AuthUI.getInstance().signOut(getActivity());
+        drawerLayout.closeDrawer(GravityCompat.START);
+        getRouter().setRoot(RouterTransaction.with(new AuthController())
+            .pushChangeHandler(new FadeChangeHandler()));
+        break;
     }
 
-    drawerLayout.closeDrawer(GravityCompat.START);
     return true;
   }
 
-  @Override public boolean handleBack() {
+  @Override
+  public boolean handleBack() {
     if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
       drawerLayout.closeDrawer(GravityCompat.START);
       return true;
@@ -245,14 +295,16 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     return super.handleBack();
   }
 
-  @Override public void onCommentClick(View v, String itemId, String acceptedCommentId) {
+  @Override
+  public void onCommentClick(View v, String itemId, String acceptedCommentId) {
     getRouter().pushController(RouterTransaction.with(
         CommentController.create(itemId, acceptedCommentId, (long) v.getTag()))
         .pushChangeHandler(new VerticalChangeHandler())
         .popChangeHandler(new VerticalChangeHandler()));
   }
 
-  @Override public void onOptionsClick(View v, EpoxyModel<?> model, String postId, boolean self) {
+  @Override
+  public void onOptionsClick(View v, EpoxyModel<?> model, String postId, boolean self) {
     final PopupMenu optionsMenu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
     if (self) {
       optionsMenu.getMenu().getItem(1).setVisible(false);
@@ -270,47 +322,59 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     });
   }
 
-  @Override public void onProfileClick(View v, String ownerId) {
+  @Override
+  public void onProfileClick(View v, String ownerId) {
     Toast.makeText(getActivity(), "Profile clicked! " + ownerId, Toast.LENGTH_SHORT).show();
   }
 
-  @Override public void onReadMoreClickListener(View v, String postId, String acceptedCommentId,
+  @Override
+  public void onReadMoreClickListener(View v, String postId, String acceptedCommentId,
       long modelId) {
     getRouter().pushController(RouterTransaction.with(
-        PostDetailController.create(postId, acceptedCommentId, modelId, this))
+        PostDetailController.create(postId, acceptedCommentId, this))
         .pushChangeHandler(new VerticalChangeHandler())
         .popChangeHandler(new VerticalChangeHandler()));
   }
 
-  @Override public void onShareClick(View v) {
+  @Override
+  public void onShareClick(View v) {
     Toast.makeText(getActivity(), "Share clicked!", Toast.LENGTH_SHORT).show();
   }
 
-  @Override public void onBountyClick(View v) {
-    Snackbar.make(getView(), "Bounty clicked!", Snackbar.LENGTH_SHORT).show();
-  }
-
-  @Override public void onCategoryClick(View v, String categoryId, String name) {
-    getRouter().pushController(RouterTransaction.with(GlobalFeedController.create(name))
+  @Override
+  public void onBountyClick(View v) {
+    getRouter().pushController(RouterTransaction.with(
+        BountyFeedController.create(this))
         .pushChangeHandler(new VerticalChangeHandler())
         .popChangeHandler(new VerticalChangeHandler()));
   }
 
-  @Override public void onExploreCategoriesClick(View v) {
+  @Override
+  public void onCategoryClick(View v, String categoryId, String name) {
+    getRouter().pushController(RouterTransaction.with(GlobalFeedController.create(name, this))
+        .pushChangeHandler(new VerticalChangeHandler())
+        .popChangeHandler(new VerticalChangeHandler()));
+  }
+
+  @Override
+  public void onExploreCategoriesClick(View v) {
     getRouter().pushController(RouterTransaction.with(new MainCatalogController())
         .pushChangeHandler(new VerticalChangeHandler())
         .popChangeHandler(new VerticalChangeHandler()));
   }
 
-  @Override public void onVoteClick(String votableId, int direction, @VotableType int type) {
+  @Override
+  public void onVoteClick(String votableId, int direction, @VotableType int type) {
     getPresenter().vote(votableId, direction);
   }
 
-  @Override public void onContentUpdate(EpoxyModel<?> model) {
+  @Override
+  public void onContentUpdate(EpoxyModel<?> model) {
     //adapter.update(model);
   }
 
-  @Override public void onContentImageClick(View v, String url) {
+  @Override
+  public void onContentImageClick(View v, String url) {
     PhotoController toController = PhotoController.create(url);
 
     getRouter().pushController(RouterTransaction.with(toController)
@@ -318,11 +382,8 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
         .popChangeHandler(new ImageChangeHandler()));
   }
 
-  @Override public void onModelUpdate(long modelId, Object payload) {
-    adapter.update(modelId, payload);
-  }
-
-  @OnClick(R.id.fab_ask_question) void openWriteScreen() {
+  @OnClick(R.id.fab_ask_question)
+  void openWriteScreen() {
     fabMenu.collapseImmediately();
     getRouter().pushController(RouterTransaction.with(new CatalogController())
         .pushChangeHandler(new VerticalChangeHandler())
@@ -385,7 +446,6 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     rvFeed.setAdapter(adapter);
 
     endlessRecyclerViewScrollListener = new EndlessRecyclerViewScrollListener(layoutManager, this);
-    rvFeed.addOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
   private void setupPullToRefresh() {
@@ -396,5 +456,10 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
   private void setupToolbar() {
     setSupportActionBar(toolbar);
     getSupportActionBar().setTitle(getResources().getString(R.string.label_feed_toolbar_title));
+  }
+
+  @Override
+  public void onChange(@NonNull String itemId, @FeedAction int action, @Nullable Object payload) {
+    adapter.update(itemId, action, payload);
   }
 }

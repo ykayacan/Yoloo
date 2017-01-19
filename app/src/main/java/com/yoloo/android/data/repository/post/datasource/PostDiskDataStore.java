@@ -1,11 +1,16 @@
 package com.yoloo.android.data.repository.post.datasource;
 
 import com.yoloo.android.data.Response;
+import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.data.model.CommentRealmFields;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.model.PostRealmFields;
+import com.yoloo.android.data.sorter.PostSorter;
 import io.reactivex.Observable;
 import io.realm.Realm;
+import io.realm.RealmChangeListener;
 import io.realm.RealmQuery;
+import io.realm.RealmResults;
 import io.realm.Sort;
 import java.util.Collections;
 import java.util.List;
@@ -68,36 +73,66 @@ public class PostDiskDataStore {
    */
   public void delete(String postId) {
     Realm realm = Realm.getDefaultInstance();
+
     realm.executeTransactionAsync(tx -> {
       PostRealm post = tx.where(PostRealm.class).equalTo(PostRealmFields.ID, postId).findFirst();
+      post.deleteFromRealm();
 
-      if (post.isValid() && post.isLoaded()) {
-        post.deleteFromRealm();
-      }
+      RealmResults<CommentRealm> commentResults = tx.where(CommentRealm.class).equalTo(
+          CommentRealmFields.POST_ID, postId).findAll();
+      commentResults.deleteAllFromRealm();
     });
+
     realm.close();
   }
 
   /**
    * List observable.
    *
+   * @param sorter the sorter
    * @param category the category
    * @return the observable
    */
-  public Observable<Response<List<PostRealm>>> list(String category) {
-    Realm realm = Realm.getDefaultInstance();
-    RealmQuery<PostRealm> query = realm.where(PostRealm.class);
-    if (category != null) {
-      query.equalTo(PostRealmFields.CATEGORIES.NAME, category);
-    } else {
-      query.equalTo(PostRealmFields.IS_FEED_ITEM, true);
-    }
+  public Observable<Response<List<PostRealm>>> list(PostSorter sorter, String category) {
+    return Observable.create(e -> {
+      Realm realm = Realm.getDefaultInstance();
 
-    List<PostRealm> posts =
-        realm.copyFromRealm(query.findAllSorted(PostRealmFields.CREATED, Sort.DESCENDING));
-    realm.close();
+      RealmQuery<PostRealm> query = realm.where(PostRealm.class);
 
-    return Observable.just(Response.create(posts, null, null));
+      RealmResults<PostRealm> results;
+
+      if (sorter.equals(PostSorter.NEWEST)) {
+        if (category == null) {
+          query.equalTo(PostRealmFields.IS_FEED_ITEM, true);
+        } else {
+          query.equalTo(PostRealmFields.CATEGORIES.NAME, category);
+        }
+        results = query.findAllSortedAsync(PostRealmFields.CREATED, Sort.DESCENDING);
+      } else if (sorter.equals(PostSorter.HOT)) {
+        query.equalTo(PostRealmFields.CATEGORIES.NAME, category);
+        results = query.findAllSortedAsync(PostRealmFields.RANK, Sort.DESCENDING);
+      } else if (sorter.equals(PostSorter.UNANSWERED)) {
+        query.equalTo(PostRealmFields.CATEGORIES.NAME, category);
+        query.equalTo(PostRealmFields.COMMENTED, false);
+        results = query.findAllSortedAsync(PostRealmFields.CREATED, Sort.DESCENDING);
+      } else if (sorter.equals(PostSorter.BOUNTY)) {
+        query.notEqualTo(PostRealmFields.BOUNTY, 0);
+        results = query.findAllSortedAsync(PostRealmFields.RANK, Sort.DESCENDING);
+      } else {
+        results = query.findAllAsync();
+      }
+
+      final RealmChangeListener<RealmResults<PostRealm>> listener = element -> {
+        e.onNext(Response.create(realm.copyFromRealm(results), null, null));
+        e.onComplete();
+
+        realm.close();
+      };
+
+      results.addChangeListener(listener);
+
+      e.setCancellable(() -> results.removeChangeListener(listener));
+    });
   }
 
   /**

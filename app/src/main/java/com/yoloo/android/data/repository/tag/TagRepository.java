@@ -1,5 +1,6 @@
 package com.yoloo.android.data.repository.tag;
 
+import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.TagRealm;
 import com.yoloo.android.data.repository.tag.datasource.TagDiskDataStore;
 import com.yoloo.android.data.repository.tag.datasource.TagRemoteDataStore;
@@ -36,7 +37,17 @@ public class TagRepository {
             .doOnNext(diskDataStore::replace));
   }
 
-  public Observable<List<TagRealm>> list(String name) {
-    return remoteDataStore.list(name, 5);
+  public Observable<Response<List<TagRealm>>> list(String name, String cursor, int limit) {
+    return remoteDataStore.list(name, cursor, limit)
+        .subscribeOn(Schedulers.io())
+        .doOnNext(response -> Observable.fromIterable(response.getData())
+            .map(tag -> tag.setRecent(true))
+            .toList()
+            .toObservable()
+            .subscribe(diskDataStore::addAll));
+  }
+
+  public Observable<List<TagRealm>> listRecent() {
+    return diskDataStore.listRecent();
   }
 }

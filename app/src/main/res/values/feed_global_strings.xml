@@ -7,4 +7,6 @@
     <item>Users</item>
   </string-array>
 
+  <string name="label_toolbar_bounty_title">Bounty Questions</string>
+
 </resources>

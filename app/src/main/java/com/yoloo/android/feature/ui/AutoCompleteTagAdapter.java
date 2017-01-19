@@ -104,8 +104,7 @@ public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
   }
 
   private boolean isConditionsValid(CharSequence constraint) {
-    return !TextUtils.isEmpty(constraint)
-        && constraint.length() > 2;
+    return !TextUtils.isEmpty(constraint) && constraint.length() > 2;
   }
 
   public interface OnAutoCompleteListener {

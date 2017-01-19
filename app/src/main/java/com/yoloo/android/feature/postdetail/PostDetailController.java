@@ -9,6 +9,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -35,10 +36,11 @@ import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.feature.base.framework.MvpController;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
+import com.yoloo.android.feature.feed.common.annotation.FeedAction;
+import com.yoloo.android.feature.feed.common.listener.OnChangeListener;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnModelUpdateListener;
 import com.yoloo.android.feature.feed.common.listener.OnOptionsClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
@@ -66,17 +68,21 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   private static final String KEY_POST_ID = "POST_ID";
   private static final String KEY_ACCEPTED_COMMENT_ID = "ACCEPTED_COMMENT_ID";
-  private static final String KEY_MODEL_ID = "MODEL_ID";
 
-  @BindView(R.id.toolbar_post_detail) Toolbar toolbar;
+  @BindView(R.id.toolbar_post_detail)
+  Toolbar toolbar;
 
-  @BindView(R.id.rv_post_detail) RecyclerView rvFeed;
+  @BindView(R.id.rv_post_detail)
+  RecyclerView rvFeed;
 
-  @BindView(R.id.swipe_post_detail) SwipeRefreshLayout swipeRefreshLayout;
+  @BindView(R.id.swipe_post_detail)
+  SwipeRefreshLayout swipeRefreshLayout;
 
-  @BindView(R.id.tv_post_detail_write_comment) DelayedMultiAutoCompleteTextView tvWriteComment;
+  @BindView(R.id.tv_post_detail_write_comment)
+  DelayedMultiAutoCompleteTextView tvWriteComment;
 
-  @BindColor(R.color.primary) int primaryColor;
+  @BindColor(R.color.primary)
+  int primaryColor;
 
   private PostDetailAdapter adapter;
 
@@ -88,22 +94,23 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   private String postId;
   private String acceptedCommentId;
-  private long modelId;
 
   private String cursor;
   private String eTag;
 
+  @FeedAction
+  private int action = FeedAction.UNSPECIFIED;
   private Object payload;
 
   public PostDetailController(@Nullable Bundle args) {
     super(args);
   }
 
-  public static <T extends Controller & OnModelUpdateListener> PostDetailController create(
-      String postId, String acceptedCommentId, long modelId, T targetController) {
-    final Bundle bundle = new BundleBuilder().putString(KEY_POST_ID, postId)
+  public static <T extends Controller & OnChangeListener> PostDetailController create(
+      String postId, String acceptedCommentId, T targetController) {
+    final Bundle bundle = new BundleBuilder()
+        .putString(KEY_POST_ID, postId)
         .putString(KEY_ACCEPTED_COMMENT_ID, acceptedCommentId)
-        .putLong(KEY_MODEL_ID, modelId)
         .build();
 
     final PostDetailController controller = new PostDetailController(bundle);
@@ -117,7 +124,8 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     return inflater.inflate(R.layout.controller_post_detail, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
+  @Override
+  protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
     setupPullToRefresh();
     setupToolbar();
@@ -126,30 +134,41 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     setupMentionsAdapter();
   }
 
-  @Override protected void onAttach(@NonNull View view) {
+  @Override
+  protected void onAttach(@NonNull View view) {
     super.onAttach(view);
     final Bundle bundle = getArgs();
 
     postId = bundle.getString(KEY_POST_ID);
-    modelId = bundle.getLong(KEY_MODEL_ID);
     acceptedCommentId = bundle.getString(KEY_ACCEPTED_COMMENT_ID);
 
     getPresenter().loadPost(postId);
     getPresenter().loadComments(false, postId, cursor, eTag, 20);
-    getPresenter().loadComment(acceptedCommentId, true);
+    getPresenter().loadAcceptedComment(acceptedCommentId);
+
+    rvFeed.addOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
-  @Override public void onPrepareOptionsMenu(@NonNull Menu menu) {
+  @Override
+  protected void onDetach(@NonNull View view) {
+    super.onDetach(view);
+    rvFeed.removeOnScrollListener(endlessRecyclerViewScrollListener);
+  }
+
+  @Override
+  public void onPrepareOptionsMenu(@NonNull Menu menu) {
     super.onPrepareOptionsMenu(menu);
     menu.clear();
   }
 
-  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+  @Override
+  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     // handle arrow click here
     final int itemId = item.getItemId();
     switch (itemId) {
       case android.R.id.home:
-        notfiyPayload();
+        //setPayload();
+        setPayload(action, payload);
         KeyboardUtil.hideKeyboard(getActivity(), tvWriteComment);
         getRouter().popCurrentController();
         return true;
@@ -158,17 +177,20 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     }
   }
 
-  @Override public boolean handleBack() {
-    notfiyPayload();
+  @Override
+  public boolean handleBack() {
+    setPayload(action, payload);
     KeyboardUtil.hideKeyboard(getActivity(), tvWriteComment);
     return super.handleBack();
   }
 
-  @Override public void onLoading(boolean pullToRefresh) {
+  @Override
+  public void onLoading(boolean pullToRefresh) {
     swipeRefreshLayout.setRefreshing(pullToRefresh);
   }
 
-  @Override public void onLoaded(Response<List<CommentRealm>> value) {
+  @Override
+  public void onLoaded(Response<List<CommentRealm>> value) {
     swipeRefreshLayout.setRefreshing(false);
 
     cursor = value.getCursor();
@@ -177,51 +199,63 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     adapter.addComments(value.getData());
   }
 
-  @Override public void onPostLoaded(PostRealm post) {
+  @Override
+  public void onPostLoaded(PostRealm post) {
     swipeRefreshLayout.setRefreshing(false);
 
     adapter.addQuestion(post);
   }
 
-  @Override public void onCommentLoaded(CommentRealm comment) {
+  @Override
+  public void onCommentLoaded(CommentRealm comment) {
     adapter.addComment(comment, false);
     rvFeed.smoothScrollToPosition(adapter.getItemCount() - 1);
   }
 
-  @Override public void onAcceptedCommentLoaded(CommentRealm comment) {
+  @Override
+  public void onAcceptedCommentLoaded(CommentRealm comment) {
     adapter.addComment(comment, true);
   }
 
-  @Override public void onPostUpdated(PostRealm post) {
+  @Override
+  public void onPostUpdated(PostRealm post) {
+    action = FeedAction.UPDATE;
     payload = post;
   }
 
-  @Override public void onMentionSuggestionsLoaded(List<AccountRealm> suggestions) {
+  @Override
+  public void onMentionSuggestionsLoaded(List<AccountRealm> suggestions) {
     mentionAdapter.setItems(suggestions);
     handler.post(mentionDropdownRunnable);
   }
 
-  @Override public void onError(Throwable e) {
+  @Override
+  public void onError(Throwable e) {
     swipeRefreshLayout.setRefreshing(false);
   }
 
-  @Override public void onEmpty() {
+  @Override
+  public void onEmpty() {
 
   }
 
-  @Override public void onRefresh() {
+  @Override
+  public void onRefresh() {
     endlessRecyclerViewScrollListener.resetState();
     adapter.clear();
 
     getPresenter().loadComments(true, postId, cursor, eTag, 20);
-    getPresenter().loadComment(acceptedCommentId, true);
+    getPresenter().loadAcceptedComment(acceptedCommentId);
   }
 
-  @Override public void onLoadMore() {
+  @Override
+  public void onLoadMore() {
     Timber.d("onLoadMore");
   }
 
-  @NonNull @Override public PostDetailPresenter createPresenter() {
+  @NonNull
+  @Override
+  public PostDetailPresenter createPresenter() {
     return new PostDetailPresenter(
         CommentRepository.getInstance(CommentRemoteDataStore.getInstance(),
             CommentDiskDataStore.getInstance()),
@@ -231,16 +265,19 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
             UserDiskDataStore.getInstance()));
   }
 
-  @Override public void onCategoryClick(View v, String categoryId, String name) {
+  @Override
+  public void onCategoryClick(View v, String categoryId, String name) {
 
   }
 
-  @Override public void onCommentClick(View v, String itemId, String acceptedCommentId) {
+  @Override
+  public void onCommentClick(View v, String itemId, String acceptedCommentId) {
     tvWriteComment.requestFocus();
     KeyboardUtil.showDelayedKeyboard(getActivity(), tvWriteComment);
   }
 
-  @Override public void onOptionsClick(View v, EpoxyModel<?> model, String postId, boolean self) {
+  @Override
+  public void onOptionsClick(View v, EpoxyModel<?> model, String postId, boolean self) {
     final PopupMenu optionsMenu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
     if (self) {
       optionsMenu.getMenu().getItem(1).setVisible(false);
@@ -251,7 +288,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
       switch (itemId) {
         case R.id.action_post_delete:
           getPresenter().deletePost(postId);
-          adapter.delete(model);
+          setPayload(FeedAction.DELETE, null);
           getRouter().popCurrentController();
           return true;
       }
@@ -259,19 +296,23 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     });
   }
 
-  @Override public void onContentImageClick(View v, String url) {
+  @Override
+  public void onContentImageClick(View v, String url) {
 
   }
 
-  @Override public void onProfileClick(View v, String ownerId) {
+  @Override
+  public void onProfileClick(View v, String ownerId) {
 
   }
 
-  @Override public void onShareClick(View v) {
+  @Override
+  public void onShareClick(View v) {
 
   }
 
-  @Override public void onVoteClick(String votableId, int direction, @VotableType int type) {
+  @Override
+  public void onVoteClick(String votableId, int direction, @VotableType int type) {
     if (type == VotableType.POST) {
       getPresenter().votePost(votableId, direction);
     } else {
@@ -279,16 +320,23 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     }
   }
 
-  @Override public void onMentionClick(String value) {
+  @Override
+  public void onMentionClick(String value) {
     Snackbar.make(getView(), value, Snackbar.LENGTH_SHORT).show();
   }
 
-  @Override public void onMentionFilter(String filtered) {
+  @Override
+  public void onMentionFilter(String filtered) {
     getPresenter().suggestUser(filtered);
   }
 
-  @OnClick(R.id.btn_post_detail_send_comment) void sendComment() {
+  @OnClick(R.id.btn_post_detail_send_comment)
+  void sendComment() {
     final String content = tvWriteComment.getText().toString();
+
+    if (TextUtils.isEmpty(content)) {
+      return;
+    }
 
     CommentRealm comment = new CommentRealm().setId(UUID.randomUUID().toString())
         .setContent(content)
@@ -323,7 +371,6 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     rvFeed.setAdapter(adapter);
 
     endlessRecyclerViewScrollListener = new EndlessRecyclerViewScrollListener(layoutManager, this);
-    rvFeed.addOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
   private void setupPullToRefresh() {
@@ -348,10 +395,10 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     tvWriteComment.setTokenizer(new SpaceTokenizer());
   }
 
-  private void notfiyPayload() {
+  private void setPayload(@FeedAction int action, @Nullable Object payload) {
     Controller target = getTargetController();
-    if (payload != null && target != null) {
-      ((OnModelUpdateListener) target).onModelUpdate(modelId, payload);
+    if (target != null) {
+      ((OnChangeListener) target).onChange(postId, action, payload);
     }
   }
 }

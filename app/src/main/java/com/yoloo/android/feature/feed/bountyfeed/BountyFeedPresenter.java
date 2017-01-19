@@ -1,4 +1,4 @@
-package com.yoloo.android.feature.feed.globalfeed;
+package com.yoloo.android.feature.feed.bountyfeed;
 
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.PostRealm;
@@ -9,34 +9,22 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import java.util.List;
 
-class GlobalFeedPresenter extends MvpPresenter<GlobalFeedView> {
+public class BountyFeedPresenter extends MvpPresenter<BountyFeedView> {
 
   private final PostRepository postRepository;
 
-  GlobalFeedPresenter(PostRepository postRepository) {
+  public BountyFeedPresenter(PostRepository postRepository) {
     this.postRepository = postRepository;
   }
 
-  void loadPostsByCategory(boolean pullToRefresh, String cursor, String eTag, int limit,
-      PostSorter sorter, String category) {
-    if (pullToRefresh) {
-      getView().onLoading(pullToRefresh);
-    }
-
-    Disposable d = postRepository.list(cursor, eTag, limit, sorter, category)
-        .observeOn(AndroidSchedulers.mainThread(), true)
-        .subscribe(this::showFeed, this::showError);
-
-    getDisposable().add(d);
+  @Override
+  public void onAttachView(BountyFeedView view) {
+    super.onAttachView(view);
+    loadBountyPosts(false, null, null, 20);
   }
 
-  void loadPostsByTag(boolean pullToRefresh, String cursor, String eTag, int limit,
-      PostSorter sorter, String tag) {
-    if (pullToRefresh) {
-      getView().onLoading(pullToRefresh);
-    }
-
-    Disposable d = postRepository.list(cursor, eTag, limit, sorter, tag)
+  public void loadBountyPosts(boolean pullToRefresh, String cursor, String eTag, int limit) {
+    Disposable d = postRepository.list(cursor, eTag, limit, PostSorter.BOUNTY, null)
         .observeOn(AndroidSchedulers.mainThread(), true)
         .subscribe(this::showFeed, this::showError);
 
@@ -48,7 +36,7 @@ class GlobalFeedPresenter extends MvpPresenter<GlobalFeedView> {
    *
    * @param postId the post id
    */
-  void deletePost(String postId) {
+  public void deletePost(String postId) {
     Disposable d = postRepository.delete(postId)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe();
@@ -56,7 +44,7 @@ class GlobalFeedPresenter extends MvpPresenter<GlobalFeedView> {
     getDisposable().add(d);
   }
 
-  void vote(String postId, int direction) {
+  public void vote(String postId, int direction) {
     Disposable d = postRepository.vote(postId, direction)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(() -> postRepository.get(postId)

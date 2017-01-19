@@ -50,8 +50,8 @@
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toBottomOf="@+id/tv_question_content"
     app:rowGravity="left"
-    app:tagBackground="@drawable/tagview_tag_bg"
-    app:tagTextColor="@color/topic_text"
+    app:tagBackground="@drawable/editor_tag_bg"
+    app:tagTextColor="@color/category_text"
     app:tagTextGravity="center" />
 
   <Space

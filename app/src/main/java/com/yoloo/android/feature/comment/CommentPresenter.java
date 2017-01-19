@@ -70,7 +70,7 @@ public class CommentPresenter extends MvpPresenter<CommentView> {
   }
 
   void suggestUser(String filtered) {
-    Disposable d = userRepository.listByName(filtered)
+    Disposable d = userRepository.list(filtered, null, 5)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showSuggestions, this::showError);
 
@@ -93,7 +93,7 @@ public class CommentPresenter extends MvpPresenter<CommentView> {
     getView().onCommentLoaded(comment);
   }
 
-  private void showSuggestions(List<AccountRealm> accounts) {
-    getView().onMentionSuggestionsLoaded(accounts);
+  private void showSuggestions(Response<List<AccountRealm>> response) {
+    getView().onMentionSuggestionsLoaded(response.getData());
   }
 }

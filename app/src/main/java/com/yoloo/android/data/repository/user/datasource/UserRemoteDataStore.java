@@ -1,6 +1,7 @@
 package com.yoloo.android.data.repository.user.datasource;
 
 import com.yoloo.android.data.ApiManager;
+import com.yoloo.android.data.Response;
 import com.yoloo.android.data.faker.FakerUtil;
 import com.yoloo.android.data.model.AccountRealm;
 import io.reactivex.Observable;
@@ -48,7 +49,7 @@ public class UserRemoteDataStore {
         .map(AccountRealm::new);*/
   }
 
-  public Observable<List<AccountRealm>> list(String name) {
+  public Observable<Response<List<AccountRealm>>> list(String name, String cursor, int limit) {
     AccountRealm a1 = new AccountRealm()
         .setUsername("sia")
         .setAvatarUrl(FakerUtil.getAvatarRandomUrl());
@@ -66,6 +67,6 @@ public class UserRemoteDataStore {
     accounts.add(a2);
     accounts.add(a3);
 
-    return Observable.just(accounts);
+    return Observable.just(Response.create(accounts, null, null));
   }
 }

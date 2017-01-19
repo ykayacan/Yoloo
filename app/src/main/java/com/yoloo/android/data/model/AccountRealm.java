@@ -32,6 +32,8 @@ public class AccountRealm extends RealmObject {
   private int points;
   private int bounties;
 
+  @Index
+  private boolean recent;
   private boolean pendingChanges;
 
   @Ignore

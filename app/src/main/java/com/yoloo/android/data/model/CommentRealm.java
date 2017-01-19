@@ -12,6 +12,7 @@ public class CommentRealm extends RealmObject {
   private String ownerId;
   private String username;
   private String avatarUrl;
+  @Index
   private String postId;
   private String content;
   @Index

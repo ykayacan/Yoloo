@@ -40,10 +40,16 @@
     android:layout_marginRight="24dp"
     android:layout_marginStart="24dp"
     app:rowGravity="left"
+    app:rowMargin="4dp"
     app:rowMode="wrap"
     app:selectionMode="true"
     app:tagBackground="@drawable/editor_tag_bg"
-    app:tagTextColor="@color/topic_text"
+    app:tagMargin="4dp"
+    app:tagPaddingBottom="4dp"
+    app:tagPaddingLeft="12dp"
+    app:tagPaddingRight="12dp"
+    app:tagPaddingTop="4dp"
+    app:tagTextColor="@color/category_text"
     app:tagTextGravity="center" />
 
 </LinearLayout>

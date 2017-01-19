@@ -27,7 +27,8 @@
     android:id="@+id/swipe_post_detail"
     android:layout_width="0dp"
     android:layout_height="0dp"
-    app:layout_constraintBottom_toTopOf="@+id/layout_comment_comment_input"
+    android:layout_marginBottom="48dp"
+    app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toBottomOf="@+id/appbar_post_detail">
@@ -35,7 +36,7 @@
     <android.support.v7.widget.RecyclerView
       android:id="@+id/rv_post_detail"
       android:layout_width="match_parent"
-      android:layout_height="match_parent" />
+      android:layout_height="wrap_content" />
 
   </android.support.v4.widget.SwipeRefreshLayout>
 

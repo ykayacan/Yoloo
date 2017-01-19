@@ -114,10 +114,10 @@ dependencies {
     exclude group: 'com.android.support'
   })
 
-  compile('com.bluelinelabs:conductor:2.0.6-SNAPSHOT', {
+  compile('com.bluelinelabs:conductor:2.0.7-SNAPSHOT', {
     exclude group: 'com.android.support', module: 'support-annotations'
   })
-  compile 'com.bluelinelabs:conductor-support:2.0.6-SNAPSHOT'
+  compile 'com.bluelinelabs:conductor-support:2.0.7-SNAPSHOT'
 
   compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
   compile 'com.github.bumptech.glide:glide:3.7.0'

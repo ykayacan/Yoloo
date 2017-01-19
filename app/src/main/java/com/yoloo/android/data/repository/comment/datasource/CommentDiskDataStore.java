@@ -5,6 +5,8 @@ import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.data.model.CommentRealmFields;
 import io.reactivex.Observable;
 import io.realm.Realm;
+import io.realm.RealmChangeListener;
+import io.realm.RealmResults;
 import io.realm.Sort;
 import java.util.Collections;
 import java.util.List;
@@ -85,15 +87,24 @@ public class CommentDiskDataStore {
    * @return the observable
    */
   public Observable<Response<List<CommentRealm>>> list(String postId) {
-    Realm realm = Realm.getDefaultInstance();
+    return Observable.create(e -> {
+      Realm realm = Realm.getDefaultInstance();
 
-    List<CommentRealm> comments = realm.copyFromRealm(realm.where(CommentRealm.class)
-        .equalTo(CommentRealmFields.POST_ID, postId)
-        .findAllSorted(CommentRealmFields.CREATED, Sort.DESCENDING));
+      RealmResults<CommentRealm> results = realm.where(CommentRealm.class)
+          .equalTo(CommentRealmFields.POST_ID, postId)
+          .findAllSortedAsync(CommentRealmFields.CREATED, Sort.DESCENDING);
 
-    realm.close();
+      final RealmChangeListener<RealmResults<CommentRealm>> listener = element -> {
+        e.onNext(Response.create(realm.copyFromRealm(element), null, null));
+        e.onComplete();
 
-    return Observable.just(Response.create(comments, null, null));
+        realm.close();
+      };
+
+      results.addChangeListener(listener);
+
+      e.setCancellable(() -> results.removeChangeListener(listener));
+    });
   }
 
   public void vote(String commentId, int direction) {

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="hint_search">Search…</string>
+
+  <string name="label_search_tags">Tags</string>
+  <string name="label_search_users">People</string>
+
+  <string name="label_search_post_count">%1$d public posts</string>
+</resources>

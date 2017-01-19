@@ -34,6 +34,7 @@ public class PostRealm extends RealmObject {
   private int type;
   private String title;
   private boolean self;
+  private double rank;
   @Index
   private boolean isFeedItem;
   private boolean pendingChanges;
@@ -211,6 +212,15 @@ public class PostRealm extends RealmObject {
 
   public PostRealm setTitle(String title) {
     this.title = title;
+    return this;
+  }
+
+  public double getRank() {
+    return rank;
+  }
+
+  public PostRealm setRank(double rank) {
+    this.rank = rank;
     return this;
   }
 

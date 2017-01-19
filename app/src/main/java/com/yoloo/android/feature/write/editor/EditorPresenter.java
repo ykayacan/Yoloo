@@ -1,5 +1,6 @@
 package com.yoloo.android.feature.write.editor;
 
+import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.TagRealm;
 import com.yoloo.android.data.repository.tag.TagRepository;
 import com.yoloo.android.feature.base.framework.MvpPresenter;
@@ -71,15 +72,15 @@ public class EditorPresenter extends MvpPresenter<EditorView> {
   }
 
   public void loadSuggestedTags(String text) {
-    Disposable d = tagRepository.list(text)
+    Disposable d = tagRepository.list(text, null, 5)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showSuggestedTags, this::showError);
 
     getDisposable().add(d);
   }
 
-  private void showSuggestedTags(List<TagRealm> tags) {
-    getView().onSuggestedTagsLoaded(tags);
+  private void showSuggestedTags(Response<List<TagRealm>> response) {
+    getView().onSuggestedTagsLoaded(response.getData());
   }
 
   private void showError(Throwable throwable) {

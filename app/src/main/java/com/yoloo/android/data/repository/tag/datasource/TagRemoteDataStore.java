@@ -1,6 +1,7 @@
 package com.yoloo.android.data.repository.tag.datasource;
 
 import com.yoloo.android.data.ApiManager;
+import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.TagRealm;
 import com.yoloo.android.data.sorter.TagSorter;
 import io.reactivex.Observable;
@@ -27,7 +28,7 @@ public class TagRemoteDataStore {
         .flatMap(s -> Observable.empty());
   }
 
-  public Observable<List<TagRealm>> list(String name, int limit) {
+  public Observable<Response<List<TagRealm>>> list(String name, String cursor, int limit) {
     TagRealm t1 = new TagRealm()
         .setId("t1")
         .setName("interrail");
@@ -40,6 +41,6 @@ public class TagRemoteDataStore {
     list.add(t1);
     list.add(t2);
 
-    return Observable.just(list);
+    return Observable.just(Response.create(list, null, null));
   }
 }

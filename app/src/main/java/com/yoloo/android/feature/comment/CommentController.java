@@ -7,6 +7,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -129,6 +130,14 @@ public class CommentController extends MvpController<CommentView, CommentPresent
 
     getPresenter().loadComments(false, postId, cursor, eTag, 20);
     getPresenter().loadComment(acceptedCommentId, true);
+
+    rvComment.addOnScrollListener(endlessRecyclerViewScrollListener);
+  }
+
+  @Override
+  protected void onDetach(@NonNull View view) {
+    super.onDetach(view);
+    rvComment.removeOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
   @Override
@@ -230,6 +239,10 @@ public class CommentController extends MvpController<CommentView, CommentPresent
   void sendComment() {
     final String content = tvWriteComment.getText().toString();
 
+    if (TextUtils.isEmpty(content)) {
+      return;
+    }
+
     CommentRealm comment = new CommentRealm()
         .setId(UUID.randomUUID().toString())
         .setContent(content)
@@ -256,7 +269,6 @@ public class CommentController extends MvpController<CommentView, CommentPresent
     rvComment.setAdapter(adapter);
 
     endlessRecyclerViewScrollListener = new EndlessRecyclerViewScrollListener(layoutManager, this);
-    rvComment.addOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
   private void setupPullToRefresh() {

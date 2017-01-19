@@ -37,9 +37,8 @@
       app:rowDistribution="none"
       app:rowGravity="center"
       app:selectionMode="true"
-      app:tagBackground="@drawable/tagview_tag_bg"
-      app:tagForeground="@drawable/btn_tag_pressed"
-      app:tagTextColor="@color/topic_text"
+      app:tagBackground="@drawable/provider_tag_bg"
+      app:tagTextColor="@color/category_text"
       app:tagTextGravity="center" />
 
     <Button

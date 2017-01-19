@@ -41,20 +41,14 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
     getDisposable().add(d);
   }
 
-  void loadComment(String commentId, boolean accepted) {
+  void loadAcceptedComment(String commentId) {
     if (commentId == null) {
       return;
     }
 
     Disposable d = commentRepository.get(commentId)
         .observeOn(AndroidSchedulers.mainThread(), true)
-        .subscribe(comment -> {
-          if (accepted) {
-            showAcceptedComment(comment);
-          } else {
-            showComment(comment);
-          }
-        }, this::showError);
+        .subscribe(this::showAcceptedComment, this::showError);
 
     getDisposable().add(d);
   }
@@ -99,7 +93,7 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
   }
 
   void suggestUser(String filtered) {
-    Disposable d = userRepository.listByName(filtered)
+    Disposable d = userRepository.list(filtered, null, 5)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showSuggestions, this::showError);
 
@@ -126,7 +120,7 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
     getView().onCommentLoaded(comment);
   }
 
-  private void showSuggestions(List<AccountRealm> accounts) {
-    getView().onMentionSuggestionsLoaded(accounts);
+  private void showSuggestions(Response<List<AccountRealm>> response) {
+    getView().onMentionSuggestionsLoaded(response.getData());
   }
 }

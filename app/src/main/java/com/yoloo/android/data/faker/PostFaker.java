@@ -34,6 +34,7 @@ public class PostFaker {
           .setVotes(FakerUtil.generateNumber())
           .setType(TYPE_NORMAL)
           .setCategories(categories)
+          .setBounty(20)
           .setFeedItem(true);
 
       PostRealm p2 = new PostRealm()
