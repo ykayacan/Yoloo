@@ -28,7 +28,22 @@ public class FirebaseAuthenticator implements Authenticator {
       return null;
     }
 
-    String idToken = authHeader.split(" ")[1];
+    final String idToken = authHeader.split(" ")[1];
+
+    /*return Single
+        .create((SingleOnSubscribe<FirebaseToken>) e -> {
+          Task<FirebaseToken> authTask = FirebaseAuth.getInstance().verifyIdToken(idToken);
+
+          authTask.addOnSuccessListener(e::onSuccess);
+          authTask.addOnFailureListener(e::onError);
+        })
+        .map(token -> {
+          Key<Account> accountKey = ofy().load().type(Account.class)
+              .filter(Account.FIELD_FIREBASE_UUID + " =", token.getUid()).keys().first().now();
+
+          return new User(accountKey.toWebSafeString(), token.getEmail());
+        })
+        .blockingGet();*/
 
     Task<FirebaseToken> authTask = FirebaseAuth.getInstance().verifyIdToken(idToken)
         .addOnSuccessListener(decodedToken -> {

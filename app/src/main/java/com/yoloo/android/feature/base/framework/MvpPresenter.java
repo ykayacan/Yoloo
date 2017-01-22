@@ -16,18 +16,14 @@ public abstract class MvpPresenter<V extends MvpView> {
    *
    * @param view the view
    */
-  @UiThread
-  @CallSuper
-  public void onAttachView(V view) {
+  @UiThread @CallSuper public void onAttachView(V view) {
     this.view = view;
   }
 
   /**
    * On detach view.
    */
-  @UiThread
-  @CallSuper
-  public void onDetachView() {
+  @UiThread @CallSuper public void onDetachView() {
     this.disposable.clear();
     this.view = null;
   }
@@ -37,9 +33,7 @@ public abstract class MvpPresenter<V extends MvpView> {
    *
    * @return <code>null</code>, if view is not attached, otherwise the concrete view instance
    */
-  @UiThread
-  @Nullable
-  public final V getView() {
+  @UiThread @Nullable public final V getView() {
     return Preconditions.checkNotNull(view, "View has been detached!");
   }
 

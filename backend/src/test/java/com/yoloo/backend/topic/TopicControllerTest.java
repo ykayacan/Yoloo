@@ -4,7 +4,6 @@ import com.google.api.server.spi.response.CollectionResponse;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.base.Optional;
-import com.yoloo.backend.topic.sort_strategy.CategorySorter;
 import com.yoloo.backend.util.TestBase;
 import org.junit.Test;
 
@@ -73,7 +72,7 @@ public class TopicControllerTest extends TestBase {
     assertEquals(TopicCounterShard.SHARD_COUNT, original.getShards().size());
 
     Topic updated = topicController.update(original.getWebsafeId(),
-        Optional.of("Female Travel"), Optional.<Topic.Type>absent(), user);
+        Optional.of("Female Travel"), Optional.absent(), user);
 
     assertEquals("Female Travel", updated.getName());
     assertEquals(Topic.Type.THEME, updated.getType());
@@ -91,8 +90,7 @@ public class TopicControllerTest extends TestBase {
     topicController.add("Female Travel", Topic.Type.THEME, user);
 
     CollectionResponse<Topic> response =
-        topicController.list(Optional.<CategorySorter>absent(), Optional.<Integer>absent(),
-            Optional.<String>absent(), user);
+        topicController.list(Optional.absent(), Optional.absent(), Optional.absent());
 
     assertEquals(3, response.getItems().size());
   }

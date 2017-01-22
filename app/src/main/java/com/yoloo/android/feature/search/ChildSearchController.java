@@ -3,6 +3,7 @@ package com.yoloo.android.feature.search;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -39,27 +40,23 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
 
   private static final String KEY_SEARCH_TYPE = "SEARCH_TYPE";
 
-  private static final PublishSubject<String> SEARCH_SUBJECT = PublishSubject.create();
+  @BindView(R.id.rv_child_search) RecyclerView rvChildSearch;
 
-  private final TextWatcher watcher = new TextWatcher() {
-    @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+  private PublishSubject<String> SEARCH_SUBJECT = PublishSubject.create();
+
+  private TextWatcher watcher = new TextWatcher() {
+    @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
     }
 
-    @Override
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
+    @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
       SEARCH_SUBJECT.onNext(s.toString());
     }
 
-    @Override
-    public void afterTextChanged(Editable s) {
+    @Override public void afterTextChanged(Editable s) {
 
     }
   };
-
-  @BindView(R.id.rv_child_search)
-  RecyclerView rvChildSearch;
 
   private SearchAdapter adapter;
 
@@ -69,15 +66,30 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
   private String userCursor;
 
   private EditText etSearch;
+  private ViewPager viewPager;
+
+  private ViewPager.OnPageChangeListener onPageChangeListener =
+      new ViewPager.OnPageChangeListener() {
+        @Override
+        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+        }
+
+        @Override public void onPageSelected(int position) {
+          etSearch.setText("");
+        }
+
+        @Override public void onPageScrollStateChanged(int state) {
+
+        }
+      };
 
   public ChildSearchController(@Nullable Bundle args) {
     super(args);
   }
 
   public static ChildSearchController create(@SearchType int type) {
-    final Bundle bundle = new BundleBuilder()
-        .putInt(KEY_SEARCH_TYPE, type)
-        .build();
+    final Bundle bundle = new BundleBuilder().putInt(KEY_SEARCH_TYPE, type).build();
 
     return new ChildSearchController(bundle);
   }
@@ -87,8 +99,7 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
     return inflater.inflate(R.layout.controller_child_search, container, false);
   }
 
-  @Override
-  protected void onViewCreated(@NonNull View view) {
+  @Override protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
 
     searchType = getArgs().getInt(KEY_SEARCH_TYPE);
@@ -98,9 +109,12 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
     setupRecyclerView();
   }
 
-  @Override
-  protected void onAttach(@NonNull View view) {
+  @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
+
+    viewPager = ButterKnife.findById(getParentController().getView(), R.id.viewpager_search);
+
+    viewPager.addOnPageChangeListener(onPageChangeListener);
 
     if (searchType == SearchType.TAG) {
       getPresenter().loadRecentTags();
@@ -110,71 +124,56 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
 
     etSearch.addTextChangedListener(watcher);
 
-    SEARCH_SUBJECT
-        .filter(s -> !s.isEmpty())
-        .debounce(350, TimeUnit.MILLISECONDS)
-        .subscribe(s -> {
-          if (searchType == SearchType.TAG) {
-            getPresenter().loadTags(s, tagCursor);
-          } else if (searchType == SearchType.USER) {
-            getPresenter().loadUsers(s, userCursor);
-          }
-        });
+    SEARCH_SUBJECT.filter(s -> !s.isEmpty()).debounce(350, TimeUnit.MILLISECONDS).subscribe(s -> {
+      if (searchType == SearchType.TAG) {
+        getPresenter().loadTags(s, tagCursor);
+      } else if (searchType == SearchType.USER) {
+        getPresenter().loadUsers(s, userCursor);
+      }
+    });
   }
 
-  @Override
-  protected void onDetach(@NonNull View view) {
+  @Override protected void onDetach(@NonNull View view) {
     super.onDetach(view);
     etSearch.removeTextChangedListener(watcher);
+    viewPager.removeOnPageChangeListener(onPageChangeListener);
   }
 
-  @NonNull
-  @Override
-  public ChildSearchPresenter createPresenter() {
+  @NonNull @Override public ChildSearchPresenter createPresenter() {
     return new ChildSearchPresenter(
-        TagRepository.getInstance(
-            TagRemoteDataStore.getInstance(),
-            TagDiskDataStore.getInstance()),
-        UserRepository.getInstance(
-            UserRemoteDataStore.getInstance(),
-            UserDiskDataStore.getInstance()
-        ));
+        TagRepository.getInstance(TagRemoteDataStore.getInstance(), TagDiskDataStore.getInstance()),
+        UserRepository.getInstance(UserRemoteDataStore.getInstance(),
+            UserDiskDataStore.getInstance()));
   }
 
-  @Override
-  public void onRecentTagsLoaded(List<TagRealm> tags) {
+  @Override public void onRecentTagsLoaded(List<TagRealm> tags) {
     adapter.replaceTags(tags);
   }
 
-  @Override
-  public void onTagsLoaded(Response<List<TagRealm>> response) {
+  @Override public void onTagsLoaded(Response<List<TagRealm>> response) {
     tagCursor = response.getCursor();
 
     adapter.replaceTags(response.getData());
   }
 
-  @Override
-  public void onRecentUsersLoaded(List<AccountRealm> accounts) {
+  @Override public void onRecentUsersLoaded(List<AccountRealm> accounts) {
     adapter.replaceUsers(accounts);
   }
 
-  @Override
-  public void onUsersLoaded(Response<List<AccountRealm>> response) {
+  @Override public void onUsersLoaded(Response<List<AccountRealm>> response) {
     userCursor = response.getCursor();
 
     adapter.replaceUsers(response.getData());
   }
 
-  @Override
-  public void onTagClick(String name) {
+  @Override public void onTagClick(String name) {
     getParentController().getRouter()
         .pushController(RouterTransaction.with(GlobalFeedController.createFromTag(name))
             .pushChangeHandler(new VerticalChangeHandler())
             .popChangeHandler(new VerticalChangeHandler()));
   }
 
-  @Override
-  public void onProfileClick(View v, String ownerId) {
+  @Override public void onProfileClick(View v, String ownerId) {
 
   }
 

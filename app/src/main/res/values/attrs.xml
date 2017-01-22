@@ -76,24 +76,6 @@
     </attr>
   </declare-styleable>
 
-  <bool name="is_rtl">false</bool>
-
-  <declare-styleable name="xuanimageview">
-    <attr name="RotationToggle" format="boolean" />
-    <attr name="AutoRotateCategory" format="integer" />
-    <attr name="MaxScaleMultiple" format="float" />
-    <attr name="DoubleTabScaleMultiple" format="float" />
-    <attr name="SpringBackGradientScaleUpLevel" format="float" />
-    <attr name="SpringBackGradientScaleDownLevel" format="float" />
-    <attr name="DoubleTapGradientScaleUpLevel" format="float" />
-    <attr name="DoubleTapGradientScaleDownLevel" format="float" />
-    <attr name="AutoRotationTrigger" format="float" />
-    <attr name="SpringBackRunnableDelay" format="integer" />
-    <attr name="DoubleTapScaleRunnableDelay" format="integer" />
-    <attr name="AutoRotationRunnableDelay" format="integer" />
-    <attr name="AutoRotationRunnableTimes" format="integer" />
-  </declare-styleable>
-
   <!-- FloatingActionMenu -->
   <declare-styleable name="FloatingActionMenu">
     <attr name="fabMenuExpandDirection" format="enum">
@@ -152,6 +134,38 @@
     <attr name="tagsPaddingRight" format="dimension"/>
     <attr name="tagsPaddingTop" format="dimension"/>
     <attr name="tagsPaddingBottom" format="dimension"/>
+  </declare-styleable>
+
+  <declare-styleable name="chipLayout">
+    <attr name="android:gravity" />
+  </declare-styleable>
+  <declare-styleable name="chipLayout_Layout">
+    <attr name="android:layout_gravity" />
+  </declare-styleable>
+
+  <declare-styleable name="chip_layout">
+    <attr name="textSize_" format="dimension"/>
+    <attr name="chipPadding_" format="dimension"/>
+    <attr name="chipPaddingLeft_" format="dimension"/>
+    <attr name="chipPaddingRight_" format="dimension"/>
+    <attr name="chipPaddingTop_" format="dimension"/>
+    <attr name="chipPaddingBottom_" format="dimension"/>
+    <attr name="chipTextPadding_" format="dimension"/>
+    <attr name="chipTextPaddingLeft_" format="dimension"/>
+    <attr name="chipTextPaddingRight_" format="dimension"/>
+    <attr name="chipTextPaddingTop_" format="dimension"/>
+    <attr name="chipTextPaddingBottom_" format="dimension"/>
+    <attr name="textColor_" format="color" />
+    <attr name="chipColor_" format="color" />
+    <attr name="showText_" format="boolean" />
+    <attr name="showDeleteButton_" format="boolean" />
+    <attr name="deleteIcon_" format="reference" />
+    <attr name="chipDrawable_" format="reference" />
+    <attr name="chipLayoutDrawable_" format="reference" />
+    <attr name="labelPosition_" format="enum">
+      <enum name="left" value="0"/>
+      <enum name="right" value="1"/>
+    </attr>
   </declare-styleable>
 
 </resources>

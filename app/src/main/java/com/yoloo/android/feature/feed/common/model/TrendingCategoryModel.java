@@ -11,42 +11,35 @@ import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyAttribute;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.yoloo.android.R;
-import com.yoloo.android.feature.base.BaseEpoxyHolder;
 import com.yoloo.android.data.model.CategoryRealm;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
 import com.yoloo.android.feature.feed.common.adapter.TrendingCategoryAdapter;
+import com.yoloo.android.feature.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.feature.ui.recyclerview.SlideInItemAnimator;
-import com.yoloo.android.feature.ui.recyclerview.SpaceItemDecoration;
 import java.util.List;
 
 public class TrendingCategoryModel
     extends EpoxyModelWithHolder<TrendingCategoryModel.TrendingCategoriesHolder> {
 
   private final SnapHelper snapHelper = new LinearSnapHelper();
-  private final RecyclerView.ItemDecoration decoration =
-      new SpaceItemDecoration(4, SpaceItemDecoration.HORIZONTAL);
 
-  @EpoxyAttribute(hash = false)
-  FeedAdapter.OnCategoryClickListener onCategoryClickListener;
+  @EpoxyAttribute(hash = false) FeedAdapter.OnCategoryClickListener onCategoryClickListener;
 
-  @EpoxyAttribute(hash = false)
-  FeedAdapter.OnExploreCategoriesClickListener onExploreCategoriesClickListener;
+  @EpoxyAttribute(hash = false) FeedAdapter.OnExploreCategoriesClickListener
+      onExploreCategoriesClickListener;
 
   private TrendingCategoryAdapter adapter;
   private LinearLayoutManager layoutManager;
 
-  @Override
-  protected TrendingCategoriesHolder createNewHolder() {
+  @Override protected TrendingCategoriesHolder createNewHolder() {
     return new TrendingCategoriesHolder();
   }
 
-  @Override
-  protected int getDefaultLayout() {
+  @Override protected int getDefaultLayout() {
     return R.layout.item_feed_trending_categories;
   }
 
-  @Override
-  public void bind(TrendingCategoriesHolder holder) {
+  @Override public void bind(TrendingCategoriesHolder holder) {
     holder.tvTrendingNow.setText(R.string.label_feed_trending_now);
     holder.tvCategoryExplore.setText(R.string.label_feed_explore);
 
@@ -56,7 +49,6 @@ public class TrendingCategoryModel
     layoutManager.setInitialPrefetchItemCount(7);
 
     holder.rvTrendingCategory.setLayoutManager(layoutManager);
-    holder.rvTrendingCategory.addItemDecoration(decoration);
     holder.rvTrendingCategory.setHasFixedSize(true);
 
     final SlideInItemAnimator animator = new SlideInItemAnimator();
@@ -71,8 +63,7 @@ public class TrendingCategoryModel
         v -> onExploreCategoriesClickListener.onExploreCategoriesClick(v));
   }
 
-  @Override
-  public void unbind(TrendingCategoriesHolder holder) {
+  @Override public void unbind(TrendingCategoriesHolder holder) {
     holder.tvCategoryExplore.setOnClickListener(null);
   }
 
@@ -95,13 +86,10 @@ public class TrendingCategoryModel
   }
 
   static class TrendingCategoriesHolder extends BaseEpoxyHolder {
-    @BindView(R.id.tv_category_trending_now)
-    TextView tvTrendingNow;
+    @BindView(R.id.tv_category_trending_now) TextView tvTrendingNow;
 
-    @BindView(R.id.tv_category_explore)
-    TextView tvCategoryExplore;
+    @BindView(R.id.tv_category_explore) TextView tvCategoryExplore;
 
-    @BindView(R.id.rv_category_trending)
-    RecyclerView rvTrendingCategory;
+    @BindView(R.id.rv_category_trending) RecyclerView rvTrendingCategory;
   }
 }

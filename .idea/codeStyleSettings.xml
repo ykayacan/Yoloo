@@ -36,8 +36,10 @@
         <option name="JD_DO_NOT_WRAP_ONE_LINE_COMMENTS" value="true" />
         <option name="JD_KEEP_EMPTY_PARAMETER" value="false" />
         <option name="JD_KEEP_EMPTY_RETURN" value="false" />
+        <option name="JD_PRESERVE_LINE_FEEDS" value="true" />
         <option name="LINE_COMMENT_AT_FIRST_COLUMN" value="false" />
         <option name="BLOCK_COMMENT_AT_FIRST_COLUMN" value="false" />
+        <option name="KEEP_LINE_BREAKS" value="false" />
         <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
         <option name="KEEP_BLANK_LINES_IN_DECLARATIONS" value="1" />
         <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />
@@ -75,6 +77,7 @@
           <option name="USE_CUSTOM_SETTINGS" value="true" />
         </AndroidXmlCodeStyleSettings>
         <JavaCodeStyleSettings>
+          <option name="ANNOTATION_PARAMETER_WRAP" value="2" />
           <option name="CLASS_NAMES_IN_JAVADOC" value="3" />
         </JavaCodeStyleSettings>
         <Objective-C-extensions>
@@ -111,27 +114,18 @@
           <option name="XML_SPACE_INSIDE_EMPTY_TAG" value="true" />
           <option name="XML_LEGACY_SETTINGS_IMPORTED" value="true" />
         </XML>
-        <ADDITIONAL_INDENT_OPTIONS fileType="feature">
-          <option name="INDENT_SIZE" value="2" />
-        </ADDITIONAL_INDENT_OPTIONS>
-        <ADDITIONAL_INDENT_OPTIONS fileType="haml">
-          <option name="INDENT_SIZE" value="2" />
-        </ADDITIONAL_INDENT_OPTIONS>
         <ADDITIONAL_INDENT_OPTIONS fileType="php">
           <option name="INDENT_SIZE" value="2" />
           <option name="CONTINUATION_INDENT_SIZE" value="4" />
           <option name="TAB_SIZE" value="2" />
         </ADDITIONAL_INDENT_OPTIONS>
-        <ADDITIONAL_INDENT_OPTIONS fileType="rb">
+        <ADDITIONAL_INDENT_OPTIONS fileType="scala">
           <option name="INDENT_SIZE" value="2" />
-          <option name="CONTINUATION_INDENT_SIZE" value="4" />
+          <option name="CONTINUATION_INDENT_SIZE" value="2" />
           <option name="TAB_SIZE" value="2" />
-          <option name="USE_RELATIVE_INDENTS" value="true" />
-        </ADDITIONAL_INDENT_OPTIONS>
-        <ADDITIONAL_INDENT_OPTIONS fileType="sass">
-          <option name="INDENT_SIZE" value="2" />
         </ADDITIONAL_INDENT_OPTIONS>
         <codeStyleSettings language="Groovy">
+          <option name="KEEP_LINE_BREAKS" value="false" />
           <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
           <option name="KEEP_BLANK_LINES_IN_DECLARATIONS" value="1" />
           <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />
@@ -157,13 +151,7 @@
           <option name="FIELD_ANNOTATION_WRAP" value="1" />
           <option name="PARAMETER_ANNOTATION_WRAP" value="1" />
           <option name="VARIABLE_ANNOTATION_WRAP" value="1" />
-          <option name="ENUM_CONSTANTS_WRAP" value="1" />
           <option name="PARENT_SETTINGS_INSTALLED" value="true" />
-          <indentOptions>
-            <option name="INDENT_SIZE" value="2" />
-          </indentOptions>
-        </codeStyleSettings>
-        <codeStyleSettings language="HTML">
           <indentOptions>
             <option name="INDENT_SIZE" value="2" />
             <option name="CONTINUATION_INDENT_SIZE" value="4" />
@@ -173,12 +161,14 @@
         <codeStyleSettings language="JAVA">
           <option name="LINE_COMMENT_AT_FIRST_COLUMN" value="false" />
           <option name="BLOCK_COMMENT_AT_FIRST_COLUMN" value="false" />
+          <option name="KEEP_LINE_BREAKS" value="false" />
           <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
           <option name="KEEP_BLANK_LINES_IN_DECLARATIONS" value="1" />
           <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />
           <option name="KEEP_BLANK_LINES_BEFORE_RBRACE" value="0" />
           <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
           <option name="ALIGN_MULTILINE_FOR" value="false" />
+          <option name="SPACE_WITHIN_ARRAY_INITIALIZER_BRACES" value="true" />
           <option name="SPACE_BEFORE_ARRAY_INITIALIZER_LBRACE" value="true" />
           <option name="CALL_PARAMETERS_WRAP" value="1" />
           <option name="METHOD_PARAMETERS_WRAP" value="1" />
@@ -194,14 +184,17 @@
           <option name="TERNARY_OPERATION_SIGNS_ON_NEXT_LINE" value="true" />
           <option name="FOR_STATEMENT_WRAP" value="1" />
           <option name="ARRAY_INITIALIZER_WRAP" value="1" />
+          <option name="ARRAY_INITIALIZER_LBRACE_ON_NEXT_LINE" value="true" />
+          <option name="ARRAY_INITIALIZER_RBRACE_ON_NEXT_LINE" value="true" />
           <option name="ASSIGNMENT_WRAP" value="1" />
           <option name="ASSERT_STATEMENT_WRAP" value="1" />
           <option name="IF_BRACE_FORCE" value="1" />
           <option name="DOWHILE_BRACE_FORCE" value="1" />
           <option name="WHILE_BRACE_FORCE" value="1" />
+          <option name="METHOD_ANNOTATION_WRAP" value="1" />
+          <option name="FIELD_ANNOTATION_WRAP" value="1" />
           <option name="PARAMETER_ANNOTATION_WRAP" value="1" />
           <option name="VARIABLE_ANNOTATION_WRAP" value="1" />
-          <option name="ENUM_CONSTANTS_WRAP" value="1" />
           <option name="PARENT_SETTINGS_INSTALLED" value="true" />
           <indentOptions>
             <option name="INDENT_SIZE" value="2" />
@@ -210,6 +203,7 @@
           </indentOptions>
         </codeStyleSettings>
         <codeStyleSettings language="JSON">
+          <option name="KEEP_LINE_BREAKS" value="false" />
           <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />
           <option name="PARENT_SETTINGS_INSTALLED" value="true" />
         </codeStyleSettings>

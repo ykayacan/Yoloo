@@ -37,8 +37,7 @@ public class SpaceItemDecoration extends RecyclerView.ItemDecoration {
     this.orientation = orientation;
   }
 
-  @Override
-  public void getItemOffsets(Rect outRect, View view, RecyclerView parent,
+  @Override public void getItemOffsets(Rect outRect, View view, RecyclerView parent,
       RecyclerView.State state) {
     if (orientation == VERTICAL) {
       outRect.top = DisplayUtil.dpToPx(space);

@@ -9,30 +9,25 @@ import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.yoloo.android.R;
-import com.yoloo.android.feature.base.BaseEpoxyHolder;
 import com.yoloo.android.data.model.CategoryRealm;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
+import com.yoloo.android.feature.ui.recyclerview.BaseEpoxyHolder;
 
 public class CategoryModel extends EpoxyModelWithHolder<CategoryModel.CategoryHolder> {
 
-  @EpoxyAttribute(hash = false)
-  FeedAdapter.OnCategoryClickListener onCategoryClickListener;
+  @EpoxyAttribute(hash = false) FeedAdapter.OnCategoryClickListener onCategoryClickListener;
 
-  @EpoxyAttribute
-  CategoryRealm realm;
+  @EpoxyAttribute CategoryRealm realm;
 
-  @Override
-  protected CategoryHolder createNewHolder() {
+  @Override protected CategoryHolder createNewHolder() {
     return new CategoryHolder();
   }
 
-  @Override
-  protected int getDefaultLayout() {
+  @Override protected int getDefaultLayout() {
     return R.layout.item_feed_category;
   }
 
-  @Override
-  public void bind(CategoryHolder holder) {
+  @Override public void bind(CategoryHolder holder) {
     Glide.with(holder.ivTopicBackground.getContext().getApplicationContext())
         .load(realm.getBackgroundUrl())
         .diskCacheStrategy(DiskCacheStrategy.SOURCE)
@@ -44,19 +39,15 @@ public class CategoryModel extends EpoxyModelWithHolder<CategoryModel.CategoryHo
         v -> onCategoryClickListener.onCategoryClick(v, realm.getId(), realm.getName()));
   }
 
-  @Override
-  public void unbind(CategoryHolder holder) {
+  @Override public void unbind(CategoryHolder holder) {
     holder.rootView.setOnClickListener(null);
   }
 
   static class CategoryHolder extends BaseEpoxyHolder {
-    @BindView(R.id.fl_topic_root)
-    ViewGroup rootView;
+    @BindView(R.id.fl_topic_root) ViewGroup rootView;
 
-    @BindView(R.id.iv_category_bg)
-    ImageView ivTopicBackground;
+    @BindView(R.id.iv_category_bg) ImageView ivTopicBackground;
 
-    @BindView(R.id.tv_category_text)
-    TextView tvTopicText;
+    @BindView(R.id.tv_category_text) TextView tvTopicText;
   }
 }

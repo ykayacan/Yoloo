@@ -5,9 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @IntDef({
-    FeedAction.UNSPECIFIED,
-    FeedAction.UPDATE,
-    FeedAction.DELETE
+    FeedAction.UNSPECIFIED, FeedAction.UPDATE, FeedAction.DELETE
 })
 @Retention(RetentionPolicy.SOURCE)
 public @interface FeedAction {

@@ -1,9 +1,11 @@
 package com.yoloo.backend.feed;
 
+import com.google.api.server.spi.response.ConflictException;
 import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Ref;
@@ -17,7 +19,6 @@ import com.yoloo.backend.gamification.Tracker;
 import com.yoloo.backend.question.Question;
 import com.yoloo.backend.question.QuestionController;
 import com.yoloo.backend.question.QuestionControllerFactory;
-import com.yoloo.backend.question.QuestionWrapper;
 import com.yoloo.backend.shard.ShardUtil;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagController;
@@ -91,8 +92,16 @@ public class FeedControllerTest extends TestBase {
 
     User user = new User(USER_EMAIL, USER_AUTH_DOMAIN, owner.getWebsafeId());
 
-    budgetTravel = topicController.add("budget travel", Topic.Type.THEME, user);
-    europe = topicController.add("europe", Topic.Type.THEME, user);
+    try {
+      budgetTravel = topicController.add("budget travel", Topic.Type.THEME, user);
+    } catch (ConflictException e) {
+      e.printStackTrace();
+    }
+    try {
+      europe = topicController.add("europe", Topic.Type.THEME, user);
+    } catch (ConflictException e) {
+      e.printStackTrace();
+    }
 
     passport = tagController.addGroup("passport", user);
 
@@ -107,14 +116,8 @@ public class FeedControllerTest extends TestBase {
     String tags = visa.getName() + "," + visa2.getName();
     String categories = europe.getName() + "," + budgetTravel.getName();
 
-    QuestionWrapper wrapper = QuestionWrapper.builder()
-        .content("Test content")
-        .tags(tags)
-        .topics(categories)
-        .bounty(0)
-        .build();
-
-    Question question = questionController.add(wrapper, user);
+    Question question = questionController.add("Test content", tags, categories, Optional.absent(),
+        Optional.absent(), user);
 
     Feed feed = Feed.builder()
         .parentUserKey(question.getParentUserKey())
@@ -122,7 +125,6 @@ public class FeedControllerTest extends TestBase {
         .build();
 
     ofy().save().entity(feed).now();
-
   }
 
   private AccountModel createAccount() {

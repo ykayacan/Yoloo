@@ -1,72 +1,71 @@
 package com.yoloo.backend.notification.type;
 
-import com.google.common.base.Optional;
-import com.googlecode.objectify.Key;
-import com.googlecode.objectify.cmd.Query;
+import com.google.common.collect.Lists;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentUtil;
 import com.yoloo.backend.device.DeviceRecord;
+import com.yoloo.backend.notification.MessageConstants;
 import com.yoloo.backend.notification.Notification;
 import com.yoloo.backend.notification.PushMessage;
 import com.yoloo.backend.notification.action.Action;
-import com.yoloo.backend.util.MentionHelper;
+import com.yoloo.backend.question.Question;
+import io.reactivex.Observable;
+import java.util.Collection;
 import java.util.List;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.joda.time.DateTime;
 
-import static com.yoloo.backend.OfyService.ofy;
-
-@RequiredArgsConstructor(staticName = "create")
+@AllArgsConstructor(staticName = "create")
 public class MentionNotification implements NotificationBundle {
 
-  @NonNull private Account sender;
+  private Question question;
+  private Account sender;
+  private Collection<DeviceRecord> records;
+  private Comment comment;
 
-  @NonNull private Key<Account> receiverKey;
+  @Override
+  public List<Notification> getNotifications() {
+    List<Notification> notifications = Lists.newArrayListWithCapacity(records.size());
+    for (final DeviceRecord record : records) {
+      Notification notification = Notification.builder()
+          .senderKey(sender.getKey())
+          .receiverKey(record.getParentUserKey())
+          .senderId(sender.getWebsafeId())
+          .senderUsername(sender.getUsername())
+          .senderAvatarUrl(sender.getAvatarUrl())
+          .action(Action.MENTION)
+          .object("comment", CommentUtil.trimmedContent(comment, 50))
+          .object("questionId", comment.getQuestionKey().toWebSafeString())
+          .created(DateTime.now())
+          .build();
 
-  @NonNull private DeviceRecord record;
-
-  @NonNull private Comment comment;
-
-  @Override public Notification getNotification() {
-    return Notification.builder()
-        .senderKey(sender.getKey())
-        .receiverKey(receiverKey)
-        .senderUsername(sender.getUsername())
-        .senderAvatarUrl(sender.getAvatarUrl())
-        .action(Action.MENTION)
-        .object("message", CommentUtil.trimmedContent(comment, 50))
-        .object("questionKey", comment.getQuestionKey())
-        .created(DateTime.now())
-        .build();
+      notifications.add(notification);
+    }
+    return notifications;
   }
 
-  @Override public PushMessage getPushMessage() {
+  @Override
+  public PushMessage getPushMessage() {
     PushMessage.DataBody dataBody = PushMessage.DataBody.builder()
-        .value("action", Action.MENTION.getValueString())
-        .value("questionId", comment.getQuestionKey().toWebSafeString())
+        .value(MessageConstants.ACTION, Action.MENTION.getValueString())
+        .value(MessageConstants.QUESTION_ID, comment.getQuestionKey().toWebSafeString())
+        .value(MessageConstants.SENDER_USERNAME, sender.getUsername())
+        .value(MessageConstants.SENDER_AVATAR_URL, sender.getAvatarUrl().getValue())
+        .value(MessageConstants.COMMENT, CommentUtil.trimmedContent(comment, 50))
+        .value(MessageConstants.ACCEPTED_ID, question.getAcceptedCommentId())
         .build();
 
     return PushMessage.builder()
-        .to(record.getRegId())
+        .registrationIds(convertRegistrationIdsToList())
         .data(dataBody)
         .build();
   }
 
-  public Optional<List<Account>> getMentionedAccounts(String content) {
-    List<String> mentionedUsernames = MentionHelper.getMentions(content);
-
-    if (!mentionedUsernames.isEmpty()) {
-      Query<Account> query = ofy().load().type(Account.class);
-
-      for (String username : mentionedUsernames) {
-        query = query.filter(Account.FIELD_USERNAME + " =", username);
-      }
-
-      return Optional.of(query.project(Account.FIELD_USERNAME).list());
-    }
-
-    return Optional.absent();
+  private List<String> convertRegistrationIdsToList() {
+    return Observable.fromIterable(records)
+        .map(DeviceRecord::getRegId)
+        .toList()
+        .blockingGet();
   }
 }

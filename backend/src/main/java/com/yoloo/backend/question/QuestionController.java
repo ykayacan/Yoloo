@@ -6,7 +6,6 @@ import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
@@ -27,10 +26,13 @@ import com.yoloo.backend.media.MediaService;
 import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.notification.type.GamePointNotification;
 import com.yoloo.backend.question.sort_strategy.QuestionSorter;
+import com.yoloo.backend.tag.TagCounterShard;
 import com.yoloo.backend.tag.TagShardService;
+import com.yoloo.backend.topic.TopicCounterShard;
 import com.yoloo.backend.topic.TopicShardService;
 import com.yoloo.backend.util.StringUtil;
 import com.yoloo.backend.validator.Guard;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -90,6 +92,7 @@ public final class QuestionController extends Controller {
    * @param questionId the websafe question id
    * @param user the user
    * @return the question
+   * @throws NotFoundException the not found exception
    */
   public Question get(String questionId, User user) throws NotFoundException {
     // Create account key from websafe id.
@@ -112,11 +115,17 @@ public final class QuestionController extends Controller {
   /**
    * Add question.
    *
-   * @param wrapper the wrapper
+   * @param content the content
+   * @param tags the tags
+   * @param categories the categories
+   * @param mediaId the media id
+   * @param bounty the bounty
+   * @param user the user
    * @return the question
    */
-  public Question add(QuestionWrapper wrapper, User user) {
-    ImmutableList.Builder<Key<?>> keyBuilder = ImmutableList.builder();
+  public Question add(String content, String tags, String categories, Optional<String> mediaId,
+      Optional<Integer> bounty, User user) {
+    ImmutableSet.Builder<Key<?>> keyBuilder = ImmutableSet.builder();
 
     // Create user key from user id.
     final Key<Account> accountKey = Key.create(user.getUserId());
@@ -133,13 +142,12 @@ public final class QuestionController extends Controller {
     final Key<DeviceRecord> recordKey = DeviceRecord.createKey(accountKey);
     keyBuilder.add(recordKey);
 
-    Optional<String> mediaId = Optional.fromNullable(wrapper.getMediaId());
     if (mediaId.isPresent()) {
       final Key<Media> mediaKey = Key.create(mediaId.get());
       keyBuilder.add(mediaKey);
     }
 
-    List<Key<?>> batchKeys = keyBuilder.build();
+    ImmutableSet<Key<?>> batchKeys = keyBuilder.build();
     // Make a batch load.
     Map<Key<Object>, Object> fetched =
         ofy().load().keys(batchKeys.toArray(new Key[batchKeys.size()]));
@@ -156,12 +164,17 @@ public final class QuestionController extends Controller {
     Media media = (Media) fetched.get(mediaId.isPresent() ? Key.create(mediaId.get()) : null);
 
     // Create a new question from given inputs.
-    @SuppressWarnings("SuspiciousMethodCalls")
-    QuestionModel model = questionService.create(account, wrapper, media, tracker);
+    QuestionModel model =
+        questionService.create(account, content, tags, categories, bounty.or(0), media, tracker);
 
     Question question = model.getQuestion();
+    List<QuestionCounterShard> shards = model.getShards();
 
+    // Increase total question count.
     accountShardService.updateCounter(accountCounterShard, AccountShardService.Update.POST_UP);
+    Collection<TagCounterShard> tagShards = tagShardService.updateShards(question.getTags());
+    Collection<TopicCounterShard> categoryShards =
+        topicShardService.updateShards(question.getCategories());
 
     // Check game elements.
     /*Tracker updatedTracker = GameVerifier.builder()
@@ -172,27 +185,24 @@ public final class QuestionController extends Controller {
         .build()
         .verify();*/
 
-    GamePointNotification gamePointNotification =
-        GamePointNotification.create(accountKey, record, tracker);
+    GamePointNotification gamePointNotification = GamePointNotification.create(record, tracker);
     notificationService.send(gamePointNotification);
 
-    ofy().transact(() -> {
-      // Immutable helper list object to save all entities in a single db write.
-      // For each single object use builder.add() method.
-      // For each list object use builder.addAll() method.
-      ImmutableSet<Object> saveList = ImmutableSet.builder()
-          .add(question)
-          .addAll(model.getShards())
-          .addAll(tagShardService.updateShards(wrapper))
-          .addAll(topicShardService.updateShards(wrapper))
-          .add(accountCounterShard)
-          .add(tracker)
-          .build();
+    // Immutable helper list object to save all entities in a single db write.
+    // For each single object use builder.addAdmin() method.
+    // For each list object use builder.addAll() method.
+    ImmutableSet<Object> saveList = ImmutableSet.builder()
+        .add(question)
+        .addAll(shards)
+        .addAll(tagShards)
+        .addAll(categoryShards)
+        .add(accountCounterShard)
+        .add(tracker)
+        .build();
 
-      ofy().save().entities(saveList).now();
-    });
+    ofy().transact(() -> ofy().save().entities(saveList).now());
 
-    FeedUpdateServlet.addToQueue(user.getUserId(), model.getQuestion().getWebsafeId());
+    FeedUpdateServlet.addToQueue(user.getUserId(), question.getWebsafeId());
 
     return question;
   }
@@ -200,17 +210,23 @@ public final class QuestionController extends Controller {
   /**
    * Update question.
    *
-   * @param wrapper the wrapper
+   * @param questionId the question id
+   * @param content the content
+   * @param bounty the bounty
+   * @param tags the tags
+   * @param mediaId the media id
+   * @param user the user
    * @return the question
+   * @throws NotFoundException the not found exception
    */
-  public Question update(QuestionWrapper wrapper, User user) throws NotFoundException {
-    ImmutableList.Builder<Key<?>> keyBuilder = ImmutableList.builder();
+  public Question update(String questionId, Optional<String> content, Optional<Integer> bounty,
+      Optional<String> tags, Optional<String> mediaId, User user) throws NotFoundException {
+    ImmutableSet.Builder<Key<?>> keyBuilder = ImmutableSet.builder();
 
     // Create question key from websafe question id.
-    final Key<Question> questionKey = Key.create(wrapper.getQuestionId());
+    final Key<Question> questionKey = Key.create(questionId);
     keyBuilder.add(questionKey);
 
-    Optional<String> mediaId = Optional.fromNullable(wrapper.getMediaId());
     if (mediaId.isPresent()) {
       Key<Media> mediaKey = Key.create(mediaId.get());
       keyBuilder.add(mediaKey);
@@ -218,19 +234,20 @@ public final class QuestionController extends Controller {
       mediaService.delete(mediaKey);
     }
 
-    List<Key<?>> batchKeys = keyBuilder.build();
+    ImmutableSet<Key<?>> batchKeys = keyBuilder.build();
     Map<Key<Object>, Object> fetched =
         ofy().load().keys(batchKeys.toArray(new Key[batchKeys.size()]));
 
     //noinspection SuspiciousMethodCalls
     Question question = (Question) fetched.get(questionKey);
-    Guard.checkNotFound(question, "Could not find question with ID: " + wrapper.getQuestionId());
+    Guard.checkNotFound(question, "Could not find question with ID: " + questionId);
 
     //noinspection SuspiciousMethodCalls
     Media media = (Media) fetched
         .get(mediaId.isPresent() ? Key.<Media>create(mediaId.get()) : null);
 
-    question = questionService.update(question, Optional.fromNullable(media), wrapper);
+    question =
+        questionService.update(question, Optional.fromNullable(media), content, bounty, tags);
 
     ofy().save().entity(question).now();
 
@@ -242,6 +259,7 @@ public final class QuestionController extends Controller {
    *
    * @param questionId the websafe question id
    * @param user the user
+   * @throws NotFoundException the not found exception
    */
   public void delete(String questionId, User user) throws NotFoundException {
     // Create account key from websafe id.
@@ -279,6 +297,7 @@ public final class QuestionController extends Controller {
    * List collection response.
    *
    * @param sorter the sorter
+   * @param category the category
    * @param limit the limit
    * @param cursor the cursor
    * @param user the user

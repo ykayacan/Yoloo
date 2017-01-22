@@ -1,7 +1,9 @@
 package com.yoloo.android.feature.write.editor;
 
 import com.yoloo.android.data.Response;
+import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.model.TagRealm;
+import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.tag.TagRepository;
 import com.yoloo.android.feature.base.framework.MvpPresenter;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -12,9 +14,16 @@ import java.util.List;
 public class EditorPresenter extends MvpPresenter<EditorView> {
 
   private final TagRepository tagRepository;
+  private final PostRepository postRepository;
 
-  public EditorPresenter(TagRepository tagRepository) {
+  public EditorPresenter(TagRepository tagRepository, PostRepository postRepository) {
     this.tagRepository = tagRepository;
+    this.postRepository = postRepository;
+  }
+
+  @Override public void onAttachView(EditorView view) {
+    super.onAttachView(view);
+    addOrGetDraft();
   }
 
   public void loadRecommendedTags() {
@@ -75,6 +84,22 @@ public class EditorPresenter extends MvpPresenter<EditorView> {
     Disposable d = tagRepository.list(text, null, 5)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showSuggestedTags, this::showError);
+
+    getDisposable().add(d);
+  }
+
+  public void addOrGetDraft() {
+    Disposable d = postRepository.addOrGetDraft()
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(draft -> getView().onDraftLoaded(draft));
+
+    getDisposable().add(d);
+  }
+
+  public void updateDraft(PostRealm draft) {
+    Disposable d = postRepository.updateDraft(draft)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(() -> getView().onDraftUpdated());
 
     getDisposable().add(d);
   }

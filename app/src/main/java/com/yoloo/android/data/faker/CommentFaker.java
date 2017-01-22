@@ -11,7 +11,7 @@ public class CommentFaker {
   public static void generate() {
     Realm realm = Realm.getDefaultInstance();
 
-    realm.executeTransaction(tx -> {
+    realm.executeTransactionAsync(tx -> {
       AccountRealm account = new AccountRealm();
       account.setAvatarUrl(FakerUtil.getAvatarRandomUrl());
       account.setUsername("krialix");

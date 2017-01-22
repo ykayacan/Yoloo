@@ -1,45 +1,55 @@
 package com.yoloo.backend.notification.type;
 
-import com.googlecode.objectify.Key;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentUtil;
 import com.yoloo.backend.device.DeviceRecord;
+import com.yoloo.backend.notification.MessageConstants;
 import com.yoloo.backend.notification.Notification;
 import com.yoloo.backend.notification.PushMessage;
 import com.yoloo.backend.notification.action.Action;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import com.yoloo.backend.question.Question;
+import java.util.Collections;
+import java.util.List;
+import lombok.AllArgsConstructor;
 import org.joda.time.DateTime;
 
-@RequiredArgsConstructor(staticName = "create")
+@AllArgsConstructor(staticName = "create")
 public class CommentNotification implements NotificationBundle {
 
-  @NonNull private Account sender;
+  private Account sender;
 
-  @NonNull private Key<Account> receiverKey;
+  private DeviceRecord record;
 
-  @NonNull private DeviceRecord record;
+  private Comment comment;
 
-  @NonNull private Comment comment;
+  private Question question;
 
-  @Override public Notification getNotification() {
-    return Notification.builder()
+  @Override
+  public List<Notification> getNotifications() {
+    Notification notification = Notification.builder()
         .senderKey(sender.getKey())
-        .receiverKey(receiverKey)
+        .receiverKey(record.getParentUserKey())
+        .senderId(sender.getWebsafeId())
         .senderUsername(sender.getUsername())
         .senderAvatarUrl(sender.getAvatarUrl())
         .action(Action.COMMENT)
-        .object("message", CommentUtil.trimmedContent(comment, 50))
-        .object("questionKey", comment.getQuestionKey())
+        .object("comment", CommentUtil.trimmedContent(comment, 50))
+        .object("questionId", comment.getQuestionKey().toWebSafeString())
         .created(DateTime.now())
         .build();
+
+    return Collections.singletonList(notification);
   }
 
-  @Override public PushMessage getPushMessage() {
+  @Override
+  public PushMessage getPushMessage() {
     PushMessage.DataBody dataBody = PushMessage.DataBody.builder()
-        .value("action", Action.COMMENT.getValueString())
-        .value("questionId", comment.getQuestionKey().toWebSafeString())
+        .value(MessageConstants.ACTION, Action.COMMENT.getValueString())
+        .value(MessageConstants.QUESTION_ID, comment.getQuestionKey().toWebSafeString())
+        .value(MessageConstants.SENDER_USERNAME, sender.getUsername())
+        .value(MessageConstants.SENDER_AVATAR_URL, sender.getAvatarUrl().getValue())
+        .value(MessageConstants.ACCEPTED_ID, question.getAcceptedCommentId())
         .build();
 
     return PushMessage.builder()

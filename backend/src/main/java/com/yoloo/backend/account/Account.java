@@ -14,6 +14,7 @@ import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
 import com.yoloo.backend.topic.Topic;
 import com.yoloo.backend.util.Deref;
+import java.util.Date;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -56,6 +57,7 @@ public class Account {
 
   @Index
   @NonFinal
+  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private String firebaseUUID;
 
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
@@ -113,6 +115,11 @@ public class Account {
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   public List<AccountCounterShard> getShards() {
     return Deref.deref(getShardRefs());
+  }
+
+  @ApiResourceProperty(name = "created")
+  public Date getDate() {
+    return created.toDate();
   }
 
   public enum Provider {

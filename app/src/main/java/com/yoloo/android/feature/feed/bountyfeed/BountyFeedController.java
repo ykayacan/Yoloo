@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
@@ -50,20 +51,15 @@ public class BountyFeedController extends MvpController<BountyFeedView, BountyFe
     OnOptionsClickListener, OnReadMoreClickListener, OnShareClickListener, OnCommentClickListener,
     OnVoteClickListener, OnContentImageClickListener, OnChangeListener {
 
-  @BindView(R.id.toolbar_feed_global)
-  Toolbar toolbar;
+  @BindView(R.id.toolbar_feed_global) Toolbar toolbar;
 
-  @BindView(R.id.rv_feed_global)
-  RecyclerView rvFeedSub;
+  @BindView(R.id.rv_feed_global) RecyclerView rvFeedSub;
 
-  @BindView(R.id.spinner_feed_global)
-  Spinner spinner;
+  @BindView(R.id.spinner_feed_global) Spinner spinner;
 
-  @BindView(R.id.swipe_feed_global)
-  SwipeRefreshLayout swipeRefreshLayout;
+  @BindView(R.id.swipe_feed_global) SwipeRefreshLayout swipeRefreshLayout;
 
-  @BindView(R.id.view_feed_sub_action)
-  View actionView;
+  @BindView(R.id.view_feed_sub_action) View actionView;
 
   private FeedAdapter adapter;
 
@@ -73,8 +69,7 @@ public class BountyFeedController extends MvpController<BountyFeedView, BountyFe
   private EndlessRecyclerViewScrollListener endlessRecyclerViewScrollListener;
 
   private String itemId;
-  @FeedAction
-  private int action = FeedAction.UNSPECIFIED;
+  @FeedAction private int action = FeedAction.UNSPECIFIED;
   private Object payload;
 
   public static <T extends Controller & OnChangeListener> BountyFeedController create(
@@ -90,8 +85,7 @@ public class BountyFeedController extends MvpController<BountyFeedView, BountyFe
     return inflater.inflate(R.layout.controller_feed_global, container, false);
   }
 
-  @Override
-  protected void onViewCreated(@NonNull View view) {
+  @Override protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
 
     setupPullToRefresh();
@@ -101,20 +95,17 @@ public class BountyFeedController extends MvpController<BountyFeedView, BountyFe
     setupRecyclerView();
   }
 
-  @Override
-  protected void onAttach(@NonNull View view) {
+  @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
     rvFeedSub.addOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
-  @Override
-  protected void onDetach(@NonNull View view) {
+  @Override protected void onDetach(@NonNull View view) {
     super.onDetach(view);
     rvFeedSub.removeOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
-  @Override
-  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     // handle arrow click here
     final int itemId = item.getItemId();
     switch (itemId) {
@@ -127,19 +118,16 @@ public class BountyFeedController extends MvpController<BountyFeedView, BountyFe
     }
   }
 
-  @Override
-  public boolean handleBack() {
+  @Override public boolean handleBack() {
     setPayload(itemId, action, payload);
     return super.handleBack();
   }
 
-  @Override
-  public void onLoading(boolean pullToRefresh) {
+  @Override public void onLoading(boolean pullToRefresh) {
     swipeRefreshLayout.setRefreshing(pullToRefresh);
   }
 
-  @Override
-  public void onLoaded(Response<List<PostRealm>> value) {
+  @Override public void onLoaded(Response<List<PostRealm>> value) {
     swipeRefreshLayout.setRefreshing(false);
 
     cursor = value.getCursor();
@@ -147,27 +135,20 @@ public class BountyFeedController extends MvpController<BountyFeedView, BountyFe
     adapter.addPosts(value.getData());
   }
 
-  @Override
-  public void onError(Throwable e) {
+  @Override public void onError(Throwable e) {
     swipeRefreshLayout.setRefreshing(false);
   }
 
-  @Override
-  public void onEmpty() {
+  @Override public void onEmpty() {
     actionView.setVisibility(View.VISIBLE);
   }
 
-  @NonNull
-  @Override
-  public BountyFeedPresenter createPresenter() {
-    return new BountyFeedPresenter(
-        PostRepository.getInstance(
-            PostRemoteDataStore.getInstance(),
-            PostDiskDataStore.getInstance()));
+  @NonNull @Override public BountyFeedPresenter createPresenter() {
+    return new BountyFeedPresenter(PostRepository.getInstance(PostRemoteDataStore.getInstance(),
+        PostDiskDataStore.getInstance()));
   }
 
-  @Override
-  public void onRefresh() {
+  @Override public void onRefresh() {
     endlessRecyclerViewScrollListener.resetState();
     adapter.clear();
     getPresenter().loadBountyPosts(true, cursor, eTag, 20);
@@ -181,22 +162,18 @@ public class BountyFeedController extends MvpController<BountyFeedView, BountyFe
     this.payload = payload;
   }
 
-  @Override
-  public void onCommentClick(View v, String itemId, String acceptedCommentId) {
-    getRouter().pushController(
-        RouterTransaction.with(CommentController.create(itemId, acceptedCommentId,
-            (long) v.getTag()))
-            .pushChangeHandler(new VerticalChangeHandler())
-            .popChangeHandler(new VerticalChangeHandler()));
+  @Override public void onCommentClick(View v, String itemId, String acceptedCommentId) {
+    getRouter().pushController(RouterTransaction.with(
+        CommentController.create(itemId, acceptedCommentId, (long) v.getTag()))
+        .pushChangeHandler(new VerticalChangeHandler())
+        .popChangeHandler(new VerticalChangeHandler()));
   }
 
-  @Override
-  public void onContentImageClick(View v, String url) {
+  @Override public void onContentImageClick(View v, String url) {
 
   }
 
-  @Override
-  public void onOptionsClick(View v, EpoxyModel<?> model, String postId, boolean self) {
+  @Override public void onOptionsClick(View v, EpoxyModel<?> model, String postId, boolean self) {
     final PopupMenu optionsMenu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
     if (!self) {
       optionsMenu.getMenu().getItem(1).setVisible(false);
@@ -214,38 +191,31 @@ public class BountyFeedController extends MvpController<BountyFeedView, BountyFe
     });
   }
 
-  @Override
-  public void onProfileClick(View v, String ownerId) {
+  @Override public void onProfileClick(View v, String ownerId) {
 
   }
 
-  @Override
-  public void onReadMoreClickListener(View v, String postId, String acceptedCommentId,
+  @Override public void onReadMoreClickListener(View v, String postId, String acceptedCommentId,
       long modelId) {
-    getRouter().pushController(RouterTransaction.with(
-        PostDetailController.create(postId, acceptedCommentId, this))
-        .pushChangeHandler(new VerticalChangeHandler())
-        .popChangeHandler(new VerticalChangeHandler()));
+    getRouter().pushController(
+        RouterTransaction.with(PostDetailController.create(postId, acceptedCommentId, this))
+            .pushChangeHandler(new VerticalChangeHandler())
+            .popChangeHandler(new VerticalChangeHandler()));
   }
 
-  @Override
-  public void onShareClick(View v) {
+  @Override public void onShareClick(View v) {
 
   }
 
-  @Override
-  public void onVoteClick(String votableId, int direction,
-      @VotableType int type) {
+  @Override public void onVoteClick(String votableId, int direction, @VotableType int type) {
     getPresenter().vote(votableId, direction);
   }
 
-  @Override
-  public void onLoadMore() {
+  @Override public void onLoadMore() {
     Timber.d("onLoadMore");
   }
 
-  @Override
-  public void onPostUpdated(PostRealm post) {
+  @Override public void onPostUpdated(PostRealm post) {
     this.itemId = post.getId();
     this.action = FeedAction.UPDATE;
     this.payload = post;
@@ -280,18 +250,18 @@ public class BountyFeedController extends MvpController<BountyFeedView, BountyFe
 
   private void setupPullToRefresh() {
     swipeRefreshLayout.setOnRefreshListener(this);
-    swipeRefreshLayout.setColorSchemeColors(
-        ContextCompat.getColor(getActivity(), R.color.primary));
+    swipeRefreshLayout.setColorSchemeColors(ContextCompat.getColor(getActivity(), R.color.primary));
   }
 
   private void setupToolbar() {
     setSupportActionBar(toolbar);
 
     // add back arrow to toolbar
-    if (getSupportActionBar() != null) {
-      getSupportActionBar().setTitle(R.string.label_toolbar_bounty_title);
-      getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-      getSupportActionBar().setDisplayShowHomeEnabled(true);
+    final ActionBar ab = getSupportActionBar();
+    if (ab != null) {
+      ab.setTitle(R.string.label_toolbar_bounty_title);
+      ab.setDisplayHomeAsUpEnabled(true);
+      ab.setDisplayShowHomeEnabled(true);
     }
   }
 

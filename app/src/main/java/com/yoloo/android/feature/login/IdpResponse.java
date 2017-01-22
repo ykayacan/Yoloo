@@ -12,19 +12,12 @@ import android.support.annotation.Nullable;
 public class IdpResponse implements Parcelable {
 
   public static final Creator<IdpResponse> CREATOR = new Creator<IdpResponse>() {
-    @Override
-    public IdpResponse createFromParcel(Parcel in) {
-      return new IdpResponse(
-          in.readString(),
-          in.readString(),
-          in.readString(),
-          in.readString(),
-          in.readInt()
-      );
+    @Override public IdpResponse createFromParcel(Parcel in) {
+      return new IdpResponse(in.readString(), in.readString(), in.readString(), in.readString(),
+          in.readInt());
     }
 
-    @Override
-    public IdpResponse[] newArray(int size) {
+    @Override public IdpResponse[] newArray(int size) {
       return new IdpResponse[size];
     }
   };
@@ -47,20 +40,12 @@ public class IdpResponse implements Parcelable {
     this(providerId, email, token, null, ResultCodes.OK);
   }
 
-  public IdpResponse(
-      @NonNull String providerId,
-      @NonNull String email,
-      @NonNull String token,
+  public IdpResponse(@NonNull String providerId, @NonNull String email, @NonNull String token,
       @NonNull String secret) {
     this(providerId, email, token, secret, ResultCodes.OK);
   }
 
-  private IdpResponse(
-      String providerId,
-      String email,
-      String token,
-      String secret,
-      int errorCode) {
+  private IdpResponse(String providerId, String email, String token, String secret, int errorCode) {
     this.providerId = providerId;
     this.email = email;
     this.token = token;
@@ -74,8 +59,7 @@ public class IdpResponse implements Parcelable {
    * @param resultIntent The intent which {@code onActivityResult} was called with.
    * @return The IdpResponse containing the token(s) from signing in with the Idp
    */
-  @Nullable
-  public static IdpResponse fromResultIntent(Intent resultIntent) {
+  @Nullable public static IdpResponse fromResultIntent(Intent resultIntent) {
     if (resultIntent != null) {
       return resultIntent.getParcelableExtra(ExtraConstants.EXTRA_IDP_RESPONSE);
     } else {
@@ -108,16 +92,14 @@ public class IdpResponse implements Parcelable {
   /**
    * Get the token received as a result of logging in with the specified IDP
    */
-  @Nullable
-  public String getIdpToken() {
+  @Nullable public String getIdpToken() {
     return token;
   }
 
   /**
    * Twitter only. Return the token secret received as a result of logging in with Twitter.
    */
-  @Nullable
-  public String getIdpSecret() {
+  @Nullable public String getIdpSecret() {
     return secret;
   }
 
@@ -128,13 +110,11 @@ public class IdpResponse implements Parcelable {
     return errorCode;
   }
 
-  @Override
-  public int describeContents() {
+  @Override public int describeContents() {
     return 0;
   }
 
-  @Override
-  public void writeToParcel(Parcel dest, int flags) {
+  @Override public void writeToParcel(Parcel dest, int flags) {
     dest.writeString(providerId);
     dest.writeString(email);
     dest.writeString(token);

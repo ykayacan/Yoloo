@@ -17,8 +17,7 @@ public class BountyFeedPresenter extends MvpPresenter<BountyFeedView> {
     this.postRepository = postRepository;
   }
 
-  @Override
-  public void onAttachView(BountyFeedView view) {
+  @Override public void onAttachView(BountyFeedView view) {
     super.onAttachView(view);
     loadBountyPosts(false, null, null, 20);
   }
@@ -37,9 +36,8 @@ public class BountyFeedPresenter extends MvpPresenter<BountyFeedView> {
    * @param postId the post id
    */
   public void deletePost(String postId) {
-    Disposable d = postRepository.delete(postId)
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe();
+    Disposable d =
+        postRepository.delete(postId).observeOn(AndroidSchedulers.mainThread()).subscribe();
 
     getDisposable().add(d);
   }

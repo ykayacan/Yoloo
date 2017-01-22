@@ -13,18 +13,21 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnTextChanged;
+import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.ControllerChangeType;
+import com.bluelinelabs.conductor.RouterTransaction;
+import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.github.jksiezni.permissive.Permissive;
 import com.sandrios.sandriosCamera.internal.configuration.CameraConfiguration;
 import com.sandrios.sandriosCamera.internal.ui.camera.Camera1Activity;
@@ -33,18 +36,25 @@ import com.sandrios.sandriosCamera.internal.utils.CameraHelper;
 import com.yalantis.ucrop.UCrop;
 import com.yoloo.android.R;
 import com.yoloo.android.YolooApp;
+import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.model.TagRealm;
+import com.yoloo.android.data.repository.post.PostRepository;
+import com.yoloo.android.data.repository.post.datasource.PostDiskDataStore;
+import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.tag.TagRepository;
 import com.yoloo.android.data.repository.tag.datasource.TagDiskDataStore;
 import com.yoloo.android.data.repository.tag.datasource.TagRemoteDataStore;
 import com.yoloo.android.feature.base.framework.MvpController;
-import com.yoloo.android.feature.ui.AutoCompleteTagAdapter;
-import com.yoloo.android.feature.ui.SpaceTokenizer;
+import com.yoloo.android.feature.ui.widget.AutoCompleteTagAdapter;
+import com.yoloo.android.feature.ui.widget.SpaceTokenizer;
 import com.yoloo.android.feature.ui.widget.TagAutoCompleteTextView;
 import com.yoloo.android.feature.ui.widget.ThumbView;
 import com.yoloo.android.feature.ui.widget.tagview.TagView;
+import com.yoloo.android.feature.write.SendPostService;
+import com.yoloo.android.feature.write.bounty.BountyController;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.WeakHandler;
+import io.reactivex.Observable;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -61,20 +71,14 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
   private static final int REQUEST_SELECT_MEDIA = 1;
   private static final int REQUEST_CAPTURE_MEDIA = 2;
 
-  @BindView(R.id.toolbar_editor)
-  Toolbar toolbar;
+  @BindView(R.id.toolbar_editor) Toolbar toolbar;
+  @BindView(R.id.et_editor) EditText etEditor;
+  @BindView(R.id.image_area_layout) ViewGroup imageArea;
+  @BindView(R.id.tv_editor_post) TextView tvPost;
+  @BindView(R.id.tv_ask_bounty) TextView tvAskBounty;
 
-  @BindView(R.id.et_editor)
-  EditText etEditor;
-
-  @BindView(R.id.image_area_layout)
-  ViewGroup imageArea;
-
-  @BindColor(R.color.primary)
-  int primaryColor;
-
-  @BindColor(R.color.primary_dark)
-  int primaryDarkColor;
+  @BindColor(R.color.primary) int primaryColor;
+  @BindColor(R.color.primary_dark) int primaryDarkColor;
 
   private View tagDialogView;
 
@@ -86,8 +90,7 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
   private WeakHandler handler = new WeakHandler();
   private Runnable tagDropdownRunnable;
 
-  // Enable or disable post action according to content changes.
-  private boolean hasContent;
+  private PostRealm draft;
 
   public EditorController() {
     setRetainViewMode(RetainViewMode.RETAIN_DETACH);
@@ -98,44 +101,36 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
     return inflater.inflate(R.layout.controller_editor, container, false);
   }
 
-  @Override
-  protected void onViewCreated(@NonNull View view) {
+  @Override protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
     setupToolbar();
     setHasOptionsMenu(true);
     setupTagDialog();
     setupTagAutoCompleteAdapter();
+
+    tvPost.setEnabled(false);
   }
 
-  @Override
-  public void onPrepareOptionsMenu(@NonNull Menu menu) {
-    menu.getItem(0).setEnabled(hasContent);
-    super.onPrepareOptionsMenu(menu);
+  @Override protected void onChangeStarted(@NonNull ControllerChangeHandler changeHandler,
+      @NonNull ControllerChangeType changeType) {
+    if (changeType.equals(ControllerChangeType.POP_ENTER)) {
+      getPresenter().addOrGetDraft();
+    }
   }
 
-  @Override
-  public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-    inflater.inflate(R.menu.menu_editor, menu);
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     // handle arrow click here
     final int itemId = item.getItemId();
     switch (itemId) {
       case android.R.id.home:
         processBackButton();
         return true;
-      case R.id.action_post:
-        Snackbar.make(getView(), "Sending...", Snackbar.LENGTH_SHORT).show();
-        return true;
       default:
         return super.onOptionsItemSelected(item);
     }
   }
 
-  @Override
-  public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+  @Override public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
     if (requestCode == REQUEST_SELECT_MEDIA) {
       if (resultCode == Activity.RESULT_OK) {
         handleGalleryResult(data);
@@ -153,56 +148,67 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
     }
   }
 
-  @NonNull
-  @Override
-  public EditorPresenter createPresenter() {
-    return new EditorPresenter(TagRepository.getInstance(TagRemoteDataStore.getInstance(),
-        TagDiskDataStore.getInstance()));
+  @NonNull @Override public EditorPresenter createPresenter() {
+    return new EditorPresenter(
+        TagRepository.getInstance(TagRemoteDataStore.getInstance(), TagDiskDataStore.getInstance()),
+        PostRepository.getInstance(PostRemoteDataStore.getInstance(),
+            PostDiskDataStore.getInstance()));
   }
 
-  @Override
-  public void onRecommendedTagsLoaded(List<TagRealm> tags) {
+  @Override public void onDraftLoaded(PostRealm draft) {
+    this.draft = draft;
+
+    if (this.draft.getBounty() == 0) {
+      tvAskBounty.setText(R.string.label_ask_bounty);
+    } else {
+      tvAskBounty.setText(String.valueOf(this.draft.getBounty()));
+    }
+  }
+
+  @Override public void onDraftUpdated() {
+    Intent intent = new Intent(getActivity(), SendPostService.class);
+    getActivity().startService(intent);
+    getRouter().popToRoot();
+  }
+
+  @Override public void onRecommendedTagsLoaded(List<TagRealm> tags) {
     final TagView tagView =
         ButterKnife.findById(tagDialogView, R.id.tagview_overlay_recommended_tags);
     tagView.setData(tags, TRANSFORMER);
   }
 
-  @Override
-  public void onSuggestedTagsLoaded(List<TagRealm> tags) {
-    tagAdapter.setItems(tags);
+  @Override public void onSuggestedTagsLoaded(List<TagRealm> tags) {
+    tagAdapter.replaceItems(tags);
     handler.post(tagDropdownRunnable);
   }
 
-  @Override
-  public void onError(Throwable t) {
+  @Override public void onError(Throwable t) {
 
   }
 
-  @Override
-  public void onAutoCompleteFilter(String filtered) {
+  @Override public void onAutoCompleteFilter(String filtered) {
     getPresenter().loadSuggestedTags(filtered);
   }
 
-  @OnTextChanged(R.id.et_editor)
-  void listenInputChanges(CharSequence text) {
-    hasContent = !TextUtils.isEmpty(text.toString().trim());
-    getActivity().invalidateOptionsMenu();
+  @OnTextChanged(R.id.et_editor) void listenInputChanges(CharSequence text) {
+    tvPost.setEnabled(!TextUtils.isEmpty(text.toString().trim()));
   }
 
-  @OnClick(R.id.tv_ask_bounty)
-  void showBounties() {
+  @OnClick(R.id.tv_ask_bounty) void showBounties() {
+    KeyboardUtil.hideKeyboard(getActivity(), etEditor);
 
+    getRouter().pushController(RouterTransaction.with(new BountyController())
+        .pushChangeHandler(new VerticalChangeHandler())
+        .popChangeHandler(new VerticalChangeHandler()));
   }
 
-  @OnClick(R.id.ib_add_tag)
-  void showTagDialog() {
+  @OnClick(R.id.ib_add_tag) void showTagDialog() {
     tagDialog.show();
 
     getPresenter().loadRecommendedTags();
   }
 
-  @OnClick(R.id.ib_add_photo)
-  void showAddPhotoDialog() {
+  @OnClick(R.id.ib_add_photo) void showAddPhotoDialog() {
     tagDialog =
         new AlertDialog.Builder(getActivity()).setTitle(R.string.label_select_media_source_title)
             .setItems(R.array.action_list_add_media, (dialog, which) -> {
@@ -218,6 +224,16 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
               }
             })
             .show();
+  }
+
+  @OnClick(R.id.tv_editor_post) void createNewPost() {
+    draft.setContent(etEditor.getText().toString())
+        .setType(draft.getMediaUrl() == null ? 0 : 1)
+        .setCreated(new Date());
+
+    getPresenter().updateDraft(draft);
+
+    KeyboardUtil.hideKeyboard(getActivity(), etEditor);
   }
 
   private void setupToolbar() {
@@ -313,10 +329,11 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
     // Clear container before adding an image.
     imageArea.removeAllViews();
     imageArea.addView(thumbView);
+
+    draft.setMediaUrl(uri.getPath());
   }
 
-  @NonNull
-  private UCrop.Options createUCropOptions() {
+  @NonNull private UCrop.Options createUCropOptions() {
     final UCrop.Options options = new UCrop.Options();
     options.setCompressionFormat(Bitmap.CompressFormat.JPEG);
     options.setCompressionQuality(85);
@@ -326,8 +343,7 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
     return options;
   }
 
-  @NonNull
-  private String createImageName() {
+  @NonNull private String createImageName() {
     return "IMG_" + UUID.randomUUID().toString() + "_" + new SimpleDateFormat("yyyyMMdd_HHmmss",
         Locale.US).format(new Date(System.currentTimeMillis())) + ".jpg";
   }
@@ -360,9 +376,6 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
   }
 
   private void setupTagAutoCompleteAdapter() {
-    tvTagAutoComplete = ButterKnife.findById(tagDialogView, R.id.tv_tag_autocomplete);
-    tagDropdownRunnable = tvTagAutoComplete::showDropDown;
-
     tagAdapter = new AutoCompleteTagAdapter(getActivity(), this);
     tvTagAutoComplete.setAdapter(tagAdapter);
     tvTagAutoComplete.setTokenizer(new SpaceTokenizer());
@@ -371,13 +384,28 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
   private void setupTagDialog() {
     tagDialogView = View.inflate(getActivity(), R.layout.dialog_editor_tag, null);
 
+    tvTagAutoComplete = ButterKnife.findById(tagDialogView, R.id.tv_tag_autocomplete);
+    tagDropdownRunnable = tvTagAutoComplete::showDropDown;
+
     tagDialog = new AlertDialog.Builder(getActivity()).setView(tagDialogView)
         .setCancelable(false)
         .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-
+          String text = tvTagAutoComplete.getText().toString();
+          Timber.d("Tags: %s", text);
         })
         .setNegativeButton(android.R.string.cancel, (dialog, which) -> {
         })
         .create();
+
+    final TagView tagView =
+        ButterKnife.findById(tagDialogView, R.id.tagview_overlay_recommended_tags);
+
+    tagView.getSelectedItemsObservable()
+        .flatMap(Observable::fromIterable)
+        .cast(TagRealm.class)
+        .map(TagRealm::getName)
+        .toList()
+        .doOnSuccess(tvTagAutoComplete::setTags)
+        .subscribe();
   }
 }

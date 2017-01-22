@@ -7,7 +7,7 @@ import java.lang.annotation.RetentionPolicy;
 import static com.yoloo.android.feature.category.CategoryType.TYPE_DESTINATION;
 import static com.yoloo.android.feature.category.CategoryType.TYPE_THEME;
 
-@StringDef({TYPE_THEME, TYPE_DESTINATION})
+@StringDef({ TYPE_THEME, TYPE_DESTINATION })
 @Retention(RetentionPolicy.SOURCE)
 public @interface CategoryType {
   String TYPE_THEME = "THEME";

@@ -8,11 +8,12 @@ public class AccountFaker {
   public static void generate() {
     Realm realm = Realm.getDefaultInstance();
 
-    realm.executeTransaction(tx -> {
+    realm.executeTransactionAsync(tx -> {
       AccountRealm account = new AccountRealm()
           .setId("a1")
           .setUsername("krialix")
           .setAvatarUrl(FakerUtil.getAvatarRandomUrl())
+          .setBounties(35)
           .setMe(true);
 
       tx.insertOrUpdate(account);

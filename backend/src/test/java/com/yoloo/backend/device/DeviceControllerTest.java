@@ -39,7 +39,7 @@ public class DeviceControllerTest extends TestBase {
     controller.registerDevice(regId, user);
 
     DeviceRecord record = ofy().load().type(DeviceRecord.class)
-        .filter(DeviceRecord.FIELD_REGID + " =", regId)
+        .filter(DeviceRecord.FIELD_REG_ID + " =", regId)
         .ancestor(Key.<Account>create(user.getUserId()))
         .first().now();
 
@@ -59,7 +59,7 @@ public class DeviceControllerTest extends TestBase {
     controller.registerDevice(regId, user);
 
     DeviceRecord record = ofy().load().type(DeviceRecord.class)
-        .filter(DeviceRecord.FIELD_REGID + " =", regId)
+        .filter(DeviceRecord.FIELD_REG_ID + " =", regId)
         .ancestor(Key.<Account>create(user.getUserId()))
         .first().now();
 
@@ -70,7 +70,7 @@ public class DeviceControllerTest extends TestBase {
     controller.unregisterDevice(regId, user);
 
     ofy().load().type(DeviceRecord.class)
-        .filter(DeviceRecord.FIELD_REGID + " =", regId)
+        .filter(DeviceRecord.FIELD_REG_ID + " =", regId)
         .ancestor(Key.<Account>create(user.getUserId()))
         .first().safe();
   }

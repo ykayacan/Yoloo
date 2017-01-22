@@ -24,8 +24,8 @@ public class QuestionService {
   @NonNull
   private QuestionShardService shardService;
 
-  public QuestionModel create(Account account, QuestionWrapper wrapper, Media media,
-      Tracker tracker) {
+  public QuestionModel create(Account account, String content, String tags, String categories,
+      Integer bounty, Media media, Tracker tracker) {
 
     final Key<Question> questionKey = factory().allocateId(account.getKey(), Question.class);
 
@@ -40,12 +40,12 @@ public class QuestionService {
         .parentUserKey(account.getKey())
         .avatarUrl(account.getAvatarUrl())
         .username(account.getUsername())
-        .content(wrapper.getContent())
+        .content(content)
         .shardRefs(shardRefs)
-        .tags(StringUtil.splitToSet(wrapper.getTags(), ","))
-        .categories(StringUtil.splitToSet(wrapper.getTopics(), ","))
+        .tags(StringUtil.splitToSet(tags, ","))
+        .categories(StringUtil.splitToSet(categories, ","))
         .dir(Vote.Direction.DEFAULT)
-        .bounty(tracker.getBounties() >= wrapper.getBounty() ? wrapper.getBounty() : 0)
+        .bounty(tracker.getBounties() >= bounty ? bounty : 0)
         .acceptedCommentKey(null)
         .media(media)
         .comments(0)
@@ -58,18 +58,16 @@ public class QuestionService {
     return QuestionModel.builder().question(question).shards(shards).build();
   }
 
-  public Question update(Question question, Optional<Media> media, QuestionWrapper wrapper) {
-    Optional<Integer> bounty = Optional.fromNullable(wrapper.getBounty());
+  public Question update(Question question, Optional<Media> media, Optional<String> content,
+      Optional<Integer> bounty, Optional<String> tags) {
     if (bounty.isPresent()) {
       question = question.withBounty(bounty.get());
     }
 
-    Optional<String> content = Optional.fromNullable(wrapper.getContent());
     if (content.isPresent()) {
       question = question.withContent(content.get());
     }
 
-    Optional<String> tags = Optional.fromNullable(wrapper.getTags());
     if (tags.isPresent()) {
       question = question.withTags(StringUtil.splitToSet(tags.get(), ","));
     }

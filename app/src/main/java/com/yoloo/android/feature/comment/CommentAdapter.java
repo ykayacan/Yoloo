@@ -14,10 +14,8 @@ public class CommentAdapter extends EpoxyAdapter {
   private final OnVoteClickListener onVoteClickListener;
   private final OnMentionClickListener onMentionClickListener;
 
-  public CommentAdapter(
-      OnProfileClickListener onProfileClickListener,
-      OnVoteClickListener onVoteClickListener,
-      OnMentionClickListener onMentionClickListener) {
+  public CommentAdapter(OnProfileClickListener onProfileClickListener,
+      OnVoteClickListener onVoteClickListener, OnMentionClickListener onMentionClickListener) {
     this.onProfileClickListener = onProfileClickListener;
     this.onVoteClickListener = onVoteClickListener;
     this.onMentionClickListener = onMentionClickListener;
@@ -27,8 +25,7 @@ public class CommentAdapter extends EpoxyAdapter {
 
   public void addComments(List<CommentRealm> comments) {
     for (CommentRealm comment : comments) {
-      models.add(new CommentModel_()
-          .comment(comment)
+      models.add(new CommentModel_().comment(comment)
           .onProfileClickListener(onProfileClickListener)
           .onMentionClickListener(onMentionClickListener)
           .onVoteClickListener(onVoteClickListener));
@@ -38,8 +35,7 @@ public class CommentAdapter extends EpoxyAdapter {
   }
 
   public void addComment(CommentRealm comment, boolean accepted) {
-    CommentModel_ model_ = new CommentModel_()
-        .comment(comment)
+    CommentModel_ model_ = new CommentModel_().comment(comment)
         .onProfileClickListener(onProfileClickListener)
         .onMentionClickListener(onMentionClickListener)
         .onVoteClickListener(onVoteClickListener);

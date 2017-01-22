@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="placeholder_nav_realname">realname</string>
-  <string name="placeholder_nav_username">\@username</string>
-
-  <string name="label_nav_username">\@%1$s</string>
 
   <string name="menu_nav_profile">Profile</string>
   <string name="menu_nav_bookmarks">Bookmarks</string>

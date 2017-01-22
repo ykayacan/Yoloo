@@ -62,7 +62,8 @@ import static com.bumptech.glide.gifdecoder.GifHeaderParser.TAG;
  *     RC_SIGN_IN);
  * }
  * </pre>
- * <p> <h3>Handling the Sign-in response</h3> <p> The authentication flow provides only two response
+ * <p> <h3>Handling the Sign-in response</h3> <p> The authentication flow provides only two
+ * response
  * codes: {@link ResultCodes#OK RESULT_OK} if a user is signed in, and {@link ResultCodes#CANCELED
  * RESULT_CANCELLED} if sign in failed. No further information on failure is provided as it is not
  * typically useful; the only recourse for most apps if sign in fails is to ask the user to sign in
@@ -90,7 +91,8 @@ import static com.bumptech.glide.gifdecoder.GifHeaderParser.TAG;
  * instance.</li> <li>Smart Lock for Passwords must be instructed to disable automatic sign-in, in
  * order to prevent an automatic sign-in loop that prevents the user from switching accounts. </li>
  * <li>If the current user signed in using either Google or Facebook, the user must also be signed
- * out using the associated API for that authentication method. This typically ensures that the user
+ * out using the associated API for that authentication method. This typically ensures that the
+ * user
  * will not be automatically signed-in using the current account when using that authentication
  * method again from the authentication method picker, which would also prevent the user from
  * switching between accounts on the same provider. </li> </ol> <p> In order to make this process
@@ -116,7 +118,8 @@ import static com.bumptech.glide.gifdecoder.GifHeaderParser.TAG;
  * requires some additional client configuration. AuthUI currently supports Google Sign-in and
  * Facebook Sign-in, and currently requires the basic configuration for these providers to be
  * specified via string properties: <p> <ul> <p> <li>Google Sign-in: If your app build uses the <a
- * href="https://developers.google.com/android/guides/google-services-plugin">Google Services Gradle
+ * href="https://developers.google.com/android/guides/google-services-plugin">Google Services
+ * Gradle
  * Plugin</a>, no additional configuration is required. If not, please override {@code
  * R.string.default_web_client_id} to provide your <a href="https://developers.google.com/identity/sign-in/web/devconsole-project">Google
  * OAuth web client id.</a> </li> <p> <li>Facebook Sign-in: Please override the string resource
@@ -144,12 +147,8 @@ public class AuthUI {
   /**
    * The set of authentication providers supported in Firebase Auth UI.
    */
-  public static final Set<String> SUPPORTED_PROVIDERS =
-      Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-          EMAIL_PROVIDER,
-          GOOGLE_PROVIDER,
-          FACEBOOK_PROVIDER
-      )));
+  public static final Set<String> SUPPORTED_PROVIDERS = Collections.unmodifiableSet(
+      new HashSet<>(Arrays.asList(EMAIL_PROVIDER, GOOGLE_PROVIDER, FACEBOOK_PROVIDER)));
 
   private static final IdentityHashMap<FirebaseApp, AuthUI> INSTANCES = new IdentityHashMap<>();
 
@@ -185,7 +184,8 @@ public class AuthUI {
   }
 
   /**
-   * Make a list of {@link Credential} from a FirebaseUser. Useful for deleting Credentials, not for
+   * Make a list of {@link Credential} from a FirebaseUser. Useful for deleting Credentials, not
+   * for
    * saving since we don't have access to the password.
    */
   private static List<Credential> credentialsFromFirebaseUser(@NonNull FirebaseUser user) {
@@ -203,8 +203,8 @@ public class AuthUI {
       String accountType = providerIdToAccountType(providerId);
 
       // Build and add credential
-      Credential.Builder builder = new Credential.Builder(user.getEmail())
-          .setAccountType(accountType);
+      Credential.Builder builder =
+          new Credential.Builder(user.getEmail()).setAccountType(accountType);
 
       // Null account type means password, we need to add a random password
       // to make deletion succeed.
@@ -261,13 +261,12 @@ public class AuthUI {
     Task<Status> disableCredentialsTask = credentialsHelper.disableAutoSignIn();
 
     // Google sign out
-    Task<Void> googleSignOutTask = taskHelper.getConnectedGoogleApiClient()
-        .continueWith(task -> {
-          if (task.isSuccessful()) {
-            Auth.GoogleSignInApi.signOut(task.getResult());
-          }
-          return null;
-        });
+    Task<Void> googleSignOutTask = taskHelper.getConnectedGoogleApiClient().continueWith(task -> {
+      if (task.isSuccessful()) {
+        Auth.GoogleSignInApi.signOut(task.getResult());
+      }
+      return null;
+    });
 
     // Facebook sign out
     if (FacebookSdk.isInitialized()) {
@@ -280,7 +279,8 @@ public class AuthUI {
 
   /**
    * Delete the use from FirebaseAuth and delete any associated credentials from the Credentials
-   * API. Returns a {@code Task} that succeeds if the Firebase Auth user deletion succeeds and fails
+   * API. Returns a {@code Task} that succeeds if the Firebase Auth user deletion succeeds and
+   * fails
    * if the Firebase Auth deletion fails. Credentials deletion failures are handled silently.
    *
    * @param activity the calling {@link Activity}.
@@ -331,13 +331,11 @@ public class AuthUI {
    */
   public static class IdpConfig implements Parcelable {
     public static final Creator<IdpConfig> CREATOR = new Creator<IdpConfig>() {
-      @Override
-      public IdpConfig createFromParcel(Parcel in) {
+      @Override public IdpConfig createFromParcel(Parcel in) {
         return new IdpConfig(in);
       }
 
-      @Override
-      public IdpConfig[] newArray(int size) {
+      @Override public IdpConfig[] newArray(int size) {
         return new IdpConfig[size];
       }
     };
@@ -367,13 +365,11 @@ public class AuthUI {
       return scopes;
     }
 
-    @Override
-    public int describeContents() {
+    @Override public int describeContents() {
       return 0;
     }
 
-    @Override
-    public void writeToParcel(Parcel parcel, int i) {
+    @Override public void writeToParcel(Parcel parcel, int i) {
       parcel.writeString(providerId);
       parcel.writeStringList(scopes);
     }

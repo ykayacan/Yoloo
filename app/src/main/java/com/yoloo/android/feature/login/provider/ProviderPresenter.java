@@ -25,14 +25,12 @@ public class ProviderPresenter extends MvpPresenter<ProviderView> {
     this.categoryRepository = categoryRepository;
   }
 
-  @Override
-  public void onAttachView(ProviderView view) {
+  @Override public void onAttachView(ProviderView view) {
     super.onAttachView(view);
     loadCategories();
   }
 
-  @Override
-  public void onDetachView() {
+  @Override public void onDetachView() {
     getView().onHideLoading();
     super.onDetachView();
   }
@@ -57,27 +55,24 @@ public class ProviderPresenter extends MvpPresenter<ProviderView> {
   }
 
   private void processFirebase(AuthCredential credential, String categoryIds, String locale) {
-    FirebaseAuth.getInstance().signInWithCredential(credential)
-        .addOnCompleteListener(task -> {
-          Timber.d("signInWithCredential:onComplete: %s", task.isSuccessful());
+    FirebaseAuth.getInstance().signInWithCredential(credential).addOnCompleteListener(task -> {
+      Timber.d("signInWithCredential:onComplete: %s", task.isSuccessful());
 
-          // If sign in fails, display a message to the user. If sign in succeeds
-          // the auth state listener will be notified and logic to handle the
-          // signed in user can be handled in the listener.
-          if (!task.isSuccessful()) {
-            getView().onHideLoading();
-            getView().onError(task.getException());
-          } else {
-            registerUserOnServer(categoryIds, locale);
-          }
-        });
+      // If sign in fails, display a message to the user. If sign in succeeds
+      // the auth state listener will be notified and logic to handle the
+      // signed in user can be handled in the listener.
+      if (!task.isSuccessful()) {
+        getView().onHideLoading();
+        getView().onError(task.getException());
+      } else {
+        registerUserOnServer(categoryIds, locale);
+      }
+    });
   }
 
   private void registerUserOnServer(String categoryIds, String locale) {
-    AccountRealm newAccount = new AccountRealm()
-        .setMe(true)
-        .setLocale(locale)
-        .setCategoryIds(categoryIds);
+    AccountRealm newAccount =
+        new AccountRealm().setMe(true).setLocale(locale).setCategoryIds(categoryIds);
 
     Disposable d = userRepository.add(newAccount)
         .observeOn(AndroidSchedulers.mainThread())

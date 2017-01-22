@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
@@ -16,11 +17,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Spinner;
-import android.widget.Toast;
 import butterknife.BindColor;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.Controller;
+import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
@@ -43,10 +44,10 @@ import com.yoloo.android.feature.feed.common.listener.OnReadMoreClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.feature.postdetail.PostDetailController;
-import com.yoloo.android.feature.ui.SpinnerTitleArrayAdapter;
 import com.yoloo.android.feature.ui.recyclerview.EndlessRecyclerViewScrollListener;
 import com.yoloo.android.feature.ui.recyclerview.SlideInItemAnimator;
 import com.yoloo.android.feature.ui.recyclerview.SpaceItemDecoration;
+import com.yoloo.android.feature.ui.widget.SpinnerTitleArrayAdapter;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.MenuHelper;
@@ -62,23 +63,17 @@ public class GlobalFeedController extends MvpController<GlobalFeedView, GlobalFe
   private static final String KEY_CATEGORY_NAME = "CATEGORY_NAME";
   private static final String KEY_TAG_NAME = "TAG_NAME";
 
-  @BindView(R.id.toolbar_feed_global)
-  Toolbar toolbar;
+  @BindView(R.id.toolbar_feed_global) Toolbar toolbar;
 
-  @BindView(R.id.rv_feed_global)
-  RecyclerView rvGlobalFeed;
+  @BindView(R.id.rv_feed_global) RecyclerView rvGlobalFeed;
 
-  @BindView(R.id.spinner_feed_global)
-  Spinner spinner;
+  @BindView(R.id.spinner_feed_global) Spinner spinner;
 
-  @BindView(R.id.swipe_feed_global)
-  SwipeRefreshLayout swipeRefreshLayout;
+  @BindView(R.id.swipe_feed_global) SwipeRefreshLayout swipeRefreshLayout;
 
-  @BindView(R.id.view_feed_sub_action)
-  View actionView;
+  @BindView(R.id.view_feed_sub_action) View actionView;
 
-  @BindColor(R.color.primary)
-  int colorPrimary;
+  @BindColor(R.color.primary) int colorPrimary;
 
   private FeedAdapter adapter;
 
@@ -93,8 +88,9 @@ public class GlobalFeedController extends MvpController<GlobalFeedView, GlobalFe
   private boolean reEnter;
 
   private String itemId;
-  @FeedAction
-  private int action = FeedAction.UNSPECIFIED;
+
+  @FeedAction private int action = FeedAction.UNSPECIFIED;
+
   private Object payload;
 
   public GlobalFeedController(@Nullable Bundle args) {
@@ -104,9 +100,7 @@ public class GlobalFeedController extends MvpController<GlobalFeedView, GlobalFe
 
   public static <T extends Controller & OnChangeListener> GlobalFeedController create(
       String categoryName, T targetController) {
-    final Bundle bundle = new BundleBuilder()
-        .putString(KEY_CATEGORY_NAME, categoryName)
-        .build();
+    final Bundle bundle = new BundleBuilder().putString(KEY_CATEGORY_NAME, categoryName).build();
 
     final GlobalFeedController controller = new GlobalFeedController(bundle);
     controller.setTargetController(targetController);
@@ -115,17 +109,13 @@ public class GlobalFeedController extends MvpController<GlobalFeedView, GlobalFe
   }
 
   public static GlobalFeedController create(String category) {
-    final Bundle bundle = new BundleBuilder()
-        .putString(KEY_CATEGORY_NAME, category)
-        .build();
+    final Bundle bundle = new BundleBuilder().putString(KEY_CATEGORY_NAME, category).build();
 
     return new GlobalFeedController(bundle);
   }
 
   public static GlobalFeedController createFromTag(String tag) {
-    final Bundle bundle = new BundleBuilder()
-        .putString(KEY_TAG_NAME, tag)
-        .build();
+    final Bundle bundle = new BundleBuilder().putString(KEY_TAG_NAME, tag).build();
 
     return new GlobalFeedController(bundle);
   }
@@ -135,8 +125,7 @@ public class GlobalFeedController extends MvpController<GlobalFeedView, GlobalFe
     return inflater.inflate(R.layout.controller_feed_global, container, false);
   }
 
-  @Override
-  protected void onViewCreated(@NonNull View view) {
+  @Override protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
     categoryName = getArgs().getString(KEY_CATEGORY_NAME);
     tagName = getArgs().getString(KEY_TAG_NAME);
@@ -148,8 +137,7 @@ public class GlobalFeedController extends MvpController<GlobalFeedView, GlobalFe
     setupRecyclerView();
   }
 
-  @Override
-  protected void onAttach(@NonNull View view) {
+  @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
 
     if (!reEnter) {
@@ -166,27 +154,22 @@ public class GlobalFeedController extends MvpController<GlobalFeedView, GlobalFe
     rvGlobalFeed.addOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
-  @Override
-  protected void onDetach(@NonNull View view) {
+  @Override protected void onDetach(@NonNull View view) {
     super.onDetach(view);
     rvGlobalFeed.removeOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
-  @Override
-  public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+  @Override public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
     if (tagName != null) {
       return;
     }
 
     inflater.inflate(R.menu.menu_feed_global, menu);
 
-    DrawableHelper.withContext(getActivity())
-        .withColor(android.R.color.white)
-        .applyTo(menu);
+    DrawableHelper.withContext(getActivity()).withColor(android.R.color.white).applyTo(menu);
   }
 
-  @Override
-  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     // handle arrow click here
     final int itemId = item.getItemId();
     switch (itemId) {
@@ -195,15 +178,12 @@ public class GlobalFeedController extends MvpController<GlobalFeedView, GlobalFe
         getRouter().popCurrentController();
         return true;
       case R.id.action_feed_sort_newest:
-        Toast.makeText(getActivity(), "NEWEST", Toast.LENGTH_SHORT).show();
         reloadQuestions(item, PostSorter.NEWEST);
         return true;
       case R.id.action_feed_sort_hot:
-        Toast.makeText(getActivity(), "HOT", Toast.LENGTH_SHORT).show();
         reloadQuestions(item, PostSorter.HOT);
         return true;
       case R.id.action_feed_sort_unanswered:
-        Toast.makeText(getActivity(), "UNANSWERED", Toast.LENGTH_SHORT).show();
         reloadQuestions(item, PostSorter.UNANSWERED);
         return true;
       default:
@@ -211,19 +191,16 @@ public class GlobalFeedController extends MvpController<GlobalFeedView, GlobalFe
     }
   }
 
-  @Override
-  public boolean handleBack() {
+  @Override public boolean handleBack() {
     setPayload(itemId, action, payload);
     return super.handleBack();
   }
 
-  @Override
-  public void onLoading(boolean pullToRefresh) {
+  @Override public void onLoading(boolean pullToRefresh) {
     swipeRefreshLayout.setRefreshing(pullToRefresh);
   }
 
-  @Override
-  public void onLoaded(Response<List<PostRealm>> value) {
+  @Override public void onLoaded(Response<List<PostRealm>> value) {
     swipeRefreshLayout.setRefreshing(false);
 
     cursor = value.getCursor();
@@ -231,38 +208,30 @@ public class GlobalFeedController extends MvpController<GlobalFeedView, GlobalFe
     adapter.addPosts(value.getData());
   }
 
-  @Override
-  public void onError(Throwable e) {
+  @Override public void onError(Throwable e) {
     swipeRefreshLayout.setRefreshing(false);
   }
 
-  @Override
-  public void onEmpty() {
+  @Override public void onEmpty() {
     actionView.setVisibility(View.VISIBLE);
   }
 
-  @Override
-  public void onRefresh() {
+  @Override public void onRefresh() {
     endlessRecyclerViewScrollListener.resetState();
     adapter.clear();
     getPresenter().loadPostsByCategory(true, cursor, eTag, 20, PostSorter.NEWEST, categoryName);
   }
 
-  @Override
-  public void onLoadMore() {
+  @Override public void onLoadMore() {
     Timber.d("onLoadMore");
   }
 
-  @NonNull
-  @Override
-  public GlobalFeedPresenter createPresenter() {
-    return new GlobalFeedPresenter(PostRepository.getInstance(
-        PostRemoteDataStore.getInstance(),
+  @NonNull @Override public GlobalFeedPresenter createPresenter() {
+    return new GlobalFeedPresenter(PostRepository.getInstance(PostRemoteDataStore.getInstance(),
         PostDiskDataStore.getInstance()));
   }
 
-  @Override
-  public void onOptionsClick(View v, EpoxyModel<?> model, String postId, boolean self) {
+  @Override public void onOptionsClick(View v, EpoxyModel<?> model, String postId, boolean self) {
     final PopupMenu optionsMenu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
     if (!self) {
       optionsMenu.getMenu().getItem(1).setVisible(false);
@@ -280,46 +249,34 @@ public class GlobalFeedController extends MvpController<GlobalFeedView, GlobalFe
     });
   }
 
-  @Override
-  public void onCommentClick(View v, String itemId, String acceptedCommentId) {
-    getRouter().pushController(
-        RouterTransaction.with(CommentController.create(itemId, acceptedCommentId,
-            (long) v.getTag()))
-            .pushChangeHandler(new VerticalChangeHandler())
-            .popChangeHandler(new VerticalChangeHandler()));
+  @Override public void onCommentClick(View v, String itemId, String acceptedCommentId) {
+    startTransaction(CommentController.create(itemId, acceptedCommentId, (long) v.getTag()),
+        new VerticalChangeHandler());
   }
 
-  @Override
-  public void onContentImageClick(View v, String url) {
+  @Override public void onContentImageClick(View v, String url) {
 
   }
 
-  @Override
-  public void onProfileClick(View v, String ownerId) {
+  @Override public void onProfileClick(View v, String ownerId) {
 
   }
 
-  @Override
-  public void onReadMoreClickListener(View v, String postId, String acceptedCommentId,
+  @Override public void onReadMoreClickListener(View v, String postId, String acceptedCommentId,
       long modelId) {
-    getRouter().pushController(RouterTransaction.with(
-        PostDetailController.create(postId, acceptedCommentId, this))
-        .pushChangeHandler(new VerticalChangeHandler())
-        .popChangeHandler(new VerticalChangeHandler()));
+    startTransaction(PostDetailController.create(postId, acceptedCommentId, this),
+        new VerticalChangeHandler());
   }
 
-  @Override
-  public void onShareClick(View v) {
+  @Override public void onShareClick(View v) {
 
   }
 
-  @Override
-  public void onVoteClick(String votableId, int direction, @VotableType int type) {
+  @Override public void onVoteClick(String votableId, int direction, @VotableType int type) {
     getPresenter().vote(votableId, direction);
   }
 
-  @Override
-  public void onPostUpdated(PostRealm post) {
+  @Override public void onPostUpdated(PostRealm post) {
     this.itemId = post.getId();
     this.action = FeedAction.UPDATE;
     this.payload = post;
@@ -371,11 +328,12 @@ public class GlobalFeedController extends MvpController<GlobalFeedView, GlobalFe
     setSupportActionBar(toolbar);
 
     // add back arrow to toolbar
-    if (getSupportActionBar() != null) {
-      getSupportActionBar().setDisplayShowTitleEnabled(tagName != null);
-      getSupportActionBar().setTitle(tagName);
-      getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-      getSupportActionBar().setDisplayShowHomeEnabled(true);
+    final ActionBar ab = getSupportActionBar();
+    if (ab != null) {
+      ab.setDisplayShowTitleEnabled(tagName != null);
+      ab.setTitle(tagName);
+      ab.setDisplayHomeAsUpEnabled(true);
+      ab.setDisplayShowHomeEnabled(true);
     }
   }
 
@@ -404,8 +362,7 @@ public class GlobalFeedController extends MvpController<GlobalFeedView, GlobalFe
 
       }
 
-      @Override
-      public void onNothingSelected(AdapterView<?> parent) {
+      @Override public void onNothingSelected(AdapterView<?> parent) {
 
       }
     });
@@ -416,5 +373,10 @@ public class GlobalFeedController extends MvpController<GlobalFeedView, GlobalFe
     if (target != null) {
       ((OnChangeListener) target).onChange(postId, action, payload);
     }
+  }
+
+  private void startTransaction(Controller to, ControllerChangeHandler handler) {
+    getRouter().pushController(
+        RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
   }
 }

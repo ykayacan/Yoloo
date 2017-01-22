@@ -21,9 +21,8 @@ public class TrendingCategoryAdapter extends EpoxyAdapter {
     models.clear();
 
     for (CategoryRealm realm : items) {
-      CategoryModel_ model_ = new CategoryModel_()
-          .realm(realm)
-          .onCategoryClickListener(onCategoryClickListener);
+      CategoryModel_ model_ =
+          new CategoryModel_().realm(realm).onCategoryClickListener(onCategoryClickListener);
 
       models.add(model_);
     }

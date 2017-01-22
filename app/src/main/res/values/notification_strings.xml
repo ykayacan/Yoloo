@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="label_notification_comment">\@%1$s commented on your post.</string>
+  <string name="label_notification_mention">\@%1$s mentioned you in a comment: %2$s</string>
+  <string name="label_notification_follow">\@%1$s followed you.</string>
+  <string name="label_notification_accept">Your comment is accepted.</string>
+</resources>

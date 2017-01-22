@@ -49,9 +49,8 @@ class GlobalFeedPresenter extends MvpPresenter<GlobalFeedView> {
    * @param postId the post id
    */
   void deletePost(String postId) {
-    Disposable d = postRepository.delete(postId)
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe();
+    Disposable d =
+        postRepository.delete(postId).observeOn(AndroidSchedulers.mainThread()).subscribe();
 
     getDisposable().add(d);
   }

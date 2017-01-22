@@ -30,8 +30,7 @@ public class CategoryController extends MvpController<CategoryView, CategoryPres
   private static final String KEY_CATEGORY_TYPE = "CATEGORY_TYPE";
   private static final String KEY_MULTI_SELECTION = "MULTI_SELECTION";
 
-  @BindView(R.id.rv_catalog)
-  RecyclerView rvCatalog;
+  @BindView(R.id.rv_catalog) RecyclerView rvCatalog;
 
   private String categoryType;
   private boolean multiSelection;
@@ -50,8 +49,7 @@ public class CategoryController extends MvpController<CategoryView, CategoryPres
 
   public static CategoryController create(@CategoryType String categoryType,
       boolean multiSelection) {
-    final Bundle bundle = new BundleBuilder()
-        .putString(KEY_CATEGORY_TYPE, categoryType)
+    final Bundle bundle = new BundleBuilder().putString(KEY_CATEGORY_TYPE, categoryType)
         .putBoolean(KEY_MULTI_SELECTION, multiSelection)
         .build();
 
@@ -63,38 +61,30 @@ public class CategoryController extends MvpController<CategoryView, CategoryPres
     return inflater.inflate(R.layout.controller_child_catalog, container, false);
   }
 
-  @Override
-  protected void onViewCreated(@NonNull View view) {
+  @Override protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
     setupRecyclerView();
   }
 
-  @Override
-  public void onLoading(boolean pullToRefresh) {
+  @Override public void onLoading(boolean pullToRefresh) {
 
   }
 
-  @Override
-  public void onLoaded(List<CategoryRealm> value) {
+  @Override public void onLoaded(List<CategoryRealm> value) {
     adapter.addCategories(value);
   }
 
-  @Override
-  public void onError(Throwable e) {
+  @Override public void onError(Throwable e) {
 
   }
 
-  @Override
-  public void onEmpty() {
+  @Override public void onEmpty() {
 
   }
 
-  @NonNull
-  @Override
-  public CategoryPresenter createPresenter() {
+  @NonNull @Override public CategoryPresenter createPresenter() {
     return new CategoryPresenter(
-        CategoryRepository.getInstance(
-            CategoryRemoteDataStore.getInstance(),
+        CategoryRepository.getInstance(CategoryRemoteDataStore.getInstance(),
             CategoryDiskDataStore.getInstance()));
   }
 
@@ -107,8 +97,8 @@ public class CategoryController extends MvpController<CategoryView, CategoryPres
             adapter.getSelectedCategories());
       }
     } else {
-      getParentController().getRouter().pushController(
-          RouterTransaction.with(GlobalFeedController.create(name))
+      getParentController().getRouter()
+          .pushController(RouterTransaction.with(GlobalFeedController.create(name))
               .pushChangeHandler(new VerticalChangeHandler())
               .popChangeHandler(new VerticalChangeHandler()));
     }
@@ -117,7 +107,7 @@ public class CategoryController extends MvpController<CategoryView, CategoryPres
   private void setupRecyclerView() {
     adapter = new CategoryAdapter(categoryType);
     adapter.setMultiSelection(multiSelection);
-    adapter.setMaxSelectedItems(3);
+    adapter.setMaxSelectedItems(categoryType.equals(CategoryType.TYPE_DESTINATION) ? 1 : 3);
     adapter.setOnCategoryClickListener(this);
 
     rvCatalog.setLayoutManager(new GridLayoutManager(getActivity(), 2));

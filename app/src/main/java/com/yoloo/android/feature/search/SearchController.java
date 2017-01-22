@@ -4,6 +4,7 @@ import android.content.res.Resources;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -23,32 +24,25 @@ import com.yoloo.android.util.KeyboardUtil;
 
 public class SearchController extends BaseController {
 
-  @BindView(R.id.tablayout_search)
-  TabLayout tabLayout;
+  @BindView(R.id.tablayout_search) TabLayout tabLayout;
 
-  @BindView(R.id.viewpager_search)
-  ViewPager viewPager;
+  @BindView(R.id.viewpager_search) ViewPager viewPager;
 
-  @BindView(R.id.toolbar_search)
-  Toolbar toolbar;
+  @BindView(R.id.toolbar_search) Toolbar toolbar;
 
-  @BindView(R.id.ib_search_clear)
-  ImageButton ibSearchClear;
+  @BindView(R.id.ib_search_clear) ImageButton ibSearchClear;
 
-  @BindView(R.id.et_search)
-  EditText etSearch;
+  @BindView(R.id.et_search) EditText etSearch;
 
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
     return inflater.inflate(R.layout.controller_search, container, false);
   }
 
-  @Override
-  protected void onViewCreated(@NonNull View view) {
+  @Override protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
 
-    final SearchPagerAdapter pagerAdapter =
-        new SearchPagerAdapter(this, true, getResources());
+    final SearchPagerAdapter pagerAdapter = new SearchPagerAdapter(this, true, getResources());
 
     viewPager.setAdapter(pagerAdapter);
     tabLayout.setupWithViewPager(viewPager);
@@ -57,14 +51,12 @@ public class SearchController extends BaseController {
     setHasOptionsMenu(true);
   }
 
-  @Override
-  protected void onDestroyView(@NonNull View view) {
+  @Override protected void onDestroyView(@NonNull View view) {
     viewPager.setAdapter(null);
     super.onDestroyView(view);
   }
 
-  @Override
-  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     // handle arrow click here
     final int itemId = item.getItemId();
     switch (itemId) {
@@ -77,30 +69,27 @@ public class SearchController extends BaseController {
     }
   }
 
-  @Override
-  public boolean handleBack() {
+  @Override public boolean handleBack() {
     KeyboardUtil.hideKeyboard(getActivity(), etSearch);
     return super.handleBack();
   }
 
-  @OnTextChanged(R.id.et_search)
-  void listenSearch(CharSequence text) {
+  @OnTextChanged(R.id.et_search) void listenSearch(CharSequence text) {
     ibSearchClear.setVisibility(TextUtils.isEmpty(text) ? View.GONE : View.VISIBLE);
   }
 
-  @OnClick(R.id.ib_search_clear)
-  void clearSearch() {
+  @OnClick(R.id.ib_search_clear) void clearSearch() {
     etSearch.setText("");
   }
 
   private void setupToolbar() {
     setSupportActionBar(toolbar);
 
-    // add back arrow to toolbar
-    if (getSupportActionBar() != null) {
-      getSupportActionBar().setDisplayShowTitleEnabled(false);
-      getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-      getSupportActionBar().setDisplayShowHomeEnabled(true);
+    final ActionBar ab = getSupportActionBar();
+    if (ab != null) {
+      ab.setDisplayShowTitleEnabled(false);
+      ab.setDisplayHomeAsUpEnabled(true);
+      ab.setDisplayShowHomeEnabled(true);
     }
   }
 
@@ -113,8 +102,7 @@ public class SearchController extends BaseController {
       this.resources = resources;
     }
 
-    @Override
-    public Controller getItem(int position) {
+    @Override public Controller getItem(int position) {
       switch (position) {
         case 0:
           return ChildSearchController.create(SearchType.TAG);
@@ -125,13 +113,11 @@ public class SearchController extends BaseController {
       }
     }
 
-    @Override
-    public int getCount() {
+    @Override public int getCount() {
       return 2;
     }
 
-    @Override
-    public CharSequence getPageTitle(int position) {
+    @Override public CharSequence getPageTitle(int position) {
       switch (position) {
         case 0:
           return resources.getString(R.string.label_search_tags);

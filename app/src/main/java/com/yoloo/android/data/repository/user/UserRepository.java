@@ -69,6 +69,12 @@ public class UserRepository {
         .doOnSuccess(diskDataStore::add);
   }
 
+  public Single<AccountRealm> updateBounty(int bounty) {
+    return diskDataStore.getMe()
+        .map(accountRealm -> accountRealm.setBounties(bounty))
+        .doOnSuccess(diskDataStore::add);
+  }
+
   /**
    * List by name observable.
    *

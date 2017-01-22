@@ -59,7 +59,8 @@
         com.yoloo.backend.topic.TopicEndpoint,
         com.yoloo.backend.media.MediaEndpoint,
         com.yoloo.backend.device.DeviceEndpoint,
-        com.yoloo.backend.feed.FeedEndpoint
+        com.yoloo.backend.feed.FeedEndpoint,
+        com.yoloo.backend.notification.NotificationEndpoint
       </param-value>
     </init-param>
   </servlet>
@@ -81,12 +82,12 @@
 
   <servlet>
     <servlet-name>TopicRankUpdateServlet</servlet-name>
-    <servlet-class>com.yoloo.backend.categories.TopicRankUpdateServlet</servlet-class>
+    <servlet-class>com.yoloo.backend.topic.TopicRankUpdateServlet</servlet-class>
   </servlet>
 
   <servlet-mapping>
     <servlet-name>TopicRankUpdateServlet</servlet-name>
-    <url-pattern>/tasks/update/categories/rank</url-pattern>
+    <url-pattern>/tasks/update/topic/rank</url-pattern>
   </servlet-mapping>
 
   <servlet>

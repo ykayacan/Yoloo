@@ -4,6 +4,7 @@ import android.content.res.Resources;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -33,8 +34,7 @@ public class MainCatalogController extends BaseController {
     return inflater.inflate(R.layout.controller_catalog, container, false);
   }
 
-  @Override
-  protected void onViewCreated(@NonNull View view) {
+  @Override protected void onViewCreated(@NonNull View view) {
     final ControllerPagerAdapter pagerAdapter = new CatalogPagerAdapter(this, true, getResources());
 
     viewPager.setAdapter(pagerAdapter);
@@ -44,20 +44,17 @@ public class MainCatalogController extends BaseController {
     setHasOptionsMenu(true);
   }
 
-  @Override
-  protected void onDestroyView(@NonNull View view) {
+  @Override protected void onDestroyView(@NonNull View view) {
     viewPager.setAdapter(null);
     super.onDestroyView(view);
   }
 
-  @Override
-  public void onPrepareOptionsMenu(@NonNull Menu menu) {
+  @Override public void onPrepareOptionsMenu(@NonNull Menu menu) {
     super.onPrepareOptionsMenu(menu);
     menu.clear();
   }
 
-  @Override
-  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     // handle arrow click here
     final int itemId = item.getItemId();
     switch (itemId) {
@@ -73,10 +70,11 @@ public class MainCatalogController extends BaseController {
     setSupportActionBar(toolbar);
 
     // add back arrow to toolbar
-    if (getSupportActionBar() != null) {
-      getSupportActionBar().setTitle(R.string.label_main_catalog_title);
-      getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-      getSupportActionBar().setDisplayShowHomeEnabled(true);
+    final ActionBar ab = getSupportActionBar();
+    if (ab != null) {
+      ab.setTitle(R.string.label_main_catalog_title);
+      ab.setDisplayHomeAsUpEnabled(true);
+      ab.setDisplayShowHomeEnabled(true);
     }
   }
 
@@ -89,8 +87,7 @@ public class MainCatalogController extends BaseController {
       this.resources = resources;
     }
 
-    @Override
-    public Controller getItem(int position) {
+    @Override public Controller getItem(int position) {
       switch (position) {
         case 0:
           return CategoryController.create(CategoryType.TYPE_DESTINATION, false);
@@ -101,13 +98,11 @@ public class MainCatalogController extends BaseController {
       }
     }
 
-    @Override
-    public int getCount() {
+    @Override public int getCount() {
       return 2;
     }
 
-    @Override
-    public CharSequence getPageTitle(int position) {
+    @Override public CharSequence getPageTitle(int position) {
       switch (position) {
         case 0:
           return resources.getString(R.string.label_destination);

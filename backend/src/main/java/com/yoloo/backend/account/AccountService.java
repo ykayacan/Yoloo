@@ -41,6 +41,16 @@ public class AccountService {
         .build();
   }
 
+  public AccountModel createAdmin(FirebaseToken token) {
+    final Key<Account> accountKey = factory().allocateId(Account.class);
+
+    Account account = createAccount(token, accountKey);
+
+    return AccountModel.builder()
+        .account(account)
+        .build();
+  }
+
   public Account update(Account account, Optional<String> mediaId, Optional<String> username) {
     if (username.isPresent()) {
       account = account.withUsername(username.get());
@@ -67,6 +77,20 @@ public class AccountService {
         .topicKeys(topicKeys)
         .counts(Account.Counts.builder().build())
         .achievements(Account.Achievements.builder().build())
+        .created(DateTime.now())
+        .build();
+  }
+
+  private Account createAccount(FirebaseToken token, Key<Account> accountKey) {
+
+    String username = token.getName().trim().replaceAll("\\s+", "").toLowerCase();
+
+    return Account.builder()
+        .id(accountKey.getId())
+        .username(username)
+        .realname(token.getName())
+        .firebaseUUID(token.getUid())
+        .email(new Email(token.getEmail()))
         .created(DateTime.now())
         .build();
   }

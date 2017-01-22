@@ -33,7 +33,7 @@ public class UserRemoteDataStore {
   public Single<AccountRealm> getMe() {
     return ApiManager.getIdToken()
         .doOnSuccess(s -> Timber.d("Token: %s", s))
-        .flatMap(s -> Single.just(new AccountRealm()));
+        .flatMap(s -> Single.just(new AccountRealm().setBounties(35)));
   }
 
   public Single<AccountRealm> add(AccountRealm account) {
@@ -47,6 +47,12 @@ public class UserRemoteDataStore {
                 .setRequestHeaders(new HttpHeaders().setAuthorization(getIdToken()))
                 .execute())
         .map(AccountRealm::new);*/
+  }
+
+  public Single<AccountRealm> update(AccountRealm account) {
+    return ApiManager.getIdToken()
+        .doOnSuccess(s -> Timber.d("Token: %s", s))
+        .flatMap(s -> Single.just(account));
   }
 
   public Observable<Response<List<AccountRealm>>> list(String name, String cursor, int limit) {

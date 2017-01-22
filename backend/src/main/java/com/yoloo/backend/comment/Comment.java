@@ -19,6 +19,7 @@ import com.yoloo.backend.question.Question;
 import com.yoloo.backend.util.Deref;
 import com.yoloo.backend.vote.Votable;
 import com.yoloo.backend.vote.Vote;
+import java.util.Date;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -70,10 +71,11 @@ public class Comment implements Votable {
   @Wither
   @NonFinal
   @Index(IfNotDefault.class)
-  boolean accepted;
+  private boolean accepted;
 
   @Index
   @NonFinal
+  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private DateTime created;
 
   // Extra fields
@@ -105,6 +107,11 @@ public class Comment implements Votable {
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   public List<CommentCounterShard> getShards() {
     return Deref.deref(this.shardRefs);
+  }
+
+  @ApiResourceProperty(name = "created")
+  public Date getDate() {
+    return created.toDate();
   }
 
   @NoArgsConstructor

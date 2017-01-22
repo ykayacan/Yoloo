@@ -1,12 +1,13 @@
 package com.yoloo.backend.comment;
 
 import com.google.api.server.spi.response.CollectionResponse;
+import com.google.api.server.spi.response.ConflictException;
 import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.NotFoundException;
 import com.googlecode.objectify.Ref;
@@ -21,9 +22,7 @@ import com.yoloo.backend.question.Question;
 import com.yoloo.backend.question.QuestionController;
 import com.yoloo.backend.question.QuestionControllerFactory;
 import com.yoloo.backend.question.QuestionUtil;
-import com.yoloo.backend.question.QuestionWrapper;
 import com.yoloo.backend.shard.ShardUtil;
-import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagController;
 import com.yoloo.backend.tag.TagControllerFactory;
 import com.yoloo.backend.tag.TagGroup;
@@ -84,7 +83,7 @@ public class CommentControllerTest extends TestBase {
     DeviceRecord record = createRecord(owner);
     Tracker tracker = GamificationService.create().create(owner.getKey());
 
-    ImmutableList<Object> saveList = ImmutableList.builder()
+    ImmutableSet<Object> saveList = ImmutableSet.builder()
         .add(owner)
         .addAll(model.getShards())
         .add(record)
@@ -95,13 +94,17 @@ public class CommentControllerTest extends TestBase {
 
     User user = new User(USER_EMAIL, USER_AUTH_DOMAIN, owner.getWebsafeId());
 
-    Topic europe = topicController.add("europe", Topic.Type.THEME, user);
+    try {
+      topicController.add("europe", Topic.Type.CONTINENT, user);
+    } catch (ConflictException e) {
+      e.printStackTrace();
+    }
 
     TagGroup passport = tagController.addGroup("passport", user);
+    tagController.addTag("visa", "en", passport.getWebsafeId(), user);
 
-    Tag visa = tagController.addTag("visa", "en", passport.getWebsafeId(), user);
-
-    question = questionController.add(createQuestionWrapper(), user);
+    question = questionController.add("Test content", "visa,passport", "europe", Optional.absent(),
+        Optional.absent(), user);
   }
 
   @Test
@@ -238,25 +241,21 @@ public class CommentControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     Comment comment1 =
-        commentController.add(question.getWebsafeId(), "Test comment1", Optional.absent(),
-            user);
+        commentController.add(question.getWebsafeId(), "Test comment1", Optional.absent(), user);
     Comment comment2 =
-        commentController.add(question.getWebsafeId(), "Test comment2", Optional.absent(),
-            user);
+        commentController.add(question.getWebsafeId(), "Test comment2", Optional.absent(), user);
     Comment comment3 =
-        commentController.add(question.getWebsafeId(), "Test comment3", Optional.absent(),
-            user);
+        commentController.add(question.getWebsafeId(), "Test comment3", Optional.absent(), user);
     Comment comment4 =
-        commentController.add(question.getWebsafeId(), "Test comment4", Optional.absent(),
-            user);
+        commentController.add(question.getWebsafeId(), "Test comment4", Optional.absent(), user);
 
     voteController.vote(comment1.getWebsafeId(), Vote.Direction.UP, user);
     voteController.vote(comment2.getWebsafeId(), Vote.Direction.UP, user);
     voteController.vote(comment3.getWebsafeId(), Vote.Direction.UP, user);
     voteController.vote(comment4.getWebsafeId(), Vote.Direction.UP, user);
 
-    CollectionResponse<Comment> response = commentController
-        .list(question.getWebsafeId(), Optional.absent(), Optional.absent(), user);
+    CollectionResponse<Comment> response =
+        commentController.list(question.getWebsafeId(), Optional.absent(), Optional.absent(), user);
 
     assertEquals(4, response.getItems().size());
 
@@ -288,15 +287,6 @@ public class CommentControllerTest extends TestBase {
     return AccountModel.builder()
         .account(account)
         .shards(shards)
-        .build();
-  }
-
-  private QuestionWrapper createQuestionWrapper() {
-    return QuestionWrapper.builder()
-        .content("Test content")
-        .tags("visa,passport")
-        .topics("europe")
-        .bounty(0)
         .build();
   }
 

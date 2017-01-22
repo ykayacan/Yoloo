@@ -49,14 +49,12 @@ public class GoogleProvider
     this(controller, idpConfig, null);
   }
 
-  public GoogleProvider(Controller controller, AuthUI.IdpConfig idpConfig,
-      @Nullable String email) {
+  public GoogleProvider(Controller controller, AuthUI.IdpConfig idpConfig, @Nullable String email) {
     this.controller = controller;
     String clientId = controller.getActivity().getString(R.string.default_web_client_id);
 
     GoogleSignInOptions.Builder builder =
-        new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestEmail()
+        new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail()
             .requestProfile()
             .requestIdToken(clientId);
 
@@ -69,13 +67,12 @@ public class GoogleProvider
       builder.setAccountName(email);
     }
 
-    googleApiClient = new GoogleApiClient.Builder(controller.getActivity())
-        .addApi(Auth.GOOGLE_SIGN_IN_API, builder.build())
-        .build();
+    googleApiClient =
+        new GoogleApiClient.Builder(controller.getActivity()).addApi(Auth.GOOGLE_SIGN_IN_API,
+            builder.build()).build();
   }
 
-  @Nullable
-  public static AuthCredential createAuthCredential(IdpResponse response) {
+  @Nullable public static AuthCredential createAuthCredential(IdpResponse response) {
     return GoogleAuthProvider.getCredential(response.getIdpToken(), null);
   }
 
@@ -83,13 +80,11 @@ public class GoogleProvider
     return context.getResources().getString(R.string.idp_name_google);
   }
 
-  @Override
-  public String getProviderId() {
+  @Override public String getProviderId() {
     return GoogleAuthProvider.PROVIDER_ID;
   }
 
-  @Override
-  public void setAuthenticationCallback(IdpCallback callback) {
+  @Override public void setAuthenticationCallback(IdpCallback callback) {
     idpCallback = callback;
   }
 
@@ -111,8 +106,7 @@ public class GoogleProvider
         account.getIdToken());
   }
 
-  @Override
-  public void onActivityResult(int requestCode, int resultCode, Intent data) {
+  @Override public void onActivityResult(int requestCode, int resultCode, Intent data) {
     if (requestCode == RC_SIGN_IN) {
       GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
       if (result != null) {
@@ -127,8 +121,7 @@ public class GoogleProvider
     }
   }
 
-  @Override
-  public void startLogin(Controller controller) {
+  @Override public void startLogin(Controller controller) {
     Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(googleApiClient);
     controller.startActivityForResult(signInIntent, RC_SIGN_IN);
   }
@@ -145,14 +138,12 @@ public class GoogleProvider
     idpCallback.onFailure(extra);
   }
 
-  @Override
-  public void onClick(View view) {
+  @Override public void onClick(View view) {
     Auth.GoogleSignInApi.signOut(googleApiClient);
     startLogin(controller);
   }
 
-  @Override
-  public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+  @Override public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
     Log.w(TAG, "onConnectionFailed:" + connectionResult);
     Bundle extra = new Bundle();
     extra.putString(ERROR_KEY, connectionResult.getErrorMessage());

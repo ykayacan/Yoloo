@@ -5,6 +5,8 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
@@ -20,24 +22,30 @@ import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 import com.bluelinelabs.conductor.support.ControllerPagerAdapter;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CategoryRealm;
-import com.yoloo.android.feature.base.BaseController;
+import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.repository.post.PostRepository;
+import com.yoloo.android.data.repository.post.datasource.PostDiskDataStore;
+import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
+import com.yoloo.android.feature.base.framework.MvpController;
 import com.yoloo.android.feature.category.CategoryController;
 import com.yoloo.android.feature.category.CategoryType;
 import com.yoloo.android.feature.write.editor.EditorController;
+import io.reactivex.Observable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import timber.log.Timber;
 
-public class CatalogController extends BaseController {
+public class CatalogController extends MvpController<CatalogView, CatalogPresenter>
+    implements CatalogView {
 
-  @BindView(R.id.tablayout_catalog)
-  TabLayout tabLayout;
+  @BindView(R.id.tablayout_catalog) TabLayout tabLayout;
 
-  @BindView(R.id.viewpager_catalog)
-  ViewPager viewPager;
+  @BindView(R.id.viewpager_catalog) ViewPager viewPager;
 
-  @BindView(R.id.toolbar_catalog)
-  Toolbar toolbar;
+  @BindView(R.id.toolbar_catalog) Toolbar toolbar;
+
+  private PostRealm draft;
 
   private Map<String, List<CategoryRealm>> selectedCategories;
 
@@ -50,13 +58,11 @@ public class CatalogController extends BaseController {
     return inflater.inflate(R.layout.controller_catalog, container, false);
   }
 
-  @Override
-  protected void onViewCreated(@NonNull View view) {
+  @Override protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
     selectedCategories = new HashMap<>();
 
-    final ControllerPagerAdapter pagerAdapter =
-        new CatalogPagerAdapter(this, true, getResources());
+    final ControllerPagerAdapter pagerAdapter = new CatalogPagerAdapter(this, true, getResources());
 
     viewPager.setAdapter(pagerAdapter);
     tabLayout.setupWithViewPager(viewPager);
@@ -65,30 +71,33 @@ public class CatalogController extends BaseController {
     setHasOptionsMenu(true);
   }
 
-  @Override
-  protected void onDestroyView(@NonNull View view) {
+  @Override protected void onDestroyView(@NonNull View view) {
     viewPager.setAdapter(null);
     super.onDestroyView(view);
   }
 
-  @Override
-  public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+  @Override public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
     inflater.inflate(R.menu.menu_catalog, menu);
   }
 
-  @Override
-  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     // handle arrow click here
     final int itemId = item.getItemId();
     switch (itemId) {
       case android.R.id.home:
-        getRouter().popCurrentController();
-        return true;
+        showDiscardDraftDialog();
+        return false;
       case R.id.action_next:
         if (selectedCategories.isEmpty()) {
-          Snackbar.make(getView(), "Please select category", Snackbar.LENGTH_SHORT).show();
+          Snackbar.make(getView(), R.string.error_select_category, Snackbar.LENGTH_SHORT).show();
           return false;
         }
+
+        String categoryIdsAsString = getCategoryIdsAsString();
+
+        draft.setCategoriesAsString(categoryIdsAsString);
+
+        getPresenter().updateDraft(draft);
 
         getRouter().pushController(RouterTransaction.with(new EditorController())
             .pushChangeHandler(new HorizontalChangeHandler())
@@ -97,6 +106,25 @@ public class CatalogController extends BaseController {
       default:
         return super.onOptionsItemSelected(item);
     }
+  }
+
+  @NonNull @Override public CatalogPresenter createPresenter() {
+    return new CatalogPresenter(PostRepository.getInstance(PostRemoteDataStore.getInstance(),
+        PostDiskDataStore.getInstance()));
+  }
+
+  @Override public void onDraftLoaded(PostRealm draft) {
+    this.draft = draft;
+    Timber.d("Catalog: %s", draft.getBounty());
+  }
+
+  private String getCategoryIdsAsString() {
+    return Observable.fromIterable(selectedCategories.values())
+        .flatMap(Observable::fromIterable)
+        .map(CategoryRealm::getId)
+        .reduce((s, s2) -> s + "," + s2)
+        .map(s -> s.substring(0, s.length() - 1))
+        .blockingGet();
   }
 
   public void updateSelectedCategories(@CategoryType String categoryType,
@@ -114,13 +142,26 @@ public class CatalogController extends BaseController {
     setSupportActionBar(toolbar);
 
     // add back arrow to toolbar
-    if (getSupportActionBar() != null) {
-      getSupportActionBar().setTitle(R.string.label_catalog_title);
-      getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-      getSupportActionBar().setHomeAsUpIndicator(
+    final ActionBar ab = getSupportActionBar();
+    if (ab != null) {
+      ab.setTitle(R.string.label_catalog_title);
+      ab.setDisplayHomeAsUpEnabled(true);
+      ab.setHomeAsUpIndicator(
           AppCompatResources.getDrawable(getActivity(), R.drawable.ic_close_white_24dp));
-      getSupportActionBar().setDisplayShowHomeEnabled(true);
+      ab.setDisplayShowHomeEnabled(true);
     }
+  }
+
+  private void showDiscardDraftDialog() {
+    new AlertDialog.Builder(getActivity()).setTitle(R.string.label_discard_draft)
+        .setCancelable(false)
+        .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+          getPresenter().deleteDraft();
+          getRouter().popCurrentController();
+        })
+        .setNegativeButton(android.R.string.cancel, (dialog, which) -> {
+        })
+        .show();
   }
 
   private static class CatalogPagerAdapter extends ControllerPagerAdapter {
@@ -132,8 +173,7 @@ public class CatalogController extends BaseController {
       this.resources = resources;
     }
 
-    @Override
-    public Controller getItem(int position) {
+    @Override public Controller getItem(int position) {
       switch (position) {
         case 0:
           return CategoryController.create(CategoryType.TYPE_DESTINATION, true);
@@ -144,13 +184,11 @@ public class CatalogController extends BaseController {
       }
     }
 
-    @Override
-    public int getCount() {
+    @Override public int getCount() {
       return 2;
     }
 
-    @Override
-    public CharSequence getPageTitle(int position) {
+    @Override public CharSequence getPageTitle(int position) {
       switch (position) {
         case 0:
           return resources.getString(R.string.label_destination);

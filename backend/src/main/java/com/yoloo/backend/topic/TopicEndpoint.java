@@ -13,6 +13,7 @@ import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
 import com.yoloo.backend.topic.sort_strategy.CategorySorter;
 import com.yoloo.backend.validator.Validator;
 import com.yoloo.backend.validator.rule.common.AuthValidator;
+import com.yoloo.backend.validator.rule.common.BadRequestValidator;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
@@ -57,6 +58,7 @@ public class TopicEndpoint {
       throws ServiceException {
 
     Validator.builder()
+        .addRule(new BadRequestValidator(name, type))
         .addRule(new AuthValidator(user))
         .validate();
 

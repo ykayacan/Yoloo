@@ -8,6 +8,7 @@ import com.yoloo.android.data.sorter.PostSorter;
 import com.yoloo.android.util.Preconditions;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import java.util.List;
 
@@ -40,11 +41,8 @@ public class PostRepository {
   public Observable<PostRealm> get(String postId) {
     Preconditions.checkNotNull(postId, "postId can not be null.");
 
-    return Observable.mergeDelayError(
-        diskDataStore.get(postId),
-        remoteDataStore.get(postId)
-            .subscribeOn(Schedulers.io())
-            .doOnNext(diskDataStore::add));
+    return Observable.mergeDelayError(diskDataStore.get(postId),
+        remoteDataStore.get(postId).subscribeOn(Schedulers.io()).doOnNext(diskDataStore::add));
   }
 
   /**
@@ -56,9 +54,15 @@ public class PostRepository {
   public Observable<PostRealm> add(PostRealm post) {
     Preconditions.checkNotNull(post, "post can not be null.");
 
-    return remoteDataStore.add(post)
-        .subscribeOn(Schedulers.io())
-        .doOnNext(diskDataStore::add);
+    return remoteDataStore.add(post).subscribeOn(Schedulers.io()).doOnNext(diskDataStore::add);
+  }
+
+  public Single<PostRealm> addOrGetDraft() {
+    return diskDataStore.addOrGetDraft();
+  }
+
+  public Completable updateDraft(PostRealm draft) {
+    return Completable.fromAction(() -> diskDataStore.updateDraft(draft));
   }
 
   /**
@@ -75,6 +79,10 @@ public class PostRepository {
     });
   }
 
+  public Completable deleteDraft() {
+    return Completable.fromAction(diskDataStore::deleteDraft);
+  }
+
   /**
    * List observable.
    *
@@ -87,17 +95,10 @@ public class PostRepository {
    */
   public Observable<Response<List<PostRealm>>> list(String cursor, String eTag, int limit,
       PostSorter sorter, String category) {
-    return Observable.mergeDelayError(
-        diskDataStore.list(sorter, category),
+    return Observable.mergeDelayError(diskDataStore.list(sorter, category),
         remoteDataStore.list(sorter, category, cursor, eTag, limit)
             .subscribeOn(Schedulers.io())
             .doOnNext(response -> diskDataStore.addAll(response.getData())));
-  }
-
-  public Observable<Response<List<PostRealm>>> list(String cursor, String eTag, int limit,
-      String category) {
-    return remoteDataStore.list(PostSorter.NEWEST, category, cursor, eTag, limit)
-        .subscribeOn(Schedulers.io());
   }
 
   /**
@@ -109,11 +110,9 @@ public class PostRepository {
    * @return the observable
    */
   public Observable<Response<List<PostRealm>>> listFeed(String cursor, String eTag, int limit) {
-    return Observable.mergeDelayError(
-        diskDataStore.list(PostSorter.NEWEST, null),
+    return Observable.mergeDelayError(diskDataStore.listFeed(),
         remoteDataStore.listFeed(cursor, eTag, limit)
             .subscribeOn(Schedulers.io())
-            .filter(listResponse -> !listResponse.getData().isEmpty())
             .doOnNext(response -> diskDataStore.addAll(response.getData())));
   }
 

@@ -64,7 +64,7 @@ public class TagCounterUpdateServlet extends HttpServlet {
                 }
             }
 
-            tagEntities.add(index, hashTag.withQuestions(questions));
+            tagEntities.addAdmin(index, hashTag.withQuestions(questions));
             index++;
         }
 

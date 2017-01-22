@@ -60,23 +60,19 @@ public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResu
     FacebookSdk.sdkInitialize(appContext);
   }
 
-  @Nullable
-  public static AuthCredential createAuthCredential(IdpResponse response) {
+  @Nullable public static AuthCredential createAuthCredential(IdpResponse response) {
     return FacebookAuthProvider.getCredential(response.getIdpToken());
   }
 
-  @Override
-  public String getName(Context context) {
+  @Override public String getName(Context context) {
     return context.getResources().getString(R.string.idp_name_facebook);
   }
 
-  @Override
-  public String getProviderId() {
+  @Override public String getProviderId() {
     return FacebookAuthProvider.PROVIDER_ID;
   }
 
-  @Override
-  public void startLogin(Controller controller) {
+  @Override public void startLogin(Controller controller) {
     sCallbackManager = CallbackManager.Factory.create();
     LoginManager loginManager = LoginManager.getInstance();
     loginManager.registerCallback(sCallbackManager, this);
@@ -96,27 +92,22 @@ public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResu
     loginManager.logInWithReadPermissions(controller.getActivity(), permissionsList);
   }
 
-  @Override
-  public void setAuthenticationCallback(IdpCallback callback) {
+  @Override public void setAuthenticationCallback(IdpCallback callback) {
     mCallbackObject = callback;
   }
 
-  @Override
-  public void onActivityResult(int requestCode, int resultCode, Intent data) {
+  @Override public void onActivityResult(int requestCode, int resultCode, Intent data) {
     if (sCallbackManager != null) {
       sCallbackManager.onActivityResult(requestCode, resultCode, data);
     }
   }
 
-  @Override
-  public void onSuccess(final LoginResult loginResult) {
-    GraphRequest request = GraphRequest.newMeRequest(
-        loginResult.getAccessToken(),
-        (object, response) -> {
+  @Override public void onSuccess(final LoginResult loginResult) {
+    GraphRequest request =
+        GraphRequest.newMeRequest(loginResult.getAccessToken(), (object, response) -> {
           FacebookRequestError requestError = response.getError();
           if (requestError != null) {
-            Log.e(TAG,
-                "Received Facebook error: " + requestError.getErrorMessage());
+            Log.e(TAG, "Received Facebook error: " + requestError.getErrorMessage());
             onFailure(new Bundle());
             return;
           }
@@ -140,15 +131,13 @@ public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResu
     request.executeAsync();
   }
 
-  @Override
-  public void onCancel() {
+  @Override public void onCancel() {
     Bundle extra = new Bundle();
     extra.putString(ERROR, "cancelled");
     onFailure(extra);
   }
 
-  @Override
-  public void onError(FacebookException error) {
+  @Override public void onError(FacebookException error) {
     Log.e(TAG, "Error logging in with Facebook. " + error.getMessage());
     Bundle extra = new Bundle();
     extra.putString(ERROR, "error");
@@ -157,9 +146,7 @@ public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResu
   }
 
   private IdpResponse createIdpResponse(String email, LoginResult loginResult) {
-    return new IdpResponse(
-        FacebookAuthProvider.PROVIDER_ID,
-        email,
+    return new IdpResponse(FacebookAuthProvider.PROVIDER_ID, email,
         loginResult.getAccessToken().getToken());
   }
 

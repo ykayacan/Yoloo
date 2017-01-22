@@ -21,8 +21,7 @@ public class SignInPresenter extends MvpPresenter<SignInView> {
     this.userRepository = userRepository;
   }
 
-  @Override
-  public void onDetachView() {
+  @Override public void onDetachView() {
     getView().onHideLoading();
     super.onDetachView();
   }
@@ -43,26 +42,24 @@ public class SignInPresenter extends MvpPresenter<SignInView> {
   }
 
   private void processFirebase(AuthCredential credential) {
-    FirebaseAuth.getInstance().signInWithCredential(credential)
-        .addOnCompleteListener(task -> {
-          Timber.d("signInWithCredential:onComplete %s", task.isSuccessful());
+    FirebaseAuth.getInstance().signInWithCredential(credential).addOnCompleteListener(task -> {
+      Timber.d("signInWithCredential:onComplete %s", task.isSuccessful());
 
-          // If sign in fails, display a message to the user. If sign in succeeds
-          // the auth state listener will be notified and logic to handle the
-          // signed in user can be handled in the listener.
-          if (!task.isSuccessful()) {
-            getView().onHideLoading();
-            getView().onError(task.getException());
-          } else {
-            loadUserProfile();
-          }
-        });
+      // If sign in fails, display a message to the user. If sign in succeeds
+      // the auth state listener will be notified and logic to handle the
+      // signed in user can be handled in the listener.
+      if (!task.isSuccessful()) {
+        getView().onHideLoading();
+        getView().onError(task.getException());
+      } else {
+        loadUserProfile();
+      }
+    });
   }
 
   private void loadUserProfile() {
-    Disposable d = userRepository.getMe()
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(account -> {
+    Disposable d =
+        userRepository.getMe().observeOn(AndroidSchedulers.mainThread()).subscribe(account -> {
           getView().onHideLoading();
           getView().onSignedIn();
         }, throwable -> {

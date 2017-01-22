@@ -10,42 +10,35 @@ import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CommentRealm;
-import com.yoloo.android.feature.base.BaseEpoxyHolder;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
+import com.yoloo.android.feature.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.feature.ui.widget.VoteView;
 import com.yoloo.android.feature.ui.widget.linkabletextview.LinkableTextView;
-import com.yoloo.android.feature.ui.widget.timeview.ZamanTextView;
+import com.yoloo.android.feature.ui.widget.zamanview.ZamanTextView;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.glide.CropCircleTransformation;
 
 public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolder> {
 
-  @EpoxyAttribute
-  CommentRealm comment;
+  @EpoxyAttribute CommentRealm comment;
 
-  @EpoxyAttribute(hash = false)
-  OnProfileClickListener onProfileClickListener;
+  @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
 
-  @EpoxyAttribute(hash = false)
-  OnVoteClickListener onVoteClickListener;
+  @EpoxyAttribute(hash = false) OnVoteClickListener onVoteClickListener;
 
-  @EpoxyAttribute(hash = false)
-  OnMentionClickListener onMentionClickListener;
+  @EpoxyAttribute(hash = false) OnMentionClickListener onMentionClickListener;
 
-  @Override
-  protected CommentHolder createNewHolder() {
+  @Override protected CommentHolder createNewHolder() {
     return new CommentHolder();
   }
 
-  @Override
-  protected int getDefaultLayout() {
+  @Override protected int getDefaultLayout() {
     return R.layout.item_comment;
   }
 
-  @Override
-  public void bind(CommentHolder holder) {
+  @Override public void bind(CommentHolder holder) {
     final Context context = holder.ivUserAvatar.getContext().getApplicationContext();
 
     Glide.with(context)
@@ -72,8 +65,7 @@ public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolde
     setupClickListeners(holder);
   }
 
-  @Override
-  public void unbind(CommentHolder holder) {
+  @Override public void unbind(CommentHolder holder) {
     clearClickListeners(holder);
   }
 
@@ -99,22 +91,16 @@ public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolde
   }
 
   static class CommentHolder extends BaseEpoxyHolder {
-    @BindView(R.id.iv_comment_user_avatar)
-    ImageView ivUserAvatar;
+    @BindView(R.id.iv_comment_user_avatar) ImageView ivUserAvatar;
 
-    @BindView(R.id.tv_comment_username)
-    TextView tvUsername;
+    @BindView(R.id.tv_comment_username) TextView tvUsername;
 
-    @BindView(R.id.tv_comment_time)
-    ZamanTextView tvTime;
+    @BindView(R.id.tv_comment_time) ZamanTextView tvTime;
 
-    @BindView(R.id.tv_comment_content)
-    LinkableTextView tvContent;
+    @BindView(R.id.tv_comment_content) LinkableTextView tvContent;
 
-    @BindView(R.id.tv_comment_vote)
-    VoteView voteView;
+    @BindView(R.id.tv_comment_vote) VoteView voteView;
 
-    @BindView(R.id.tv_mark_as_accepted)
-    TextView tvMarkAsAccepted;
+    @BindView(R.id.tv_mark_as_accepted) TextView tvMarkAsAccepted;
   }
 }

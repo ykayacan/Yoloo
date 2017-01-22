@@ -3,8 +3,6 @@
   <dimen name="activity_horizontal_margin">16dp</dimen>
   <dimen name="activity_vertical_margin">16dp</dimen>
 
-  <dimen name="grid_inset">16dp</dimen>
-
   <dimen name="min_item_width">0dp</dimen>
   <dimen name="default_text_size">14sp</dimen>
   <dimen name="default_item_margin">2dp</dimen>
@@ -25,4 +23,8 @@
   <dimen name="defaultTagsTextSize">16sp</dimen>
   <dimen name="defaultTagsCloseImagePadding">10dp</dimen>
   <dimen name="defaultTagsPadding">0dp</dimen>
+
+  <dimen name="z_fab_over_touchable_app_bar">9dp</dimen>
+
+  <dimen name="padding_normal">16dp</dimen>
 </resources>

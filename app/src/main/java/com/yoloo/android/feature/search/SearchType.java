@@ -5,8 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @IntDef({
-    SearchType.TAG,
-    SearchType.USER
+    SearchType.TAG, SearchType.USER
 })
 @Retention(RetentionPolicy.SOURCE)
 public @interface SearchType {

@@ -1,10 +1,12 @@
 package com.yoloo.backend.bookmark;
 
+import com.google.api.server.spi.response.ConflictException;
 import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Ref;
 import com.yoloo.backend.account.Account;
@@ -17,7 +19,6 @@ import com.yoloo.backend.gamification.Tracker;
 import com.yoloo.backend.question.Question;
 import com.yoloo.backend.question.QuestionController;
 import com.yoloo.backend.question.QuestionControllerFactory;
-import com.yoloo.backend.question.QuestionWrapper;
 import com.yoloo.backend.shard.ShardUtil;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagController;
@@ -75,13 +76,18 @@ public class BookmarkControllerTest extends TestBase {
 
     User user = new User(USER_EMAIL, USER_AUTH_DOMAIN, owner.getWebsafeId());
 
-    Topic europe = topicController.add("europe", Topic.Type.THEME, user);
+    Topic europe = null;
+    try {
+      europe = topicController.add("europe", Topic.Type.THEME, user);
+    } catch (ConflictException e) {
+      e.printStackTrace();
+    }
 
     TagGroup passport = tagController.addGroup("passport", user);
 
     Tag visa = tagController.addTag("visa", "en", passport.getWebsafeId(), user);
 
-    ImmutableList<Object> saveList = ImmutableList.builder()
+    ImmutableSet<Object> saveList = ImmutableSet.builder()
         .add(owner)
         .addAll(model.getShards())
         .add(tracker)
@@ -93,9 +99,8 @@ public class BookmarkControllerTest extends TestBase {
 
     ofy().save().entities(saveList).now();
 
-    QuestionWrapper wrapper = createQuestionWrapper();
-
-    question = questionController.add(wrapper, user);
+    question = questionController.add("Test content", "visa,passport", "europe", Optional.absent(),
+        Optional.absent(), user);
   }
 
   @Test
@@ -136,14 +141,9 @@ public class BookmarkControllerTest extends TestBase {
   public void testListSavedQuestions() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    QuestionWrapper wrapper2 = QuestionWrapper.builder()
-        .content("hello2")
-        .tags("visa")
-        .topics("europe")
-        .bounty(0)
-        .build();
-
-    Question question2 = questionController.add(wrapper2, user);
+    Question question2 =
+        questionController.add("Test content", "visa,passport", "europe", Optional.absent(),
+            Optional.absent(), user);
 
     bookmarkController.add(question.getWebsafeId(), user);
     bookmarkController.add(question2.getWebsafeId(), user);
@@ -176,15 +176,6 @@ public class BookmarkControllerTest extends TestBase {
     return AccountModel.builder()
         .account(account)
         .shards(shards)
-        .build();
-  }
-
-  private QuestionWrapper createQuestionWrapper() {
-    return QuestionWrapper.builder()
-        .content("Test content")
-        .tags("visa,passport")
-        .topics("europe")
-        .bounty(0)
         .build();
   }
 

@@ -50,22 +50,17 @@ public class CommentService {
     return CommentModel.builder().comment(comment).shards(shards).build();
   }
 
-  public Comment update(Comment comment, Optional<String> content,
-      Optional<Boolean> accepted) {
+  public Comment update(Comment comment, Optional<String> content) {
     if (content.isPresent()) {
       comment = comment.withContent(content.get());
-    }
-
-    if (accepted.isPresent()) {
-      comment = comment.withAccepted(accepted.get());
     }
 
     return comment;
   }
 
   public Pair<Question, Comment> accept(Question question, Comment comment,
-      Optional<Boolean> accepted) {
-    if (accepted.isPresent()) {
+      Optional<Boolean> accepted, Key<Account> accountKey) {
+    if (accepted.isPresent() && question.getParentUserKey().equivalent(accountKey)) {
       question = question.withAcceptedCommentKey(comment.getKey());
       comment = comment.withAccepted(true);
     }

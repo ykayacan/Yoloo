@@ -19,14 +19,11 @@ import java.util.List;
 import java.util.UUID;
 import org.joda.time.DateTime;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import static com.yoloo.backend.util.TestObjectifyService.fact;
 import static com.yoloo.backend.util.TestObjectifyService.ofy;
 import static org.junit.Assert.assertEquals;
 
-@RunWith(JUnit4.class)
 public class FollowControllerTest extends TestBase {
 
   private static final String USER_EMAIL = "test@gmail.com";

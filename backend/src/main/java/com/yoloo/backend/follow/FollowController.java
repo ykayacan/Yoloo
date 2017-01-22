@@ -6,13 +6,14 @@ import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.account.AccountCounterShard;
 import com.yoloo.backend.account.AccountShardService;
-import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.base.Controller;
+import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.notification.type.FollowNotification;
 import java.util.Collection;
@@ -77,14 +78,13 @@ public class FollowController extends Controller {
     followingShard = accountShardService
         .updateCounter(followingShard, AccountShardService.Update.FOLLOWER_UP);
 
-    FollowNotification notification =
-        FollowNotification.create(follower, followingKey, record);
+    FollowNotification notification = FollowNotification.create(follower, record);
 
-    ImmutableList<Object> saveList = ImmutableList.builder()
+    ImmutableSet<Object> saveList = ImmutableSet.builder()
         .add(follow)
         .add(followerShard)
         .add(followingShard)
-        .add(notification.getNotification())
+        .addAll(notification.getNotifications())
         .build();
 
     ofy().transact(() -> ofy().save().entities(saveList).now());

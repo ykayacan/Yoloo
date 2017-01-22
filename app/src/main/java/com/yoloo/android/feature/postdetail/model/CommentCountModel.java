@@ -8,18 +8,16 @@ import com.yoloo.android.util.CountUtil;
 
 public class CommentCountModel extends EpoxyModel<TextView> {
 
-  @EpoxyAttribute
-  long counts;
+  @EpoxyAttribute long counts;
 
-  @Override
-  protected int getDefaultLayout() {
+  @Override protected int getDefaultLayout() {
     return R.layout.item_comment_count;
   }
 
-  @Override
-  public void bind(TextView view) {
+  @Override public void bind(TextView view) {
     String countsFound = CountUtil.format(counts);
-    String text = view.getContext().getResources()
+    String text = view.getContext()
+        .getResources()
         .getQuantityString(R.plurals.label_comment_text, (int) counts, counts);
     view.setText(countsFound + " " + text);
   }

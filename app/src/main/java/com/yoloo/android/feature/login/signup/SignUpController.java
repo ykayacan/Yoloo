@@ -34,35 +34,25 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
 
   private static final String KEY_CATEGORY_IDS = "CATEGORY_IDS";
 
-  @BindView(R.id.et_login_fullname)
-  EditText etFullName;
+  @BindView(R.id.et_login_fullname) EditText etFullName;
 
-  @BindView(R.id.et_login_email)
-  EditText etEmail;
+  @BindView(R.id.et_login_email) EditText etEmail;
 
-  @BindView(R.id.et_login_password)
-  EditText etPassword;
+  @BindView(R.id.et_login_password) EditText etPassword;
 
-  @BindString(R.string.label_loading)
-  String loadingString;
+  @BindString(R.string.label_loading) String loadingString;
 
-  @BindString(R.string.error_field_required)
-  String errorFieldRequiredString;
+  @BindString(R.string.error_field_required) String errorFieldRequiredString;
 
-  @BindString(R.string.error_invalid_email)
-  String errorInvalidEmail;
+  @BindString(R.string.error_invalid_email) String errorInvalidEmail;
 
-  @BindString(R.string.error_invalid_password)
-  String errorInvalidPassword;
+  @BindString(R.string.error_invalid_password) String errorInvalidPassword;
 
-  @BindString(R.string.error_email_already_taken)
-  String errorEmailAlreadyTakenString;
+  @BindString(R.string.error_email_already_taken) String errorEmailAlreadyTakenString;
 
-  @BindString(R.string.error_server_down)
-  String errorServerDownString;
+  @BindString(R.string.error_server_down) String errorServerDownString;
 
-  @BindString(R.string.error_already_registered)
-  String errorAlreadyRegisteredString;
+  @BindString(R.string.error_already_registered) String errorAlreadyRegisteredString;
 
   private ArrayList<String> categoryIds;
 
@@ -74,9 +64,8 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
   }
 
   public static SignUpController create(ArrayList<String> topicIds) {
-    final Bundle bundle = new BundleBuilder()
-        .putStringArrayList(KEY_CATEGORY_IDS, topicIds)
-        .build();
+    final Bundle bundle =
+        new BundleBuilder().putStringArrayList(KEY_CATEGORY_IDS, topicIds).build();
 
     return new SignUpController(bundle);
   }
@@ -86,24 +75,18 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
     return inflater.inflate(R.layout.controller_sign_up, container, false);
   }
 
-  @Override
-  protected void onViewCreated(@NonNull View view) {
+  @Override protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
 
-    getActivity().getWindow().setSoftInputMode(
-        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+    getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
   }
 
-  @NonNull
-  @Override
-  public SignUpPresenter createPresenter() {
-    return new SignUpPresenter(UserRepository.getInstance(
-        UserRemoteDataStore.getInstance(),
+  @NonNull @Override public SignUpPresenter createPresenter() {
+    return new SignUpPresenter(UserRepository.getInstance(UserRemoteDataStore.getInstance(),
         UserDiskDataStore.getInstance()));
   }
 
-  @OnClick(R.id.btn_login_ready)
-  void signUp() {
+  @OnClick(R.id.btn_login_ready) void signUp() {
     etFullName.setError(null);
     etEmail.setError(null);
     etPassword.setError(null);
@@ -157,20 +140,17 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
     }
   }
 
-  @Override
-  public void onUsernameUnAvailable() {
+  @Override public void onUsernameUnAvailable() {
 
   }
 
-  @Override
-  public void onSignedUp() {
+  @Override public void onSignedUp() {
     getParentController().getRouter()
         .setRoot(RouterTransaction.with(new UserFeedController())
             .pushChangeHandler(new FadeChangeHandler()));
   }
 
-  @Override
-  public void onError(Throwable t) {
+  @Override public void onError(Throwable t) {
     if (t instanceof SocketTimeoutException) {
       Snackbar.make(getView(), errorServerDownString, Snackbar.LENGTH_LONG).show();
     }
@@ -187,8 +167,7 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
     AuthUI.getInstance().signOut(getActivity());
   }
 
-  @Override
-  public void onShowLoading() {
+  @Override public void onShowLoading() {
     if (progressDialog == null) {
       progressDialog = new ProgressDialog(getActivity());
       progressDialog.setMessage(loadingString);
@@ -198,8 +177,7 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
     progressDialog.show();
   }
 
-  @Override
-  public void onHideLoading() {
+  @Override public void onHideLoading() {
     if (progressDialog != null && progressDialog.isShowing()) {
       progressDialog.dismiss();
     }

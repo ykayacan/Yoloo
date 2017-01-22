@@ -6,7 +6,6 @@ import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GetTokenResult;
-import com.yoloo.android.Constants;
 import com.yoloo.android.backend.modal.yolooApi.YolooApi;
 import io.reactivex.Single;
 

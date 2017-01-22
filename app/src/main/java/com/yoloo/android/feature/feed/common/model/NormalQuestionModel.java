@@ -11,17 +11,17 @@ import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.PostRealm;
-import com.yoloo.android.feature.base.BaseEpoxyHolder;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnOptionsClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnReadMoreClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
+import com.yoloo.android.feature.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.feature.ui.widget.CompatTextView;
 import com.yoloo.android.feature.ui.widget.VoteView;
 import com.yoloo.android.feature.ui.widget.tagview.TagView;
-import com.yoloo.android.feature.ui.widget.timeview.ZamanTextView;
+import com.yoloo.android.feature.ui.widget.zamanview.ZamanTextView;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.ReadMoreUtil;
@@ -30,39 +30,29 @@ import java.util.List;
 
 public class NormalQuestionModel extends EpoxyModelWithHolder<NormalQuestionModel.QuestionHolder> {
 
-  @EpoxyAttribute
-  PostRealm post;
+  @EpoxyAttribute PostRealm post;
 
-  @EpoxyAttribute(hash = false)
-  OnProfileClickListener onProfileClickListener;
+  @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
 
-  @EpoxyAttribute(hash = false)
-  OnShareClickListener onShareClickListener;
+  @EpoxyAttribute(hash = false) OnShareClickListener onShareClickListener;
 
-  @EpoxyAttribute(hash = false)
-  OnCommentClickListener onCommentClickListener;
+  @EpoxyAttribute(hash = false) OnCommentClickListener onCommentClickListener;
 
-  @EpoxyAttribute(hash = false)
-  OnReadMoreClickListener onReadMoreClickListener;
+  @EpoxyAttribute(hash = false) OnReadMoreClickListener onReadMoreClickListener;
 
-  @EpoxyAttribute(hash = false)
-  OnOptionsClickListener onOptionsClickListener;
+  @EpoxyAttribute(hash = false) OnOptionsClickListener onOptionsClickListener;
 
-  @EpoxyAttribute(hash = false)
-  OnVoteClickListener onVoteClickListener;
+  @EpoxyAttribute(hash = false) OnVoteClickListener onVoteClickListener;
 
-  @Override
-  protected QuestionHolder createNewHolder() {
+  @Override protected QuestionHolder createNewHolder() {
     return new QuestionHolder();
   }
 
-  @Override
-  protected int getDefaultLayout() {
+  @Override protected int getDefaultLayout() {
     return getLayout();
   }
 
-  @Override
-  public void bind(QuestionHolder holder, List<Object> payloads) {
+  @Override public void bind(QuestionHolder holder, List<Object> payloads) {
     if (!payloads.isEmpty()) {
       if (payloads.get(0) instanceof PostRealm) {
         PostRealm post = (PostRealm) payloads.get(0);
@@ -74,8 +64,7 @@ public class NormalQuestionModel extends EpoxyModelWithHolder<NormalQuestionMode
     }
   }
 
-  @Override
-  public void bind(QuestionHolder holder) {
+  @Override public void bind(QuestionHolder holder) {
     final Context context = holder.ivUserAvatar.getContext().getApplicationContext();
 
     Glide.with(context)
@@ -99,8 +88,7 @@ public class NormalQuestionModel extends EpoxyModelWithHolder<NormalQuestionMode
     setupClickListeners(holder);
   }
 
-  @Override
-  public void unbind(QuestionHolder holder) {
+  @Override public void unbind(QuestionHolder holder) {
     clearClickListeners(holder);
   }
 
@@ -163,32 +151,22 @@ public class NormalQuestionModel extends EpoxyModelWithHolder<NormalQuestionMode
   }
 
   static class QuestionHolder extends BaseEpoxyHolder {
-    @BindView(R.id.iv_question_user_avatar)
-    ImageView ivUserAvatar;
+    @BindView(R.id.iv_question_user_avatar) ImageView ivUserAvatar;
 
-    @BindView(R.id.tv_question_username)
-    TextView tvUsername;
+    @BindView(R.id.tv_question_username) TextView tvUsername;
 
-    @BindView(R.id.tv_question_time)
-    ZamanTextView tvTime;
+    @BindView(R.id.tv_question_time) ZamanTextView tvTime;
 
-    @BindView(R.id.tv_question_content)
-    TextView tvContent;
+    @BindView(R.id.tv_question_content) TextView tvContent;
 
-    @BindView(R.id.ib_question_options)
-    ImageButton ibOptions;
+    @BindView(R.id.ib_question_options) ImageButton ibOptions;
 
-    @BindView(R.id.tv_question_share)
-    CompatTextView tvShare;
+    @BindView(R.id.tv_question_share) CompatTextView tvShare;
 
-    @BindView(R.id.tv_question_comment)
-    CompatTextView tvComment;
+    @BindView(R.id.tv_question_comment) CompatTextView tvComment;
 
-    @BindView(R.id.tv_question_vote)
-    VoteView voteView;
+    @BindView(R.id.tv_question_vote) VoteView voteView;
 
-    @Nullable
-    @BindView(R.id.view_category)
-    TagView tagView;
+    @Nullable @BindView(R.id.view_category) TagView tagView;
   }
 }

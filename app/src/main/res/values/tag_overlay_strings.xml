@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="label_tag_overlay_title">never, stop, exploring</string>
   <string name="label_tag_overlay_recommended">Recommended Tags</string>
 
   <string name="hint_max_tags">Enter maximum 7 tags here</string>
 
-  <string name="action_cancel">Cancel</string>
-  <string name="action_ok">OK</string>
 </resources>

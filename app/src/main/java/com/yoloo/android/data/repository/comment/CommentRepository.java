@@ -94,8 +94,7 @@ public class CommentRepository {
    * @param postId the post id
    * @param cursor the cursor
    * @param eTag the e tag
-   * @param limit the limit
-   * @return the observable
+   * @param limit the limit    @return the observable
    */
   public Observable<Response<List<CommentRealm>>> list(String postId, String cursor, String eTag,
       int limit) {

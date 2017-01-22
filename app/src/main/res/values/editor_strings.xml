@@ -13,4 +13,21 @@
   </string-array>
 
   <string name="label_tag"># %1$s</string>
+
+  <string-array name="label_bounties">
+    <item>10</item>
+    <item>20</item>
+    <item>30</item>
+    <item>40</item>
+    <item>50</item>
+  </string-array>
+
+  <string name="label_select_a_bounty">SELECT A BOUNTY</string>
+
+  <string name="error_not_enough_bounty">You don\'t have enough bounty!</string>
+  <string name="label_ensure_bounty">Do you want to add %1$d bounties?</string>
+
+  <string name="label_sending_post">Sending post…</string>
+  <string name="label_sending_post_successful">Successfully sent.</string>
+  <string name="label_sending_post_failed">Failed.</string>
 </resources>

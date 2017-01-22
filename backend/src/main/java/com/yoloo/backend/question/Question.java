@@ -25,6 +25,7 @@ import com.yoloo.backend.media.size.MiniSize;
 import com.yoloo.backend.media.size.ThumbSize;
 import com.yoloo.backend.util.Deref;
 import com.yoloo.backend.vote.Vote;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import lombok.AccessLevel;
@@ -42,7 +43,7 @@ import org.joda.time.DateTime;
 @Value
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
 public class Question implements FeedItem {
 
   public static final String FIELD_CREATED = "created";
@@ -53,7 +54,6 @@ public class Question implements FeedItem {
   public static final String FIELD_BOUNTY = "bounty";
 
   @Id
-  @NonFinal
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private long id;
 
@@ -63,23 +63,18 @@ public class Question implements FeedItem {
   private Key<Account> parentUserKey;
 
   @Wither
-  @NonFinal
   private Link avatarUrl;
 
   @Wither
-  @NonFinal
   private String username;
 
   @Wither
-  @NonFinal
   private String content;
 
-  @NonFinal
   @Load(ShardGroup.class)
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private List<Ref<QuestionCounterShard>> shardRefs;
 
-  @NonFinal
   @Singular
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private Set<Key<Account>> reportedByKeys;
@@ -95,7 +90,6 @@ public class Question implements FeedItem {
   private Set<String> categories;
 
   @Wither
-  @NonFinal
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private Key<Comment> acceptedCommentKey;
 
@@ -104,7 +98,6 @@ public class Question implements FeedItem {
    */
   @Index
   @Wither
-  @NonFinal
   private int bounty;
 
   /**
@@ -121,32 +114,28 @@ public class Question implements FeedItem {
   private double rank;
 
   @Wither
-  @NonFinal
   private Media media;
 
   @Index
   @NonFinal
+  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private DateTime created;
 
   // Extra fields
 
   @Wither
-  @NonFinal
   @Ignore
   private Vote.Direction dir;
 
   @Wither
-  @NonFinal
   @Ignore
   private long votes;
 
   @Wither
-  @NonFinal
   @Ignore
   private long comments;
 
   @Wither
-  @NonFinal
   @Ignore
   private int reports;
 
@@ -200,6 +189,11 @@ public class Question implements FeedItem {
       return this.media.withSizes(sizes);
     }
     return null;
+  }
+
+  @ApiResourceProperty(name = "created")
+  public Date getDate() {
+    return created.toDate();
   }
 
   @NoArgsConstructor

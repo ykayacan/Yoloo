@@ -10,31 +10,25 @@ import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CategoryRealm;
-import com.yoloo.android.feature.base.BaseEpoxyHolder;
+import com.yoloo.android.feature.ui.recyclerview.BaseEpoxyHolder;
 
 public class CategoryModel extends EpoxyModelWithHolder<CategoryModel.CategoryHolder> {
 
-  @EpoxyAttribute
-  CategoryRealm realm;
+  @EpoxyAttribute CategoryRealm realm;
 
-  @EpoxyAttribute(hash = false)
-  CategoryAdapter.OnCategoryClickListener onCategoryClickListener;
+  @EpoxyAttribute(hash = false) CategoryAdapter.OnCategoryClickListener onCategoryClickListener;
 
-  @EpoxyAttribute(hash = false)
-  CategoryAdapter adapter;
+  @EpoxyAttribute(hash = false) CategoryAdapter adapter;
 
-  @Override
-  protected CategoryHolder createNewHolder() {
+  @Override protected CategoryHolder createNewHolder() {
     return new CategoryHolder();
   }
 
-  @Override
-  protected int getDefaultLayout() {
+  @Override protected int getDefaultLayout() {
     return R.layout.item_category;
   }
 
-  @Override
-  public void bind(CategoryHolder holder) {
+  @Override public void bind(CategoryHolder holder) {
     Glide.with(holder.ivCategoryBackground.getContext())
         .load(realm.getBackgroundUrl())
         .into(holder.ivCategoryBackground);
@@ -61,16 +55,12 @@ public class CategoryModel extends EpoxyModelWithHolder<CategoryModel.CategoryHo
   }
 
   static class CategoryHolder extends BaseEpoxyHolder {
-    @BindView(R.id.root_view)
-    ViewGroup rootView;
+    @BindView(R.id.root_view) ViewGroup rootView;
 
-    @BindView(R.id.iv_category_bg)
-    ImageView ivCategoryBackground;
+    @BindView(R.id.iv_category_bg) ImageView ivCategoryBackground;
 
-    @BindView(R.id.tv_category_text)
-    TextView tvCategoryText;
+    @BindView(R.id.tv_category_text) TextView tvCategoryText;
 
-    @BindView(R.id.view_category_checkmark)
-    View checkmarkView;
+    @BindView(R.id.view_category_checkmark) View checkmarkView;
   }
 }

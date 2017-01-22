@@ -1,6 +1,7 @@
 package com.yoloo.backend.topic;
 
 import com.google.api.server.spi.response.CollectionResponse;
+import com.google.api.server.spi.response.ConflictException;
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.users.User;
@@ -39,7 +40,12 @@ public class TopicController extends Controller {
   @NonNull
   private TopicShardService topicShardService;
 
-  public Topic add(String name, Topic.Type type, User user) {
+  public Topic add(String name, Topic.Type type, User user) throws ConflictException {
+    /*Key<Topic> savedKey = ofy().load().type(Topic.class)
+        .filter(Topic.FIELD_NAME + " =", name).keys().first().now();*/
+
+    //Guard.checkConflictRequest(savedKey, name + " category exists.");
+
     Key<Topic> topicKey = factory().allocateId(Topic.class);
 
     List<TopicCounterShard> shards = topicShardService.createShards(topicKey);

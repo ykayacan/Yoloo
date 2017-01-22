@@ -6,17 +6,18 @@ import com.google.appengine.api.urlfetch.HTTPRequest;
 import com.google.appengine.api.urlfetch.URLFetchService;
 import com.yoloo.backend.authentication.oauth2.OAuth2;
 import com.yoloo.backend.notification.type.NotificationBundle;
-import com.yoloo.backend.util.ServerConfig;
 import com.yoloo.backend.util.NetworkHelper;
+import com.yoloo.backend.util.ServerConfig;
 import io.reactivex.Single;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Logger;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 
-@RequiredArgsConstructor(staticName = "create")
+import static com.yoloo.backend.OfyService.ofy;
+
+@AllArgsConstructor(staticName = "create")
 public class NotificationService {
 
   private static final Logger logger =
@@ -24,7 +25,6 @@ public class NotificationService {
 
   private static final String FCM_ENDPOINT = "https://fcm.googleapis.com/fcm/send";
 
-  @NonNull
   private URLFetchService service;
 
   /**
@@ -33,6 +33,8 @@ public class NotificationService {
    * @param bundle the bundle
    */
   public void send(NotificationBundle bundle) {
+    ofy().save().entities(bundle.getNotifications());
+
     if (!ServerConfig.isDev()) {
       Single
           .create(e -> {

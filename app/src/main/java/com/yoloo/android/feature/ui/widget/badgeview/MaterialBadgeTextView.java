@@ -1,5 +1,6 @@
 package com.yoloo.android.feature.ui.widget.badgeview;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -13,16 +14,17 @@ import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.OvalShape;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.AppCompatTextView;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import com.yoloo.android.R;
+import com.yoloo.android.util.DisplayUtil;
 
 public class MaterialBadgeTextView extends AppCompatTextView {
 
@@ -43,7 +45,7 @@ public class MaterialBadgeTextView extends AppCompatTextView {
 
   private int ctType;
 
-  private int mShadowRadius;
+  private int shadowRadius;
   private int shadowYOffset;
   private int shadowXOffset;
 
@@ -66,37 +68,27 @@ public class MaterialBadgeTextView extends AppCompatTextView {
     init(context, attrs);
   }
 
-  private static int dp2px(Context context, float dpValue) {
-    try {
-      final float scale = context.getResources().getDisplayMetrics().density;
-      return (int) (dpValue * scale + 0.5f);
-    } catch (Exception e) {
-      return (int) (dpValue + 0.5f);
-    }
-  }
-
   private void init(Context context, AttributeSet attrs) {
     setGravity(Gravity.CENTER);
 
-    float density = getContext().getResources().getDisplayMetrics().density;
+    final float density = getContext().getResources().getDisplayMetrics().density;
 
-    mShadowRadius = (int) (density * SHADOW_RADIUS);
+    shadowRadius = (int) (density * SHADOW_RADIUS);
     shadowYOffset = (int) (density * Y_OFFSET);
     shadowXOffset = (int) (density * X_OFFSET);
 
-    int basePadding = (mShadowRadius * 2);
+    final int basePadding = (shadowRadius * 2);
 
-    float textHeight = getTextSize();
-    float textWidth = textHeight / 4;
+    final float textHeight = getTextSize();
+    final float textWidth = textHeight / 4;
 
     diffWH = (int) (Math.abs(textHeight - textWidth) / 2);
 
-    int horizontalPadding = basePadding + diffWH;
+    final int horizontalPadding = basePadding + diffWH;
 
     setPadding(horizontalPadding, basePadding, horizontalPadding, basePadding);
 
-    TypedArray a =
-        context.obtainStyledAttributes(attrs, R.styleable.MaterialBadgeTextView);
+    TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.MaterialBadgeTextView);
 
     backgroundColor =
         a.getColor(R.styleable.MaterialBadgeTextView_badge_backgroundColor, Color.WHITE);
@@ -113,9 +105,10 @@ public class MaterialBadgeTextView extends AppCompatTextView {
   protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
     super.onTextChanged(text, start, lengthBefore, lengthAfter);
 
-    String strText = text == null ? "" : text.toString().trim();
+    final String strText = TextUtils.isEmpty(text) ? "" : text.toString().trim();
+
     if (isHighLightMode && !"".equals(strText)) {
-      ViewGroup.LayoutParams lp = getLayoutParams();
+      final ViewGroup.LayoutParams lp = getLayoutParams();
       lp.height = ViewGroup.LayoutParams.WRAP_CONTENT;
       lp.width = ViewGroup.LayoutParams.WRAP_CONTENT;
       setLayoutParams(lp);
@@ -134,31 +127,29 @@ public class MaterialBadgeTextView extends AppCompatTextView {
       return;
     }
 
-    CharSequence text = getText();
+    final CharSequence text = getText();
     if (text == null) {
       return;
     }
 
     if (text.length() == 1) {
-      int max = Math.max(targetWidth, targetHeight);
+      final int max = Math.max(targetWidth, targetHeight);
 
-      ShapeDrawable circle;
+      final int diameter = max - (2 * shadowRadius);
 
-      final int diameter = max - (2 * mShadowRadius);
-
-      OvalShape oval = new OvalShadow(mShadowRadius, diameter);
-      circle = new ShapeDrawable(oval);
+      final OvalShape oval = new OvalShadow(shadowRadius, diameter);
+      final ShapeDrawable circle = new ShapeDrawable(oval);
 
       ViewCompat.setLayerType(this, ViewCompat.LAYER_TYPE_SOFTWARE, circle.getPaint());
       circle.getPaint()
-          .setShadowLayer(mShadowRadius, shadowXOffset, shadowYOffset, KEY_SHADOW_COLOR);
+          .setShadowLayer(shadowRadius, shadowXOffset, shadowYOffset, KEY_SHADOW_COLOR);
       circle.getPaint().setColor(backgroundColor);
       setBackground(circle);
     } else if (text.length() > 1) {
-      SemiCircleRectDrawable sr = new SemiCircleRectDrawable();
+      final SemiCircleRectDrawable sr = new SemiCircleRectDrawable();
 
       ViewCompat.setLayerType(this, ViewCompat.LAYER_TYPE_SOFTWARE, sr.getPaint());
-      sr.getPaint().setShadowLayer(mShadowRadius, shadowXOffset, shadowYOffset, KEY_SHADOW_COLOR);
+      sr.getPaint().setShadowLayer(shadowRadius, shadowXOffset, shadowYOffset, KEY_SHADOW_COLOR);
       sr.getPaint().setColor(backgroundColor);
       setBackground(sr);
     }
@@ -168,6 +159,7 @@ public class MaterialBadgeTextView extends AppCompatTextView {
     setBadgeCount(count, false);
   }
 
+  @SuppressLint("SetTextI18n")
   public void setBadgeCount(int count, boolean goneWhenZero) {
     setVisibility(View.VISIBLE);
 
@@ -192,29 +184,25 @@ public class MaterialBadgeTextView extends AppCompatTextView {
     setBadgeCount(0);
   }
 
-  /**
-   *
-   * @param isDisplayInToolbarMenu
-   */
   public void setHighLightMode(boolean isDisplayInToolbarMenu) {
     isHighLightMode = true;
-    ViewGroup.LayoutParams params = getLayoutParams();
-    params.width = dp2px(getContext(), 8);
-    params.height = params.width;
+    final ViewGroup.LayoutParams params = getLayoutParams();
+    params.width = DisplayUtil.dpToPx(8);
+    params.height = DisplayUtil.dpToPx(8);
+
     if (isDisplayInToolbarMenu && params instanceof FrameLayout.LayoutParams) {
-      ((FrameLayout.LayoutParams) params).topMargin = dp2px(getContext(), 8);
-      ((FrameLayout.LayoutParams) params).rightMargin = dp2px(getContext(), 8);
+      ((FrameLayout.LayoutParams) params).topMargin = DisplayUtil.dpToPx(8);
+      ((FrameLayout.LayoutParams) params).rightMargin = DisplayUtil.dpToPx(8);
     }
+
     setLayoutParams(params);
-    ShapeDrawable drawable = new ShapeDrawable(new OvalShape());
+    final ShapeDrawable drawable = new ShapeDrawable(new OvalShape());
+
     ViewCompat.setLayerType(this, ViewCompat.LAYER_TYPE_SOFTWARE, drawable.getPaint());
     drawable.getPaint().setColor(backgroundColor);
     drawable.getPaint().setAntiAlias(true);
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-      setBackground(drawable);
-    } else {
-      setBackgroundDrawable(drawable);
-    }
+
+    setBackground(drawable);
     setText("");
     setVisibility(View.VISIBLE);
   }
@@ -225,29 +213,32 @@ public class MaterialBadgeTextView extends AppCompatTextView {
   }
 
   private class OvalShadow extends OvalShape {
-    private RadialGradient mRadialGradient;
-    private Paint mShadowPaint;
-    private int mCircleDiameter;
+    private RadialGradient radialGradient;
+    private Paint shadowPaint;
+    private int circleDiameter;
 
     OvalShadow(int shadowRadius, int circleDiameter) {
-      super();
-      mShadowPaint = new Paint();
-      mShadowRadius = shadowRadius;
-      mCircleDiameter = circleDiameter;
-      mRadialGradient = new RadialGradient(mCircleDiameter / 2, mCircleDiameter / 2,
-          mShadowRadius, new int[] {
-          FILL_SHADOW_COLOR, Color.TRANSPARENT
-      }, null, Shader.TileMode.CLAMP);
-      mShadowPaint.setShader(mRadialGradient);
+      shadowPaint = new Paint();
+      MaterialBadgeTextView.this.shadowRadius = shadowRadius;
+      this.circleDiameter = circleDiameter;
+      radialGradient = new RadialGradient(
+          this.circleDiameter / 2,
+          this.circleDiameter / 2,
+          MaterialBadgeTextView.this.shadowRadius,
+          new int[] {FILL_SHADOW_COLOR, Color.TRANSPARENT
+          },
+          null,
+          Shader.TileMode.CLAMP);
+      shadowPaint.setShader(radialGradient);
     }
 
     @Override
     public void draw(Canvas canvas, Paint paint) {
       final int viewWidth = MaterialBadgeTextView.this.getWidth();
       final int viewHeight = MaterialBadgeTextView.this.getHeight();
-      canvas.drawCircle(viewWidth / 2, viewHeight / 2, (mCircleDiameter / 2 + mShadowRadius),
-          mShadowPaint);
-      canvas.drawCircle(viewWidth / 2, viewHeight / 2, (mCircleDiameter / 2), paint);
+      canvas.drawCircle(viewWidth / 2, viewHeight / 2, (circleDiameter / 2 + shadowRadius),
+          shadowPaint);
+      canvas.drawCircle(viewWidth / 2, viewHeight / 2, (circleDiameter / 2), paint);
     }
   }
 
@@ -268,11 +259,11 @@ public class MaterialBadgeTextView extends AppCompatTextView {
     public void setBounds(int left, int top, int right, int bottom) {
       super.setBounds(left, top, right, bottom);
       if (rectF == null) {
-        rectF = new RectF(left + diffWH, top + mShadowRadius + 4, right - diffWH,
-            bottom - mShadowRadius - 4);
+        rectF = new RectF(left + diffWH, top + shadowRadius + 4, right - diffWH,
+            bottom - shadowRadius - 4);
       } else {
-        rectF.set(left + diffWH, top + mShadowRadius + 4, right - diffWH,
-            bottom - mShadowRadius - 4);
+        rectF.set(left + diffWH, top + shadowRadius + 4, right - diffWH,
+            bottom - shadowRadius - 4);
       }
     }
 

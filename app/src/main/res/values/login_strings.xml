@@ -24,8 +24,6 @@
   <string name="action_sign_in">Sign In</string>
 
   <!-- Errors -->
-  <string name="error_select_topics">Please select at least 3 categories.</string>
-  <string name="error_username_not_available">Username is not available!</string>
   <string name="error_google_play_services">Google Play Services error.</string>
   <string name="error_auth_failed">Authentication failed.</string>
   <string name="error_server_down">Server is not available!</string>

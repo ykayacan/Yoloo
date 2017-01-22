@@ -1,18 +1,22 @@
 package com.yoloo.backend.comment;
 
 import com.google.api.server.spi.response.CollectionResponse;
+import com.google.api.server.spi.response.NotFoundException;
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.users.User;
 import com.google.appengine.repackaged.com.google.common.base.Pair;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
+import com.twitter.Extractor;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.device.DeviceRecord;
+import com.yoloo.backend.device.DeviceUtil;
 import com.yoloo.backend.gamification.GamificationService;
 import com.yoloo.backend.gamification.Tracker;
 import com.yoloo.backend.gamification.reward.CommentTimeOutReward;
@@ -21,11 +25,14 @@ import com.yoloo.backend.gamification.reward.FirstCommentReward;
 import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.notification.type.AcceptNotification;
 import com.yoloo.backend.notification.type.CommentNotification;
+import com.yoloo.backend.notification.type.MentionNotification;
 import com.yoloo.backend.question.Question;
 import com.yoloo.backend.question.QuestionCounterShard;
 import com.yoloo.backend.question.QuestionShardService;
 import com.yoloo.backend.util.Group;
+import com.yoloo.backend.validator.Guard;
 import com.yoloo.backend.vote.Vote;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -39,6 +46,8 @@ public class CommentController extends Controller {
 
   private static final Logger logger =
       Logger.getLogger(CommentController.class.getName());
+
+  private static final Extractor EXTRACTOR = new Extractor();
 
   /**
    * Maximum number of comments to return.
@@ -67,7 +76,7 @@ public class CommentController extends Controller {
    * @param user the user
    * @return the comment
    */
-  public Comment get(String commentId, User user) {
+  public Comment get(String commentId, User user) throws NotFoundException {
     // Create account key from websafe id.
     final Key<Account> accountKey = Key.create(user.getUserId());
     // Create comment key from websafe id.
@@ -76,6 +85,8 @@ public class CommentController extends Controller {
     // Fetch comment.
     Comment comment = ofy().load()
         .group(Comment.ShardGroup.class).key(commentKey).now();
+
+    Guard.checkNotFound(comment, "Comment does not exists!");
 
     return CommentUtil
         .mergeCommentCounts(comment)
@@ -88,47 +99,37 @@ public class CommentController extends Controller {
    *
    * @param questionId the websafe question id
    * @param content the content
-   * @param mendtionIds the mendtion ids
    * @param user the user  @return the comment
    * @return the comment
    */
-  public Comment add(String questionId, String content, Optional<String> mendtionIds, User user) {
+  public Comment add(String questionId, String content, User user) {
+    ImmutableSet.Builder<Key<?>> keyBuilder = ImmutableSet.builder();
+
     // Create user key from user id.
     final Key<Account> accountKey = Key.create(user.getUserId());
+    keyBuilder.add(accountKey);
 
     // Create post key from websafe id.
     final Key<Question> questionKey = Key.create(questionId);
+    keyBuilder.add(questionKey);
 
     // Get a random shard key.
     final Key<QuestionCounterShard> questionShardKey =
         questionShardService.getRandomShardKey(questionKey);
+    keyBuilder.add(questionShardKey);
 
     // Create tracker key.
     final Key<Tracker> trackerKey = Tracker.createKey(accountKey);
+    keyBuilder.add(trackerKey);
 
     // Create record key.
-    final Key<DeviceRecord> recordKey =
-        DeviceRecord.createKey(questionKey.getParent());
+    final Key<DeviceRecord> recordKey = DeviceRecord.createKey(questionKey.getParent());
+    keyBuilder.add(recordKey);
 
-    /*List<Key<Account>> mentionedKeys = MentionHelper.mentionedAccountKeys(mendtionIds);
-    List<Key<DeviceRecord>> mentionedRecordKeys = Lists.newArrayListWithCapacity(2);
-    if (mentionedKeys != null) {
-      for (Key<Account> key : mentionedKeys) {
-        mentionedRecordKeys.add(DeviceRecord.createKey(key));
-      }
-    }*/
-
-    ImmutableList<Key<?>> keys = ImmutableList.<Key<?>>builder()
-        .add(accountKey)
-        .add(questionKey)
-        .add(questionShardKey)
-        .add(trackerKey)
-        .add(recordKey)
-        .build();
-
+    ImmutableSet<Key<?>> batchKeys = keyBuilder.build();
     // Make a batch load.
     Map<Key<Object>, Object> fetched =
-        ofy().load().keys(keys.toArray(new Key[keys.size()]));
+        ofy().load().keys(batchKeys.toArray(new Key[batchKeys.size()]));
 
     //noinspection SuspiciousMethodCalls
     Account account = (Account) fetched.get(accountKey);
@@ -141,42 +142,69 @@ public class CommentController extends Controller {
     //noinspection SuspiciousMethodCalls
     DeviceRecord record = (DeviceRecord) fetched.get(recordKey);
 
+    // Create a new comment from given inputs.
     CommentModel model = commentService.create(account, questionKey, content);
 
-    // Increase total comment number.
+    Comment comment = model.getComment();
+    List<CommentCounterShard> shards = model.getShards();
+
+    question = question.withCommented(!question.isCommented());
+
+    // Increase total comment count.
     qqs.increaseComments();
 
     // Start gamification check.
     tracker = FirstCommentReward.of(tracker).getTracker();
-
     tracker = FirstCommentForQuestionReward.of(tracker, question).getTracker();
-
     tracker = CommentTimeOutReward.of(question, tracker).getTracker();
 
-    if (!question.isCommented()) {
-      question = question.withCommented(true);
-    }
-
-    CommentNotification commentNotification =
-        CommentNotification.create(account, questionKey.getParent(), record, model.getComment());
-
     // Immutable helper list object to save all entities in a single db write.
-    // For each single object use builder.add() method.
+    // For each single object use builder.addAdmin() method.
     // For each list object use builder.addAll() method.
-    ImmutableList<Object> saveList = ImmutableList.builder()
-        .add(model.getComment())
-        .addAll(model.getShards())
+    ImmutableSet.Builder<Object> saveListBuilder = ImmutableSet.builder()
+        .add(comment)
+        .addAll(shards)
         .add(qqs)
         .add(question)
-        .add(tracker)
-        .add(commentNotification.getNotification())
-        .build();
+        .add(tracker);
 
-    ofy().save().entities(saveList).now();
+    // Do not send notification to self.
+    if (!questionKey.<Account>getParent().equivalent(accountKey)) {
+      boolean sendCommentNotification = true;
 
-    notificationService.send(commentNotification);
+      List<String> mentions = EXTRACTOR.extractMentionedScreennames(content);
+      if (!mentions.isEmpty()) {
+        Query<Account> query = ofy().load().type(Account.class);
 
-    return model.getComment();
+        for (final String username : mentions) {
+          query.filter(Account.FIELD_USERNAME + " =", username);
+        }
+
+        List<Key<Account>> accountKeys = query.keys().list();
+        List<Key<DeviceRecord>> recordKeys = DeviceUtil.createKeysFromAccount(accountKeys);
+        Collection<DeviceRecord> records = ofy().load().keys(recordKeys).values();
+
+        MentionNotification mentionNotification =
+            MentionNotification.create(question, account, records, comment);
+
+        notificationService.send(mentionNotification);
+
+        sendCommentNotification = false;
+      }
+
+      CommentNotification commentNotification =
+          CommentNotification.create(account, record, comment, question);
+
+      if (sendCommentNotification) {
+        notificationService.send(commentNotification);
+      }
+
+      saveListBuilder.addAll(commentNotification.getNotifications());
+    }
+
+    ofy().transact(() -> ofy().save().entities(saveListBuilder.build()).now());
+
+    return comment;
   }
 
   /**
@@ -192,7 +220,10 @@ public class CommentController extends Controller {
   public Comment update(String questionId, String commentId, Optional<String> content,
       Optional<Boolean> accepted, User user) {
     // Immutable helper list object to save all entities in a single db write.
-    ImmutableList.Builder<Object> saveBuilder = ImmutableList.builder();
+    ImmutableSet.Builder<Object> saveBuilder = ImmutableSet.builder();
+
+    // Create account key from websafe id.
+    final Key<Account> accountKey = Key.create(user.getUserId());
 
     // Create question key from websafe id.
     final Key<Question> questionKey = Key.create(questionId);
@@ -209,8 +240,10 @@ public class CommentController extends Controller {
     // Make a batch load.
     //noinspection unchecked
     Map<Key<Object>, Object> fetched =
-        ofy().load().keys(questionKey, commentKey, recordKey, receiverTrackerKey);
+        ofy().load().keys(accountKey, questionKey, commentKey, recordKey, receiverTrackerKey);
 
+    //noinspection SuspiciousMethodCalls
+    Account account = (Account) fetched.get(accountKey);
     //noinspection SuspiciousMethodCalls
     Comment comment = (Comment) fetched.get(commentKey);
     //noinspection SuspiciousMethodCalls
@@ -220,8 +253,8 @@ public class CommentController extends Controller {
     //noinspection SuspiciousMethodCalls
     Tracker receiverTracker = (Tracker) fetched.get(receiverTrackerKey);
 
-    comment = commentService.update(comment, content, accepted);
-    Pair<Question, Comment> pair = commentService.accept(question, comment, accepted);
+    comment = commentService.update(comment, content);
+    Pair<Question, Comment> pair = commentService.accept(question, comment, accepted, accountKey);
 
     ofy().transact(() -> {
       // If comment is accepted, then send notification to comment owner.
@@ -233,9 +266,8 @@ public class CommentController extends Controller {
         saveBuilder.add(group.second);
         saveBuilder.add(pair.second);
 
-        AcceptNotification acceptNotification =
-            AcceptNotification.create(commentKey.getParent(), record, question);
-        saveBuilder.add(acceptNotification.getNotification());
+        AcceptNotification acceptNotification = AcceptNotification.create(account, record, question);
+        saveBuilder.addAll(acceptNotification.getNotifications());
 
         notificationService.send(acceptNotification);
       } else {
@@ -315,7 +347,10 @@ public class CommentController extends Controller {
     List<Comment> comments = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
 
     while (qi.hasNext()) {
-      comments.add(qi.next());
+      Comment comment = qi.next();
+      if (!comment.isAccepted()) {
+        comments.add(comment);
+      }
     }
 
     comments = CommentUtil.mergeCommentCounts(comments)

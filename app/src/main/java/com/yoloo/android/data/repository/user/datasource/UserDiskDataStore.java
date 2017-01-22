@@ -32,6 +32,15 @@ public class UserDiskDataStore {
     return Single.just(account);
   }
 
+  public Single<AccountRealm> getMe() {
+    Realm realm = Realm.getDefaultInstance();
+    AccountRealm account = realm.copyFromRealm(
+        realm.where(AccountRealm.class).equalTo(AccountRealmFields.ME, true).findFirst());
+    realm.close();
+
+    return Single.just(account);
+  }
+
   public void add(AccountRealm account) {
     Realm realm = Realm.getDefaultInstance();
     realm.executeTransactionAsync(tx -> tx.insertOrUpdate(account));

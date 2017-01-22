@@ -1,5 +1,6 @@
 package com.yoloo.backend.question;
 
+import com.google.api.server.spi.response.ConflictException;
 import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.users.User;
@@ -91,13 +92,18 @@ public class QuestionUtilTest extends TestBase {
 
     User user = new User(USER_EMAIL, USER_AUTH_DOMAIN, owner.getWebsafeId());
 
-    Topic europe = topicController.add("europe", Topic.Type.THEME, user);
+    try {
+      Topic europe = topicController.add("europe", Topic.Type.THEME, user);
+    } catch (ConflictException e) {
+      e.printStackTrace();
+    }
 
     TagGroup passport = tagController.addGroup("passport", user);
 
     Tag visa = tagController.addTag("visa", "en", passport.getWebsafeId(), user);
 
-    question = questionController.add(createQuestionWrapper(), user);
+    question = questionController.add("Test content", "visa,passport", "europe", Optional.absent(),
+        Optional.absent(), user);
   }
 
   @Test
@@ -124,13 +130,17 @@ public class QuestionUtilTest extends TestBase {
     voteController.vote(question.getWebsafeId(), Vote.Direction.UP, user);
     commentController.add(question.getWebsafeId(), "Hello", Optional.absent(), user);
 
-    Question question2 = questionController.add(createQuestionWrapper(), user);
+    Question question2 =
+        questionController.add("Test content", "visa,passport", "europe", Optional.absent(),
+            Optional.absent(), user);
     questions.add(question2);
 
     voteController.vote(question2.getWebsafeId(), Vote.Direction.UP, user);
     commentController.add(question2.getWebsafeId(), "Hello", Optional.absent(), user);
 
-    Question question3 = questionController.add(createQuestionWrapper(), user);
+    Question question3 =
+        questionController.add("Test content", "visa,passport", "europe", Optional.absent(),
+            Optional.absent(), user);
     questions.add(question3);
 
     voteController.vote(question3.getWebsafeId(), Vote.Direction.UP, user);
@@ -165,15 +175,6 @@ public class QuestionUtilTest extends TestBase {
     return AccountModel.builder()
         .account(account)
         .shards(shards)
-        .build();
-  }
-
-  private QuestionWrapper createQuestionWrapper() {
-    return QuestionWrapper.builder()
-        .content("Test content")
-        .tags("visa,passport")
-        .topics("europe")
-        .bounty(0)
         .build();
   }
 

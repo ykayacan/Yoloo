@@ -30,8 +30,7 @@ import com.google.android.gms.tasks.TaskCompletionSource;
  * A {@link Task Task} based wrapper for the Smart Lock for Passwords API.
  */
 public class CredentialsApiHelper {
-  @NonNull
-  private final GoogleApiClientTaskHelper clientHelper;
+  @NonNull private final GoogleApiClientTaskHelper clientHelper;
 
   private CredentialsApiHelper(@NonNull GoogleApiClientTaskHelper gacHelper) {
     clientHelper = gacHelper;
@@ -50,12 +49,10 @@ public class CredentialsApiHelper {
   }
 
   public Task<Status> delete(final Credential credential) {
-    return clientHelper.getConnectedGoogleApiClient().continueWithTask(
-        new ExceptionForwardingContinuation<GoogleApiClient, Status>() {
+    return clientHelper.getConnectedGoogleApiClient()
+        .continueWithTask(new ExceptionForwardingContinuation<GoogleApiClient, Status>() {
           @Override
-          protected void process(
-              GoogleApiClient client,
-              TaskCompletionSource<Status> source) {
+          protected void process(GoogleApiClient client, TaskCompletionSource<Status> source) {
             Auth.CredentialsApi.delete(client, credential)
                 .setResultCallback(new TaskResultCaptor<>(source));
           }
@@ -63,14 +60,11 @@ public class CredentialsApiHelper {
   }
 
   public Task<Status> disableAutoSignIn() {
-    return clientHelper.getConnectedGoogleApiClient().continueWithTask(
-        new ExceptionForwardingContinuation<GoogleApiClient, Status>() {
-          @Override
-          protected void process(
-              final GoogleApiClient client,
+    return clientHelper.getConnectedGoogleApiClient()
+        .continueWithTask(new ExceptionForwardingContinuation<GoogleApiClient, Status>() {
+          @Override protected void process(final GoogleApiClient client,
               final TaskCompletionSource<Status> source) {
-            Auth.CredentialsApi.disableAutoSignIn(client)
-                .setResultCallback(source::setResult);
+            Auth.CredentialsApi.disableAutoSignIn(client).setResultCallback(source::setResult);
           }
         });
   }
@@ -78,8 +72,7 @@ public class CredentialsApiHelper {
   private abstract static class ExceptionForwardingContinuation<InT, OutT>
       implements Continuation<InT, Task<OutT>> {
 
-    @Override
-    public final Task<OutT> then(@NonNull Task<InT> task) throws Exception {
+    @Override public final Task<OutT> then(@NonNull Task<InT> task) throws Exception {
       TaskCompletionSource<OutT> source = new TaskCompletionSource<>();
       // calling task.getResult() will implicitly re-throw the exception of the original
       // task, which will be returned as the result for the output task. Similarly,
@@ -99,8 +92,7 @@ public class CredentialsApiHelper {
       mSource = source;
     }
 
-    @Override
-    public void onResult(@NonNull R result) {
+    @Override public void onResult(@NonNull R result) {
       mSource.setResult(result);
     }
   }

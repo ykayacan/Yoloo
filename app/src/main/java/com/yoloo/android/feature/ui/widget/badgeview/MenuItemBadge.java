@@ -14,9 +14,6 @@ import android.widget.Toast;
 import com.yoloo.android.R;
 import com.yoloo.android.util.DisplayUtil;
 
-/**
- * @author donghua.xdh
- */
 public class MenuItemBadge {
 
   public static void update(final Activity activity, final MenuItem menu, Builder builder) {

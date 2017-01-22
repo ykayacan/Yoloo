@@ -93,15 +93,13 @@ public class QuestionEndpoint {
         .addRule(new AuthValidator(user))
         .validate();
 
-    QuestionWrapper wrapper = QuestionWrapper.builder()
-        .content(content)
-        .tags(tags)
-        .topics(categories)
-        .mediaId(mediaId)
-        .bounty(Optional.fromNullable(bounty).or(0))
-        .build();
-
-    return questionController.add(wrapper, user);
+    return questionController.add(
+        content,
+        tags,
+        categories,
+        Optional.fromNullable(mediaId),
+        Optional.fromNullable(bounty),
+        user);
   }
 
   /**
@@ -131,15 +129,13 @@ public class QuestionEndpoint {
         .addRule(new ForbiddenValidator(user, questionId, ForbiddenValidator.Operation.UPDATE))
         .validate();
 
-    QuestionWrapper wrapper = QuestionWrapper.builder()
-        .questionId(questionId)
-        .content(content)
-        .tags(tags)
-        .mediaId(mediaId)
-        .bounty(Optional.fromNullable(bounty).or(0))
-        .build();
-
-    return questionController.update(wrapper, user);
+    return questionController.update(
+        questionId,
+        Optional.fromNullable(content),
+        Optional.fromNullable(bounty),
+        Optional.fromNullable(tags),
+        Optional.fromNullable(mediaId),
+        user);
   }
 
   /**

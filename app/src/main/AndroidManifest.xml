@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
   package="com.yoloo.android">
 
   <uses-permission android:name="android.permission.INTERNET" />
@@ -25,8 +26,33 @@
       android:name="com.facebook.sdk.ApplicationId"
       android:value="@string/facebook_app_id" />
 
+    <service
+      android:name=".feature.fcm.FCMService"
+      android:exported="false">
+      <intent-filter>
+        <action android:name="com.google.firebase.MESSAGING_EVENT" />
+      </intent-filter>
+    </service>
+
+    <service
+      android:name=".feature.fcm.FCMIdService"
+      android:exported="false">
+      <intent-filter>
+        <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+      </intent-filter>
+    </service>
+
+    <service
+      android:name=".feature.fcm.SaveFCMIdService"
+      android:exported="false" />
+
+    <service
+        android:name=".feature.write.SendPostService"
+        android:exported="false" />
+
     <activity
       android:name=".feature.base.BaseActivity"
+      android:launchMode="singleTop"
       android:screenOrientation="portrait">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
@@ -55,7 +81,9 @@
 
     <activity
       android:name="com.yalantis.ucrop.UCropActivity"
-      android:screenOrientation="portrait" />
+      android:screenOrientation="portrait"
+      android:theme="@style/Yoloo"
+      tools:replace="android:theme" />
 
     <!-- Glide configurations for image loading -->
     <!--<meta-data

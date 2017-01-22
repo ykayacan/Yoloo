@@ -16,8 +16,7 @@ class CategoryPresenter extends MvpPresenter<CategoryView> {
     this.categoryRepository = categoryRepository;
   }
 
-  @Override
-  public void onAttachView(CategoryView view) {
+  @Override public void onAttachView(CategoryView view) {
     super.onAttachView(view);
     loadCategories();
   }

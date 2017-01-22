@@ -34,9 +34,8 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
   }
 
   void deletePost(String postId) {
-    Disposable d = postRepository.delete(postId)
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe();
+    Disposable d =
+        postRepository.delete(postId).observeOn(AndroidSchedulers.mainThread()).subscribe();
 
     getDisposable().add(d);
   }

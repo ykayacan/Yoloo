@@ -23,9 +23,7 @@ public class SearchAdapter extends EpoxyAdapter {
     models.clear();
 
     for (TagRealm tag : tags) {
-      models.add(new TagModel_()
-          .tag(tag)
-          .onTagClickListener(onTagClickListener));
+      models.add(new TagModel_().tag(tag).onTagClickListener(onTagClickListener));
     }
 
     notifyModelsChanged();
@@ -35,9 +33,7 @@ public class SearchAdapter extends EpoxyAdapter {
     models.clear();
 
     for (AccountRealm account : accounts) {
-      models.add(new UserModel_()
-          .account(account)
-          .onProfileClickListener(onProfileClickListener));
+      models.add(new UserModel_().account(account).onProfileClickListener(onProfileClickListener));
     }
 
     notifyModelsChanged();

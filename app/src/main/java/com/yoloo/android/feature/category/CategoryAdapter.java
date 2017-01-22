@@ -29,8 +29,7 @@ class CategoryAdapter extends SelectableEpoxyAdapter {
     this.multiSelection = multiSelection;
   }
 
-  @Override
-  public int getMaxSelectedItems() {
+  @Override public int getMaxSelectedItems() {
     return maxSelectedItems;
   }
 
@@ -45,8 +44,7 @@ class CategoryAdapter extends SelectableEpoxyAdapter {
   public void addCategories(List<CategoryRealm> categories) {
     for (CategoryRealm realm : categories) {
       if (realm.getType().equals(categoryType)) {
-        addModel(new CategoryModel_()
-            .adapter(this)
+        addModel(new CategoryModel_().adapter(this)
             .onCategoryClickListener(onCategoryClickListener)
             .realm(realm));
       }

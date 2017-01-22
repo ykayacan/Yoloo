@@ -21,23 +21,19 @@ import com.yoloo.android.util.VersionUtil;
 
 public class AuthController extends BaseController {
 
-  @BindView(R.id.layout_login_child)
-  ViewGroup childContainer;
+  @BindView(R.id.layout_login_child) ViewGroup childContainer;
 
-  @BindView(R.id.ib_login_back)
-  ImageButton ibBack;
+  @BindView(R.id.ib_login_back) ImageButton ibBack;
 
   private final ControllerChangeHandler.ControllerChangeListener changeListener =
       new ControllerChangeHandler.ControllerChangeListener() {
-        @Override
-        public void onChangeStarted(@Nullable Controller to, @Nullable Controller from,
-            boolean isPush,
-            @NonNull ViewGroup container, @NonNull ControllerChangeHandler handler) {
+        @Override public void onChangeStarted(@Nullable Controller to, @Nullable Controller from,
+            boolean isPush, @NonNull ViewGroup container,
+            @NonNull ControllerChangeHandler handler) {
           ibBack.setVisibility((to instanceof WelcomeController) ? View.GONE : View.VISIBLE);
         }
 
-        @Override
-        public void onChangeCompleted(@Nullable Controller to, @Nullable Controller from,
+        @Override public void onChangeCompleted(@Nullable Controller to, @Nullable Controller from,
             boolean isPush, @NonNull ViewGroup container,
             @NonNull ControllerChangeHandler handler) {
         }
@@ -48,8 +44,7 @@ public class AuthController extends BaseController {
     return inflater.inflate(R.layout.controller_auth, container, false);
   }
 
-  @Override
-  protected void onViewCreated(@NonNull View view) {
+  @Override protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
 
     if (VersionUtil.hasL()) {
@@ -61,20 +56,17 @@ public class AuthController extends BaseController {
     ibBack.setVisibility(View.GONE);
   }
 
-  @Override
-  protected void onAttach(@NonNull View view) {
+  @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
     getChildRouter(childContainer).addChangeListener(changeListener);
   }
 
-  @Override
-  protected void onDetach(@NonNull View view) {
+  @Override protected void onDetach(@NonNull View view) {
     getChildRouter(childContainer).removeChangeListener(changeListener);
     super.onDetach(view);
   }
 
-  @OnClick(R.id.ib_login_back)
-  void back() {
+  @OnClick(R.id.ib_login_back) void back() {
     getChildRouter(childContainer).popCurrentController();
   }
 
@@ -82,11 +74,9 @@ public class AuthController extends BaseController {
     final Router childRouter = getChildRouter(childContainer).setPopsLastView(true);
 
     if (!childRouter.hasRootController()) {
-      childRouter.pushController(
-          RouterTransaction.with(
-              new WelcomeController())
-              .pushChangeHandler(new FadeChangeHandler())
-              .popChangeHandler(new FadeChangeHandler()));
+      childRouter.pushController(RouterTransaction.with(new WelcomeController())
+          .pushChangeHandler(new FadeChangeHandler())
+          .popChangeHandler(new FadeChangeHandler()));
     }
   }
 }

@@ -29,14 +29,11 @@ public class PostDetailAdapter extends EpoxyAdapter {
 
   private final CommentCountModel_ commentCountModel = new CommentCountModel_();
 
-  private PostDetailAdapter(
-      OnProfileClickListener onProfileClickListener,
-      OnOptionsClickListener onOptionsClickListener,
-      OnShareClickListener onShareClickListener,
+  private PostDetailAdapter(OnProfileClickListener onProfileClickListener,
+      OnOptionsClickListener onOptionsClickListener, OnShareClickListener onShareClickListener,
       OnCommentClickListener onCommentClickListener,
       OnContentImageClickListener onContentImageClickListener,
-      OnVoteClickListener onVoteClickListener,
-      OnMentionClickListener onMentionClickListener) {
+      OnVoteClickListener onVoteClickListener, OnMentionClickListener onMentionClickListener) {
     this.onProfileClickListener = onProfileClickListener;
     this.onOptionsClickListener = onOptionsClickListener;
     this.onShareClickListener = onShareClickListener;
@@ -53,14 +50,14 @@ public class PostDetailAdapter extends EpoxyAdapter {
   }
 
   public void addQuestion(PostRealm post) {
-    NormalQuestionModel_ normalQuestionModel_ = new NormalQuestionModel_()
-        .onProfileClickListener(onProfileClickListener)
-        .onOptionsClickListener(onOptionsClickListener)
-        .onShareClickListener(onShareClickListener)
-        .onCommentClickListener(onCommentClickListener)
-        .onVoteClickListener(onVoteClickListener)
-        .layout(R.layout.item_question_normal_detail)
-        .post(post);
+    NormalQuestionModel_ normalQuestionModel_ =
+        new NormalQuestionModel_().onProfileClickListener(onProfileClickListener)
+            .onOptionsClickListener(onOptionsClickListener)
+            .onShareClickListener(onShareClickListener)
+            .onCommentClickListener(onCommentClickListener)
+            .onVoteClickListener(onVoteClickListener)
+            .layout(R.layout.item_question_normal_detail)
+            .post(post);
 
     addModel(normalQuestionModel_);
 
@@ -70,8 +67,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
 
   public void addComments(List<CommentRealm> comments) {
     for (CommentRealm comment : comments) {
-      models.add(new CommentModel_()
-          .comment(comment)
+      models.add(new CommentModel_().comment(comment)
           .onProfileClickListener(onProfileClickListener)
           .onMentionClickListener(onMentionClickListener)
           .onVoteClickListener(onVoteClickListener));
@@ -81,8 +77,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
   }
 
   public void addComment(CommentRealm comment, boolean accepted) {
-    CommentModel_ model_ = new CommentModel_()
-        .comment(comment)
+    CommentModel_ model_ = new CommentModel_().comment(comment)
         .onProfileClickListener(onProfileClickListener)
         .onMentionClickListener(onMentionClickListener)
         .onVoteClickListener(onVoteClickListener);

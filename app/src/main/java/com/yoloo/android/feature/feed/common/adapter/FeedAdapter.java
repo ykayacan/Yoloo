@@ -39,18 +39,14 @@ public class FeedAdapter extends EpoxyAdapter {
 
   private final boolean isMainFeed;
 
-  private FeedAdapter(
-      OnProfileClickListener onProfileClickListener,
+  private FeedAdapter(OnProfileClickListener onProfileClickListener,
       OnOptionsClickListener onOptionsClickListener,
-      OnReadMoreClickListener onReadMoreClickListener,
-      OnShareClickListener onShareClickListener,
+      OnReadMoreClickListener onReadMoreClickListener, OnShareClickListener onShareClickListener,
       OnCommentClickListener onCommentClickListener,
       OnCategoryClickListener onCategoryClickListener,
       OnExploreCategoriesClickListener onExploreCategoriesClickListener,
-      OnVoteClickListener onVoteClickListener,
-      OnBountyClickListener onBountyClickListener,
-      OnContentImageClickListener onContentImageClickListener,
-      boolean isMainFeed) {
+      OnVoteClickListener onVoteClickListener, OnBountyClickListener onBountyClickListener,
+      OnContentImageClickListener onContentImageClickListener, boolean isMainFeed) {
     this.onProfileClickListener = onProfileClickListener;
     this.onOptionsClickListener = onOptionsClickListener;
     this.onReadMoreClickListener = onReadMoreClickListener;
@@ -78,11 +74,33 @@ public class FeedAdapter extends EpoxyAdapter {
     return new FeedAdapterBuilder();
   }
 
+  public void addPostToBeginning(PostRealm post) {
+    if (post.getType() == 0) {
+      insertModelAfter(new NormalQuestionModel_().onProfileClickListener(onProfileClickListener)
+          .onOptionsClickListener(onOptionsClickListener)
+          .onReadMoreClickListener(onReadMoreClickListener)
+          .onShareClickListener(onShareClickListener)
+          .onCommentClickListener(onCommentClickListener)
+          .onVoteClickListener(onVoteClickListener)
+          .layout(R.layout.item_question_normal)
+          .post(post), bountyButtonModel);
+    } else if (post.getType() == 1) {
+      insertModelAfter(new RichQuestionModel_().onProfileClickListener(onProfileClickListener)
+          .onOptionsClickListener(onOptionsClickListener)
+          .onReadMoreClickListener(onReadMoreClickListener)
+          .onShareClickListener(onShareClickListener)
+          .onCommentClickListener(onCommentClickListener)
+          .onVoteClickListener(onVoteClickListener)
+          .onContentImageClickListener(onContentImageClickListener)
+          .layout(R.layout.item_question_rich)
+          .post(post), bountyButtonModel);
+    }
+  }
+
   public void addPosts(List<PostRealm> posts) {
     for (PostRealm post : posts) {
       if (post.getType() == 0) {
-        models.add(new NormalQuestionModel_()
-            .onProfileClickListener(onProfileClickListener)
+        models.add(new NormalQuestionModel_().onProfileClickListener(onProfileClickListener)
             .onOptionsClickListener(onOptionsClickListener)
             .onReadMoreClickListener(onReadMoreClickListener)
             .onShareClickListener(onShareClickListener)
@@ -91,8 +109,7 @@ public class FeedAdapter extends EpoxyAdapter {
             .layout(R.layout.item_question_normal)
             .post(post));
       } else if (post.getType() == 1) {
-        models.add(new RichQuestionModel_()
-            .onProfileClickListener(onProfileClickListener)
+        models.add(new RichQuestionModel_().onProfileClickListener(onProfileClickListener)
             .onOptionsClickListener(onOptionsClickListener)
             .onReadMoreClickListener(onReadMoreClickListener)
             .onShareClickListener(onShareClickListener)
@@ -247,10 +264,9 @@ public class FeedAdapter extends EpoxyAdapter {
 
     public FeedAdapter build() {
       return new FeedAdapter(onProfileClickListener, onOptionsClickListener,
-          onReadMoreClickListener,
-          onShareClickListener, onCommentClickListener, onCategoryClickListener,
-          onExploreCategoriesClickListener, onVoteClickListener, onBountyClickListener,
-          onContentImageClickListener, isMainFeed);
+          onReadMoreClickListener, onShareClickListener, onCommentClickListener,
+          onCategoryClickListener, onExploreCategoriesClickListener, onVoteClickListener,
+          onBountyClickListener, onContentImageClickListener, isMainFeed);
     }
   }
 }

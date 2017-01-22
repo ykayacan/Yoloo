@@ -36,32 +36,23 @@ import java.net.SocketTimeoutException;
 public class SignInController extends MvpController<SignInView, SignInPresenter>
     implements SignInView, IdpProvider.IdpCallback {
 
-  @BindView(R.id.et_login_email)
-  EditText etEmail;
+  @BindView(R.id.et_login_email) EditText etEmail;
 
-  @BindView(R.id.et_login_password)
-  EditText etPassword;
+  @BindView(R.id.et_login_password) EditText etPassword;
 
-  @BindString(R.string.error_google_play_services)
-  String errorGooglePlayServicesString;
+  @BindString(R.string.error_google_play_services) String errorGooglePlayServicesString;
 
-  @BindString(R.string.error_auth_failed)
-  String errorAuthFailedString;
+  @BindString(R.string.error_auth_failed) String errorAuthFailedString;
 
-  @BindString(R.string.error_server_down)
-  String errorServerDownString;
+  @BindString(R.string.error_server_down) String errorServerDownString;
 
-  @BindString(R.string.label_loading)
-  String loadingString;
+  @BindString(R.string.label_loading) String loadingString;
 
-  @BindString(R.string.error_field_required)
-  String errorFieldRequiredString;
+  @BindString(R.string.error_field_required) String errorFieldRequiredString;
 
-  @BindString(R.string.error_invalid_email)
-  String errorInvalidEmail;
+  @BindString(R.string.error_invalid_email) String errorInvalidEmail;
 
-  @BindString(R.string.error_invalid_password)
-  String errorInvalidPassword;
+  @BindString(R.string.error_invalid_password) String errorInvalidPassword;
 
   private ProgressDialog progressDialog;
 
@@ -73,12 +64,10 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
     return inflater.inflate(R.layout.controller_sign_in, container, false);
   }
 
-  @Override
-  protected void onViewCreated(@NonNull View view) {
+  @Override protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
 
-    getActivity().getWindow().setSoftInputMode(
-        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+    getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
     googleProvider = getIdpProvider(AuthUI.GOOGLE_PROVIDER);
     facebookProvider = getIdpProvider(AuthUI.FACEBOOK_PROVIDER);
@@ -87,14 +76,12 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
     facebookProvider.setAuthenticationCallback(this);
   }
 
-  @Override
-  protected void onAttach(@NonNull View view) {
+  @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
     ((GoogleProvider) googleProvider).connect();
   }
 
-  @Override
-  protected void onDetach(@NonNull View view) {
+  @Override protected void onDetach(@NonNull View view) {
     super.onDetach(view);
     ((GoogleProvider) googleProvider).disconnect();
 
@@ -102,33 +89,25 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
     facebookProvider.setAuthenticationCallback(null);
   }
 
-  @NonNull
-  @Override
-  public SignInPresenter createPresenter() {
-    return new SignInPresenter(UserRepository.getInstance(
-        UserRemoteDataStore.getInstance(),
-        UserDiskDataStore.getInstance()
-    ));
+  @NonNull @Override public SignInPresenter createPresenter() {
+    return new SignInPresenter(UserRepository.getInstance(UserRemoteDataStore.getInstance(),
+        UserDiskDataStore.getInstance()));
   }
 
-  @Override
-  public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+  @Override public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
     googleProvider.onActivityResult(requestCode, resultCode, data);
     facebookProvider.onActivityResult(requestCode, resultCode, data);
   }
 
-  @OnClick(R.id.btn_google_sign_in)
-  void signInWithGoogle() {
+  @OnClick(R.id.btn_google_sign_in) void signInWithGoogle() {
     googleProvider.startLogin(this);
   }
 
-  @OnClick(R.id.btn_facebook_sign_in)
-  void signInWithFacebook() {
+  @OnClick(R.id.btn_facebook_sign_in) void signInWithFacebook() {
     facebookProvider.startLogin(this);
   }
 
-  @OnClick(R.id.btn_login_ready)
-  void signInWithEmail() {
+  @OnClick(R.id.btn_login_ready) void signInWithEmail() {
     etEmail.setError(null);
     etPassword.setError(null);
 
@@ -171,15 +150,13 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
     }
   }
 
-  @Override
-  public void onSignedIn() {
+  @Override public void onSignedIn() {
     getParentController().getRouter()
         .setRoot(RouterTransaction.with(new UserFeedController())
             .pushChangeHandler(new FadeChangeHandler()));
   }
 
-  @Override
-  public void onError(Throwable t) {
+  @Override public void onError(Throwable t) {
     Snackbar.make(getView(), errorAuthFailedString, Snackbar.LENGTH_SHORT).show();
 
     if (t instanceof SocketTimeoutException) {
@@ -190,8 +167,7 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
     AuthUI.getInstance().signOut(getActivity());
   }
 
-  @Override
-  public void onShowLoading() {
+  @Override public void onShowLoading() {
     if (progressDialog == null) {
       progressDialog = new ProgressDialog(getActivity());
       progressDialog.setMessage(loadingString);
@@ -201,20 +177,17 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
     progressDialog.show();
   }
 
-  @Override
-  public void onHideLoading() {
+  @Override public void onHideLoading() {
     if (progressDialog != null && progressDialog.isShowing()) {
       progressDialog.dismiss();
     }
   }
 
-  @Override
-  public void onSuccess(IdpResponse idpResponse) {
+  @Override public void onSuccess(IdpResponse idpResponse) {
     getPresenter().signIn(idpResponse);
   }
 
-  @Override
-  public void onFailure(Bundle extra) {
+  @Override public void onFailure(Bundle extra) {
     Snackbar.make(getView(), extra.getString("error", null), Snackbar.LENGTH_SHORT).show();
   }
 

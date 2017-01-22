@@ -23,20 +23,15 @@ public abstract class MvpController<V extends MvpView, P extends MvpPresenter<V>
     super(args);
   }
 
-  @NonNull
-  @Override
-  public P getPresenter() {
+  @NonNull @Override public P getPresenter() {
     return presenter;
   }
 
-  @Override
-  public void setPresenter(@NonNull P presenter) {
+  @Override public void setPresenter(@NonNull P presenter) {
     this.presenter = presenter;
   }
 
-  @NonNull
-  @Override
-  public V getMvpView() {
+  @NonNull @Override public V getMvpView() {
     return (V) this;
   }
 }

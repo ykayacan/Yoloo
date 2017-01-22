@@ -7,6 +7,7 @@ import io.realm.Realm;
 import io.realm.RealmList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 public class PostFaker {
 
@@ -15,7 +16,7 @@ public class PostFaker {
 
   public static void generate() {
     Realm realm = Realm.getDefaultInstance();
-    realm.executeTransaction(tx -> {
+    realm.executeTransactionAsync(tx -> {
       CategoryRealm category =
           tx.where(CategoryRealm.class).equalTo(CategoryRealmFields.NAME, "Activities").findFirst();
 
@@ -106,5 +107,19 @@ public class PostFaker {
     });
 
     realm.close();
+  }
+
+  public static PostRealm generateOne() {
+    return new PostRealm()
+        .setId(UUID.randomUUID().toString())
+        .setAvatarUrl(FakerUtil.getAvatarRandomUrl())
+        .setUsername("yasinsinankayacan")
+        .setCreated(FakerUtil.getRandomDate())
+        .setContent(FakerUtil.getContent())
+        .setComments(FakerUtil.generateNumber())
+        .setVotes(FakerUtil.generateNumber())
+        .setType(TYPE_NORMAL)
+        .setBounty(20)
+        .setFeedItem(true);
   }
 }

@@ -4,7 +4,7 @@ import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-public class EndlessRecyclerViewScrollListener extends RecyclerView.OnScrollListener {
+public final class EndlessRecyclerViewScrollListener extends RecyclerView.OnScrollListener {
 
   // The total number of items in the dataset after the last load
   private int previousTotal = 0;
@@ -48,9 +48,9 @@ public class EndlessRecyclerViewScrollListener extends RecyclerView.OnScrollList
     if (layoutManager.canScrollVertically() != isOrientationHelperVertical
         || orientationHelper == null) {
       isOrientationHelperVertical = layoutManager.canScrollVertically();
-      orientationHelper = isOrientationHelperVertical
-          ? OrientationHelper.createVerticalHelper(layoutManager)
-          : OrientationHelper.createHorizontalHelper(layoutManager);
+      orientationHelper =
+          isOrientationHelperVertical ? OrientationHelper.createVerticalHelper(layoutManager)
+              : OrientationHelper.createHorizontalHelper(layoutManager);
     }
 
     final int start = orientationHelper.getStartAfterPadding();
@@ -81,8 +81,7 @@ public class EndlessRecyclerViewScrollListener extends RecyclerView.OnScrollList
     return partiallyVisible;
   }
 
-  @Override
-  public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+  @Override public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
     super.onScrolled(recyclerView, dx, dy);
     if (layoutManager == null) {
       layoutManager = recyclerView.getLayoutManager();
@@ -93,11 +92,12 @@ public class EndlessRecyclerViewScrollListener extends RecyclerView.OnScrollList
       return;
     }
 
-    int footerItemCount =  0;
+    int footerItemCount = 0;
 
     if (visibleThreshold == -1) {
       visibleThreshold = findLastVisibleItemPosition(recyclerView)
-          - findFirstVisibleItemPosition(recyclerView) - footerItemCount;
+          - findFirstVisibleItemPosition(recyclerView)
+          - footerItemCount;
     }
 
     // Subtract header items.
@@ -116,8 +116,7 @@ public class EndlessRecyclerViewScrollListener extends RecyclerView.OnScrollList
     // If it isn't currently loading, we check to see if we have breached
     // the visibleThreshold and need to reload more data.
     // If we do need to reload some more data, we execute onLoadMore to fetch the data.
-    if (!loading && (totalItemCount - visibleItemCount)
-        <= (firstVisibleItem + visibleThreshold)) {
+    if (!loading && (totalItemCount - visibleItemCount) <= (firstVisibleItem + visibleThreshold)) {
       onLoadMoreListener.onLoadMore();
       loading = true;
     }

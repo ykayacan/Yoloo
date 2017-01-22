@@ -20,17 +20,16 @@ public interface MvpConductorDelegateCallback<V extends MvpView, P extends MvpPr
    *
    * @return the created presenter instance
    */
-  @NonNull
-  P createPresenter();
+  @NonNull P createPresenter();
 
   /**
-   * Get the presenter. If null is returned, then a internally a new presenter instance gets created
+   * Get the presenter. If null is returned, then a internally a new presenter instance gets
+   * created
    * by calling {@link #createPresenter()}
    *
    * @return the presenter instance. can be null.
    */
-  @NonNull
-  P getPresenter();
+  @NonNull P getPresenter();
 
   /**
    * Sets the presenter instance
@@ -44,6 +43,5 @@ public interface MvpConductorDelegateCallback<V extends MvpView, P extends MvpPr
    *
    * @return The view associated with the presenter
    */
-  @NonNull
-  V getMvpView();
+  @NonNull V getMvpView();
 }

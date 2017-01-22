@@ -13,7 +13,7 @@ public class CategoryFaker {
   public static void generate() {
     Realm realm = Realm.getDefaultInstance();
 
-    realm.executeTransaction(tx -> {
+    realm.executeTransactionAsync(tx -> {
       Set<CategoryRealm> list = new HashSet<>();
 
       CategoryRealm c1 = new CategoryRealm()

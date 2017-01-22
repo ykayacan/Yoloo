@@ -30,8 +30,7 @@ public abstract class BaseController extends Controller {
   protected abstract View inflateView(@NonNull LayoutInflater inflater,
       @NonNull ViewGroup container);
 
-  @NonNull
-  @Override
+  @NonNull @Override
   protected View onCreateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
     final View view = inflateView(inflater, container);
     unbinder = ButterKnife.bind(this, view);
@@ -42,15 +41,13 @@ public abstract class BaseController extends Controller {
   protected void onViewCreated(@NonNull View view) {
   }
 
-  @Override
-  protected void onDestroyView(@NonNull View view) {
+  @Override protected void onDestroyView(@NonNull View view) {
     super.onDestroyView(view);
     unbinder.unbind();
     unbinder = null;
   }
 
-  @Override
-  protected void onDestroy() {
+  @Override protected void onDestroy() {
     super.onDestroy();
 
     if (hasExited) {
@@ -58,8 +55,7 @@ public abstract class BaseController extends Controller {
     }
   }
 
-  @Override
-  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+  @Override protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
       @NonNull ControllerChangeType changeType) {
     super.onChangeEnded(changeHandler, changeType);
 
@@ -69,8 +65,7 @@ public abstract class BaseController extends Controller {
     }
   }
 
-  @Nullable
-  protected ActionBar getSupportActionBar() {
+  @Nullable protected ActionBar getSupportActionBar() {
     return getActivity() != null ? ((AppCompatActivity) getActivity()).getSupportActionBar() : null;
   }
 

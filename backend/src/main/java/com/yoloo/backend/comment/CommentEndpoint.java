@@ -13,6 +13,7 @@ import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
 import com.yoloo.backend.validator.Validator;
 import com.yoloo.backend.validator.rule.comment.CommentCreateRule;
 import com.yoloo.backend.validator.rule.common.AuthValidator;
+import com.yoloo.backend.validator.rule.common.BadRequestValidator;
 import com.yoloo.backend.validator.rule.common.IdValidationRule;
 import com.yoloo.backend.validator.rule.common.NotFoundRule;
 import java.util.logging.Logger;
@@ -47,6 +48,30 @@ public class CommentEndpoint {
   private final CommentController commentController = CommentControllerFactory.of().create();
 
   /**
+   * Get comment.
+   *
+   * @param questionId the question id
+   * @param commentId the comment id
+   * @param user the user
+   * @return the comment
+   * @throws ServiceException the service exception
+   */
+  @ApiMethod(
+      name = "questions.comments.get",
+      path = "questions/{questionId}/comments/{commentId}",
+      httpMethod = ApiMethod.HttpMethod.GET)
+  public Comment get(@Named("questionId") String questionId, @Named("commentId") String commentId,
+      User user) throws ServiceException {
+
+    Validator.builder()
+        .addRule(new BadRequestValidator(questionId, commentId))
+        .addRule(new AuthValidator(user))
+        .validate();
+
+    return commentController.get(commentId, user);
+  }
+
+  /**
    * Inserts a new {@code Comment}.
    *
    * @param questionId the websafe question id
@@ -61,7 +86,7 @@ public class CommentEndpoint {
       path = "questions/{questionId}/comments",
       httpMethod = ApiMethod.HttpMethod.POST)
   public Comment add(@Named("questionId") String questionId, @Named("content") String content,
-      @Nullable @Named("mentionIds") String mentionIds, User user) throws ServiceException {
+      User user) throws ServiceException {
 
     Validator.builder()
         .addRule(new IdValidationRule(questionId))
@@ -70,7 +95,7 @@ public class CommentEndpoint {
         .addRule(new NotFoundRule(questionId))
         .validate();
 
-    return commentController.add(questionId, content, Optional.fromNullable(mentionIds), user);
+    return commentController.add(questionId, content, user);
   }
 
   /**
@@ -146,7 +171,7 @@ public class CommentEndpoint {
       throws ServiceException {
 
     Validator.builder()
-        .addRule(new IdValidationRule(questionId))
+        .addRule(new BadRequestValidator(questionId))
         .addRule(new AuthValidator(user))
         .addRule(new NotFoundRule(questionId))
         .validate();

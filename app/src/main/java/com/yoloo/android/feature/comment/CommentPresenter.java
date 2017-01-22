@@ -15,27 +15,19 @@ public class CommentPresenter extends MvpPresenter<CommentView> {
   private final CommentRepository commentRepository;
   private final UserRepository userRepository;
 
-  public CommentPresenter(
-      CommentRepository commentRepository,
-      UserRepository userRepository) {
+  public CommentPresenter(CommentRepository commentRepository, UserRepository userRepository) {
     this.commentRepository = commentRepository;
     this.userRepository = userRepository;
   }
 
-  void loadComment(String commentId, boolean accepted) {
+  void loadAcceptedComment(String commentId) {
     if (commentId == null) {
       return;
     }
 
     Disposable d = commentRepository.get(commentId)
         .observeOn(AndroidSchedulers.mainThread(), true)
-        .subscribe(comment -> {
-          if (accepted) {
-            showAcceptedComment(comment);
-          } else {
-            showComment(comment);
-          }
-        }, this::showError);
+        .subscribe(this::showAcceptedComment, this::showError);
 
     getDisposable().add(d);
   }

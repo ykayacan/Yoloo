@@ -1,6 +1,5 @@
 package com.yoloo.backend.device;
 
-import com.google.api.server.spi.config.ApiResourceProperty;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
@@ -17,7 +16,7 @@ import lombok.experimental.Wither;
 @Builder
 public class DeviceRecord {
 
-  public static final String FIELD_REGID = "regId";
+  public static final String FIELD_REG_ID = "regId";
 
   /**
    * Websafe {@code Account} ID with parentUserKey.

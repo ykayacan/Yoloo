@@ -49,31 +49,21 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
   private static final ButterKnife.Setter<View, Boolean> DEFAULT_VISIBILITY =
       (view, value, index) -> view.setVisibility(value ? View.VISIBLE : View.GONE);
 
-  @BindView(R.id.view_login_topics)
-  TagView tagView;
+  @BindView(R.id.view_login_topics) TagView tagView;
 
   @BindViews({
-      R.id.btn_facebook_sign_in,
-      R.id.btn_google_sign_in,
-      R.id.tv_login_or,
-      R.id.btn_login_sign_up
-  })
-  View[] views;
+      R.id.btn_facebook_sign_in, R.id.btn_google_sign_in, R.id.tv_login_or, R.id.btn_login_sign_up
+  }) View[] views;
 
-  @BindString(R.string.error_auth_failed)
-  String errorAuthFailedString;
+  @BindString(R.string.error_auth_failed) String errorAuthFailedString;
 
-  @BindString(R.string.error_google_play_services)
-  String errorGooglePlayServicesString;
+  @BindString(R.string.error_google_play_services) String errorGooglePlayServicesString;
 
-  @BindString(R.string.error_server_down)
-  String errorServerDownString;
+  @BindString(R.string.error_server_down) String errorServerDownString;
 
-  @BindString(R.string.error_already_registered)
-  String errorAlreadyRegisteredString;
+  @BindString(R.string.error_already_registered) String errorAlreadyRegisteredString;
 
-  @BindString(R.string.label_loading)
-  String loadingString;
+  @BindString(R.string.label_loading) String loadingString;
 
   private ProgressDialog progressDialog;
 
@@ -85,8 +75,7 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
     return inflater.inflate(R.layout.controller_provider, container, false);
   }
 
-  @Override
-  protected void onViewCreated(@NonNull View view) {
+  @Override protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
     googleProvider = getIdpProvider(AuthUI.GOOGLE_PROVIDER);
     facebookProvider = getIdpProvider(AuthUI.FACEBOOK_PROVIDER);
@@ -99,14 +88,12 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
     tagView.addOnTagSelectListener(this);
   }
 
-  @Override
-  protected void onAttach(@NonNull View view) {
+  @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
     ((GoogleProvider) googleProvider).connect();
   }
 
-  @Override
-  protected void onDetach(@NonNull View view) {
+  @Override protected void onDetach(@NonNull View view) {
     super.onDetach(view);
     ((GoogleProvider) googleProvider).disconnect();
 
@@ -115,61 +102,47 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
     facebookProvider.setAuthenticationCallback(null);
   }
 
-  @NonNull
-  @Override
-  public ProviderPresenter createPresenter() {
-    return new ProviderPresenter(
-        UserRepository.getInstance(
-            UserRemoteDataStore.getInstance(),
-            UserDiskDataStore.getInstance()),
-        CategoryRepository.getInstance(
-            CategoryRemoteDataStore.getInstance(),
+  @NonNull @Override public ProviderPresenter createPresenter() {
+    return new ProviderPresenter(UserRepository.getInstance(UserRemoteDataStore.getInstance(),
+        UserDiskDataStore.getInstance()),
+        CategoryRepository.getInstance(CategoryRemoteDataStore.getInstance(),
             CategoryDiskDataStore.getInstance()));
   }
 
-  @Override
-  public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+  @Override public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
     googleProvider.onActivityResult(requestCode, resultCode, data);
     facebookProvider.onActivityResult(requestCode, resultCode, data);
   }
 
-  @OnClick(R.id.btn_google_sign_in)
-  void signUpWithGoogle() {
+  @OnClick(R.id.btn_google_sign_in) void signUpWithGoogle() {
     googleProvider.startLogin(this);
   }
 
-  @OnClick(R.id.btn_facebook_sign_in)
-  void signUpWithFacebook() {
+  @OnClick(R.id.btn_facebook_sign_in) void signUpWithFacebook() {
     facebookProvider.startLogin(this);
   }
 
-  @OnClick(R.id.btn_login_sign_up)
-  void signUp() {
-    tagView.<CategoryRealm>getSelectedItemsObservable()
-        .flatMap(Observable::fromIterable)
+  @OnClick(R.id.btn_login_sign_up) void signUp() {
+    tagView.<CategoryRealm>getSelectedItemsObservable().flatMap(Observable::fromIterable)
         .map(CategoryRealm::getId)
         .toList()
         .subscribe(names -> getRouter().pushController(
-            RouterTransaction.with(
-                SignUpController.create(new ArrayList<>(names)))
+            RouterTransaction.with(SignUpController.create(new ArrayList<>(names)))
                 .pushChangeHandler(new HorizontalChangeHandler())
                 .popChangeHandler(new HorizontalChangeHandler())));
   }
 
-  @Override
-  public void onCategoriesLoaded(List<CategoryRealm> categories) {
+  @Override public void onCategoriesLoaded(List<CategoryRealm> categories) {
     tagView.setData(categories, TRANSFORMER);
   }
 
-  @Override
-  public void onSignedUp() {
+  @Override public void onSignedUp() {
     getParentController().getRouter()
         .setRoot(RouterTransaction.with(new UserFeedController())
             .pushChangeHandler(new FadeChangeHandler()));
   }
 
-  @Override
-  public void onError(Throwable t) {
+  @Override public void onError(Throwable t) {
     Snackbar.make(getView(), errorAuthFailedString, Snackbar.LENGTH_SHORT).show();
 
     if (t instanceof SocketTimeoutException) {
@@ -184,8 +157,7 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
     AuthUI.getInstance().signOut(getActivity());
   }
 
-  @Override
-  public void onShowLoading() {
+  @Override public void onShowLoading() {
     if (progressDialog == null) {
       progressDialog = new ProgressDialog(getActivity());
       progressDialog.setMessage(loadingString);
@@ -195,15 +167,13 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
     progressDialog.show();
   }
 
-  @Override
-  public void onHideLoading() {
+  @Override public void onHideLoading() {
     if (progressDialog != null && progressDialog.isShowing()) {
       progressDialog.dismiss();
     }
   }
 
-  @Override
-  public void onItemSelected(Object item, boolean selected) {
+  @Override public void onItemSelected(Object item, boolean selected) {
     int size = tagView.getSelectedItems().size();
 
     if (selected && size >= 3) {
@@ -215,11 +185,9 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
     }
   }
 
-  @Override
-  public void onSuccess(IdpResponse idpResponse) {
-    final String categoryIds = tagView.<CategoryRealm>getSelectedItemsObservable()
-        .flatMap(categoryRealms ->
-            Observable.fromIterable(categoryRealms).map(CategoryRealm::getId))
+  @Override public void onSuccess(IdpResponse idpResponse) {
+    final String categoryIds = tagView.<CategoryRealm>getSelectedItemsObservable().flatMap(
+        categoryRealms -> Observable.fromIterable(categoryRealms).map(CategoryRealm::getId))
         .reduce((s, s2) -> s + "," + s2)
         .map(s -> s.substring(0, s.length() - 1))
         .blockingGet();
@@ -229,8 +197,7 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
     getPresenter().signUp(idpResponse, categoryIds, locale);
   }
 
-  @Override
-  public void onFailure(Bundle extra) {
+  @Override public void onFailure(Bundle extra) {
     Snackbar.make(getView(), extra.getString("error", null), Snackbar.LENGTH_SHORT).show();
   }
 

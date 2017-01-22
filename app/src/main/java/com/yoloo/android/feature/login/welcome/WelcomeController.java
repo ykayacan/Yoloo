@@ -24,24 +24,19 @@ public class WelcomeController extends BaseController {
     return inflater.inflate(R.layout.controller_welcome, container, false);
   }
 
-  @OnClick(R.id.btn_login_start_using)
-  void startUsing() {
-    getRouter().pushController(
-        RouterTransaction.with(new ProviderController())
-            .pushChangeHandler(new HorizontalChangeHandler())
-            .popChangeHandler(new HorizontalChangeHandler()));
+  @OnClick(R.id.btn_login_start_using) void startUsing() {
+    getRouter().pushController(RouterTransaction.with(new ProviderController())
+        .pushChangeHandler(new HorizontalChangeHandler())
+        .popChangeHandler(new HorizontalChangeHandler()));
   }
 
-  @OnClick(R.id.tv_login_action_login)
-  void login() {
-    getRouter().pushController(
-        RouterTransaction.with(new SignInController())
-            .pushChangeHandler(new HorizontalChangeHandler())
-            .popChangeHandler(new HorizontalChangeHandler()));
+  @OnClick(R.id.tv_login_action_login) void login() {
+    getRouter().pushController(RouterTransaction.with(new SignInController())
+        .pushChangeHandler(new HorizontalChangeHandler())
+        .popChangeHandler(new HorizontalChangeHandler()));
   }
 
-  @Override
-  public boolean handleBack() {
+  @Override public boolean handleBack() {
     getActivity().finish();
     return true;
   }

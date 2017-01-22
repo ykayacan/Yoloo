@@ -35,9 +35,13 @@ public class PostRealm extends RealmObject {
   private String title;
   private boolean self;
   private double rank;
+  private String categoriesAsString;
   @Index
   private boolean isFeedItem;
-  private boolean pendingChanges;
+  @Index
+  private boolean pending;
+  @Index
+  private boolean draft;
 
   public String getId() {
     return id;
@@ -224,6 +228,15 @@ public class PostRealm extends RealmObject {
     return this;
   }
 
+  public String getCategoriesAsString() {
+    return categoriesAsString;
+  }
+
+  public PostRealm setCategoriesAsString(String categoriesAsString) {
+    this.categoriesAsString = categoriesAsString;
+    return this;
+  }
+
   public boolean isFeedItem() {
     return isFeedItem;
   }
@@ -233,12 +246,12 @@ public class PostRealm extends RealmObject {
     return this;
   }
 
-  public boolean isPendingChanges() {
-    return pendingChanges;
+  public boolean isPending() {
+    return pending;
   }
 
-  public PostRealm setPendingChanges(boolean pendingChanges) {
-    this.pendingChanges = pendingChanges;
+  public PostRealm setPending(boolean pending) {
+    this.pending = pending;
     return this;
   }
 
@@ -251,11 +264,49 @@ public class PostRealm extends RealmObject {
     return this;
   }
 
+  public boolean isDraft() {
+    return draft;
+  }
+
+  public PostRealm setDraft(boolean draft) {
+    this.draft = draft;
+    return this;
+  }
+
   public void increaseVotes() {
     ++this.votes;
   }
 
   public void decreaseVotes() {
     --this.votes;
+  }
+
+  @Override public String toString() {
+    return "PostRealm{" +
+        "id='" + id + '\'' +
+        ", ownerId='" + ownerId + '\'' +
+        ", avatarUrl='" + avatarUrl + '\'' +
+        ", username='" + username + '\'' +
+        ", content='" + content + '\'' +
+        ", bounty=" + bounty +
+        ", mediaUrl='" + mediaUrl + '\'' +
+        ", tags=" + tags +
+        ", categories=" + categories +
+        ", commented=" + commented +
+        ", acceptedCommentId='" + acceptedCommentId + '\'' +
+        ", created=" + created +
+        ", dir=" + dir +
+        ", votes=" + votes +
+        ", comments=" + comments +
+        ", reports=" + reports +
+        ", type=" + type +
+        ", title='" + title + '\'' +
+        ", self=" + self +
+        ", rank=" + rank +
+        ", categoriesAsString='" + categoriesAsString + '\'' +
+        ", isFeedItem=" + isFeedItem +
+        ", pending=" + pending +
+        ", draft=" + draft +
+        '}';
   }
 }

@@ -5,11 +5,13 @@ import com.yoloo.android.backend.modal.yolooApi.model.CollectionResponseFeedItem
 import com.yoloo.android.backend.modal.yolooApi.model.FeedItem;
 import com.yoloo.android.data.ApiManager;
 import com.yoloo.android.data.Response;
+import com.yoloo.android.data.faker.PostFaker;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.sorter.PostSorter;
 import io.reactivex.Observable;
 import java.io.IOException;
 import java.util.List;
+import timber.log.Timber;
 
 public class PostRemoteDataStore {
 
@@ -37,9 +39,7 @@ public class PostRemoteDataStore {
    * @return the observable
    */
   public Observable<PostRealm> get(String postId) {
-    return ApiManager.getIdToken()
-        .toObservable()
-        .flatMap(s -> Observable.empty());
+    return ApiManager.getIdToken().toObservable().flatMap(s -> Observable.empty());
   }
 
   /**
@@ -51,7 +51,7 @@ public class PostRemoteDataStore {
   public Observable<PostRealm> add(PostRealm post) {
     return ApiManager.getIdToken()
         .toObservable()
-        .flatMap(s -> Observable.empty());
+        .flatMap(s -> Observable.just(PostFaker.generateOne()));
   }
 
   /**
@@ -73,11 +73,9 @@ public class PostRemoteDataStore {
    * @param limit the limit
    * @return the observable
    */
-  public Observable<Response<List<PostRealm>>> list(PostSorter sorter,
-      String category, String cursor, String eTag, int limit) {
-    return ApiManager.getIdToken()
-        .toObservable()
-        .flatMap(s -> Observable.empty());
+  public Observable<Response<List<PostRealm>>> list(PostSorter sorter, String category,
+      String cursor, String eTag, int limit) {
+    return ApiManager.getIdToken().toObservable().flatMap(s -> Observable.empty());
   }
 
   /**
@@ -88,9 +86,9 @@ public class PostRemoteDataStore {
    * @param limit the limit
    * @return the observable
    */
-  public Observable<Response<List<PostRealm>>> listFeed(String cursor, String eTag,
-      int limit) {
+  public Observable<Response<List<PostRealm>>> listFeed(String cursor, String eTag, int limit) {
     return ApiManager.getIdToken()
+        .doOnSuccess(s -> Timber.d(s))
         .toObservable()
         .flatMap(s -> Observable.empty());
         /*.fromCallable(() -> getFeedApi(idToken, cursor, limit, eTag))
@@ -105,18 +103,18 @@ public class PostRemoteDataStore {
   }
 
   public Observable<PostRealm> vote(String postId, int direction) {
-    return ApiManager.getIdToken()
-        .toObservable()
-        .flatMap(s -> Observable.empty());
+    return ApiManager.getIdToken().toObservable().flatMap(s -> Observable.empty());
         /*ApiManager.INSTANCE.getApi().questions()
             .vote(postId, String.valueOf(direction))
             .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + idToken))
             .execute()*/
   }
 
-  private CollectionResponseFeedItem getFeedApi(String idToken, String cursor,
-      int limit, String eTag) throws IOException {
-    return ApiManager.INSTANCE.getApi().accounts().feed()
+  private CollectionResponseFeedItem getFeedApi(String idToken, String cursor, int limit,
+      String eTag) throws IOException {
+    return ApiManager.INSTANCE.getApi()
+        .accounts()
+        .feed()
         .setCursor(cursor)
         .setLimit(limit)
         .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + idToken))

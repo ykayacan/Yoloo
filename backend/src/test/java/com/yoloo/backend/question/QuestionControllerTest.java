@@ -1,12 +1,12 @@
 package com.yoloo.backend.question;
 
 import com.google.api.server.spi.response.CollectionResponse;
+import com.google.api.server.spi.response.ConflictException;
 import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.net.MediaType;
 import com.googlecode.objectify.Key;
@@ -98,7 +98,7 @@ public class QuestionControllerTest extends TestBase {
 
     Tracker tracker = GamificationService.create().create(owner.getKey());
 
-    ImmutableList<Object> saveList = ImmutableList.builder()
+    ImmutableSet<Object> saveList = ImmutableSet.builder()
         .add(owner)
         .add(owner2)
         .add(record1)
@@ -114,8 +114,16 @@ public class QuestionControllerTest extends TestBase {
 
     followController.follow(owner2.getWebsafeId(), user);
 
-    budgetTravel = topicController.add("budget travel", Topic.Type.THEME, user);
-    europe = topicController.add("europe", Topic.Type.THEME, user);
+    try {
+      budgetTravel = topicController.add("budget travel", Topic.Type.THEME, user);
+    } catch (ConflictException e) {
+      e.printStackTrace();
+    }
+    try {
+      europe = topicController.add("europe", Topic.Type.THEME, user);
+    } catch (ConflictException e) {
+      e.printStackTrace();
+    }
 
     passport = tagController.addGroup("passport", user);
 
@@ -127,14 +135,9 @@ public class QuestionControllerTest extends TestBase {
   public void testGetQuestion() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    QuestionWrapper wrapper = QuestionWrapper.builder()
-        .content("Test content")
-        .tags("visa,passport")
-        .topics("europe")
-        .bounty(10)
-        .build();
-
-    Question original = questionController.add(wrapper, user);
+    Question original =
+        questionController.add("Test content", "visa,passport", "europe", Optional.absent(),
+            Optional.of(10), user);
 
     Question fetched = questionController.get(original.getWebsafeId(), user);
 
@@ -164,14 +167,9 @@ public class QuestionControllerTest extends TestBase {
   public void testGetQuestion_withVote() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    QuestionWrapper wrapper = QuestionWrapper.builder()
-        .content("Test content")
-        .tags("visa,passport")
-        .topics("europe")
-        .bounty(10)
-        .build();
-
-    Question original = questionController.add(wrapper, user);
+    Question original =
+        questionController.add("Test content", "visa,passport", "europe", Optional.absent(),
+            Optional.of(10), user);
     voteController.vote(original.getWebsafeId(), Vote.Direction.UP, user);
 
     Question fetched = questionController.get(original.getWebsafeId(), user);
@@ -205,14 +203,8 @@ public class QuestionControllerTest extends TestBase {
     String tags = visa.getName() + "," + visa2.getName();
     String categories = europe.getName() + "," + budgetTravel.getName();
 
-    QuestionWrapper wrapper = QuestionWrapper.builder()
-        .content("Test content")
-        .tags(tags)
-        .topics(categories)
-        .bounty(10)
-        .build();
-
-    Question question = questionController.add(wrapper, user);
+    Question question = questionController.add("Test content", tags, categories, Optional.absent(),
+        Optional.of(10), user);
 
     assertNotNull(question.getKey());
     assertEquals("Test content", question.getContent());
@@ -257,15 +249,8 @@ public class QuestionControllerTest extends TestBase {
 
     Key<Media> mediaKey = ofy().save().entity(media).now();
 
-    QuestionWrapper wrapper = QuestionWrapper.builder()
-        .content("Test content")
-        .tags(tags)
-        .topics(categories)
-        .mediaId(mediaKey.toWebSafeString())
-        .bounty(10)
-        .build();
-
-    Question question = questionController.add(wrapper, user);
+    Question question = questionController.add("Test content", tags, categories,
+        Optional.of(mediaKey.toWebSafeString()), Optional.of(10), user);
 
     assertNotNull(question.getKey());
     assertEquals("Test content", question.getContent());
@@ -297,25 +282,13 @@ public class QuestionControllerTest extends TestBase {
     String tags = visa.getName() + "," + visa2.getName();
     String categories1 = europe.getName() + "," + budgetTravel.getName();
 
-    QuestionWrapper wrapper1 = QuestionWrapper.builder()
-        .content("Test content")
-        .tags(tags)
-        .topics(categories1)
-        .bounty(10)
-        .build();
-
-    questionController.add(wrapper1, user);
+    questionController.add("Test content", tags, categories1, Optional.absent(), Optional.of(10),
+        user);
 
     String categories2 = europe.getName();
 
-    QuestionWrapper wrapper2 = QuestionWrapper.builder()
-        .content("Test content")
-        .tags(tags)
-        .topics(categories2)
-        .bounty(10)
-        .build();
-
-    questionController.add(wrapper2, user);
+    questionController.add("Test content", tags, categories2, Optional.absent(), Optional.of(10),
+        user);
 
     CollectionResponse<Question> response = questionController.list(
         Optional.absent(),

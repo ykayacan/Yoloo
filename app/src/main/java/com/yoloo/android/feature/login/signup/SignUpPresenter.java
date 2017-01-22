@@ -18,8 +18,7 @@ public class SignUpPresenter extends MvpPresenter<SignUpView> {
     this.userRepository = userRepository;
   }
 
-  @Override
-  public void onDetachView() {
+  @Override public void onDetachView() {
     getView().onHideLoading();
     super.onDetachView();
   }
@@ -31,7 +30,8 @@ public class SignUpPresenter extends MvpPresenter<SignUpView> {
   }
 
   private void processFirebase(String email, String password, String categoryIds, String locale) {
-    FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
+    FirebaseAuth.getInstance()
+        .createUserWithEmailAndPassword(email, password)
         .addOnCompleteListener(task -> {
           Timber.d("createUserWithEmail:onComplete %s", task.isSuccessful());
 
@@ -49,8 +49,7 @@ public class SignUpPresenter extends MvpPresenter<SignUpView> {
 
   private void registerUserOnServer(String email, String password, String categoryIds,
       String locale) {
-    AccountRealm newAccount = new AccountRealm()
-        .setMe(true)
+    AccountRealm newAccount = new AccountRealm().setMe(true)
         .setEmail(email)
         .setPassword(password)
         .setLocale(locale)

@@ -32,20 +32,16 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class GoogleApiClientTaskHelper {
 
-  private static final IdentityHashMap<Activity, GoogleApiClientTaskHelper> INSTANCES
-      = new IdentityHashMap<>();
+  private static final IdentityHashMap<Activity, GoogleApiClientTaskHelper> INSTANCES =
+      new IdentityHashMap<>();
 
-  @NonNull
-  private final Activity activity;
+  @NonNull private final Activity activity;
 
-  @NonNull
-  private final AtomicReference<GoogleApiClient> clientRef;
+  @NonNull private final AtomicReference<GoogleApiClient> clientRef;
 
-  @NonNull
-  private final AtomicReference<TaskCompletionSource<GoogleApiClient>> connectTaskRef;
+  @NonNull private final AtomicReference<TaskCompletionSource<GoogleApiClient>> connectTaskRef;
 
-  @NonNull
-  private final GoogleApiClient.Builder builder;
+  @NonNull private final GoogleApiClient.Builder builder;
 
   private GoogleApiClientTaskHelper(@NonNull Activity activity) {
     this.activity = activity;
@@ -88,26 +84,21 @@ public class GoogleApiClientTaskHelper {
       return connectTaskRef.get().getTask();
     }
 
-    final GoogleApiClient client = builder
-        .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
-          @Override
-          public void onConnected(@Nullable Bundle bundle) {
+    final GoogleApiClient client =
+        builder.addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+          @Override public void onConnected(@Nullable Bundle bundle) {
             source.setResult(clientRef.get());
             if (clientRef.get() != null) {
               clientRef.get().unregisterConnectionCallbacks(this);
             }
           }
 
-          @Override
-          public void onConnectionSuspended(int i) {
+          @Override public void onConnectionSuspended(int i) {
           }
-        })
-        .addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
-          @Override
-          public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        }).addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
+          @Override public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
             source.setException(new IOException(
-                "Failed to connect GoogleApiClient: "
-                    + connectionResult.getErrorMessage()));
+                "Failed to connect GoogleApiClient: " + connectionResult.getErrorMessage()));
             if (clientRef.get() != null) {
               clientRef.get().unregisterConnectionFailedListener(this);
             }
@@ -120,15 +111,13 @@ public class GoogleApiClientTaskHelper {
     return source.getTask();
   }
 
-  @NonNull
-  public GoogleApiClient.Builder getBuilder() {
+  @NonNull public GoogleApiClient.Builder getBuilder() {
     return builder;
   }
 
   private final class GacLifecycleCallbacks extends AbstractActivityLifecycleCallbacks {
 
-    @Override
-    public void onActivityStarted(Activity activity) {
+    @Override public void onActivityStarted(Activity activity) {
       if (GoogleApiClientTaskHelper.this.activity.equals(activity)) {
         GoogleApiClient client = clientRef.get();
         if (client != null) {
@@ -137,8 +126,7 @@ public class GoogleApiClientTaskHelper {
       }
     }
 
-    @Override
-    public void onActivityStopped(Activity activity) {
+    @Override public void onActivityStopped(Activity activity) {
       if (GoogleApiClientTaskHelper.this.activity.equals(activity)) {
         GoogleApiClient client = clientRef.get();
         if (client != null) {
@@ -147,8 +135,7 @@ public class GoogleApiClientTaskHelper {
       }
     }
 
-    @Override
-    public void onActivityDestroyed(Activity activity) {
+    @Override public void onActivityDestroyed(Activity activity) {
       activity.getApplication().unregisterActivityLifecycleCallbacks(this);
       clearInstance(activity);
     }

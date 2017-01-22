@@ -236,4 +236,9 @@ public class AccountRealm extends RealmObject {
   public String toMention() {
     return "@" + username;
   }
+
+  public AccountRealm decreaseBounties(int bounties) {
+    this.bounties -= bounties;
+    return this;
+  }
 }

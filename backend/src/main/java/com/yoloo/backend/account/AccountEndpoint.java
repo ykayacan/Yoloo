@@ -92,6 +92,21 @@ public class AccountEndpoint {
   }
 
   /**
+   * Register admin account.
+   *
+   * @param request the request
+   * @return the account
+   * @throws ServiceException the service exception
+   */
+  @ApiMethod(
+      name = "accounts.admin",
+      path = "accounts/admin",
+      httpMethod = ApiMethod.HttpMethod.POST)
+  public Account registerAdmin(HttpServletRequest request) throws ServiceException {
+    return getAccountController().addAdmin(request);
+  }
+
+  /**
    * Updates an existing {@code Account}.
    *
    * @param accountId the account id
@@ -161,6 +176,10 @@ public class AccountEndpoint {
    * @return the wrapper boolean
    * @throws ServiceException the service exception
    */
+  @ApiMethod(
+      name = "accounts.checkUsername",
+      path = "accounts/check",
+      httpMethod = ApiMethod.HttpMethod.GET)
   public WrapperBoolean checkUsername(@Named("username") String username) throws ServiceException {
     return getAccountController().checkUsername(username);
   }

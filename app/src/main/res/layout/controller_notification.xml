@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@android:color/white">
+
+  <!-- We're 'faking' a toolbar here as we just want a back button.
+         This approach lets the borderless ripple extend beyond the back button's bounds,
+         toolbar clips it. Wrapping layout needed for the ripple. -->
+  <FrameLayout
+    android:id="@+id/close_wrapper"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    android:elevation="@dimen/z_fab_over_touchable_app_bar"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <ImageButton
+      android:id="@+id/close"
+      android:layout_width="?android:actionBarSize"
+      android:layout_height="?android:actionBarSize"
+      android:layout_marginEnd="@dimen/padding_normal"
+      android:background="?android:attr/selectableItemBackgroundBorderless"
+      android:tint="@android:color/black"
+      app:srcCompat="@drawable/ic_close_white_24dp" />
+
+  </FrameLayout>
+
+  <View
+    android:id="@+id/divider_header"
+    android:layout_width="0dp"
+    android:layout_height="1dp"
+    android:background="@color/background_lightish"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/close_wrapper" />
+
+  <android.support.v4.widget.SwipeRefreshLayout
+    android:id="@+id/swipe_notification"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/divider_header">
+
+    <android.support.v7.widget.RecyclerView
+      android:id="@+id/rv_notification"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent" />
+
+  </android.support.v4.widget.SwipeRefreshLayout>
+
+</android.support.constraint.ConstraintLayout>

@@ -5,7 +5,6 @@ import com.google.api.server.spi.response.ConflictException;
 import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
@@ -105,7 +104,9 @@ public final class AccountController extends Controller {
    */
   public Account add(String locale, Account.Gender gender, String topicIds,
       HttpServletRequest request) throws ConflictException {
-    final String idToken = request.getHeader(OAuth2.HeaderType.AUTHORIZATION);
+    final String authHeader = request.getHeader(OAuth2.HeaderType.AUTHORIZATION);
+
+    final String idToken = authHeader.split(" ")[1];
 
     Task<FirebaseToken> authTask = getFirebaseTask(idToken);
     awaitTask(authTask);
@@ -124,16 +125,16 @@ public final class AccountController extends Controller {
 
       Tracker tracker = gamificationService.create(model.getAccount().getKey());
 
-      return ofy().transact(() -> {
-        // Immutable helper list object to save all entities in a single db write.
-        // For each single object use builder.add() method.
-        // For each list object use builder.addAll() method.
-        ImmutableSet<Object> saveList = ImmutableSet.builder()
-            .add(model.getAccount())
-            .addAll(model.getShards())
-            .add(tracker)
-            .build();
+      // Immutable helper list object to save all entities in a single db write.
+      // For each single object use builder.addAdmin() method.
+      // For each list object use builder.addAll() method.
+      ImmutableSet<Object> saveList = ImmutableSet.builder()
+          .add(model.getAccount())
+          .addAll(model.getShards())
+          .add(tracker)
+          .build();
 
+      return ofy().transact(() -> {
         Map<Key<Object>, Object> saved = ofy().save().entities(saveList).now();
 
         //noinspection SuspiciousMethodCalls
@@ -142,6 +143,40 @@ public final class AccountController extends Controller {
         return account
             .withCounts(Account.Counts.builder().build())
             .withAchievements(Account.Achievements.builder().build());
+      });
+    }
+  }
+
+  /**
+   * Add admin account.
+   *
+   * @param request the request
+   * @return the account
+   * @throws ConflictException the conflict exception
+   */
+  public Account addAdmin(HttpServletRequest request) throws ConflictException {
+    final String authHeader = request.getHeader(OAuth2.HeaderType.AUTHORIZATION);
+
+    final String idToken = authHeader.split(" ")[1];
+
+    Task<FirebaseToken> authTask = getFirebaseTask(idToken);
+    awaitTask(authTask);
+
+    FirebaseToken token = authTask.getResult();
+
+    try {
+      ofy().load().type(Account.class)
+          .filter(Account.FIELD_EMAIL + " =", token.getEmail())
+          .keys().first().safe();
+
+      throw new ConflictException("User is already registered.");
+    } catch (NotFoundException e) {
+      AccountModel model = accountService.createAdmin(token);
+
+      return ofy().transact(() -> {
+        ofy().save().entities(model.getAccount()).now();
+
+        return model.getAccount();
       });
     }
   }
@@ -161,7 +196,7 @@ public final class AccountController extends Controller {
 
     final Key<Tracker> trackerKey = Tracker.createKey(accountKey);
 
-    ImmutableList.Builder<Key<?>> keyBuilder = ImmutableList.builder();
+    ImmutableSet.Builder<Key<?>> keyBuilder = ImmutableSet.builder();
 
     keyBuilder.add(accountKey);
     keyBuilder.add(trackerKey);
@@ -171,8 +206,7 @@ public final class AccountController extends Controller {
       keyBuilder.add(mediaKey);
     }
 
-    List<Key<?>> batchKeys = keyBuilder.build();
-
+    ImmutableSet<Key<?>> batchKeys = keyBuilder.build();
     Map<Key<Object>, Object> fetched = ofy().load().group(Account.ShardGroup.class)
         .keys(batchKeys.toArray(new Key<?>[batchKeys.size()]));
 

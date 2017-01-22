@@ -34,7 +34,7 @@
     app:layout_constraintVertical_bias="0.2"
     tools:text="@string/hint_feed_item_username" />
 
-  <com.yoloo.android.feature.ui.widget.timeview.ZamanTextView
+  <com.yoloo.android.feature.ui.widget.zamanview.ZamanTextView
     android:id="@+id/tv_comment_time"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
