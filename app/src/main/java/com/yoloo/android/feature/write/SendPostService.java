@@ -5,17 +5,18 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.support.v4.content.LocalBroadcastManager;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.post.datasource.PostDiskDataStore;
 import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
+import com.yoloo.android.feature.feed.common.event.WriteNewPostEvent;
+import com.yoloo.android.feature.feed.userfeed.UserFeedController;
 import com.yoloo.android.util.NotificationUtil;
+import com.yoloo.android.util.RxBus;
 import com.yoloo.android.util.WeakHandler;
-import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import timber.log.Timber;
+import io.reactivex.disposables.Disposable;
 
 public class SendPostService extends Service {
 
@@ -27,6 +28,8 @@ public class SendPostService extends Service {
   private static final int POST_NOTIFICATION_ID = 100;
 
   private WeakHandler handler = new WeakHandler();
+
+  private Disposable disposable;
 
   @Nullable @Override public IBinder onBind(Intent intent) {
     return null;
@@ -41,19 +44,22 @@ public class SendPostService extends Service {
 
     PostRepository postRepository = getPostRepository();
 
-    postRepository.addOrGetDraft()
+    disposable = postRepository.getDraft()
         .doOnSubscribe(disposable -> showSendingNotification())
-        .flatMap(draft -> Single.fromObservable(postRepository.add(draft)))
+        .map(draft -> draft.setFeedItem(true).setPending(false))
+        .flatMap(postRepository::add)
+        .doOnComplete(() -> postRepository.deleteDraft().subscribe())
         .observeOn(AndroidSchedulers.mainThread())
-        .doOnSuccess(post -> {
-          postRepository.deleteDraft();
-          showSuccessfulNotification();
-          broadcastNewPostEvent(post);
-        })
-        .doOnError(Timber::e)
+        .doOnNext(this::broadcastNewPostEvent)
+        .doOnComplete(this::showSuccessfulNotification)
         .subscribe();
 
     return START_REDELIVER_INTENT;
+  }
+
+  @Override public void onDestroy() {
+    super.onDestroy();
+    disposable.dispose();
   }
 
   private PostRepository getPostRepository() {
@@ -93,13 +99,15 @@ public class SendPostService extends Service {
       NotificationUtil.cancel(POST_NOTIFICATION_ID);
       stopForeground(true);
       stopSelf();
-    }, 3000);
+    }, 2000);
   }
 
   public void broadcastNewPostEvent(PostRealm post) {
-    Intent intent = new Intent(KEY_NEW_POST_EVENT);
+    RxBus.get().sendEvent(new WriteNewPostEvent(post), UserFeedController.class);
+
+    /*Intent intent = new Intent(KEY_NEW_POST_EVENT);
     intent.putExtra(KEY_NEW_POST_ID, post.getId());
 
-    LocalBroadcastManager.getInstance(SendPostService.this).sendBroadcast(intent);
+    LocalBroadcastManager.getInstance(SendPostService.this).sendBroadcast(intent);*/
   }
 }

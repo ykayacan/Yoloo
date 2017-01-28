@@ -33,19 +33,6 @@ public final class KeyboardUtil implements ViewTreeObserver.OnGlobalLayoutListen
     mScreenDensity = Resources.getSystem().getDisplayMetrics().density;
   }
 
-  @Override
-  public void onGlobalLayout() {
-    //r will be populated with the coordinates of your view that area still visible.
-    mRootView.getWindowVisibleDisplayFrame(r);
-
-    int heightDiff = mRootView.getRootView().getHeight() - (r.bottom - r.top);
-    float dp = heightDiff / mScreenDensity;
-
-    if (mCallback != null) {
-      mCallback.onToggleSoftKeyboard(dp > 200);
-    }
-  }
-
   /**
    * Hide keyboard.
    *
@@ -53,8 +40,8 @@ public final class KeyboardUtil implements ViewTreeObserver.OnGlobalLayoutListen
    * <code>KeyboardUtil.hideKeyboard(getActivity(), searchField);</code>
    * </pre>
    */
-  public static void hideKeyboard(@NonNull Context context, @NonNull View view) {
-    InputMethodManager imm = (InputMethodManager) context.getApplicationContext()
+  public static void hideKeyboard(@NonNull View view) {
+    InputMethodManager imm = (InputMethodManager) view.getContext().getApplicationContext()
         .getSystemService(Context.INPUT_METHOD_SERVICE);
     imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
   }
@@ -66,8 +53,8 @@ public final class KeyboardUtil implements ViewTreeObserver.OnGlobalLayoutListen
    * <code>KeyboardUtil.showDelayedKeyboard(getActivity(), searchField);</code>
    * </pre>
    */
-  public static void showDelayedKeyboard(@NonNull Context context, @NonNull View view) {
-    showDelayedKeyboard(context, view, 100);
+  public static void showDelayedKeyboard(@NonNull View view) {
+    showDelayedKeyboard(view, 100);
   }
 
   /**
@@ -77,8 +64,8 @@ public final class KeyboardUtil implements ViewTreeObserver.OnGlobalLayoutListen
    * <code>KeyboardUtil.showDelayedKeyboard(getActivity(), searchField, 500);</code>
    * </pre>
    */
-  public static void showDelayedKeyboard(@NonNull Context context, @NonNull View view, int delay) {
-    InputMethodManager imm = (InputMethodManager) context.getSystemService(
+  public static void showDelayedKeyboard(@NonNull View view, int delay) {
+    InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(
         Context.INPUT_METHOD_SERVICE);
     Observable.just(imm)
         .delay(delay, TimeUnit.MILLISECONDS)
@@ -107,6 +94,19 @@ public final class KeyboardUtil implements ViewTreeObserver.OnGlobalLayoutListen
     }
 
     sListenerMap.clear();
+  }
+
+  @Override
+  public void onGlobalLayout() {
+    //r will be populated with the coordinates get your view that area still visible.
+    mRootView.getWindowVisibleDisplayFrame(r);
+
+    int heightDiff = mRootView.getRootView().getHeight() - (r.bottom - r.top);
+    float dp = heightDiff / mScreenDensity;
+
+    if (mCallback != null) {
+      mCallback.onToggleSoftKeyboard(dp > 200);
+    }
   }
 
   private void removeListener() {

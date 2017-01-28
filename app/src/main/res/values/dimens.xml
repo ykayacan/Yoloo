@@ -27,4 +27,6 @@
   <dimen name="z_fab_over_touchable_app_bar">9dp</dimen>
 
   <dimen name="padding_normal">16dp</dimen>
+
+  <dimen name="profile_avatar_width">72dp</dimen>
 </resources>

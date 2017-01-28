@@ -66,13 +66,13 @@
   </declare-styleable>
 
   <declare-styleable name="MaterialBadgeTextView">
-    <attr name="badge_backgroundColor" format="color" />
-    <attr name="badge_border_width" format="dimension" />
-    <attr name="badge_border_color" format="color" />
-    <attr name="badge_border_alpha" format="float" />
-    <attr name="badge_type" format="enum">
-      <enum name="shadow_gradual" value="1" />
-      <enum name="shadow_alpha" value="2" />
+    <attr name="mbtv_backgroundColor" format="color" />
+    <attr name="mbtv_border_width" format="dimension" />
+    <attr name="mbtv_border_color" format="color" />
+    <attr name="mbtv_border_alpha" format="float" />
+    <attr name="mbtv_type" format="enum">
+      <enum name="shadow_gradual" value="1"/>
+      <enum name="shadow_alpha" value="2"/>
     </attr>
   </declare-styleable>
 
@@ -166,6 +166,11 @@
       <enum name="left" value="0"/>
       <enum name="right" value="1"/>
     </attr>
+  </declare-styleable>
+
+  <declare-styleable name="VideoThumbnail">
+    <attr name="playIcon" format="reference" />
+    <attr name="playedTint" format="color" />
   </declare-styleable>
 
 </resources>

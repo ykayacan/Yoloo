@@ -5,4 +5,91 @@
     Morbi sit amet massa pharetra, volutpat risus ac, lobortis ante.
     Ut tempor, ex vitae egestas varius.</string>
 
+  <!-- USER FEED -->
+
+  <!-- Labels -->
+  <string name="label_feed_toolbar_title">Home</string>
+
+  <string name="label_feed_trending_now">Trending now</string>
+  <string name="label_feed_explore">Explore</string>
+  <string name="label_feed_bookmarked">Post saved.</string>
+
+  <!-- Actions -->
+  <string name="action_feed_popup_bookmark">Bookmark</string>
+  <string name="action_feed_popup_edit">Edit</string>
+  <string name="action_feed_popup_delete">Delete</string>
+
+  <string name="action_feed_share">Share</string>
+  <string name="action_feed_bounty_questions">Bounty Questions</string>
+
+  <string name="action_feed_fab_ask_question">Ask question</string>
+  <string name="action_feed_fab_share_trip">Share trip</string>
+
+  <!-- Transitions -->
+  <string name="transition_content_photo">transition_content_photo</string>
+
+  <!-- BOOKMARK -->
+  <string name="label_toolbar_bookmark_title">Saved posts</string>
+
+  <!-- EDITOR -->
+  <string name="hint_editor_write_title">Write title of your story here</string>
+  <string name="hint_editor_blog_content">Write anything about your trip here…</string>
+
+  <string name="hint_editor_question_content">Ask anything about your trip here…</string>
+
+  <string name="action_editor_ask_bounty">Ask a bounty question</string>
+
+  <string name="label_editor_select_media_source_title">Select media</string>
+  <string name="label_select_media">Select media</string>
+  <string name="label_editor_crop_image_title">Crop Image</string>
+
+  <string-array name="action_list_add_media">
+    <item>From gallery</item>
+    <item>From camera</item>
+  </string-array>
+
+  <string name="label_tag"># %1$s</string>
+
+  <string-array name="label_bounties">
+    <item>10</item>
+    <item>20</item>
+    <item>30</item>
+    <item>40</item>
+    <item>50</item>
+  </string-array>
+
+  <string name="label_select_a_bounty">SELECT A BOUNTY</string>
+
+  <string name="error_not_enough_bounty">You don\'t have enough bounty!</string>
+  <string name="label_ensure_bounty">Do you want to add %1$d bounties?</string>
+
+  <string name="label_sending_post">Sending post…</string>
+  <string name="label_sending_post_successful">Successfully sent.</string>
+  <string name="label_sending_post_failed">Failed.</string>
+
+  <!-- CATALOG -->
+
+  <!-- Labels -->
+  <string name="label_catalog_toolbar_title">Select a Category</string>
+  <string name="label_main_catalog_toolbar_title">All Categories</string>
+
+  <string name="label_catalog_tab_destination">Destination</string>
+  <string name="label_catalog_tab_theme">Theme</string>
+
+  <string name="action_catalog_discard_draft">Do you want to discard?</string>
+  <string name="action_catalog_draft_save">Save</string>
+  <string name="action_catalog_draft_delete">Discard</string>
+  <string name="action_catalog_next">NEXT</string>
+
+  <string name="error_catalog_select_category">Please select category!</string>
+
+  <!-- EDITOR -->
+
+  <!-- COMMENT -->
+  <!-- Labels -->
+  <string name="label_comment_accepted">Accepted</string>
+  <string name="label_comment_accepted_confirm">You accepted this comment.</string>
+
+  <string name="error_comment_accept_exists">You can\'t accept comment.</string>
+
 </resources>

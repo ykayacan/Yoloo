@@ -14,10 +14,8 @@ import com.yoloo.android.feature.ui.recyclerview.BaseEpoxyHolder;
 
 public class CategoryModel extends EpoxyModelWithHolder<CategoryModel.CategoryHolder> {
 
-  @EpoxyAttribute CategoryRealm realm;
-
+  @EpoxyAttribute CategoryRealm category;
   @EpoxyAttribute(hash = false) CategoryAdapter.OnCategoryClickListener onCategoryClickListener;
-
   @EpoxyAttribute(hash = false) CategoryAdapter adapter;
 
   @Override protected CategoryHolder createNewHolder() {
@@ -29,11 +27,11 @@ public class CategoryModel extends EpoxyModelWithHolder<CategoryModel.CategoryHo
   }
 
   @Override public void bind(CategoryHolder holder) {
-    Glide.with(holder.ivCategoryBackground.getContext())
-        .load(realm.getBackgroundUrl())
+    Glide.with(holder.ivCategoryBackground.getContext().getApplicationContext())
+        .load(category.getBackgroundUrl())
         .into(holder.ivCategoryBackground);
 
-    holder.tvCategoryText.setText(realm.getName());
+    holder.tvCategoryText.setText(category.getName());
 
     final boolean isSelected = adapter.isSelected(this);
     holder.ivCategoryBackground.setSelected(isSelected);
@@ -45,22 +43,19 @@ public class CategoryModel extends EpoxyModelWithHolder<CategoryModel.CategoryHo
         adapter.toggleSelection(this);
       }
 
-      onCategoryClickListener.onCategoryClick(v, realm.getId(), realm.getName(),
+      onCategoryClickListener.onCategoryClick(v, category.getId(), category.getName(),
           adapter.isMultiSelection());
     });
   }
 
-  public CategoryRealm getRealm() {
-    return realm;
+  public CategoryRealm getCategory() {
+    return category;
   }
 
   static class CategoryHolder extends BaseEpoxyHolder {
     @BindView(R.id.root_view) ViewGroup rootView;
-
     @BindView(R.id.iv_category_bg) ImageView ivCategoryBackground;
-
     @BindView(R.id.tv_category_text) TextView tvCategoryText;
-
     @BindView(R.id.view_category_checkmark) View checkmarkView;
   }
 }

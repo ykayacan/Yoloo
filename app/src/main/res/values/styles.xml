@@ -40,13 +40,21 @@
     <item name="android:textColor">@color/com_facebook_button_text_color</item>
   </style>
 
-  <style name="Yoloo.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
+  <style name="Yoloo.FollowButton" parent="@style/Widget.AppCompat.Button.Colored">
+    <item name="android:layout_width">wrap_content</item>
+    <item name="android:layout_height">40dp</item>
+  </style>
 
-  <style name="Yoloo.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
+
+  <style name="Yoloo.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+  <style name="Yoloo.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
   <style name="Yoloo.SpinnerPopupOverlay" parent="ThemeOverlay.AppCompat.Light">
     <item name="android:textColor">@android:color/white</item>
   </style>
+
+  <style name="Widget.Yoloo" parent="@android:style/Widget" />
 
   <style name="Widget.Yoloo.BountyButton" parent="Widget.AppCompat.Button.Colored">
     <item name="colorButtonNormal">@color/primary_blue</item>
@@ -55,6 +63,17 @@
 
   <style name="Widget.Yoloo.ThumbOverFlow" parent="Widget.AppCompat.ActionButton.Overflow">
     <item name="android:src">@drawable/layer_remove</item>
+  </style>
+
+  <style name="TextAppearance.ProfileCounter" parent="TextAppearance.AppCompat.Body1">
+    <item name="android:textAlignment">center</item>
+  </style>
+
+  <style name="TextAppearance.ProfileCardText" parent="TextAppearance.AppCompat.Caption">
+    <item name="android:textColor">@color/profile_card_text</item>
+    <item name="android:textStyle">bold</item>
+    <item name="android:padding">4dp</item>
+    <item name="android:textAlignment">center</item>
   </style>
 
   <style name="Yoloo.LightLabel">
@@ -77,6 +96,9 @@
     <item name="tagMargin">4dp</item>
     <item name="rowMargin">4dp</item>
     <item name="tagDrawablePadding">4dp</item>
+  </style>
+
+  <style name="VideoThumbnail">
   </style>
 
 </resources>

@@ -2,16 +2,20 @@ package com.yoloo.backend.account;
 
 import com.google.api.server.spi.response.CollectionResponse;
 import com.google.api.server.spi.response.ConflictException;
+import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.Link;
+import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.tasks.Task;
 import com.google.firebase.tasks.Tasks;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.NotFoundException;
+import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.authentication.oauth2.OAuth2;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.follow.Follow;
@@ -34,6 +38,11 @@ public final class AccountController extends Controller {
 
   private static final Logger logger =
       Logger.getLogger(AccountController.class.getName());
+
+  /**
+   * Maximum number of questions to return.
+   */
+  private static final int DEFAULT_LIST_LIMIT = 20;
 
   private AccountService accountService;
 
@@ -273,9 +282,43 @@ public final class AccountController extends Controller {
     });
   }
 
-  public CollectionResponse<Account> list() {
-    // TODO: 16.12.2016 Implement user list.
-    return null;
+  /**
+   * Search accounts collection response.
+   *
+   * @param q the value
+   * @param cursor the cursor
+   * @param limit the limit
+   * @param user the user
+   * @return the collection response
+   */
+  public CollectionResponse<Account> searchAccounts(String q, Optional<String> cursor,
+      Optional<Integer> limit, User user) {
+    q = q.toLowerCase().trim();
+
+    Query<Account> query = ofy().load().type(Account.class)
+        .filter(Account.FIELD_USERNAME + " >=", q)
+        .filter(Account.FIELD_USERNAME + " <", q + "\ufffd");
+
+    // Fetch items from beginning from cursor.
+    query = cursor.isPresent()
+        ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
+        : query;
+
+    // Limit items.
+    query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
+
+    final QueryResultIterator<Account> qi = query.iterator();
+
+    List<Account> accounts = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
+    while (qi.hasNext()) {
+      // Add fetched objects to map. Because cursor iteration needs to be iterated.
+      accounts.add(qi.next());
+    }
+
+    return CollectionResponse.<Account>builder()
+        .setItems(accounts)
+        .setNextPageToken(qi.getCursor().toWebSafeString())
+        .build();
   }
 
   public WrapperBoolean checkUsername(String username) {

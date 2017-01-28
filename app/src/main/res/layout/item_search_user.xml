@@ -1,31 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:tools="http://schemas.android.com/tools"
   android:id="@+id/layout_item_search"
   android:layout_width="match_parent"
-  android:layout_height="wrap_content"
+  android:layout_height="64dp"
+  android:background="@android:color/white"
   android:foreground="?android:attr/selectableItemBackgroundBorderless"
   android:orientation="horizontal"
   android:padding="16dp">
 
   <ImageView
     android:id="@+id/iv_item_search_avatar"
-    android:layout_width="36dp"
-    android:layout_height="36dp"
-    android:layout_marginEnd="16dp"
+    android:layout_width="32dp"
+    android:layout_height="32dp"
+    android:layout_gravity="center_vertical"
     android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
     android:layout_marginStart="16dp"
     android:scaleType="center"
     tools:src="@drawable/login_bg" />
 
-  <com.yoloo.android.feature.ui.widget.CompatTextView
+  <TextView
     android:id="@+id/tv_item_search_username"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_gravity="center"
+    android:layout_gravity="center_vertical"
+    android:layout_marginLeft="64dp"
+    android:layout_marginStart="64dp"
+    android:maxLines="1"
     android:textAppearance="@style/TextAppearance.AppCompat.Body2"
     tools:text="Yoloo" />
 
-</LinearLayout>
+  <Button
+    android:id="@+id/btn_item_search_follow"
+    style="@style/Widget.AppCompat.Button.Colored"
+    android:layout_width="wrap_content"
+    android:layout_height="40dp"
+    android:layout_gravity="center|end"
+    android:gravity="center"
+    android:text="@string/action_profile_follow"
+    android:textColor="@android:color/white"
+    android:visibility="gone"
+    tools:text="Follow"
+    tools:visibility="visible" />
+
+</FrameLayout>
 

@@ -15,9 +15,8 @@ import com.yoloo.android.feature.ui.recyclerview.BaseEpoxyHolder;
 
 public class CategoryModel extends EpoxyModelWithHolder<CategoryModel.CategoryHolder> {
 
+  @EpoxyAttribute CategoryRealm category;
   @EpoxyAttribute(hash = false) FeedAdapter.OnCategoryClickListener onCategoryClickListener;
-
-  @EpoxyAttribute CategoryRealm realm;
 
   @Override protected CategoryHolder createNewHolder() {
     return new CategoryHolder();
@@ -29,25 +28,22 @@ public class CategoryModel extends EpoxyModelWithHolder<CategoryModel.CategoryHo
 
   @Override public void bind(CategoryHolder holder) {
     Glide.with(holder.ivTopicBackground.getContext().getApplicationContext())
-        .load(realm.getBackgroundUrl())
+        .load(category.getBackgroundUrl())
         .diskCacheStrategy(DiskCacheStrategy.SOURCE)
         .into(holder.ivTopicBackground);
 
-    holder.tvTopicText.setText(realm.getName());
+    holder.tvTopicText.setText(category.getName());
 
-    holder.rootView.setOnClickListener(
-        v -> onCategoryClickListener.onCategoryClick(v, realm.getId(), realm.getName()));
-  }
-
-  @Override public void unbind(CategoryHolder holder) {
-    holder.rootView.setOnClickListener(null);
+    holder.rootView.setOnClickListener(v -> {
+      if (onCategoryClickListener != null) {
+        onCategoryClickListener.onCategoryClick(v, category.getId(), category.getName());
+      }
+    });
   }
 
   static class CategoryHolder extends BaseEpoxyHolder {
     @BindView(R.id.fl_topic_root) ViewGroup rootView;
-
     @BindView(R.id.iv_category_bg) ImageView ivTopicBackground;
-
     @BindView(R.id.tv_category_text) TextView tvTopicText;
   }
 }

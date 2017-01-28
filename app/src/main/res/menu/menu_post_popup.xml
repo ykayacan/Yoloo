@@ -3,15 +3,15 @@
 
   <group android:id="@+id/group1">
     <item
-      android:id="@+id/action_post_bookmark"
-      android:title="@string/label_feed_bookmark_item" />
+      android:id="@+id/action_feed_popup_bookmark"
+      android:title="@string/action_feed_popup_bookmark" />
     <item
-      android:id="@+id/action_post_update"
-      android:title="@string/label_feed_edit_item" />
+      android:id="@+id/action_feed_popup_edit"
+      android:title="@string/action_feed_popup_edit" />
   </group>
   <group android:id="@+id/group2">
     <item
-      android:id="@+id/action_post_delete"
-      android:title="@string/label_feed_delete_item" />
+      android:id="@+id/action_feed_popup_delete"
+      android:title="@string/action_feed_popup_delete" />
   </group>
 </menu>

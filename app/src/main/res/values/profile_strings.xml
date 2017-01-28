@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="label_profile_level">Level %1$d</string>
+
+  <string name="label_profile_posts">%1$s\nposts</string>
+  <string name="label_profile_followers">%1$s\nfollowers</string>
+  <string name="label_profile_following">%1$s\nfollowing</string>
+  
+  <string name="label_profile_points">%1$s\nPOINTS</string>
+  <string name="label_profile_bounties">%1$d\nBOUNTIES</string>
+  <string name="label_profile_achievements">%1$d\nACHIEVEMENTS</string>
+
+  <string name="action_profile_follow">FOLLOW</string>
+  <string name="action_profile_unfollow">UNFOLLOW</string>
+
+  <string name="label_profile_questions">Questions</string>
+  <string name="label_profile_commented">Commented</string>
+</resources>

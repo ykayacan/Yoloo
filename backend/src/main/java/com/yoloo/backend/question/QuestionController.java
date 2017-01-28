@@ -28,21 +28,20 @@ import com.yoloo.backend.notification.type.GamePointNotification;
 import com.yoloo.backend.question.sort_strategy.QuestionSorter;
 import com.yoloo.backend.tag.TagCounterShard;
 import com.yoloo.backend.tag.TagShardService;
+import com.yoloo.backend.topic.CategoryShardService;
 import com.yoloo.backend.topic.TopicCounterShard;
-import com.yoloo.backend.topic.TopicShardService;
-import com.yoloo.backend.util.StringUtil;
 import com.yoloo.backend.validator.Guard;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import static com.yoloo.backend.OfyService.ofy;
+import static com.yoloo.backend.util.StringUtil.splitToSet;
 
-@RequiredArgsConstructor(staticName = "create")
+@AllArgsConstructor(staticName = "create")
 public final class QuestionController extends Controller {
 
   private static final Logger logger =
@@ -53,37 +52,26 @@ public final class QuestionController extends Controller {
    */
   private static final int DEFAULT_LIST_LIMIT = 20;
 
-  @NonNull
   private QuestionService questionService;
 
-  @NonNull
   private QuestionShardService questionShardService;
 
-  @NonNull
   private CommentService commentService;
 
-  @NonNull
   private CommentShardService commentShardService;
 
-  @NonNull
   private TagShardService tagShardService;
 
-  @NonNull
-  private TopicShardService topicShardService;
+  private CategoryShardService categoryShardService;
 
-  @NonNull
   private AccountService accountService;
 
-  @NonNull
   private AccountShardService accountShardService;
 
-  @NonNull
   private GamificationService gameService;
 
-  @NonNull
   private MediaService mediaService;
 
-  @NonNull
   private NotificationService notificationService;
 
   /**
@@ -172,9 +160,10 @@ public final class QuestionController extends Controller {
 
     // Increase total question count.
     accountShardService.updateCounter(accountCounterShard, AccountShardService.Update.POST_UP);
-    Collection<TagCounterShard> tagShards = tagShardService.updateShards(question.getTags());
+    Collection<TagCounterShard> tagShards =
+        tagShardService.updateShards(question.getTags());
     Collection<TopicCounterShard> categoryShards =
-        topicShardService.updateShards(question.getCategories());
+        categoryShardService.updateShards(question.getCategories());
 
     // Check game elements.
     /*Tracker updatedTracker = GameVerifier.builder()
@@ -300,11 +289,11 @@ public final class QuestionController extends Controller {
    * @param category the category
    * @param limit the limit
    * @param cursor the cursor
-   * @param user the user
-   * @return the collection response
+   * @param user the user    @return the collection response
    */
   public CollectionResponse<Question> list(Optional<QuestionSorter> sorter,
-      Optional<String> category, Optional<Integer> limit, Optional<String> cursor, User user) {
+      Optional<String> category, Optional<String> tags, Optional<Integer> limit,
+      Optional<String> cursor, User user) {
 
     // Create account key from websafe id.
     final Key<Account> accountKey = Key.create(user.getUserId());
@@ -316,15 +305,60 @@ public final class QuestionController extends Controller {
     Query<Question> query = ofy().load().type(Question.class);
 
     if (category.isPresent()) {
-      Set<String> categorySet = StringUtil.splitToSet(category.get(), ",");
+      Set<String> categorySet = splitToSet(category.get(), ",");
 
-      for (String c : categorySet) {
-        query = query.filter(Question.FIELD_CATEGORIES + " =", c);
+      for (String categoryName : categorySet) {
+        query = query.filter(Question.FIELD_CATEGORIES + " =", categoryName);
+      }
+    } else if (tags.isPresent()) {
+      Set<String> tagSet = splitToSet(tags.get(), ",");
+
+      for (String tagName : tagSet) {
+        query = query.filter(Question.FIELD_TAGS + " =", tagName);
       }
     }
 
     // Sort by post sorter then edit query.
     query = QuestionSorter.sort(query, questionSorter);
+
+    // Fetch items from beginning from cursor.
+    query = cursor.isPresent()
+        ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
+        : query;
+
+    // Limit items.
+    query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
+
+    final QueryResultIterator<Question> qi = query.iterator();
+
+    List<Question> questions = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
+
+    while (qi.hasNext()) {
+      // Add fetched objects to map. Because cursor iteration needs to be iterated.
+      questions.add(qi.next());
+    }
+
+    questions = QuestionUtil.mergeCounts(questions)
+        .toList(DEFAULT_LIST_LIMIT)
+        .flatMap(questions1 -> QuestionUtil
+            .mergeVoteDirection(questions1, accountKey, false).toList())
+        .blockingGet();
+
+    return CollectionResponse.<Question>builder()
+        .setItems(questions)
+        .setNextPageToken(qi.getCursor().toWebSafeString())
+        .build();
+  }
+
+  public CollectionResponse<Question> list(String accountId, Optional<Integer> limit,
+      Optional<String> cursor, User user) {
+
+    // Create account key from websafe id.
+    final Key<Account> accountKey = Key.create(accountId);
+
+    // Init query fetch request.
+    Query<Question> query = ofy().load().type(Question.class)
+        .ancestor(accountKey);
 
     // Fetch items from beginning from cursor.
     query = cursor.isPresent()

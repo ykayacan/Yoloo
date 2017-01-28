@@ -42,11 +42,11 @@ class CategoryAdapter extends SelectableEpoxyAdapter {
   }
 
   public void addCategories(List<CategoryRealm> categories) {
-    for (CategoryRealm realm : categories) {
-      if (realm.getType().equals(categoryType)) {
+    for (CategoryRealm category : categories) {
+      if (category.getType().equals(categoryType)) {
         addModel(new CategoryModel_().adapter(this)
             .onCategoryClickListener(onCategoryClickListener)
-            .realm(realm));
+            .category(category));
       }
     }
   }
@@ -54,7 +54,7 @@ class CategoryAdapter extends SelectableEpoxyAdapter {
   public List<CategoryRealm> getSelectedCategories() {
     return Observable.fromIterable(getSelectedItems())
         .cast(CategoryModel.class)
-        .map(CategoryModel::getRealm)
+        .map(CategoryModel::getCategory)
         .toList()
         .blockingGet();
   }

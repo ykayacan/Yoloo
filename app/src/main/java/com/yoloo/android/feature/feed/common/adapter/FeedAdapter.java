@@ -1,5 +1,10 @@
 package com.yoloo.android.feature.feed.common.adapter;
 
+import android.content.Context;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSnapHelper;
+import android.support.v7.widget.OrientationHelper;
 import android.view.View;
 import com.airbnb.epoxy.EpoxyAdapter;
 import com.airbnb.epoxy.EpoxyModel;
@@ -14,46 +19,52 @@ import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnReadMoreClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
+import com.yoloo.android.feature.feed.common.model.BlogModel;
+import com.yoloo.android.feature.feed.common.model.BlogModel_;
 import com.yoloo.android.feature.feed.common.model.BountyButtonModel_;
+import com.yoloo.android.feature.feed.common.model.LoadingModel;
 import com.yoloo.android.feature.feed.common.model.NormalQuestionModel;
 import com.yoloo.android.feature.feed.common.model.NormalQuestionModel_;
 import com.yoloo.android.feature.feed.common.model.RichQuestionModel;
 import com.yoloo.android.feature.feed.common.model.RichQuestionModel_;
 import com.yoloo.android.feature.feed.common.model.TrendingCategoryModel_;
+import com.yoloo.android.util.WeakHandler;
 import java.util.List;
 
 public class FeedAdapter extends EpoxyAdapter {
 
   private final BountyButtonModel_ bountyButtonModel = new BountyButtonModel_();
   private final TrendingCategoryModel_ trendingCategoriesModel = new TrendingCategoryModel_();
+  private final LoadingModel loadingModel = new LoadingModel();
 
   private final OnProfileClickListener onProfileClickListener;
   private final OnOptionsClickListener onOptionsClickListener;
   private final OnReadMoreClickListener onReadMoreClickListener;
   private final OnShareClickListener onShareClickListener;
   private final OnCommentClickListener onCommentClickListener;
-  private final OnCategoryClickListener onCategoryClickListener;
-  private final OnExploreCategoriesClickListener onExploreCategoriesClickListener;
   private final OnVoteClickListener onVoteClickListener;
   private final OnContentImageClickListener onContentImageClickListener;
 
   private final boolean isMainFeed;
+  private WeakHandler handler = new WeakHandler();
 
-  private FeedAdapter(OnProfileClickListener onProfileClickListener,
+  private FeedAdapter(
+      OnProfileClickListener onProfileClickListener,
       OnOptionsClickListener onOptionsClickListener,
-      OnReadMoreClickListener onReadMoreClickListener, OnShareClickListener onShareClickListener,
+      OnReadMoreClickListener onReadMoreClickListener,
+      OnShareClickListener onShareClickListener,
       OnCommentClickListener onCommentClickListener,
       OnCategoryClickListener onCategoryClickListener,
       OnExploreCategoriesClickListener onExploreCategoriesClickListener,
-      OnVoteClickListener onVoteClickListener, OnBountyClickListener onBountyClickListener,
-      OnContentImageClickListener onContentImageClickListener, boolean isMainFeed) {
+      OnVoteClickListener onVoteClickListener,
+      OnBountyClickListener onBountyClickListener,
+      OnContentImageClickListener onContentImageClickListener,
+      boolean isMainFeed, Context context) {
     this.onProfileClickListener = onProfileClickListener;
     this.onOptionsClickListener = onOptionsClickListener;
     this.onReadMoreClickListener = onReadMoreClickListener;
     this.onShareClickListener = onShareClickListener;
     this.onCommentClickListener = onCommentClickListener;
-    this.onCategoryClickListener = onCategoryClickListener;
-    this.onExploreCategoriesClickListener = onExploreCategoriesClickListener;
     this.onVoteClickListener = onVoteClickListener;
     this.onContentImageClickListener = onContentImageClickListener;
     this.isMainFeed = isMainFeed;
@@ -61,8 +72,15 @@ public class FeedAdapter extends EpoxyAdapter {
     enableDiffing();
 
     if (isMainFeed) {
-      trendingCategoriesModel.onCategoryClickListener(onCategoryClickListener);
-      trendingCategoriesModel.onExploreCategoriesClickListener(onExploreCategoriesClickListener);
+      final DefaultItemAnimator animator = new DefaultItemAnimator();
+      animator.setSupportsChangeAnimations(false);
+
+      trendingCategoriesModel.snapHelper(new LinearSnapHelper())
+          .adapter(new TrendingCategoryAdapter())
+          .itemAnimator(animator)
+          .layoutManager(new LinearLayoutManager(context, OrientationHelper.HORIZONTAL, false))
+          .onExploreCategoriesClickListener(onExploreCategoriesClickListener)
+          .onCategoryClickListener(onCategoryClickListener);
       addModel(trendingCategoriesModel);
 
       bountyButtonModel.onBountyClickListener(onBountyClickListener);
@@ -74,58 +92,36 @@ public class FeedAdapter extends EpoxyAdapter {
     return new FeedAdapterBuilder();
   }
 
-  public void addPostToBeginning(PostRealm post) {
-    if (post.getType() == 0) {
-      insertModelAfter(new NormalQuestionModel_().onProfileClickListener(onProfileClickListener)
-          .onOptionsClickListener(onOptionsClickListener)
-          .onReadMoreClickListener(onReadMoreClickListener)
-          .onShareClickListener(onShareClickListener)
-          .onCommentClickListener(onCommentClickListener)
-          .onVoteClickListener(onVoteClickListener)
-          .layout(R.layout.item_question_normal)
-          .post(post), bountyButtonModel);
-    } else if (post.getType() == 1) {
-      insertModelAfter(new RichQuestionModel_().onProfileClickListener(onProfileClickListener)
-          .onOptionsClickListener(onOptionsClickListener)
-          .onReadMoreClickListener(onReadMoreClickListener)
-          .onShareClickListener(onShareClickListener)
-          .onCommentClickListener(onCommentClickListener)
-          .onVoteClickListener(onVoteClickListener)
-          .onContentImageClickListener(onContentImageClickListener)
-          .layout(R.layout.item_question_rich)
-          .post(post), bountyButtonModel);
+  public void addTrendingCategories(List<CategoryRealm> items) {
+    trendingCategoriesModel.updateTrendingCategories(items);
+  }
+
+  public void addPostAfterBountyButton(PostRealm post) {
+    final int postType = post.getType();
+
+    if (postType == 0) {
+      insertModelAfter(createNormalQuestion(post), bountyButtonModel);
+    } else if (postType == 1) {
+      insertModelAfter(createRichQuestion(post), bountyButtonModel);
+    } else if (postType == 2) {
+      insertModelAfter(createBlog(post), bountyButtonModel);
     }
   }
 
   public void addPosts(List<PostRealm> posts) {
     for (PostRealm post : posts) {
-      if (post.getType() == 0) {
-        models.add(new NormalQuestionModel_().onProfileClickListener(onProfileClickListener)
-            .onOptionsClickListener(onOptionsClickListener)
-            .onReadMoreClickListener(onReadMoreClickListener)
-            .onShareClickListener(onShareClickListener)
-            .onCommentClickListener(onCommentClickListener)
-            .onVoteClickListener(onVoteClickListener)
-            .layout(R.layout.item_question_normal)
-            .post(post));
-      } else if (post.getType() == 1) {
-        models.add(new RichQuestionModel_().onProfileClickListener(onProfileClickListener)
-            .onOptionsClickListener(onOptionsClickListener)
-            .onReadMoreClickListener(onReadMoreClickListener)
-            .onShareClickListener(onShareClickListener)
-            .onCommentClickListener(onCommentClickListener)
-            .onVoteClickListener(onVoteClickListener)
-            .onContentImageClickListener(onContentImageClickListener)
-            .layout(R.layout.item_question_rich)
-            .post(post));
+      final int postType = post.getType();
+
+      if (postType == 0) {
+        models.add(createNormalQuestion(post));
+      } else if (postType == 1) {
+        models.add(createRichQuestion(post));
+      } else if (postType == 2) {
+        models.add(createBlog(post));
       }
     }
 
     notifyModelsChanged();
-  }
-
-  public void updateTrendingCategories(List<CategoryRealm> items) {
-    trendingCategoriesModel.updateTrendingCategories(items);
   }
 
   public void clear() {
@@ -141,23 +137,31 @@ public class FeedAdapter extends EpoxyAdapter {
     removeModel(model);
   }
 
-  public void update(String itemId, @FeedAction int action, Object payload) {
-    if (action == FeedAction.UNSPECIFIED) {
-      return;
-    }
-
-    for (final EpoxyModel<?> model : models) {
+  public void updatePost(@FeedAction int action, PostRealm payload) {
+    for (EpoxyModel<?> model : models) {
       if (model instanceof NormalQuestionModel) {
-        if (((NormalQuestionModel) model).getItemId().equals(itemId)) {
+        if (((NormalQuestionModel) model).getItemId().equals(payload.getId())) {
           setAction(action, payload, model);
           break;
         }
       } else if (model instanceof RichQuestionModel) {
-        if (((RichQuestionModel) model).getItemId().equals(itemId)) {
+        if (((RichQuestionModel) model).getItemId().equals(payload.getId())) {
           setAction(action, payload, model);
           break;
         }
+      } else if (model instanceof BlogModel) {
+        if (((BlogModel) model).getItemId().equals(payload.getId())) {
+          setAction(action, payload, model);
+        }
       }
+    }
+  }
+
+  public void showLoadMoreIndicator(boolean show) {
+    if (show) {
+      handler.post(() -> addModel(loadingModel));
+    } else {
+      handler.post(() -> removeModel(loadingModel));
     }
   }
 
@@ -165,8 +169,46 @@ public class FeedAdapter extends EpoxyAdapter {
     if (action == FeedAction.DELETE) {
       removeModel(model);
     } else if (action == FeedAction.UPDATE) {
+      int index = getModelPosition(model);
       notifyModelChanged(model, payload);
     }
+  }
+
+  private RichQuestionModel createRichQuestion(PostRealm post) {
+    return new RichQuestionModel_()
+        .onProfileClickListener(onProfileClickListener)
+        .onOptionsClickListener(onOptionsClickListener)
+        .onReadMoreClickListener(onReadMoreClickListener)
+        .onShareClickListener(onShareClickListener)
+        .onCommentClickListener(onCommentClickListener)
+        .onVoteClickListener(onVoteClickListener)
+        .onContentImageClickListener(onContentImageClickListener)
+        .layout(R.layout.item_feed_question_rich)
+        .post(post);
+  }
+
+  private NormalQuestionModel createNormalQuestion(PostRealm post) {
+    return new NormalQuestionModel_()
+        .onProfileClickListener(onProfileClickListener)
+        .onOptionsClickListener(onOptionsClickListener)
+        .onReadMoreClickListener(onReadMoreClickListener)
+        .onShareClickListener(onShareClickListener)
+        .onCommentClickListener(onCommentClickListener)
+        .onVoteClickListener(onVoteClickListener)
+        .layout(R.layout.item_feed_question_normal)
+        .post(post);
+  }
+
+  private BlogModel createBlog(PostRealm post) {
+    return new BlogModel_()
+        .onProfileClickListener(onProfileClickListener)
+        .onOptionsClickListener(onOptionsClickListener)
+        .onReadMoreClickListener(onReadMoreClickListener)
+        .onShareClickListener(onShareClickListener)
+        .onCommentClickListener(onCommentClickListener)
+        .onVoteClickListener(onVoteClickListener)
+        .layout(R.layout.item_feed_blog)
+        .post(post);
   }
 
   public interface OnBountyClickListener {
@@ -193,6 +235,7 @@ public class FeedAdapter extends EpoxyAdapter {
     private OnContentImageClickListener onContentImageClickListener;
     private OnBountyClickListener onBountyClickListener;
     private boolean isMainFeed;
+    private Context context;
 
     FeedAdapterBuilder() {
     }
@@ -262,11 +305,16 @@ public class FeedAdapter extends EpoxyAdapter {
       return this;
     }
 
+    public FeedAdapter.FeedAdapterBuilder context(Context context) {
+      this.context = context;
+      return this;
+    }
+
     public FeedAdapter build() {
       return new FeedAdapter(onProfileClickListener, onOptionsClickListener,
           onReadMoreClickListener, onShareClickListener, onCommentClickListener,
           onCategoryClickListener, onExploreCategoriesClickListener, onVoteClickListener,
-          onBountyClickListener, onContentImageClickListener, isMainFeed);
+          onBountyClickListener, onContentImageClickListener, isMainFeed, context);
     }
   }
 }

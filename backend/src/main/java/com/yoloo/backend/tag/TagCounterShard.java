@@ -23,7 +23,7 @@ import lombok.experimental.Wither;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class TagCounterShard {
 
-  public static final int SHARD_COUNT = ShardConfig.HASHTAG_SHARD_COUNTER;
+  public static final int SHARD_COUNT = ShardConfig.TAG_SHARD_COUNTER;
 
   /**
    * Websafe tagId:shard_num

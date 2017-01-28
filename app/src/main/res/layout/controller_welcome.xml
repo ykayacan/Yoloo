@@ -62,7 +62,7 @@
       style="@style/TextAppearance.AppCompat.Body1"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginTop="8dp"
+      android:layout_marginTop="16dp"
       android:text="@string/action_login_text"
       android:textColor="@android:color/white"
       app:layout_constraintLeft_toLeftOf="@+id/btn_login_start_using"

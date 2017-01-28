@@ -27,7 +27,6 @@ import com.yoloo.backend.shard.ShardUtil;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagController;
 import com.yoloo.backend.tag.TagControllerFactory;
-import com.yoloo.backend.tag.TagGroup;
 import com.yoloo.backend.topic.Topic;
 import com.yoloo.backend.topic.TopicController;
 import com.yoloo.backend.topic.TopicControllerFactory;
@@ -89,7 +88,7 @@ public class VoteControllerTest extends TestBase {
       e.printStackTrace();
     }
 
-    TagGroup passport = tagController.addGroup("passport", user);
+    Tag passport = tagController.addGroup("passport", user);
 
     Tag visa = tagController.addTag("visa", "en", passport.getWebsafeId(), user);
 
@@ -114,7 +113,7 @@ public class VoteControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     Comment comment =
-        commentController.add(question.getWebsafeId(), "Test comment", Optional.absent(), user);
+        commentController.add(question.getWebsafeId(), "Test comment", user);
 
     voteController.vote(comment.getWebsafeId(), Vote.Direction.UP, user);
 
@@ -131,7 +130,7 @@ public class VoteControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     Comment comment =
-        commentController.add(question.getWebsafeId(), "Test comment", Optional.absent(), user);
+        commentController.add(question.getWebsafeId(), "Test comment", user);
 
     voteController.vote(comment.getWebsafeId(), Vote.Direction.DOWN, user);
 
@@ -148,7 +147,7 @@ public class VoteControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     Comment comment =
-        commentController.add(question.getWebsafeId(), "Test comment", Optional.absent(), user);
+        commentController.add(question.getWebsafeId(), "Test comment", user);
 
     voteController.vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
 
@@ -165,7 +164,7 @@ public class VoteControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     Comment comment =
-        commentController.add(question.getWebsafeId(), "Test comment", Optional.absent(), user);
+        commentController.add(question.getWebsafeId(), "Test comment", user);
 
     voteController.vote(comment.getWebsafeId(), Vote.Direction.UP, user);
 
@@ -191,7 +190,7 @@ public class VoteControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     Comment comment =
-        commentController.add(question.getWebsafeId(), "Test comment", Optional.absent(), user);
+        commentController.add(question.getWebsafeId(), "Test comment", user);
 
     voteController.vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
 
@@ -217,7 +216,7 @@ public class VoteControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     Comment comment =
-        commentController.add(question.getWebsafeId(), "Test comment", Optional.absent(), user);
+        commentController.add(question.getWebsafeId(), "Test comment", user);
 
     voteController.vote(comment.getWebsafeId(), Vote.Direction.DEFAULT, user);
 
@@ -243,7 +242,7 @@ public class VoteControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     Comment comment =
-        commentController.add(question.getWebsafeId(), "Test comment", Optional.absent(), user);
+        commentController.add(question.getWebsafeId(), "Test comment", user);
 
     voteController.vote(comment.getWebsafeId(), Vote.Direction.DOWN, user);
 

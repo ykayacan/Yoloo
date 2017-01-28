@@ -6,14 +6,14 @@ import java.lang.annotation.RetentionPolicy;
 
 public interface OnVoteClickListener {
 
-  void onVoteClick(String votableId, int direction, @VotableType int type);
+  void onVoteClick(String votableId, int direction, @Type int type);
 
   @IntDef({
-      VotableType.POST,
-      VotableType.COMMENT
+      Type.POST,
+      Type.COMMENT
   })
   @Retention(RetentionPolicy.SOURCE)
-  @interface VotableType {
+  @interface Type {
     int POST = 0;
     int COMMENT = 1;
   }

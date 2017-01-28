@@ -23,9 +23,9 @@ import com.yoloo.backend.question.QuestionController;
 import com.yoloo.backend.question.QuestionControllerFactory;
 import com.yoloo.backend.question.QuestionUtil;
 import com.yoloo.backend.shard.ShardUtil;
+import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagController;
 import com.yoloo.backend.tag.TagControllerFactory;
-import com.yoloo.backend.tag.TagGroup;
 import com.yoloo.backend.topic.Topic;
 import com.yoloo.backend.topic.TopicController;
 import com.yoloo.backend.topic.TopicControllerFactory;
@@ -100,7 +100,7 @@ public class CommentControllerTest extends TestBase {
       e.printStackTrace();
     }
 
-    TagGroup passport = tagController.addGroup("passport", user);
+    Tag passport = tagController.addGroup("passport", user);
     tagController.addTag("visa", "en", passport.getWebsafeId(), user);
 
     question = questionController.add("Test content", "visa,passport", "europe", Optional.absent(),
@@ -114,7 +114,7 @@ public class CommentControllerTest extends TestBase {
     String content = "Test comment";
 
     Comment comment =
-        commentController.add(question.getWebsafeId(), content, Optional.absent(), user);
+        commentController.add(question.getWebsafeId(), content, user);
 
     assertEquals(content, comment.getContent());
     assertEquals(Key.create(user.getUserId()), comment.getParentUserKey());
@@ -146,7 +146,7 @@ public class CommentControllerTest extends TestBase {
     final Key<Tracker> trackerKey = Tracker.createKey(Key.create(user.getUserId()));
 
     Comment comment =
-        commentController.add(question.getWebsafeId(), "Test comment", Optional.absent(), user);
+        commentController.add(question.getWebsafeId(), "Test comment", user);
 
     Tracker tracker = ofy().load().key(trackerKey).now();
     Question question = ofy().load().key(comment.getQuestionKey()).now();
@@ -164,7 +164,7 @@ public class CommentControllerTest extends TestBase {
     String originalContent = "Test comment";
 
     Comment original =
-        commentController.add(question.getWebsafeId(), originalContent, Optional.absent(), user);
+        commentController.add(question.getWebsafeId(), originalContent, user);
 
     assertEquals(originalContent, original.getContent());
     assertEquals(false, original.isAccepted());
@@ -185,7 +185,7 @@ public class CommentControllerTest extends TestBase {
     String originalContent = "Test comment";
 
     Comment original =
-        commentController.add(question.getWebsafeId(), originalContent, Optional.absent(), user);
+        commentController.add(question.getWebsafeId(), originalContent, user);
 
     Comment changed = commentController.update(question.getWebsafeId(), original.getWebsafeId(),
         Optional.absent(), Optional.of(true), user);
@@ -204,7 +204,7 @@ public class CommentControllerTest extends TestBase {
     String content = "Test comment";
 
     Comment comment =
-        commentController.add(question.getWebsafeId(), content, Optional.absent(), user);
+        commentController.add(question.getWebsafeId(), content, user);
 
     commentController.delete(question.getWebsafeId(), comment.getWebsafeId(), user);
 
@@ -218,7 +218,7 @@ public class CommentControllerTest extends TestBase {
     String content = "Test comment";
 
     Comment comment =
-        commentController.add(question.getWebsafeId(), content, Optional.absent(), user);
+        commentController.add(question.getWebsafeId(), content, user);
 
     voteController.vote(comment.getWebsafeId(), Vote.Direction.UP, user);
 
@@ -241,13 +241,13 @@ public class CommentControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     Comment comment1 =
-        commentController.add(question.getWebsafeId(), "Test comment1", Optional.absent(), user);
+        commentController.add(question.getWebsafeId(), "Test comment1", user);
     Comment comment2 =
-        commentController.add(question.getWebsafeId(), "Test comment2", Optional.absent(), user);
+        commentController.add(question.getWebsafeId(), "Test comment2", user);
     Comment comment3 =
-        commentController.add(question.getWebsafeId(), "Test comment3", Optional.absent(), user);
+        commentController.add(question.getWebsafeId(), "Test comment3", user);
     Comment comment4 =
-        commentController.add(question.getWebsafeId(), "Test comment4", Optional.absent(), user);
+        commentController.add(question.getWebsafeId(), "Test comment4", user);
 
     voteController.vote(comment1.getWebsafeId(), Vote.Direction.UP, user);
     voteController.vote(comment2.getWebsafeId(), Vote.Direction.UP, user);

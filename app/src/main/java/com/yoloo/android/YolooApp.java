@@ -8,8 +8,8 @@ import android.support.v7.app.AppCompatDelegate;
 import android.util.Log;
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
-import com.squareup.leakcanary.LeakCanary;
-import com.squareup.leakcanary.RefWatcher;
+import com.facebook.stetho.Stetho;
+import com.uphyca.stetho_realm.RealmInspectorModulesProvider;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import java.io.File;
@@ -23,7 +23,7 @@ public class YolooApp extends Application {
     AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
   }
 
-  private RefWatcher refWatcher;
+  //private RefWatcher refWatcher;
 
   public static YolooApp getInstance() {
     return currentApplication;
@@ -33,19 +33,27 @@ public class YolooApp extends Application {
     return currentApplication.getCacheDir();
   }
 
-  public static RefWatcher getRefWatcher(Context context) {
+  /*public static RefWatcher getRefWatcher(Context context) {
     YolooApp application = (YolooApp) context.getApplicationContext();
     return application.refWatcher;
-  }
+  }*/
 
   @Override
   public void onCreate() {
     super.onCreate();
 
     initializeTimber();
-    initializeLeakCanary();
+    //initializeLeakCanary();
     initializeRealm();
     //enabledStrictMode();
+    Stetho.initialize(
+        Stetho.newInitializerBuilder(this)
+            .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
+            .enableWebKitInspector(RealmInspectorModulesProvider.builder(this).build())
+            .build());
+
+    /*TinyDancer.create()
+        .show(this);*/
 
     currentApplication = this;
   }
@@ -69,14 +77,14 @@ public class YolooApp extends Application {
     Realm.setDefaultConfiguration(realmConfiguration);
   }
 
-  private void initializeLeakCanary() {
+  /*private void initializeLeakCanary() {
     if (LeakCanary.isInAnalyzerProcess(this)) {
       // This process is dedicated to LeakCanary for heap analysis.
       // You should not init your app in this process.
       return;
     }
     refWatcher = LeakCanary.install(this);
-  }
+  }*/
 
   private void initializeTimber() {
     if (BuildConfig.DEBUG) {

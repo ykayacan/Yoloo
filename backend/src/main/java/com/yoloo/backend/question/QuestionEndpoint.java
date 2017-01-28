@@ -25,24 +25,19 @@ import javax.inject.Named;
     namespace = @ApiNamespace(
         ownerDomain = Constants.API_OWNER,
         ownerName = Constants.API_OWNER,
-        packagePath = Constants.API_PACKAGE_PATH
-    )
-)
+        packagePath = Constants.API_PACKAGE_PATH))
 @ApiClass(
     resource = "questions",
     clientIds = {
-        Constants.ANDROID_CLIENT_ID,
-        Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID},
+        Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
+    },
     audiences = {Constants.AUDIENCE_ID},
     authenticators = {
         FirebaseAuthenticator.class
-    }
-)
+    })
 public class QuestionEndpoint {
 
-  private static final Logger logger =
-      Logger.getLogger(QuestionEndpoint.class.getSimpleName());
+  private static final Logger logger = Logger.getLogger(QuestionEndpoint.class.getSimpleName());
 
   private final QuestionController questionController = QuestionControllerFactory.of().create();
 
@@ -84,7 +79,7 @@ public class QuestionEndpoint {
       name = "questions.add",
       path = "questions",
       httpMethod = ApiMethod.HttpMethod.POST)
-  public Question add(@Named("tags") String tags, @Named("content") String content,
+  public Question add(@Named("content") String content, @Named("tags") String tags,
       @Named("categories") String categories, @Nullable @Named("mediaId") String mediaId,
       @Nullable @Named("bounty") Integer bounty, User user) throws ServiceException {
 
@@ -93,13 +88,8 @@ public class QuestionEndpoint {
         .addRule(new AuthValidator(user))
         .validate();
 
-    return questionController.add(
-        content,
-        tags,
-        categories,
-        Optional.fromNullable(mediaId),
-        Optional.fromNullable(bounty),
-        user);
+    return questionController.add(content, tags, categories, Optional.fromNullable(mediaId),
+        Optional.fromNullable(bounty), user);
   }
 
   /**
@@ -129,12 +119,8 @@ public class QuestionEndpoint {
         .addRule(new ForbiddenValidator(user, questionId, ForbiddenValidator.Operation.UPDATE))
         .validate();
 
-    return questionController.update(
-        questionId,
-        Optional.fromNullable(content),
-        Optional.fromNullable(bounty),
-        Optional.fromNullable(tags),
-        Optional.fromNullable(mediaId),
+    return questionController.update(questionId, Optional.fromNullable(content),
+        Optional.fromNullable(bounty), Optional.fromNullable(tags), Optional.fromNullable(mediaId),
         user);
   }
 
@@ -176,19 +162,29 @@ public class QuestionEndpoint {
       path = "questions",
       httpMethod = ApiMethod.HttpMethod.GET)
   public CollectionResponse<Question> list(@Nullable @Named("sort") QuestionSorter sorter,
-      @Nullable @Named("category") String category, @Nullable @Named("cursor") String cursor,
-      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
+      @Nullable @Named("category") String category, @Nullable @Named("tags") String tags,
+      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
+      throws ServiceException {
 
-    Validator.builder()
-        .addRule(new AuthValidator(user))
-        .validate();
+    Validator.builder().addRule(new AuthValidator(user)).validate();
 
-    return questionController.list(
-        Optional.fromNullable(sorter),
-        Optional.fromNullable(category),
-        Optional.fromNullable(limit),
-        Optional.fromNullable(cursor),
+    return questionController.list(Optional.fromNullable(sorter), Optional.fromNullable(category),
+        Optional.fromNullable(tags), Optional.fromNullable(limit), Optional.fromNullable(cursor),
         user);
+  }
+
+  @ApiMethod(
+      name = "accounts.questions.list",
+      path = "accounts/{accountId}/questions",
+      httpMethod = ApiMethod.HttpMethod.GET)
+  public CollectionResponse<Question> listMyQuestions(@Named("accountId") String accountId,
+      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
+      throws ServiceException {
+
+    Validator.builder().addRule(new AuthValidator(user)).validate();
+
+    return questionController.list(accountId, Optional.fromNullable(limit),
+        Optional.fromNullable(cursor), user);
   }
 
   /**

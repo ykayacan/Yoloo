@@ -10,7 +10,7 @@ public final class ShardConfig {
 
   public static final int BLOG_SHARD_COUNTER = 2;
 
-  public static final int HASHTAG_SHARD_COUNTER = 5;
+  public static final int TAG_SHARD_COUNTER = 5;
 
   public static final int ACCOUNT_SHARD_COUNTER = 4;
 

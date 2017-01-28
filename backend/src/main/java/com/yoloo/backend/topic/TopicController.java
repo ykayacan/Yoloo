@@ -38,7 +38,7 @@ public class TopicController extends Controller {
   private TopicService topicService;
 
   @NonNull
-  private TopicShardService topicShardService;
+  private CategoryShardService categoryShardService;
 
   public Topic add(String name, Topic.Type type, User user) throws ConflictException {
     /*Key<Topic> savedKey = ofy().load().type(Topic.class)
@@ -48,7 +48,7 @@ public class TopicController extends Controller {
 
     Key<Topic> topicKey = factory().allocateId(Topic.class);
 
-    List<TopicCounterShard> shards = topicShardService.createShards(topicKey);
+    List<TopicCounterShard> shards = categoryShardService.createShards(topicKey);
 
     List<Ref<TopicCounterShard>> shardRefs =
         ShardUtil.createRefs(shards).toList().blockingGet();

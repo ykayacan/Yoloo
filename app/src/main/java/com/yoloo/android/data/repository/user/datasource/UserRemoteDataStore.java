@@ -2,12 +2,15 @@ package com.yoloo.android.data.repository.user.datasource;
 
 import com.yoloo.android.data.ApiManager;
 import com.yoloo.android.data.Response;
+import com.yoloo.android.data.faker.AccountFaker;
 import com.yoloo.android.data.faker.FakerUtil;
 import com.yoloo.android.data.model.AccountRealm;
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import timber.log.Timber;
 
 public class UserRemoteDataStore {
@@ -24,16 +27,18 @@ public class UserRemoteDataStore {
     return INSTANCE;
   }
 
-  public Single<AccountRealm> get(String userId) {
+  public Observable<AccountRealm> get(String userId) {
     return ApiManager.getIdToken()
         .doOnSuccess(s -> Timber.d("Token: %s", s))
-        .flatMap(s -> Single.just(new AccountRealm()));
+        .toObservable()
+        .flatMap(s -> Observable.just(new AccountRealm()));
   }
 
-  public Single<AccountRealm> getMe() {
+  public Observable<AccountRealm> getMe() {
     return ApiManager.getIdToken()
         .doOnSuccess(s -> Timber.d("Token: %s", s))
-        .flatMap(s -> Single.just(new AccountRealm().setBounties(35)));
+        .toObservable()
+        .flatMap(s -> Observable.just(AccountFaker.generateOne()));
   }
 
   public Single<AccountRealm> add(AccountRealm account) {
@@ -57,14 +62,17 @@ public class UserRemoteDataStore {
 
   public Observable<Response<List<AccountRealm>>> list(String name, String cursor, int limit) {
     AccountRealm a1 = new AccountRealm()
+        .setId(UUID.randomUUID().toString())
         .setUsername("sia")
         .setAvatarUrl(FakerUtil.getAvatarRandomUrl());
 
     AccountRealm a2 = new AccountRealm()
+        .setId(UUID.randomUUID().toString())
         .setUsername("sinan")
         .setAvatarUrl(FakerUtil.getAvatarRandomUrl());
 
     AccountRealm a3 = new AccountRealm()
+        .setId(UUID.randomUUID().toString())
         .setUsername("sinay")
         .setAvatarUrl(FakerUtil.getAvatarRandomUrl());
 
@@ -74,5 +82,27 @@ public class UserRemoteDataStore {
     accounts.add(a3);
 
     return Observable.just(Response.create(accounts, null, null));
+  }
+
+  public Observable<Response<List<AccountRealm>>> listFollowers(String userId, String cursor,
+      String eTag, int limit) {
+    return ApiManager.getIdToken()
+        .doOnSuccess(s -> Timber.d("Token: %s", s))
+        .toObservable()
+        .flatMap(s -> Observable.empty());
+  }
+
+  public Observable<Response<List<AccountRealm>>> listFollowings(String userId, String cursor,
+      String eTag, int limit) {
+    return ApiManager.getIdToken()
+        .doOnSuccess(s -> Timber.d("Token: %s", s))
+        .toObservable()
+        .flatMap(s -> Observable.empty());
+  }
+
+  public Completable follow(String userId, int direction) {
+    return ApiManager.getIdToken()
+        .doOnSuccess(s -> Timber.d("Token: %s", s))
+        .toCompletable();
   }
 }

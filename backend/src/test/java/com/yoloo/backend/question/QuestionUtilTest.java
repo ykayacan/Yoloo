@@ -23,7 +23,6 @@ import com.yoloo.backend.shard.ShardUtil;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagController;
 import com.yoloo.backend.tag.TagControllerFactory;
-import com.yoloo.backend.tag.TagGroup;
 import com.yoloo.backend.topic.Topic;
 import com.yoloo.backend.topic.TopicController;
 import com.yoloo.backend.topic.TopicControllerFactory;
@@ -98,7 +97,7 @@ public class QuestionUtilTest extends TestBase {
       e.printStackTrace();
     }
 
-    TagGroup passport = tagController.addGroup("passport", user);
+    Tag passport = tagController.addGroup("passport", user);
 
     Tag visa = tagController.addTag("visa", "en", passport.getWebsafeId(), user);
 
@@ -111,7 +110,7 @@ public class QuestionUtilTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     voteController.vote(question.getWebsafeId(), Vote.Direction.UP, user);
-    commentController.add(question.getWebsafeId(), "Hello", Optional.absent(), user);
+    commentController.add(question.getWebsafeId(), "Hello", user);
 
     Question merged = QuestionUtil.mergeCounts(question).blockingSingle();
 
@@ -128,7 +127,7 @@ public class QuestionUtilTest extends TestBase {
     questions.add(question);
 
     voteController.vote(question.getWebsafeId(), Vote.Direction.UP, user);
-    commentController.add(question.getWebsafeId(), "Hello", Optional.absent(), user);
+    commentController.add(question.getWebsafeId(), "Hello", user);
 
     Question question2 =
         questionController.add("Test content", "visa,passport", "europe", Optional.absent(),
@@ -136,7 +135,7 @@ public class QuestionUtilTest extends TestBase {
     questions.add(question2);
 
     voteController.vote(question2.getWebsafeId(), Vote.Direction.UP, user);
-    commentController.add(question2.getWebsafeId(), "Hello", Optional.absent(), user);
+    commentController.add(question2.getWebsafeId(), "Hello", user);
 
     Question question3 =
         questionController.add("Test content", "visa,passport", "europe", Optional.absent(),
@@ -144,7 +143,7 @@ public class QuestionUtilTest extends TestBase {
     questions.add(question3);
 
     voteController.vote(question3.getWebsafeId(), Vote.Direction.UP, user);
-    commentController.add(question3.getWebsafeId(), "Hello", Optional.absent(), user);
+    commentController.add(question3.getWebsafeId(), "Hello", user);
 
     QuestionUtil.mergeCounts(questions)
         .forEach(question1 -> {

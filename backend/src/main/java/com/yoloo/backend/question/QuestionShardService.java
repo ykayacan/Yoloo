@@ -51,9 +51,9 @@ public class QuestionShardService implements ShardService<Question, QuestionCoun
   public QuestionCounterShard createShard(Key<Question> entityKey, int shardNum) {
     return QuestionCounterShard.builder()
         .id(ShardUtil.generateShardId(entityKey, shardNum))
-        .comments(0)
+        .comments(0L)
+        .votes(0L)
         .reports(0)
-        .votes(0)
         .build();
   }
 

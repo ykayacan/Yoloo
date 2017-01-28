@@ -6,7 +6,7 @@ import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Ref;
 import com.yoloo.backend.account.Account;
@@ -23,7 +23,6 @@ import com.yoloo.backend.shard.ShardUtil;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagController;
 import com.yoloo.backend.tag.TagControllerFactory;
-import com.yoloo.backend.tag.TagGroup;
 import com.yoloo.backend.topic.Topic;
 import com.yoloo.backend.topic.TopicController;
 import com.yoloo.backend.topic.TopicControllerFactory;
@@ -46,7 +45,7 @@ public class FeedControllerTest extends TestBase {
   private Topic budgetTravel;
   private Topic europe;
 
-  private TagGroup passport;
+  private Tag passport;
 
   private Tag visa;
   private Tag visa2;
@@ -81,7 +80,7 @@ public class FeedControllerTest extends TestBase {
     DeviceRecord record = createRecord(owner);
     Tracker tracker = GamificationService.create().create(owner.getKey());
 
-    ImmutableList<Object> saveList = ImmutableList.builder()
+    ImmutableSet<Object> saveList = ImmutableSet.builder()
         .add(owner)
         .add(record)
         .addAll(model.getShards())

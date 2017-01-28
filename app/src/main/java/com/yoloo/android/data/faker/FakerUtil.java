@@ -9,14 +9,14 @@ public class FakerUtil {
 
   @NonNull
   public static String getMediaUrl() {
-    return "http://filledpassport.com/wp-content/uploads/2016/05/best-travel-blogs-200x200.png";
+    return "http://lorempixel.com/output/people-q-c-800-800-4.jpg";
   }
 
   @NonNull
   public static String getContent() {
-    return "Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
+    return "Lorem Ipsum is simply dummy text get the printing and typesetting industry. "
         + "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,"
-        + " when an unknown printer took a galley of type and scrambled "
+        + " when an unknown printer took a galley get type and scrambled "
         + "it to make a type specimen book.";
   }
 

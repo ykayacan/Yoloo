@@ -29,14 +29,16 @@ import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.feature.base.framework.MvpController;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
-import com.yoloo.android.feature.feed.globalfeed.GlobalFeedController;
+import com.yoloo.android.feature.feed.postfeed.PostController;
+import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.util.BundleBuilder;
+import com.yoloo.android.util.KeyboardUtil;
 import io.reactivex.subjects.PublishSubject;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class ChildSearchController extends MvpController<ChildSearchView, ChildSearchPresenter>
-    implements ChildSearchView, OnTagClickListener, OnProfileClickListener {
+    implements ChildSearchView, OnTagClickListener, OnProfileClickListener, OnFollowClickListener {
 
   private static final String KEY_SEARCH_TYPE = "SEARCH_TYPE";
 
@@ -167,18 +169,29 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
   }
 
   @Override public void onTagClick(String name) {
+    KeyboardUtil.hideKeyboard(etSearch);
+
     getParentController().getRouter()
-        .pushController(RouterTransaction.with(GlobalFeedController.createFromTag(name))
+        .pushController(RouterTransaction.with(PostController.ofTag(name))
             .pushChangeHandler(new VerticalChangeHandler())
             .popChangeHandler(new VerticalChangeHandler()));
   }
 
   @Override public void onProfileClick(View v, String ownerId) {
+    KeyboardUtil.hideKeyboard(etSearch);
 
+    getParentController().getRouter()
+        .pushController(RouterTransaction.with(ProfileController.create(ownerId))
+            .pushChangeHandler(new VerticalChangeHandler())
+            .popChangeHandler(new VerticalChangeHandler()));
+  }
+
+  @Override public void onFollowClick(View v, String userId, int direction) {
+    getPresenter().follow(userId, direction);
   }
 
   private void setupRecyclerView() {
-    adapter = new SearchAdapter(this, this);
+    adapter = new SearchAdapter(this, this, this);
 
     rvChildSearch.setLayoutManager(new LinearLayoutManager(getActivity()));
     rvChildSearch.setItemAnimator(new DefaultItemAnimator());

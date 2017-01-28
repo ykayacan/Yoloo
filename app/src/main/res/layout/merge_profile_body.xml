@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  tools:showIn="@layout/controller_profile">
+
+  <android.support.v7.widget.CardView
+    android:id="@+id/card_profile_points"
+    android:layout_width="108dp"
+    android:layout_height="108dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginRight="8dp"
+    android:layout_marginTop="8dp"
+    android:foreground="?attr/selectableItemBackgroundBorderless"
+    app:cardElevation="2dp"
+    app:cardUseCompatPadding="true"
+    app:layout_constraintHorizontal_chainStyle="packed"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toLeftOf="@+id/card_profile_bounties"
+    app:layout_constraintTop_toBottomOf="@+id/iv_profile_bg">
+
+    <ImageView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="@color/primary"
+      android:padding="15dp"
+      android:tint="@android:color/white"
+      app:srcCompat="@drawable/ic_bookmark_star_32dp" />
+
+    <TextView
+      android:id="@+id/tv_profile_points"
+      style="@style/TextAppearance.ProfileCardText"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_gravity="bottom"
+      tools:text="@string/label_profile_points" />
+
+  </android.support.v7.widget.CardView>
+
+  <android.support.v7.widget.CardView
+    android:id="@+id/card_profile_bounties"
+    android:layout_width="108dp"
+    android:layout_height="108dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginRight="8dp"
+    android:layout_marginTop="8dp"
+    android:foreground="?attr/selectableItemBackgroundBorderless"
+    app:cardElevation="2dp"
+    app:cardUseCompatPadding="true"
+    app:layout_constraintLeft_toRightOf="@+id/card_profile_points"
+    app:layout_constraintRight_toLeftOf="@+id/card_profile_achievements"
+    app:layout_constraintTop_toBottomOf="@+id/iv_profile_bg">
+
+    <ImageView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="@color/primary_yellow"
+      android:padding="15dp"
+      android:tint="@android:color/white"
+      app:srcCompat="@drawable/ic_coin_stack_32dp" />
+
+    <TextView
+      android:id="@+id/tv_profile_bounties"
+      style="@style/TextAppearance.ProfileCardText"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_gravity="bottom"
+      tools:text="@string/label_profile_bounties" />
+
+  </android.support.v7.widget.CardView>
+
+  <android.support.v7.widget.CardView
+    android:id="@+id/card_profile_achievements"
+    android:layout_width="108dp"
+    android:layout_height="108dp"
+    android:layout_marginTop="8dp"
+    android:foreground="?attr/selectableItemBackgroundBorderless"
+    app:cardElevation="2dp"
+    app:cardUseCompatPadding="true"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintLeft_toRightOf="@+id/card_profile_bounties"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/iv_profile_bg">
+
+    <ImageView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="@color/primary_blue"
+      android:padding="15dp"
+      android:tint="@android:color/white"
+      app:srcCompat="@drawable/ic_trophy_cup_silhouette_32dp" />
+
+    <TextView
+      android:id="@+id/tv_profile_achievements"
+      style="@style/TextAppearance.ProfileCardText"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_gravity="bottom"
+      tools:text="@string/label_profile_achievements" />
+
+  </android.support.v7.widget.CardView>
+
+</merge>

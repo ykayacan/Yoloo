@@ -4,7 +4,6 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
-import com.googlecode.objectify.annotation.Index;
 import com.yoloo.backend.config.ShardConfig;
 import com.yoloo.backend.feed.FeedShard;
 import lombok.Builder;
@@ -23,9 +22,6 @@ public class BlogCounterShard implements FeedShard {
    */
   @Id
   private String id;
-
-  @Index
-  private Key<Blog> parentBlogKey;
 
   private long comments;
 

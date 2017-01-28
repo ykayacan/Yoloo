@@ -90,7 +90,7 @@ public abstract class SelectableEpoxyAdapter extends EpoxyAdapter {
   }
 
   /**
-   * Indicates the list of selected items
+   * Indicates the search of selected items
    *
    * @return List of selected items ids
    */

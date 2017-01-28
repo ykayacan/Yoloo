@@ -2,15 +2,20 @@ package com.yoloo.android.feature.notification;
 
 import android.support.annotation.NonNull;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBar;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindColor;
 import butterknife.BindView;
-import butterknife.OnClick;
+import com.bluelinelabs.conductor.RouterTransaction;
+import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.NotificationRealm;
@@ -18,6 +23,8 @@ import com.yoloo.android.data.repository.notification.NotificationRepository;
 import com.yoloo.android.data.repository.notification.datasource.NotificationDiskDataSource;
 import com.yoloo.android.data.repository.notification.datasource.NotificationRemoteDataSource;
 import com.yoloo.android.feature.base.framework.MvpController;
+import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
+import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.ui.recyclerview.EndlessRecyclerViewScrollListener;
 import com.yoloo.android.feature.ui.recyclerview.SlideInItemAnimator;
 import com.yoloo.android.feature.ui.recyclerview.SpaceItemDecoration;
@@ -26,11 +33,11 @@ import timber.log.Timber;
 
 public class NotificationController extends MvpController<NotificationView, NotificationPresenter>
     implements NotificationView, EndlessRecyclerViewScrollListener.OnLoadMoreListener,
-    SwipeRefreshLayout.OnRefreshListener {
+    SwipeRefreshLayout.OnRefreshListener, OnProfileClickListener {
 
   @BindView(R.id.rv_notification) RecyclerView rvNotification;
-
   @BindView(R.id.swipe_notification) SwipeRefreshLayout swipeRefreshLayout;
+  @BindView(R.id.toolbar_notification) Toolbar toolbar;
 
   @BindColor(R.color.primary) int primaryColor;
 
@@ -50,6 +57,8 @@ public class NotificationController extends MvpController<NotificationView, Noti
     super.onViewCreated(view);
     setupPullToRefresh();
     setupRecyclerView();
+    setupToolbar();
+    setHasOptionsMenu(true);
   }
 
   @Override protected void onAttach(@NonNull View view) {
@@ -60,6 +69,18 @@ public class NotificationController extends MvpController<NotificationView, Noti
   @Override protected void onDetach(@NonNull View view) {
     super.onDetach(view);
     rvNotification.removeOnScrollListener(endlessRecyclerViewScrollListener);
+  }
+
+  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    // handle arrow click here
+    final int itemId = item.getItemId();
+    switch (itemId) {
+      case android.R.id.home:
+        getRouter().popCurrentController();
+        return true;
+      default:
+        return super.onOptionsItemSelected(item);
+    }
   }
 
   @Override public void onLoading(boolean pullToRefresh) {
@@ -85,7 +106,8 @@ public class NotificationController extends MvpController<NotificationView, Noti
 
   @NonNull @Override public NotificationPresenter createPresenter() {
     return new NotificationPresenter(
-        NotificationRepository.getInstance(NotificationRemoteDataSource.getInstance(),
+        NotificationRepository.getInstance(
+            NotificationRemoteDataSource.getInstance(),
             NotificationDiskDataSource.getInstance()));
   }
 
@@ -100,12 +122,14 @@ public class NotificationController extends MvpController<NotificationView, Noti
     getPresenter().loadNotifications(true, cursor, 20);
   }
 
-  @OnClick(R.id.close) void close() {
-    getRouter().popCurrentController();
+  @Override public void onProfileClick(View v, String ownerId) {
+    getRouter().pushController(RouterTransaction.with(ProfileController.create(ownerId))
+        .pushChangeHandler(new VerticalChangeHandler())
+        .popChangeHandler(new VerticalChangeHandler()));
   }
 
   private void setupRecyclerView() {
-    adapter = new NotificationAdapter();
+    adapter = new NotificationAdapter(this);
 
     final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
 
@@ -125,5 +149,19 @@ public class NotificationController extends MvpController<NotificationView, Noti
   private void setupPullToRefresh() {
     swipeRefreshLayout.setOnRefreshListener(this);
     swipeRefreshLayout.setColorSchemeColors(primaryColor);
+  }
+
+  private void setupToolbar() {
+    setSupportActionBar(toolbar);
+
+    // add back arrow to toolbar
+    final ActionBar ab = getSupportActionBar();
+    if (ab != null) {
+      ab.setTitle(R.string.label_notification_title);
+      ab.setDisplayHomeAsUpEnabled(true);
+      ab.setHomeAsUpIndicator(
+          AppCompatResources.getDrawable(getActivity(), R.drawable.ic_close_white_24dp));
+      ab.setDisplayShowHomeEnabled(true);
+    }
   }
 }

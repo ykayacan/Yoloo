@@ -8,8 +8,8 @@
     android:id="@+id/iv_photo"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black"
-    android:transitionName="@string/transition_content_photo" />
+    android:transitionName="@string/transition_content_photo"
+    android:background="@android:color/black" />
 
   <android.support.design.widget.AppBarLayout
     android:layout_width="match_parent"

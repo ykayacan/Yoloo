@@ -1,7 +1,10 @@
 package com.yoloo.android.feature.search;
 
 import android.content.Context;
+import android.support.design.widget.Snackbar;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindView;
@@ -17,8 +20,8 @@ import com.yoloo.android.util.glide.CropCircleTransformation;
 public class UserModel extends EpoxyModelWithHolder<UserModel.UserHolder> {
 
   @EpoxyAttribute AccountRealm account;
-
   @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
+  @EpoxyAttribute(hash = false) OnFollowClickListener onFollowClickListener;
 
   @Override protected UserHolder createNewHolder() {
     return new UserHolder();
@@ -38,19 +41,27 @@ public class UserModel extends EpoxyModelWithHolder<UserModel.UserHolder> {
 
     holder.tvUsername.setText(account.getUsername());
 
+    holder.btnFollow.setVisibility(account.isFollowing() ? View.GONE : View.VISIBLE);
+
+    holder.btnFollow.setOnClickListener(v -> {
+      Snackbar.make(v, context.getString(R.string.label_search_followed, account.getUsername()),
+          Snackbar.LENGTH_SHORT).show();
+      holder.btnFollow.setVisibility(View.GONE);
+      onFollowClickListener.onFollowClick(v, account.getId(), 1);
+    });
     holder.viewGroup.setOnClickListener(
         v -> onProfileClickListener.onProfileClick(v, account.getId()));
   }
 
   @Override public void unbind(UserHolder holder) {
     holder.viewGroup.setOnClickListener(null);
+    holder.btnFollow.setOnClickListener(null);
   }
 
   static class UserHolder extends BaseEpoxyHolder {
     @BindView(R.id.layout_item_search) ViewGroup viewGroup;
-
     @BindView(R.id.iv_item_search_avatar) ImageView ivAvatar;
-
     @BindView(R.id.tv_item_search_username) TextView tvUsername;
+    @BindView(R.id.btn_item_search_follow) Button btnFollow;
   }
 }

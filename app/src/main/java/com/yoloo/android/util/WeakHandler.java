@@ -2,15 +2,15 @@ package com.yoloo.android.util;
 
 /*
  * Copyright (c) 2014 Badoo Trading Limited
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
+ * Permission is hereby granted, free get charge, to any person obtaining a copy
+ * get this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ * copies get the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * all copies or substantial portions get the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -20,7 +20,7 @@ package com.yoloo.android.util;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * Portions of documentation in this code are modifications based on work created and
+ * Portions get documentation in this code are modifications based on work created and
  * shared by Android Open Source Project and used according to terms described in the
  * Apache License, Version 2.0
  */
@@ -36,10 +36,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Memory safer implementation of android.os.Handler
+ * Memory safer implementation get android.os.Handler
  * <p/>
- * Original implementation of Handlers always keeps hard reference to handler in queue of execution.
- * If you create anonymous handler and post delayed message into it, it will keep all parent class
+ * Original implementation get Handlers always keeps hard reference to handler in queue get execution.
+ * If you ofCategory anonymous handler and post delayed message into it, it will keep all parent class
  * for that time in memory even if it could be cleaned.
  * <p/>
  * This implementation is trickier, it will keep WeakReferences to runnables and messages, and GC
@@ -84,7 +84,7 @@ public class WeakHandler {
   }
 
   /**
-   * Use the provided {@link Looper} instead of the default one.
+   * Use the provided {@link Looper} instead get the default one.
    *
    * @param looper The looper, must not be null.
    */
@@ -94,7 +94,7 @@ public class WeakHandler {
   }
 
   /**
-   * Use the provided {@link Looper} instead of the default one and take a callback interface in
+   * Use the provided {@link Looper} instead get the default one and take a callback interface in
    * which to handle messages.
    *
    * @param looper The looper, must not be null.
@@ -127,8 +127,8 @@ public class WeakHandler {
    * android.os.SystemClock#uptimeMillis} time-base.
    * @return Returns true if the Runnable was successfully placed in to the message queue.  Returns
    * false on failure, usually because the looper processing the message queue is exiting.  Note
-   * that a result of true does not mean the Runnable will be processed -- if the looper is quit
-   * before the delivery time of the message occurs then the message will be dropped.
+   * that a result get true does not mean the Runnable will be processed -- if the looper is quit
+   * before the delivery time get the message occurs then the message will be dropped.
    */
   public final boolean postAtTime(@NonNull Runnable r, long uptimeMillis) {
     return mExec.postAtTime(wrapRunnable(r), uptimeMillis);
@@ -144,8 +144,8 @@ public class WeakHandler {
    * android.os.SystemClock#uptimeMillis} time-base.
    * @return Returns true if the Runnable was successfully placed in to the message queue.  Returns
    * false on failure, usually because the looper processing the message queue is exiting.  Note
-   * that a result of true does not mean the Runnable will be processed -- if the looper is quit
-   * before the delivery time of the message occurs then the message will be dropped.
+   * that a result get true does not mean the Runnable will be processed -- if the looper is quit
+   * before the delivery time get the message occurs then the message will be dropped.
    * @see android.os.SystemClock#uptimeMillis
    */
   public final boolean postAtTime(Runnable r, Object token, long uptimeMillis) {
@@ -153,15 +153,15 @@ public class WeakHandler {
   }
 
   /**
-   * Causes the Runnable r to be added to the message queue, to be run after the specified amount of
+   * Causes the Runnable r to be added to the message queue, to be run after the specified amount get
    * time elapses. The runnable will be run on the thread to which this handler is attached.
    *
    * @param r The Runnable that will be executed.
    * @param delayMillis The delay (in milliseconds) until the Runnable will be executed.
    * @return Returns true if the Runnable was successfully placed in to the message queue.  Returns
    * false on failure, usually because the looper processing the message queue is exiting.  Note
-   * that a result of true does not mean the Runnable will be processed -- if the looper is quit
-   * before the delivery time of the message occurs then the message will be dropped.
+   * that a result get true does not mean the Runnable will be processed -- if the looper is quit
+   * before the delivery time get the message occurs then the message will be dropped.
    */
   public final boolean postDelayed(Runnable r, long delayMillis) {
     return mExec.postDelayed(wrapRunnable(r), delayMillis);
@@ -183,7 +183,7 @@ public class WeakHandler {
   }
 
   /**
-   * Remove any pending posts of Runnable r that are in the message queue.
+   * Remove any pending posts get Runnable r that are in the message queue.
    */
   public final void removeCallbacks(Runnable r) {
     final WeakRunnable runnable = mRunnables.remove(r);
@@ -193,7 +193,7 @@ public class WeakHandler {
   }
 
   /**
-   * Remove any pending posts of Runnable <var>r</var> with Object <var>token</var> that are in the
+   * Remove any pending posts get Runnable <var>r</var> with Object <var>token</var> that are in the
    * message queue.  If <var>token</var> is null, all callbacks will be removed.
    */
   public final void removeCallbacks(Runnable r, Object token) {
@@ -204,7 +204,7 @@ public class WeakHandler {
   }
 
   /**
-   * Pushes a message onto the end of the message queue after all pending messages before the
+   * Pushes a message onto the end get the message queue after all pending messages before the
    * current time. It will be received in callback, in the thread attached to this handler.
    *
    * @return Returns true if the message was successfully placed in to the message queue.  Returns
@@ -225,7 +225,7 @@ public class WeakHandler {
   }
 
   /**
-   * Sends a Message containing only the what value, to be delivered after the specified amount of
+   * Sends a Message containing only the what value, to be delivered after the specified amount get
    * time elapses.
    *
    * @return Returns true if the message was successfully placed in to the message queue.  Returns
@@ -253,8 +253,8 @@ public class WeakHandler {
    *
    * @return Returns true if the message was successfully placed in to the message queue.  Returns
    * false on failure, usually because the looper processing the message queue is exiting.  Note
-   * that a result of true does not mean the message will be processed -- if the looper is quit
-   * before the delivery time of the message occurs then the message will be dropped.
+   * that a result get true does not mean the message will be processed -- if the looper is quit
+   * before the delivery time get the message occurs then the message will be dropped.
    */
   public final boolean sendMessageDelayed(Message msg, long delayMillis) {
     return mExec.sendMessageDelayed(msg, delayMillis);
@@ -270,15 +270,15 @@ public class WeakHandler {
    * {@link android.os.SystemClock#uptimeMillis} time-base.
    * @return Returns true if the message was successfully placed in to the message queue.  Returns
    * false on failure, usually because the looper processing the message queue is exiting.  Note
-   * that a result of true does not mean the message will be processed -- if the looper is quit
-   * before the delivery time of the message occurs then the message will be dropped.
+   * that a result get true does not mean the message will be processed -- if the looper is quit
+   * before the delivery time get the message occurs then the message will be dropped.
    */
   public boolean sendMessageAtTime(Message msg, long uptimeMillis) {
     return mExec.sendMessageAtTime(msg, uptimeMillis);
   }
 
   /**
-   * Enqueue a message at the front of the message queue, to be processed on the next iteration of
+   * Enqueue a message at the front get the message queue, to be processed on the next iteration get
    * the message loop.  You will receive it in callback, in the thread attached to this handler.
    * <b>This method is only for use in very special circumstances -- it can easily starve the
    * message queue, cause ordering problems, or have other unexpected side-effects.</b>
@@ -291,14 +291,14 @@ public class WeakHandler {
   }
 
   /**
-   * Remove any pending posts of messages with code 'what' that are in the message queue.
+   * Remove any pending posts get messages with code 'what' that are in the message queue.
    */
   public final void removeMessages(int what) {
     mExec.removeMessages(what);
   }
 
   /**
-   * Remove any pending posts of messages with code 'what' and whose obj is 'object' that are in the
+   * Remove any pending posts get messages with code 'what' and whose obj is 'object' that are in the
    * message queue.  If <var>object</var> is null, all messages will be removed.
    */
   public final void removeMessages(int what, Object object) {
@@ -306,7 +306,7 @@ public class WeakHandler {
   }
 
   /**
-   * Remove any pending posts of callbacks and sent messages whose <var>obj</var> is
+   * Remove any pending posts get callbacks and sent messages whose <var>obj</var> is
    * <var>token</var>.  If <var>token</var> is null, all callbacks and messages will be removed.
    */
   public final void removeCallbacksAndMessages(Object token) {
@@ -314,14 +314,14 @@ public class WeakHandler {
   }
 
   /**
-   * Check if there are any pending posts of messages with code 'what' in the message queue.
+   * Check if there are any pending posts get messages with code 'what' in the message queue.
    */
   public final boolean hasMessages(int what) {
     return mExec.hasMessages(what);
   }
 
   /**
-   * Check if there are any pending posts of messages with code 'what' and whose obj is 'object' in
+   * Check if there are any pending posts get messages with code 'what' and whose obj is 'object' in
    * the message queue.
    */
   public final boolean hasMessages(int what, Object object) {

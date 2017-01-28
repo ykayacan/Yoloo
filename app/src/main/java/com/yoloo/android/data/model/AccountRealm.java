@@ -21,6 +21,7 @@ public class AccountRealm extends RealmObject {
   private String provider;
   private String locale;
   private String gender;
+  private boolean following;
 
   private RealmList<CategoryRealm> categories;
 
@@ -31,6 +32,7 @@ public class AccountRealm extends RealmObject {
   private int level;
   private int points;
   private int bounties;
+  private int achievements;
 
   @Index
   private boolean recent;
@@ -139,6 +141,15 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
+  public boolean isFollowing() {
+    return following;
+  }
+
+  public AccountRealm setFollowing(boolean following) {
+    this.following = following;
+    return this;
+  }
+
   public RealmList<CategoryRealm> getCategories() {
     return categories;
   }
@@ -202,6 +213,15 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
+  public int getAchievements() {
+    return achievements;
+  }
+
+  public AccountRealm setAchievements(int achievements) {
+    this.achievements = achievements;
+    return this;
+  }
+
   public boolean isPendingChanges() {
     return pendingChanges;
   }
@@ -240,5 +260,32 @@ public class AccountRealm extends RealmObject {
   public AccountRealm decreaseBounties(int bounties) {
     this.bounties -= bounties;
     return this;
+  }
+
+  @Override public String toString() {
+    return "AccountRealm{" +
+        "id='" + id + '\'' +
+        ", me=" + me +
+        ", username='" + username + '\'' +
+        ", realname='" + realname + '\'' +
+        ", email='" + email + '\'' +
+        ", avatarUrl='" + avatarUrl + '\'' +
+        ", provider='" + provider + '\'' +
+        ", locale='" + locale + '\'' +
+        ", gender='" + gender + '\'' +
+        ", following=" + following +
+        ", categories=" + categories +
+        ", followings=" + followings +
+        ", followers=" + followers +
+        ", questions=" + questions +
+        ", level=" + level +
+        ", points=" + points +
+        ", bounties=" + bounties +
+        ", achievements=" + achievements +
+        ", recent=" + recent +
+        ", pendingChanges=" + pendingChanges +
+        ", categoryIds='" + categoryIds + '\'' +
+        ", password='" + password + '\'' +
+        '}';
   }
 }

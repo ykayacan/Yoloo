@@ -9,7 +9,7 @@ import com.yoloo.backend.gamification.GamificationService;
 import com.yoloo.backend.media.MediaService;
 import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.tag.TagShardService;
-import com.yoloo.backend.topic.TopicShardService;
+import com.yoloo.backend.topic.CategoryShardService;
 import com.yoloo.backend.util.ControllerFactory;
 import lombok.NoArgsConstructor;
 
@@ -27,7 +27,7 @@ public class QuestionControllerFactory implements ControllerFactory<QuestionCont
         CommentService.create(commentShardService),
         commentShardService,
         TagShardService.create(),
-        TopicShardService.create(),
+        CategoryShardService.create(),
         AccountService.create(),
         AccountShardService.create(),
         GamificationService.create(),

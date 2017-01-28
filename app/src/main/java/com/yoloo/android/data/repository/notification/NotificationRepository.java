@@ -35,13 +35,13 @@ public class NotificationRepository {
   public Observable<FcmRealm> registerFcmToken(FcmRealm fcm) {
     Preconditions.checkNotNull(fcm, "Fcm token can not be null.");
 
-    return remoteDataStore.registerFcmToken(fcm)
-        .subscribeOn(Schedulers.io());
+    return remoteDataStore.registerFcmToken(fcm).subscribeOn(Schedulers.io());
   }
 
   public Completable unregisterFcmToken(FcmRealm fcm) {
-    return remoteDataStore.unregisterFcmToken(fcm)
-        .subscribeOn(Schedulers.io());
+    Preconditions.checkNotNull(fcm, "Fcm token can not be null.");
+    
+    return remoteDataStore.unregisterFcmToken(fcm).subscribeOn(Schedulers.io());
   }
 
   public Observable<Response<List<NotificationRealm>>> list(String cursor, String eTag, int limit) {

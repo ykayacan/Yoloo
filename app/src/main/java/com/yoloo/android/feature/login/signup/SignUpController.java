@@ -35,23 +35,15 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
   private static final String KEY_CATEGORY_IDS = "CATEGORY_IDS";
 
   @BindView(R.id.et_login_fullname) EditText etFullName;
-
   @BindView(R.id.et_login_email) EditText etEmail;
-
   @BindView(R.id.et_login_password) EditText etPassword;
 
   @BindString(R.string.label_loading) String loadingString;
-
   @BindString(R.string.error_field_required) String errorFieldRequiredString;
-
   @BindString(R.string.error_invalid_email) String errorInvalidEmail;
-
   @BindString(R.string.error_invalid_password) String errorInvalidPassword;
-
   @BindString(R.string.error_email_already_taken) String errorEmailAlreadyTakenString;
-
   @BindString(R.string.error_server_down) String errorServerDownString;
-
   @BindString(R.string.error_already_registered) String errorAlreadyRegisteredString;
 
   private ArrayList<String> categoryIds;
@@ -132,7 +124,7 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
       // form field with an error.
       focusView.requestFocus();
     } else {
-      KeyboardUtil.hideKeyboard(getActivity(), etPassword);
+      KeyboardUtil.hideKeyboard(etPassword);
 
       String locale = LocaleUtil.getCurrentLocale(getActivity()).getDisplayCountry();
 

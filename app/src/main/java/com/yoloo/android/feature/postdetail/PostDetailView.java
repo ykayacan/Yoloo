@@ -15,6 +15,8 @@ interface PostDetailView extends MvpDataView<Response<List<CommentRealm>>> {
 
   void onAcceptedCommentLoaded(CommentRealm comment);
 
+  void onAccountLoaded(AccountRealm account);
+
   void onPostUpdated(PostRealm post);
 
   void onMentionSuggestionsLoaded(List<AccountRealm> suggestions);

@@ -23,7 +23,6 @@ import com.yoloo.backend.shard.ShardUtil;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagController;
 import com.yoloo.backend.tag.TagControllerFactory;
-import com.yoloo.backend.tag.TagGroup;
 import com.yoloo.backend.topic.Topic;
 import com.yoloo.backend.topic.TopicController;
 import com.yoloo.backend.topic.TopicControllerFactory;
@@ -83,7 +82,7 @@ public class BookmarkControllerTest extends TestBase {
       e.printStackTrace();
     }
 
-    TagGroup passport = tagController.addGroup("passport", user);
+    Tag passport = tagController.addGroup("passport", user);
 
     Tag visa = tagController.addTag("visa", "en", passport.getWebsafeId(), user);
 

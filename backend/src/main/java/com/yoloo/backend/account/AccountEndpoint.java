@@ -19,6 +19,7 @@ import com.yoloo.backend.gamification.GamificationService;
 import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.validator.Validator;
 import com.yoloo.backend.validator.rule.common.AuthValidator;
+import com.yoloo.backend.validator.rule.common.BadRequestValidator;
 import com.yoloo.backend.validator.rule.common.IdValidationRule;
 import com.yoloo.backend.validator.rule.common.NotFoundRule;
 import java.util.logging.Logger;
@@ -159,14 +160,17 @@ public class AccountEndpoint {
       name = "accounts.list",
       path = "accounts",
       httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Account> list(@Nullable @Named("cursor") String cursor,
-      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
+  public CollectionResponse<Account> search(@Named("q") String query,
+      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit,
+      User user) throws ServiceException {
 
     Validator.builder()
         .addRule(new AuthValidator(user))
+        .addRule(new BadRequestValidator(query))
         .validate();
 
-    return null;
+    return getAccountController().searchAccounts(query, Optional.fromNullable(cursor),
+        Optional.fromNullable(limit), user);
   }
 
   /**

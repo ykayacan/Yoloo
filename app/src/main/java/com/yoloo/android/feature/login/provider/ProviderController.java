@@ -50,25 +50,24 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
       (view, value, index) -> view.setVisibility(value ? View.VISIBLE : View.GONE);
 
   @BindView(R.id.view_login_topics) TagView tagView;
-
   @BindViews({
       R.id.btn_facebook_sign_in, R.id.btn_google_sign_in, R.id.tv_login_or, R.id.btn_login_sign_up
   }) View[] views;
 
   @BindString(R.string.error_auth_failed) String errorAuthFailedString;
-
   @BindString(R.string.error_google_play_services) String errorGooglePlayServicesString;
-
   @BindString(R.string.error_server_down) String errorServerDownString;
-
   @BindString(R.string.error_already_registered) String errorAlreadyRegisteredString;
-
   @BindString(R.string.label_loading) String loadingString;
 
   private ProgressDialog progressDialog;
 
   private IdpProvider googleProvider;
   private IdpProvider facebookProvider;
+
+  public ProviderController() {
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
+  }
 
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
@@ -103,9 +102,12 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
   }
 
   @NonNull @Override public ProviderPresenter createPresenter() {
-    return new ProviderPresenter(UserRepository.getInstance(UserRemoteDataStore.getInstance(),
-        UserDiskDataStore.getInstance()),
-        CategoryRepository.getInstance(CategoryRemoteDataStore.getInstance(),
+    return new ProviderPresenter(
+        UserRepository.getInstance(
+            UserRemoteDataStore.getInstance(),
+            UserDiskDataStore.getInstance()),
+        CategoryRepository.getInstance(
+            CategoryRemoteDataStore.getInstance(),
             CategoryDiskDataStore.getInstance()));
   }
 

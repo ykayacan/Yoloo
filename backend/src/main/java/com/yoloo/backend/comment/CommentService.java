@@ -10,17 +10,15 @@ import com.yoloo.backend.question.Question;
 import com.yoloo.backend.shard.ShardUtil;
 import com.yoloo.backend.vote.Vote;
 import java.util.List;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.joda.time.DateTime;
 
 import static com.yoloo.backend.OfyService.factory;
 import static com.yoloo.backend.OfyService.ofy;
 
-@RequiredArgsConstructor(staticName = "create")
+@AllArgsConstructor(staticName = "create")
 public class CommentService {
 
-  @NonNull
   private CommentShardService shardService;
 
   public CommentModel create(Account account, Key<Question> questionKey, String content) {

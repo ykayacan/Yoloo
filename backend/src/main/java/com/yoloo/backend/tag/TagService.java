@@ -1,9 +1,8 @@
 package com.yoloo.backend.tag;
 
 import com.google.common.base.Optional;
-import com.googlecode.objectify.Key;
+import io.reactivex.Maybe;
 import io.reactivex.Single;
-import java.util.List;
 import lombok.NoArgsConstructor;
 
 import static com.yoloo.backend.OfyService.factory;
@@ -12,39 +11,42 @@ import static com.yoloo.backend.OfyService.factory;
 public class TagService {
 
   public Single<Tag> createTag(String name, String language, String groupIds) {
-    final Key<Tag> key = factory().allocateId(Tag.class);
-
-    List<Key<TagGroup>> groupKeys = TagUtil.extractGroupKeys(groupIds).blockingGet();
-
-    return Single.just(Tag.builder()
-        .id(key.getId())
-        .name(name)
-        .language(language)
-        .groupKeys(groupKeys)
-        .build());
+    return TagUtil.extractGroupKeys(groupIds)
+        .toList()
+        .flatMap(groupKeys -> Single.just(
+            Tag.builder()
+                .id(factory().allocateId(Tag.class).getId())
+                .name(name)
+                .language(language)
+                .type(Tag.Type.NORMAL)
+                .groupKeys(groupKeys)
+                .build()));
   }
 
   public Single<Tag> updateTag(Tag tag, Optional<String> name) {
-    if (name.isPresent()) {
-      tag = tag.withName(name.get());
-    }
-
-    return Single.just(tag);
+    return Single.just(name)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .flatMap(s -> Maybe.just(tag.withName(s)))
+        .toSingle();
   }
 
-  public Single<TagGroup> createGroup(String name) {
-    return Single.just(TagGroup.builder()
-        .name(name)
-        .totalTagCount(0)
-        .totalQuestionCount(0)
-        .build());
+  public Single<Tag> createGroup(String name) {
+    return Single.just(
+        Tag.builder()
+            .id(factory().allocateId(Tag.class).getId())
+            .name(name)
+            .type(Tag.Type.GROUP)
+            .totalTagCount(0)
+            .questions(0)
+            .build());
   }
 
-  public Single<TagGroup> updateGroup(TagGroup group, Optional<String> name) {
-    if (name.isPresent()) {
-      group = group.withName(name.get());
-    }
-
-    return Single.just(group);
+  public Single<Tag> updateGroup(Tag group, Optional<String> name) {
+    return Single.just(name)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .flatMap(s -> Maybe.just(group.withName(s)))
+        .toSingle();
   }
 }

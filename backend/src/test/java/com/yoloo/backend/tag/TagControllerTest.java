@@ -43,10 +43,10 @@ public class TagControllerTest extends TestBase {
   public void testAddGroup() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    TagGroup group = tagController.addGroup("test group", user);
+    Tag group = tagController.addGroup("test group", user);
 
     assertEquals("test group", group.getName());
-    assertEquals(0, group.getTotalQuestionCount());
+    assertEquals(0, group.getQuestions());
     assertEquals(0, group.getTotalTagCount());
   }
 
@@ -54,14 +54,14 @@ public class TagControllerTest extends TestBase {
   public void testUpdateGroup() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    TagGroup original = tagController.addGroup("test group", user);
+    Tag original = tagController.addGroup("test group", user);
 
-    TagGroup updated = tagController
+    Tag updated = tagController
         .updateGroup(original.getWebsafeId(), Optional.of("test group 2"), user);
 
     assertEquals(original.getKey(), updated.getKey());
     assertEquals(original.getTotalTagCount(), updated.getTotalTagCount());
-    assertEquals(original.getTotalQuestionCount(), updated.getTotalQuestionCount());
+    assertEquals(original.getQuestions(), updated.getQuestions());
     assertEquals("test group 2", updated.getName());
   }
 
@@ -69,7 +69,7 @@ public class TagControllerTest extends TestBase {
   public void testDeleteGroup() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    TagGroup original = tagController.addGroup("test group", user);
+    Tag original = tagController.addGroup("test group", user);
 
     ofy().save().entity(original).now();
 
@@ -79,19 +79,19 @@ public class TagControllerTest extends TestBase {
   }
 
   @Test
-  public void testAddHashTag_singleGroup() throws Exception {
+  public void testAddTag_singleGroup() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    TagGroup group = tagController.addGroup("test group", user);
+    Tag group = tagController.addGroup("test group", user);
 
     Tag tag = tagController
-        .addTag("h1", Locale.ENGLISH.getISO3Language(), group.getWebsafeId(), user);
+        .addTag("tag1", Locale.ENGLISH.getISO3Language(), group.getWebsafeId(), user);
 
-    assertEquals("h1", tag.getName());
+    assertEquals("tag1", tag.getName());
     assertEquals(Locale.ENGLISH.getISO3Language(), tag.getLanguage());
     assertEquals(TagCounterShard.SHARD_COUNT, tag.getShards().size());
 
-    List<Key<TagGroup>> keys = new ArrayList<>(1);
+    List<Key<Tag>> keys = new ArrayList<>(1);
     keys.add(group.getKey());
 
     assertEquals(keys, tag.getGroupKeys());
@@ -99,11 +99,11 @@ public class TagControllerTest extends TestBase {
   }
 
   @Test
-  public void testAddHashTag_multipleGroup() throws Exception {
+  public void testAddTag_multipleGroup() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    TagGroup group1 = tagController.addGroup("test group", user);
-    TagGroup group2 = tagController.addGroup("test group 2", user);
+    Tag group1 = tagController.addGroup("test group", user);
+    Tag group2 = tagController.addGroup("test group 2", user);
 
     String groupIds = group1.getWebsafeId() + "," + group2.getWebsafeId();
 
@@ -112,7 +112,7 @@ public class TagControllerTest extends TestBase {
     assertEquals("h1", tag.getName());
     assertEquals(Locale.ENGLISH.getISO3Language(), tag.getLanguage());
 
-    List<Key<TagGroup>> keys = new ArrayList<>(1);
+    List<Key<Tag>> keys = new ArrayList<>(1);
     keys.add(group1.getKey());
     keys.add(group2.getKey());
 
@@ -124,14 +124,14 @@ public class TagControllerTest extends TestBase {
   public void testSuggestTags_suggestByTagSimilarity() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    TagGroup group1 = tagController.addGroup("travel", user);
-    TagGroup group2 = tagController.addGroup("budget", user);
+    Tag group1 = tagController.addGroup("travel", user);
+    Tag group2 = tagController.addGroup("budget", user);
 
     Tag cheap = tagController.addTag("cheap", "en", group2.getWebsafeId(), user);
     Tag lowBudget = tagController.addTag("low budget", "en", group2.getWebsafeId(), user);
 
     CollectionResponse<Tag> response =
-        tagController.list(cheap.getName(), Optional.<Integer>absent(), user);
+        tagController.list(cheap.getName(), Optional.absent(), Optional.<Integer>absent(), user);
 
     assertEquals(1, response.getItems().size());
   }
@@ -140,8 +140,8 @@ public class TagControllerTest extends TestBase {
   public void testSuggestTags_suggestByGroup() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    TagGroup group1 = tagController.addGroup("travel", user);
-    TagGroup group2 = tagController.addGroup("budget", user);
+    Tag group1 = tagController.addGroup("travel", user);
+    Tag group2 = tagController.addGroup("budget", user);
 
     tagController.addTag("female travel", "en", group1.getWebsafeId(), user);
     tagController.addTag("camp", "en", group1.getWebsafeId(), user);
@@ -150,7 +150,7 @@ public class TagControllerTest extends TestBase {
     tagController.addTag("low budget", "en", group2.getWebsafeId(), user);
 
     CollectionResponse<Tag> response =
-        tagController.list(group1.getName(), Optional.<Integer>absent(), user);
+        tagController.list(group1.getName(), Optional.absent(), Optional.<Integer>absent(), user);
 
     assertEquals(2, response.getItems().size());
   }

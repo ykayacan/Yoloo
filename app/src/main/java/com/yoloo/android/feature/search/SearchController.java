@@ -61,7 +61,7 @@ public class SearchController extends BaseController {
     final int itemId = item.getItemId();
     switch (itemId) {
       case android.R.id.home:
-        KeyboardUtil.hideKeyboard(getActivity(), etSearch);
+        KeyboardUtil.hideKeyboard(etSearch);
         getRouter().popCurrentController();
         return true;
       default:
@@ -70,7 +70,7 @@ public class SearchController extends BaseController {
   }
 
   @Override public boolean handleBack() {
-    KeyboardUtil.hideKeyboard(getActivity(), etSearch);
+    KeyboardUtil.hideKeyboard(etSearch);
     return super.handleBack();
   }
 

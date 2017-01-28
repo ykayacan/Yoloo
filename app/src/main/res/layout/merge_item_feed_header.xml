@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  tools:showIn="@layout/item_feed_question_normal">
+
+  <ImageView
+    android:id="@+id/iv_item_feed_user_avatar"
+    android:layout_width="36dp"
+    android:layout_height="36dp"
+    android:layout_marginLeft="16dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginTop="16dp"
+    android:scaleType="centerCrop"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    tools:src="@drawable/login_bg" />
+
+  <TextView
+    android:id="@+id/tv_item_feed_username"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="8dp"
+    android:layout_marginStart="8dp"
+    android:ellipsize="end"
+    android:maxEms="10"
+    android:maxLines="1"
+    android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+    app:layout_constraintBottom_toBottomOf="@+id/iv_item_feed_user_avatar"
+    app:layout_constraintLeft_toRightOf="@+id/iv_item_feed_user_avatar"
+    app:layout_constraintTop_toTopOf="@+id/iv_item_feed_user_avatar"
+    tools:text="username" />
+
+  <com.yoloo.android.feature.ui.widget.zamanview.TimeTextView
+    android:id="@+id/tv_item_feed_time"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+    app:drawableStart="@drawable/ic_point_black_24dp"
+    app:layout_constraintBottom_toBottomOf="@+id/iv_item_feed_user_avatar"
+    app:layout_constraintLeft_toRightOf="@+id/tv_item_feed_username"
+    app:layout_constraintTop_toTopOf="@+id/iv_item_feed_user_avatar"
+    tools:text="1m" />
+
+  <ImageButton
+    android:id="@+id/ib_item_feed_options"
+    style="@style/Widget.AppCompat.ActionButton.Overflow"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:tint="@android:color/secondary_text_dark"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:srcCompat="@drawable/ic_more_vert_black_24dp" />
+</merge>

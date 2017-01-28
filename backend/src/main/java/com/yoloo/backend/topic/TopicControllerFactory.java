@@ -10,7 +10,7 @@ public class TopicControllerFactory implements ControllerFactory<TopicController
   public TopicController create() {
     return TopicController.create(
         TopicService.create(),
-        TopicShardService.create()
+        CategoryShardService.create()
     );
   }
 }

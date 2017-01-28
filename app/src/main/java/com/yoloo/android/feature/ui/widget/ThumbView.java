@@ -1,6 +1,7 @@
 package com.yoloo.android.feature.ui.widget;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.AttributeSet;
 import android.view.View;
@@ -36,6 +37,10 @@ public class ThumbView extends FrameLayout {
 
   public void setThumbPreview(Uri uri) {
     ivThumbPreview.setImageURI(uri);
+  }
+
+  public void setImageDrawable(Drawable drawable) {
+    ivThumbPreview.setImageDrawable(drawable);
   }
 
   public void setListener(OnDismissListener listener) {

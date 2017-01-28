@@ -72,7 +72,7 @@ public class MainCatalogController extends BaseController {
     // add back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
     if (ab != null) {
-      ab.setTitle(R.string.label_main_catalog_title);
+      ab.setTitle(R.string.label_main_catalog_toolbar_title);
       ab.setDisplayHomeAsUpEnabled(true);
       ab.setDisplayShowHomeEnabled(true);
     }
@@ -105,9 +105,9 @@ public class MainCatalogController extends BaseController {
     @Override public CharSequence getPageTitle(int position) {
       switch (position) {
         case 0:
-          return resources.getString(R.string.label_destination);
+          return resources.getString(R.string.label_catalog_tab_destination);
         case 1:
-          return resources.getString(R.string.label_theme);
+          return resources.getString(R.string.label_catalog_tab_theme);
         default:
           return null;
       }

@@ -34,7 +34,7 @@ public abstract class MvpPresenter<V extends MvpView> {
    * @return <code>null</code>, if view is not attached, otherwise the concrete view instance
    */
   @UiThread @Nullable public final V getView() {
-    return Preconditions.checkNotNull(view, "View has been detached!");
+    return Preconditions.checkNotNull(view, "View has been detach!");
   }
 
   /**

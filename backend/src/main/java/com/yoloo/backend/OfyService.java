@@ -18,7 +18,6 @@ import com.yoloo.backend.question.Question;
 import com.yoloo.backend.question.QuestionCounterShard;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagCounterShard;
-import com.yoloo.backend.tag.TagGroup;
 import com.yoloo.backend.topic.Topic;
 import com.yoloo.backend.topic.TopicCounterShard;
 import com.yoloo.backend.vote.Vote;
@@ -41,7 +40,6 @@ public final class OfyService {
 
     factory().register(Tag.class);
     factory().register(TagCounterShard.class);
-    factory().register(TagGroup.class);
 
     factory().register(Topic.class);
     factory().register(TopicCounterShard.class);

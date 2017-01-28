@@ -11,17 +11,15 @@ import com.yoloo.backend.shard.ShardUtil;
 import com.yoloo.backend.util.StringUtil;
 import com.yoloo.backend.vote.Vote;
 import java.util.List;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.joda.time.DateTime;
 
 import static com.yoloo.backend.OfyService.factory;
 import static com.yoloo.backend.OfyService.ofy;
 
-@RequiredArgsConstructor(staticName = "create")
+@AllArgsConstructor(staticName = "create")
 public class QuestionService {
 
-  @NonNull
   private QuestionShardService shardService;
 
   public QuestionModel create(Account account, String content, String tags, String categories,

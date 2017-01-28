@@ -6,7 +6,12 @@
 
   <!-- common colors -->
   <color name="primary_blue">#03A9F4</color>
+  <color name="primary_yellow">#ffc107</color>
   <color name="ripple_light">#99FF5722</color>
+
+  <color name="accepted">#5CB85C</color>
+
+  <color name="profile_card_text">#5C5C5C</color>
 
   <color name="tag_bg_unselected">#FAFAFA</color>
   <color name="tag_bg_selected">@color/primary_blue</color>

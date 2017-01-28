@@ -76,7 +76,6 @@ public class CommentEndpoint {
    *
    * @param questionId the websafe question id
    * @param content the content
-   * @param mentionIds the mention ids
    * @param user the user
    * @return the comment
    * @throws ServiceException the service exception

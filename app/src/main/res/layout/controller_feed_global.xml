@@ -5,7 +5,7 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:background="@color/background_lightish_2"
-  tools:context=".feature.feed.globalfeed.GlobalFeedController">
+  tools:context=".feature.feed.postfeed.PostController">
 
   <android.support.design.widget.AppBarLayout
     android:layout_width="match_parent"

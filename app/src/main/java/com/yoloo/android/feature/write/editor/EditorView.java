@@ -9,7 +9,7 @@ interface EditorView extends MvpView {
 
   void onDraftLoaded(PostRealm draft);
 
-  void onDraftUpdated();
+  void onDraftSaved(int navigation);
 
   void onRecommendedTagsLoaded(List<TagRealm> tags);
 

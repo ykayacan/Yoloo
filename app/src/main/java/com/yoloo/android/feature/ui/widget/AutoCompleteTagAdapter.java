@@ -78,7 +78,7 @@ public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
   @NonNull
   @Override
   public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-    // Get the data item from filtered list.
+    // Get the data item from filtered search.
     final TagRealm item = getItem(position);
 
     TagViewHolder holder;

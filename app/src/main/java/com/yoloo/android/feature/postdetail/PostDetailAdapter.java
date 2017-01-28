@@ -1,11 +1,14 @@
 package com.yoloo.android.feature.postdetail;
 
+import android.support.v7.widget.RecyclerView;
 import com.airbnb.epoxy.EpoxyAdapter;
 import com.airbnb.epoxy.EpoxyModel;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.feature.comment.CommentModel;
 import com.yoloo.android.feature.comment.CommentModel_;
+import com.yoloo.android.feature.comment.OnMarkAsAcceptedClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
@@ -13,11 +16,20 @@ import com.yoloo.android.feature.feed.common.listener.OnOptionsClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
+import com.yoloo.android.feature.feed.common.model.BlogModel;
+import com.yoloo.android.feature.feed.common.model.BlogModel_;
+import com.yoloo.android.feature.feed.common.model.NormalQuestionModel;
 import com.yoloo.android.feature.feed.common.model.NormalQuestionModel_;
+import com.yoloo.android.feature.feed.common.model.RichQuestionModel;
+import com.yoloo.android.feature.feed.common.model.RichQuestionModel_;
 import com.yoloo.android.feature.postdetail.model.CommentCountModel_;
 import java.util.List;
 
 public class PostDetailAdapter extends EpoxyAdapter {
+
+  public static final int TYPE_NORMAL_QUESTION = 0;
+  public static final int TYPE_RICH_QUESTION = 1;
+  public static final int TYPE_BLOG = 2;
 
   private final OnProfileClickListener onProfileClickListener;
   private final OnOptionsClickListener onOptionsClickListener;
@@ -26,14 +38,19 @@ public class PostDetailAdapter extends EpoxyAdapter {
   private final OnContentImageClickListener onContentImageClickListener;
   private final OnVoteClickListener onVoteClickListener;
   private final OnMentionClickListener onMentionClickListener;
+  private final OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener;
 
   private final CommentCountModel_ commentCountModel = new CommentCountModel_();
 
-  private PostDetailAdapter(OnProfileClickListener onProfileClickListener,
-      OnOptionsClickListener onOptionsClickListener, OnShareClickListener onShareClickListener,
+  private PostDetailAdapter(
+      OnProfileClickListener onProfileClickListener,
+      OnOptionsClickListener onOptionsClickListener,
+      OnShareClickListener onShareClickListener,
       OnCommentClickListener onCommentClickListener,
       OnContentImageClickListener onContentImageClickListener,
-      OnVoteClickListener onVoteClickListener, OnMentionClickListener onMentionClickListener) {
+      OnVoteClickListener onVoteClickListener,
+      OnMentionClickListener onMentionClickListener,
+      OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener) {
     this.onProfileClickListener = onProfileClickListener;
     this.onOptionsClickListener = onOptionsClickListener;
     this.onShareClickListener = onShareClickListener;
@@ -41,6 +58,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
     this.onContentImageClickListener = onContentImageClickListener;
     this.onVoteClickListener = onVoteClickListener;
     this.onMentionClickListener = onMentionClickListener;
+    this.onMarkAsAcceptedClickListener = onMarkAsAcceptedClickListener;
 
     enableDiffing();
   }
@@ -49,44 +67,43 @@ public class PostDetailAdapter extends EpoxyAdapter {
     return new PostDetailAdapterBuilder();
   }
 
-  public void addQuestion(PostRealm post) {
-    NormalQuestionModel_ normalQuestionModel_ =
-        new NormalQuestionModel_().onProfileClickListener(onProfileClickListener)
-            .onOptionsClickListener(onOptionsClickListener)
-            .onShareClickListener(onShareClickListener)
-            .onCommentClickListener(onCommentClickListener)
-            .onVoteClickListener(onVoteClickListener)
-            .layout(R.layout.item_question_normal_detail)
-            .post(post);
+  public void addPost(PostRealm post) {
+    final int postType = post.getType();
 
-    addModel(normalQuestionModel_);
+    EpoxyModel<?> model = null;
+    if (postType == TYPE_NORMAL_QUESTION) {
+      model = createNormalQuestionDetail(post);
+    } else if (postType == TYPE_RICH_QUESTION) {
+      model = createRichQuestionDetail(post);
+    } else if (postType == TYPE_BLOG) {
+      model = createBlog(post);
+    }
+
+    addModel(model);
 
     commentCountModel.counts(post.getComments());
-    insertModelAfter(commentCountModel, normalQuestionModel_);
+    insertModelAfter(commentCountModel, model);
   }
 
-  public void addComments(List<CommentRealm> comments) {
+  public void addAcceptedComment(CommentRealm comment) {
+    insertModelAfter(createCommentModel(comment, false), commentCountModel);
+  }
+
+  public void addComment(CommentRealm comment) {
+    addModel(createCommentModel(comment, true));
+  }
+
+  public void addComments(List<CommentRealm> comments, boolean self) {
     for (CommentRealm comment : comments) {
-      models.add(new CommentModel_().comment(comment)
-          .onProfileClickListener(onProfileClickListener)
-          .onMentionClickListener(onMentionClickListener)
-          .onVoteClickListener(onVoteClickListener));
+      // Don't add accepted comment twice.
+      if (comment.isAccepted()) {
+        continue;
+      }
+
+      models.add(createCommentModel(comment, self));
     }
 
     notifyModelsChanged();
-  }
-
-  public void addComment(CommentRealm comment, boolean accepted) {
-    CommentModel_ model_ = new CommentModel_().comment(comment)
-        .onProfileClickListener(onProfileClickListener)
-        .onMentionClickListener(onMentionClickListener)
-        .onVoteClickListener(onVoteClickListener);
-
-    if (accepted) {
-      insertModelAfter(model_, commentCountModel);
-    } else {
-      addModel(model_);
-    }
   }
 
   public void clear() {
@@ -97,6 +114,52 @@ public class PostDetailAdapter extends EpoxyAdapter {
     removeModel(model);
   }
 
+  public void scrollToEnd(RecyclerView recyclerView) {
+    recyclerView.smoothScrollToPosition(getItemCount() - 1);
+  }
+
+  private CommentModel createCommentModel(CommentRealm comment, boolean self) {
+    return new CommentModel_().comment(comment)
+        .onProfileClickListener(onProfileClickListener)
+        .onMentionClickListener(onMentionClickListener)
+        .onMarkAsAcceptedClickListener(onMarkAsAcceptedClickListener)
+        .onVoteClickListener(onVoteClickListener);
+  }
+
+  private RichQuestionModel createRichQuestionDetail(PostRealm post) {
+    return new RichQuestionModel_()
+        .onProfileClickListener(onProfileClickListener)
+        .onOptionsClickListener(onOptionsClickListener)
+        .onShareClickListener(onShareClickListener)
+        .onCommentClickListener(onCommentClickListener)
+        .onVoteClickListener(onVoteClickListener)
+        .onContentImageClickListener(onContentImageClickListener)
+        .layout(R.layout.item_feed_question_rich_detail)
+        .post(post);
+  }
+
+  private NormalQuestionModel createNormalQuestionDetail(PostRealm post) {
+    return new NormalQuestionModel_()
+        .onProfileClickListener(onProfileClickListener)
+        .onOptionsClickListener(onOptionsClickListener)
+        .onShareClickListener(onShareClickListener)
+        .onCommentClickListener(onCommentClickListener)
+        .onVoteClickListener(onVoteClickListener)
+        .layout(R.layout.item_feed_question_normal_detail)
+        .post(post);
+  }
+
+  private BlogModel createBlog(PostRealm post) {
+    return new BlogModel_()
+        .onProfileClickListener(onProfileClickListener)
+        .onOptionsClickListener(onOptionsClickListener)
+        .onShareClickListener(onShareClickListener)
+        .onCommentClickListener(onCommentClickListener)
+        .onVoteClickListener(onVoteClickListener)
+        .layout(R.layout.item_feed_blog)
+        .post(post);
+  }
+
   public static class PostDetailAdapterBuilder {
     private OnProfileClickListener onProfileClickListener;
     private OnOptionsClickListener onOptionsClickListener;
@@ -105,6 +168,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
     private OnVoteClickListener onVoteClickListener;
     private OnContentImageClickListener onContentImageClickListener;
     private OnMentionClickListener onMentionClickListener;
+    private OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener;
 
     PostDetailAdapterBuilder() {
     }
@@ -151,10 +215,16 @@ public class PostDetailAdapter extends EpoxyAdapter {
       return this;
     }
 
+    public PostDetailAdapter.PostDetailAdapterBuilder onMarkAsAcceptedListener(
+        OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener) {
+      this.onMarkAsAcceptedClickListener = onMarkAsAcceptedClickListener;
+      return this;
+    }
+
     public PostDetailAdapter build() {
       return new PostDetailAdapter(onProfileClickListener, onOptionsClickListener,
           onShareClickListener, onCommentClickListener, onContentImageClickListener,
-          onVoteClickListener, onMentionClickListener);
+          onVoteClickListener, onMentionClickListener, onMarkAsAcceptedClickListener);
     }
   }
 }

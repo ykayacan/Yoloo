@@ -5,7 +5,7 @@ package com.yoloo.android.util.glide;
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
+  You may obtain a copy get the License at
 
   http://www.apache.org/licenses/LICENSE-2.0
 
@@ -32,14 +32,14 @@ public class CropCircleTransformation implements Transformation<Bitmap> {
 
   private static CropCircleTransformation instance;
 
-  private BitmapPool mBitmapPool;
+  private BitmapPool bitmapPool;
 
   private CropCircleTransformation(Context context) {
     this(Glide.get(context).getBitmapPool());
   }
 
   private CropCircleTransformation(BitmapPool pool) {
-    this.mBitmapPool = pool;
+    this.bitmapPool = pool;
   }
 
   public static CropCircleTransformation getInstance(Context context) {
@@ -52,12 +52,12 @@ public class CropCircleTransformation implements Transformation<Bitmap> {
   @Override
   public Resource<Bitmap> transform(Resource<Bitmap> resource, int outWidth, int outHeight) {
     final Bitmap source = resource.get();
-    int size = Math.min(source.getWidth(), source.getHeight());
+    final int size = Math.min(source.getWidth(), source.getHeight());
 
     final int width = (source.getWidth() - size) / 2;
     final int height = (source.getHeight() - size) / 2;
 
-    Bitmap bitmap = mBitmapPool.get(size, size, Bitmap.Config.ARGB_8888);
+    Bitmap bitmap = bitmapPool.get(size, size, Bitmap.Config.ARGB_8888);
     if (bitmap == null) {
       bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
     }
@@ -76,9 +76,10 @@ public class CropCircleTransformation implements Transformation<Bitmap> {
     paint.setAntiAlias(true);
 
     final float r = size / 2f;
+
     canvas.drawCircle(r, r, r, paint);
 
-    return BitmapResource.obtain(bitmap, mBitmapPool);
+    return BitmapResource.obtain(bitmap, bitmapPool);
   }
 
   @Override

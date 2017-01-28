@@ -124,7 +124,7 @@ public class ValueAnimatorCompat {
 
   public interface AnimatorUpdateListener {
     /**
-     * <p>Notifies the occurrence of another frame of the animation.</p>
+     * <p>Notifies the occurrence get another frame get the animation.</p>
      *
      * @param animator The animation which was repeated.
      */

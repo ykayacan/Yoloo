@@ -16,15 +16,16 @@ import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.NotificationRealm;
+import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.feature.ui.widget.linkabletextview.LinkableTextView;
-import com.yoloo.android.feature.ui.widget.zamanview.ZamanManager;
+import com.yoloo.android.feature.ui.widget.zamanview.TimeManager;
 import com.yoloo.android.util.glide.CropCircleTransformation;
-import timber.log.Timber;
 
 public class NotificationModel extends EpoxyModelWithHolder<NotificationModel.NotificationHolder> {
 
   @EpoxyAttribute NotificationRealm notification;
+  @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
 
   @Override protected NotificationHolder createNewHolder() {
     return new NotificationHolder();
@@ -47,7 +48,8 @@ public class NotificationModel extends EpoxyModelWithHolder<NotificationModel.No
 
     final Resources res = context.getResources();
 
-    final String time = ZamanManager.getInstance(notification.getCreated().getTime()).getTime();
+    final String time =
+        TimeManager.getInstance(notification.getCreated().getTime() / 1000).getTime();
 
     String text = getActionString(res);
     holder.tvContent.setText(Html.fromHtml(text
@@ -84,29 +86,24 @@ public class NotificationModel extends EpoxyModelWithHolder<NotificationModel.No
   }
 
   private void setupClickListeners(NotificationHolder holder) {
-    holder.ivUserAvatar.setOnClickListener(v -> {
-    });
+    holder.ivUserAvatar.setOnClickListener(
+        v -> onProfileClickListener.onProfileClick(v, notification.getSenderId()));
 
     holder.tvContent.setOnLinkClickListener((type, value) -> {
       if (type == LinkableTextView.Link.MENTION) {
-        Timber.d("TRUE: %s", value);
+        onProfileClickListener.onProfileClick(null, notification.getSenderId());
       }
     });
 
-    holder.ibFollow.setOnClickListener(v -> {
-      Snackbar.make(v, "User followed.", Snackbar.LENGTH_SHORT).show();
-    });
+    holder.ibFollow.setOnClickListener(
+        v -> Snackbar.make(v, "User followed.", Snackbar.LENGTH_SHORT).show());
   }
 
   static class NotificationHolder extends BaseEpoxyHolder {
     @BindView(R.id.layout_notification) ViewGroup viewGroup;
-
     @BindView(R.id.iv_not_item_avatar) ImageView ivUserAvatar;
-
     @BindView(R.id.tv_not_item_content) LinkableTextView tvContent;
-
     @BindView(R.id.ib_not_follow) ImageButton ibFollow;
-
     @BindView(R.id.iv_not_photo) ImageView ivPhoto;
   }
 }

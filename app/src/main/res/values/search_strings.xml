@@ -6,4 +6,5 @@
   <string name="label_search_users">People</string>
 
   <string name="label_search_post_count">%1$d public posts</string>
+  <string name="label_search_followed">%1$s followed.</string>
 </resources>

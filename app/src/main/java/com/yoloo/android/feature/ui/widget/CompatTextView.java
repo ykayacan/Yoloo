@@ -28,6 +28,7 @@ public class CompatTextView extends AppCompatTextView {
 
   private void init(Context context, AttributeSet attrs) {
     if (attrs != null) {
+
       TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CompatTextView);
 
       // Obtain DrawableManager used to pull Drawables safely, and check if we're in RTL

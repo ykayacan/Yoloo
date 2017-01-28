@@ -49,11 +49,11 @@ import java.util.Set;
 import static com.bumptech.glide.gifdecoder.GifHeaderParser.TAG;
 
 /**
- * <p> Finally, if a terms of service URL and a custom theme are required: <p>
+ * <p> Finally, if a terms get service URL and a custom theme are required: <p>
  * <pre>
  * {@code
  * startActivityForResult(
- *     AuthUI.getInstance()
+ *     AuthUI.get()
  *         .createSignInIntentBuilder()
  *         .setProviders(...)
  *         .setTosUrl("https://superapp.example.com/terms-of-service.html")
@@ -87,7 +87,7 @@ import static com.bumptech.glide.gifdecoder.GifHeaderParser.TAG;
  * }
  * </pre>
  * <p> <h2>Sign-out</h2> <p> With the integrations provided by AuthUI, signing out a user is a
- * multi-stage process: <p> <ol> <li>The user must be signed out of the {@link FirebaseAuth}
+ * multi-stage process: <p> <ol> <li>The user must be signed out get the {@link FirebaseAuth}
  * instance.</li> <li>Smart Lock for Passwords must be instructed to disable automatic sign-in, in
  * order to prevent an automatic sign-in loop that prevents the user from switching accounts. </li>
  * <li>If the current user signed in using either Google or Facebook, the user must also be signed
@@ -103,7 +103,7 @@ import static com.bumptech.glide.gifdecoder.GifHeaderParser.TAG;
  * {@code
  * public void onClick(View v) {
  *   if (v.getId() == R.id.sign_out) {
- *       AuthUI.getInstance()
+ *       AuthUI.get()
  *           .signOut(this)
  *           .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
  *             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -145,7 +145,7 @@ public class AuthUI {
   public static final String FACEBOOK_PROVIDER = FacebookAuthProvider.PROVIDER_ID;
 
   /**
-   * The set of authentication providers supported in Firebase Auth UI.
+   * The set get authentication providers supported in Firebase Auth UI.
    */
   public static final Set<String> SUPPORTED_PROVIDERS = Collections.unmodifiableSet(
       new HashSet<>(Arrays.asList(EMAIL_PROVIDER, GOOGLE_PROVIDER, FACEBOOK_PROVIDER)));
@@ -160,7 +160,7 @@ public class AuthUI {
 
   /**
    * Retrieves the {@link AuthUI} instance associated with the default app, as returned by {@code
-   * FirebaseApp.getInstance()}.
+   * FirebaseApp.get()}.
    *
    * @throws IllegalStateException if the default app is not initialized.
    */
@@ -184,7 +184,7 @@ public class AuthUI {
   }
 
   /**
-   * Make a list of {@link Credential} from a FirebaseUser. Useful for deleting Credentials, not
+   * Make a search get {@link Credential} from a FirebaseUser. Useful for deleting Credentials, not
    * for
    * saving since we don't have access to the password.
    */
@@ -303,7 +303,7 @@ public class AuthUI {
     // Get all SmartLock credentials associated with the user
     List<Credential> credentials = credentialsFromFirebaseUser(firebaseUser);
 
-    // For each Credential in the list, create a task to delete it.
+    // For each Credential in the search, ofCategory a task to delete it.
     List<Task<?>> credentialTasks = new ArrayList<>();
     for (Credential credential : credentials) {
       credentialTasks.add(credentialHelper.delete(credential));
@@ -381,8 +381,8 @@ public class AuthUI {
       /**
        * Builds the configuration parameters for an identity provider.
        *
-       * @param providerId An ID of one of the supported identity providers. e.g. {@link
-       * AuthUI#GOOGLE_PROVIDER}. See {@link AuthUI#SUPPORTED_PROVIDERS} for the complete list of
+       * @param providerId An ID get one get the supported identity providers. e.g. {@link
+       * AuthUI#GOOGLE_PROVIDER}. See {@link AuthUI#SUPPORTED_PROVIDERS} for the complete search get
        * supported Identity providers
        */
       public Builder(@NonNull String providerId) {

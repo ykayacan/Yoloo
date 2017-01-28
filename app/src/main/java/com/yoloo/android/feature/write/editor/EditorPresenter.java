@@ -13,6 +13,10 @@ import java.util.List;
 
 public class EditorPresenter extends MvpPresenter<EditorView> {
 
+  public static final int NAV_BACK = -1;
+  public static final int NAV_BOUNTY = 1;
+  public static final int NAV_POST = 2;
+
   private final TagRepository tagRepository;
   private final PostRepository postRepository;
 
@@ -23,7 +27,15 @@ public class EditorPresenter extends MvpPresenter<EditorView> {
 
   @Override public void onAttachView(EditorView view) {
     super.onAttachView(view);
-    addOrGetDraft();
+    loadDraft();
+  }
+
+  public void loadDraft() {
+    Disposable d = postRepository.getDraft()
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(draft -> getView().onDraftLoaded(draft));
+
+    getDisposable().add(d);
   }
 
   public void loadRecommendedTags() {
@@ -88,18 +100,10 @@ public class EditorPresenter extends MvpPresenter<EditorView> {
     getDisposable().add(d);
   }
 
-  public void addOrGetDraft() {
-    Disposable d = postRepository.addOrGetDraft()
+  public void updateDraft(PostRealm draft, int navigation) {
+    Disposable d = postRepository.addDraft(draft)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(draft -> getView().onDraftLoaded(draft));
-
-    getDisposable().add(d);
-  }
-
-  public void updateDraft(PostRealm draft) {
-    Disposable d = postRepository.updateDraft(draft)
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(() -> getView().onDraftUpdated());
+        .subscribe(() -> getView().onDraftSaved(navigation));
 
     getDisposable().add(d);
   }

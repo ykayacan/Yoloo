@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@color/background_lightish_2">
+
+  <android.support.design.widget.AppBarLayout
+    android:id="@+id/appbar_profile"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/transparent"
+    android:theme="@style/Yoloo.AppBarOverlay"
+    app:elevation="0dp">
+
+    <android.support.constraint.ConstraintLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:paddingBottom="8dp"
+      app:layout_scrollFlags="scroll">
+
+      <ImageView
+        android:id="@+id/iv_profile_bg"
+        android:layout_width="0dp"
+        android:layout_height="192dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/toolbar_profile"
+        app:srcCompat="@drawable/profile_bg_1x" />
+
+      <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar_profile"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:popupTheme="@style/Yoloo.PopupOverlay">
+
+        <TextView
+          android:id="@+id/tv_profile_title"
+          android:layout_width="128dp"
+          android:layout_height="wrap_content"
+          android:ellipsize="end"
+          android:gravity="start"
+          android:maxLines="1"
+          android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+      </android.support.v7.widget.Toolbar>
+
+      <include layout="@layout/merge_profile_header" />
+
+      <include layout="@layout/merge_profile_body" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <android.support.design.widget.TabLayout
+      android:id="@+id/tablayout_profile"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      app:tabBackground="@android:color/white"
+      app:tabGravity="fill"
+      app:tabSelectedTextColor="@color/accent"
+      app:tabTextColor="@color/profile_card_text" />
+
+  </android.support.design.widget.AppBarLayout>
+
+  <android.support.v4.view.ViewPager
+    android:id="@+id/viewpager_profile"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+</android.support.design.widget.CoordinatorLayout>

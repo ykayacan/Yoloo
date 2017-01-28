@@ -15,6 +15,7 @@ import com.yoloo.backend.validator.rule.common.AuthValidator;
 import com.yoloo.backend.validator.rule.common.ForbiddenValidator;
 import com.yoloo.backend.validator.rule.common.IdValidationRule;
 import com.yoloo.backend.validator.rule.common.NotFoundRule;
+import java.util.List;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.inject.Named;
@@ -120,6 +121,7 @@ public class TagEndpoint {
    * List all {@code Tag} entities.
    *
    * @param name the name
+   * @param cursor the cursor
    * @param limit the maximum number of entries to return
    * @param user the user
    * @return a response that encapsulates the result list and the next page token/cursor
@@ -130,26 +132,35 @@ public class TagEndpoint {
       path = "tags",
       httpMethod = ApiMethod.HttpMethod.GET)
   public CollectionResponse<Tag> list(@Named("name") String name,
-      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
+      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
+      throws ServiceException {
 
     Validator.builder()
         .addRule(new AuthValidator(user))
         .validate();
 
-    return tagController.list(name, Optional.fromNullable(limit), user);
+    return tagController.list(name, Optional.fromNullable(cursor), Optional.fromNullable(limit),
+        user);
   }
 
+  /**
+   * Recommended list.
+   *
+   * @param user the user
+   * @return the list
+   * @throws ServiceException the service exception
+   */
   @ApiMethod(
       name = "tags.recommended",
       path = "tags/recommended",
       httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Tag> recommended(User user) throws ServiceException {
+  public List<Tag> recommended(User user) throws ServiceException {
 
     Validator.builder()
         .addRule(new AuthValidator(user))
         .validate();
 
-    return tagController.recommeded(user);
+    return tagController.recommendedTags(user);
   }
 
   /**
@@ -164,7 +175,7 @@ public class TagEndpoint {
       name = "tagGroups.add",
       path = "tagGroups",
       httpMethod = ApiMethod.HttpMethod.POST)
-  public TagGroup addGroup(@Named("name") String name, User user) throws ServiceException {
+  public Tag addGroup(@Named("name") String name, User user) throws ServiceException {
 
     Validator.builder()
         .addRule(new AuthValidator(user))
@@ -186,8 +197,8 @@ public class TagEndpoint {
       name = "tagGroups.update",
       path = "tagGroups/{groupId}",
       httpMethod = ApiMethod.HttpMethod.PUT)
-  public TagGroup updateGroup(@Named("groupId") String groupId,
-      @Nullable @Named("name") String name, User user) throws ServiceException {
+  public Tag updateGroup(@Named("groupId") String groupId, @Nullable @Named("name") String name,
+      User user) throws ServiceException {
 
     Validator.builder()
         .addRule(new AuthValidator(user))

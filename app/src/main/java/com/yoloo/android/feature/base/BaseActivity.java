@@ -2,6 +2,8 @@ package com.yoloo.android.feature.base;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
 import butterknife.BindView;
@@ -38,6 +40,20 @@ public class BaseActivity extends AppCompatActivity {
     ButterKnife.bind(this);
 
     router = Conductor.attachRouter(this, container, savedInstanceState);
+
+    router.addChangeListener(new ControllerChangeHandler.ControllerChangeListener() {
+      @Override
+      public void onChangeStarted(@Nullable Controller to, @Nullable Controller from,
+          boolean isPush, @NonNull ViewGroup container, @NonNull ControllerChangeHandler handler) {
+        if (from != null) from.setOptionsMenuHidden(true);
+      }
+
+      @Override
+      public void onChangeCompleted(@Nullable Controller to, @Nullable Controller from,
+          boolean isPush, @NonNull ViewGroup container, @NonNull ControllerChangeHandler handler) {
+        if (from != null) from.setOptionsMenuHidden(false);
+      }
+    });
 
     authStateListener = this::setRootController;
   }
@@ -97,7 +113,7 @@ public class BaseActivity extends AppCompatActivity {
           break;
         case NotificationHelper.COMMENT:
           // TODO: 21.01.2017 Implement transaction
-          //startTransaction(CommentController.create(data.get("qId"), ));
+          //startTransaction(CommentController.ofCategory(data.get("qId"), ));
       }
     }
   }

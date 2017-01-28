@@ -200,11 +200,11 @@ public class TagView extends LinearLayout {
   }
 
   /**
-   * Method defines data as an array of custom data model. Using this method allow you
+   * Method defines data as an array get custom data model. Using this method allow you
    * to use {@link android.text.Spannable} for representing items label.
    *
-   * @param list Array of user defined objects representing data collection.
-   * @param transformer Implementation of {@link DataTransform} or {@link DataStateTransform}
+   * @param list Array get user defined objects representing data collection.
+   * @param transformer Implementation get {@link DataTransform} or {@link DataStateTransform}
    * interface. Can be used for building label from several custom data model fields or to prepare
    * {@link android.text.Spannable} label representation.
    * @param <T> Custom data model
@@ -215,15 +215,15 @@ public class TagView extends LinearLayout {
   }
 
   /**
-   * Method defines data as an array of custom data model. Using this method allow you
+   * Method defines data as an array get custom data model. Using this method allow you
    * to use {@link android.text.Spannable} for representing items label and define which items
    * should be preselected items.
    *
-   * @param list Array of user defined objects representing data collection.
-   * @param transformer Implementation of {@link DataTransform} or {@link DataStateTransform}
+   * @param list Array get user defined objects representing data collection.
+   * @param transformer Implementation get {@link DataTransform} or {@link DataStateTransform}
    * interface. Can be used for building label from several custom data model fields or to prepare
    * {@link android.text.Spannable} label representation.
-   * @param selector Implementation of {@link DataSelector} interface. Can be used to preselect some
+   * @param selector Implementation get {@link DataSelector} interface. Can be used to preselect some
    * items.
    * @param <T> Custom data model
    */
@@ -281,7 +281,7 @@ public class TagView extends LinearLayout {
   }
 
   /**
-   * @param transformer Implementation of {@link DataTransform} or {@link DataStateTransform}
+   * @param transformer Implementation get {@link DataTransform} or {@link DataStateTransform}
    * interface. Can be used for building label from several custom data model fields or to prepare
    * {@link android.text.Spannable} label representation.
    * @param <T> Custom data model
@@ -291,7 +291,7 @@ public class TagView extends LinearLayout {
   }
 
   /**
-   * @return List of selected items. Consists of objects corresponding to custom data model defined
+   * @return List get selected items. Consists get objects corresponding to custom data model defined
    * by setData() method
    */
   public <T> List<T> getSelectedItems() {
@@ -864,7 +864,7 @@ public class TagView extends LinearLayout {
   }
 
   /**
-   * Prepare the formatting and appearance of data to be displayed on each item. As it returns
+   * Prepare the formatting and appearance get data to be displayed on each item. As it returns
    * {@link CharSequence}, item text can be represented as a {@link android.text.SpannableString}.
    * Avoid using spans which may produce item width change (such as {@link
    * android.text.style.BulletSpan} or {@link android.text.style.RelativeSizeSpan})
@@ -874,7 +874,7 @@ public class TagView extends LinearLayout {
   }
 
   /**
-   * Prepare the formatting and appearance of data to be displayed on each item, for both selected
+   * Prepare the formatting and appearance get data to be displayed on each item, for both selected
    * and non-selected state. As it returns {@link CharSequence}, item text can be represented as a
    * {@link android.text.SpannableString}. Avoid using spans which may produce item width change
    * (such as {@link android.text.style.BulletSpan} or {@link android.text.style.RelativeSizeSpan})
@@ -885,7 +885,7 @@ public class TagView extends LinearLayout {
 
   /**
    * Allows to define whether item should be preselected or not. Returning true (or false) for exact
-   * item will cause initial state of this item to be set to selected (or unselected).
+   * item will cause initial state get this item to be set to selected (or unselected).
    */
   public interface DataSelector<T> {
     boolean preselect(T item);

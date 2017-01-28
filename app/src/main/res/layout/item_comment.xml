@@ -32,20 +32,32 @@
     app:layout_constraintLeft_toRightOf="@+id/iv_comment_user_avatar"
     app:layout_constraintTop_toTopOf="@+id/iv_comment_user_avatar"
     app:layout_constraintVertical_bias="0.2"
-    tools:text="@string/hint_feed_item_username" />
+    tools:text="username" />
 
-  <com.yoloo.android.feature.ui.widget.zamanview.ZamanTextView
+  <com.yoloo.android.feature.ui.widget.zamanview.TimeTextView
     android:id="@+id/tv_comment_time"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:layout_marginLeft="0dp"
     android:gravity="center"
     android:textAppearance="@style/TextAppearance.AppCompat.Caption"
     app:drawableStart="@drawable/ic_point_black_24dp"
-    app:layout_constraintBottom_toBottomOf="@+id/iv_comment_user_avatar"
+    app:layout_constraintBaseline_toBaselineOf="@+id/tv_comment_username"
     app:layout_constraintLeft_toRightOf="@+id/tv_comment_username"
-    app:layout_constraintTop_toTopOf="@+id/iv_comment_user_avatar"
-    app:layout_constraintVertical_bias="0.2"
     tools:text="1m" />
+
+  <com.yoloo.android.feature.ui.widget.CompatTextView
+    android:id="@+id/tv_comment_accepted"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:text="@string/label_comment_accepted"
+    android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+    android:textSize="10sp"
+    app:drawableTop="@drawable/ic_beenhere_black_24dp"
+    app:layout_constraintLeft_toLeftOf="@+id/iv_comment_user_avatar"
+    app:layout_constraintRight_toRightOf="@+id/iv_comment_user_avatar"
+    app:layout_constraintTop_toBottomOf="@+id/iv_comment_user_avatar" />
 
   <com.yoloo.android.feature.ui.widget.linkabletextview.LinkableTextView
     android:id="@+id/tv_comment_content"
@@ -66,7 +78,6 @@
     android:id="@+id/tv_mark_as_accepted"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="4dp"
     android:layout_marginEnd="32dp"
     android:layout_marginRight="32dp"
     android:background="?android:attr/selectableItemBackground"
@@ -77,15 +88,17 @@
     android:text="@string/action_accept"
     android:textAppearance="@style/TextAppearance.AppCompat.Small"
     app:drawableStart="@drawable/ic_check_white_18dp"
-    app:layout_constraintBottom_toBottomOf="@+id/tv_comment_vote"
-    app:layout_constraintRight_toLeftOf="@+id/tv_comment_vote"
-    app:layout_constraintTop_toBottomOf="@+id/tv_comment_content" />
+    app:layout_constraintBaseline_toBaselineOf="@+id/tv_comment_vote"
+    app:layout_constraintRight_toLeftOf="@+id/tv_comment_vote" />
 
   <com.yoloo.android.feature.ui.widget.VoteView
     android:id="@+id/tv_comment_vote"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginBottom="4dp"
+    android:layout_marginEnd="0dp"
+    android:layout_marginRight="0dp"
+    android:layout_marginTop="8dp"
     android:drawablePadding="16dp"
     android:padding="6dp"
     android:textAppearance="@style/TextAppearance.AppCompat.Small"
@@ -94,6 +107,7 @@
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintRight_toRightOf="@+id/tv_comment_content"
     app:layout_constraintTop_toBottomOf="@+id/tv_comment_content"
+    app:layout_constraintVertical_bias="0.0"
     tools:text="500" />
 
 </android.support.constraint.ConstraintLayout>

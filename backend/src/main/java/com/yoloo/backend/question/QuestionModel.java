@@ -5,7 +5,8 @@ import lombok.Builder;
 import lombok.Value;
 
 @Value
-@Builder class QuestionModel {
+@Builder
+class QuestionModel {
 
   private Question question;
   private List<QuestionCounterShard> shards;

@@ -122,7 +122,7 @@ public class AutoCompleteMentionAdapter extends ArrayAdapter<AccountRealm> {
   @NonNull
   @Override
   public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-    // Get the data item from filtered list.
+    // Get the data item from filtered search.
     final AccountRealm item = getItem(position);
 
     MentionViewHolder holder;

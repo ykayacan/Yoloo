@@ -27,7 +27,7 @@ public final class CountUtil {
     final Long divideBy = e.getKey();
     final String suffix = e.getValue();
 
-    final long truncated = value / (divideBy / 10); // The number part of the output times 10
+    final long truncated = value / (divideBy / 10); // The number part get the output times 10
     final boolean hasDecimal = truncated < 1000
         && (truncated / 100d) != (truncated / 100)
         && (truncated * 10) % 10 != 0; // If the decimal part is equal to 0, return false.

@@ -13,8 +13,11 @@ public class CommentFaker {
 
     realm.executeTransactionAsync(tx -> {
       AccountRealm account = new AccountRealm();
+      account.setId("a3");
+      account.setRealname("Duygu Keşkek");
       account.setAvatarUrl(FakerUtil.getAvatarRandomUrl());
-      account.setUsername("krialix");
+      account.setLevel(5);
+      account.setUsername("meganlondon");
 
       tx.insertOrUpdate(account);
 
@@ -30,7 +33,7 @@ public class CommentFaker {
           .setDir(1)
           .setVotes(FakerUtil.generateNumber())
           .setPostId("p1")
-          .setAccepted(false);
+          .setAccepted(true);
 
       CommentRealm c2 = new CommentRealm()
           .setId("c2")

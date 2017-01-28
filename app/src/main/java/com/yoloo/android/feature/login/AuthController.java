@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.OnClick;
 import com.bluelinelabs.conductor.Controller;
@@ -17,13 +18,14 @@ import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.yoloo.android.R;
 import com.yoloo.android.feature.base.BaseController;
 import com.yoloo.android.feature.login.welcome.WelcomeController;
-import com.yoloo.android.util.VersionUtil;
+import com.yoloo.android.util.ViewUtil;
 
 public class AuthController extends BaseController {
 
   @BindView(R.id.layout_login_child) ViewGroup childContainer;
-
   @BindView(R.id.ib_login_back) ImageButton ibBack;
+
+  @BindColor(R.color.primary_dark) int primaryDarkColor;
 
   private final ControllerChangeHandler.ControllerChangeListener changeListener =
       new ControllerChangeHandler.ControllerChangeListener() {
@@ -46,11 +48,6 @@ public class AuthController extends BaseController {
 
   @Override protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
-
-    if (VersionUtil.hasL()) {
-      getActivity().getWindow().setStatusBarColor(Color.BLACK);
-    }
-
     setChildRootController();
 
     ibBack.setVisibility(View.GONE);
@@ -58,12 +55,14 @@ public class AuthController extends BaseController {
 
   @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
+    ViewUtil.setStatusBarColor(getActivity(), Color.BLACK);
     getChildRouter(childContainer).addChangeListener(changeListener);
   }
 
   @Override protected void onDetach(@NonNull View view) {
     getChildRouter(childContainer).removeChangeListener(changeListener);
     super.onDetach(view);
+    ViewUtil.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @OnClick(R.id.ib_login_back) void back() {

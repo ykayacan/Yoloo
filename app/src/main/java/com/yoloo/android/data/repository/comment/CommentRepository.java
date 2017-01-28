@@ -44,10 +44,10 @@ public class CommentRepository {
     Preconditions.checkNotNull(commentId, "commentId can not be null.");
 
     return Observable.mergeDelayError(
-        diskDataStore.get(commentId),
+        diskDataStore.get(commentId).subscribeOn(Schedulers.io()),
         remoteDataStore.get(commentId)
-            .subscribeOn(Schedulers.io())
-            .doOnNext(diskDataStore::add));
+            .doOnNext(commentRealm -> diskDataStore.add(commentRealm).subscribe())
+            .subscribeOn(Schedulers.io()));
   }
 
   /**
@@ -69,8 +69,8 @@ public class CommentRepository {
         .setAvatarUrl(account.getAvatarUrl());
 
     return remoteDataStore.add(comment)
-        .subscribeOn(Schedulers.io())
-        .doOnNext(diskDataStore::add);
+        .doOnNext(commentRealm -> diskDataStore.add(commentRealm).subscribe())
+        .subscribeOn(Schedulers.io());
   }
 
   /**
@@ -82,10 +82,9 @@ public class CommentRepository {
   public Completable delete(String commentId) {
     Preconditions.checkNotNull(commentId, "commentId can not be null.");
 
-    return Completable.fromAction(() -> {
-      diskDataStore.delete(commentId);
-      remoteDataStore.delete(commentId);
-    });
+    return remoteDataStore.delete(commentId)
+        .andThen(diskDataStore.delete(commentId))
+        .subscribeOn(Schedulers.io());
   }
 
   /**
@@ -101,10 +100,10 @@ public class CommentRepository {
     Preconditions.checkNotNull(postId, "postId can not be null.");
 
     return Observable.mergeDelayError(
-        diskDataStore.list(postId),
+        diskDataStore.list(postId).subscribeOn(Schedulers.io()),
         remoteDataStore.list(postId, cursor, eTag, limit)
-            .subscribeOn(Schedulers.io())
-            .doOnNext(response -> diskDataStore.addAll(response.getData())));
+            .doOnNext(response -> diskDataStore.addAll(response.getData()).subscribe())
+            .subscribeOn(Schedulers.io()));
   }
 
   /**
@@ -115,8 +114,12 @@ public class CommentRepository {
    * @return the completable
    */
   public Completable vote(String commentId, int direction) {
-    return Completable.fromAction(() -> {
-      diskDataStore.vote(commentId, direction);
-    });
+    return diskDataStore.vote(commentId, direction).subscribeOn(Schedulers.io());
+  }
+
+  public Completable accept(String questionId, String commentId) {
+    return remoteDataStore.accept(questionId, commentId)
+        .flatMapCompletable(diskDataStore::add)
+        .subscribeOn(Schedulers.io());
   }
 }

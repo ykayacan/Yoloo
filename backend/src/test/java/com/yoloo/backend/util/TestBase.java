@@ -10,16 +10,15 @@ import com.yoloo.backend.bookmark.Bookmark;
 import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentCounterShard;
 import com.yoloo.backend.device.DeviceRecord;
+import com.yoloo.backend.feed.Feed;
 import com.yoloo.backend.follow.Follow;
 import com.yoloo.backend.gamification.Tracker;
 import com.yoloo.backend.media.Media;
 import com.yoloo.backend.notification.Notification;
-import com.yoloo.backend.feed.Feed;
 import com.yoloo.backend.question.Question;
 import com.yoloo.backend.question.QuestionCounterShard;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagCounterShard;
-import com.yoloo.backend.tag.TagGroup;
 import com.yoloo.backend.topic.Topic;
 import com.yoloo.backend.topic.TopicCounterShard;
 import com.yoloo.backend.vote.Vote;
@@ -51,7 +50,6 @@ public class TestBase extends GAETestBase {
 
     fact().register(Tag.class);
     fact().register(TagCounterShard.class);
-    fact().register(TagGroup.class);
 
     fact().register(Topic.class);
     fact().register(TopicCounterShard.class);

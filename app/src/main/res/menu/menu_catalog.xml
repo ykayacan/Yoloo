@@ -4,6 +4,6 @@
 
   <item
     android:id="@+id/action_next"
-    android:title="@string/action_next"
+    android:title="@string/action_catalog_next"
     app:showAsAction="always" />
 </menu>

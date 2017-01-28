@@ -18,7 +18,9 @@ public class PostFaker {
     Realm realm = Realm.getDefaultInstance();
     realm.executeTransactionAsync(tx -> {
       CategoryRealm category =
-          tx.where(CategoryRealm.class).equalTo(CategoryRealmFields.NAME, "Activities").findFirst();
+          tx.where(CategoryRealm.class)
+              .equalTo(CategoryRealmFields.NAME, "Activities")
+              .findFirst();
 
       RealmList<CategoryRealm> categories = new RealmList<>();
       categories.add(category);
@@ -27,6 +29,7 @@ public class PostFaker {
 
       PostRealm p1 = new PostRealm()
           .setId("p1")
+          .setOwnerId("a1")
           .setAvatarUrl(FakerUtil.getAvatarRandomUrl())
           .setUsername("yasinsinankayacan")
           .setCreated(FakerUtil.getRandomDate())
@@ -35,11 +38,13 @@ public class PostFaker {
           .setVotes(FakerUtil.generateNumber())
           .setType(TYPE_NORMAL)
           .setCategories(categories)
+          .setAcceptedCommentId("c1")
           .setBounty(20)
           .setFeedItem(true);
 
       PostRealm p2 = new PostRealm()
           .setId("p2")
+          .setOwnerId("a1")
           .setAvatarUrl(FakerUtil.getAvatarRandomUrl())
           .setUsername("yasinsinankayacan")
           .setCreated(FakerUtil.getRandomDate())
@@ -47,10 +52,12 @@ public class PostFaker {
           .setComments(FakerUtil.generateNumber())
           .setVotes(FakerUtil.generateNumber())
           .setType(TYPE_NORMAL)
+          .setAcceptedCommentId("c1")
           .setFeedItem(true);
 
       PostRealm p3 = new PostRealm()
           .setId("p3")
+          .setOwnerId("a1")
           .setAvatarUrl(FakerUtil.getAvatarRandomUrl())
           .setUsername("duygukeskek")
           .setCreated(FakerUtil.getRandomDate())
@@ -58,10 +65,12 @@ public class PostFaker {
           .setComments(FakerUtil.generateNumber())
           .setVotes(FakerUtil.generateNumber())
           .setType(TYPE_NORMAL)
+          .setAcceptedCommentId("c1")
           .setFeedItem(false);
 
       PostRealm p4 = new PostRealm()
           .setId("p4")
+          .setOwnerId("a1")
           .setAvatarUrl(FakerUtil.getAvatarRandomUrl())
           .setUsername("duygukeskek")
           .setCreated(FakerUtil.getRandomDate())
@@ -70,10 +79,12 @@ public class PostFaker {
           .setVotes(FakerUtil.generateNumber())
           .setMediaUrl(FakerUtil.getMediaUrl())
           .setType(TYPE_RICH)
+          .setAcceptedCommentId("c1")
           .setFeedItem(true);
 
       PostRealm p5 = new PostRealm()
           .setId("p5")
+          .setOwnerId("a1")
           .setAvatarUrl(FakerUtil.getAvatarRandomUrl())
           .setUsername("duygukeskek")
           .setCreated(FakerUtil.getRandomDate())
@@ -81,11 +92,13 @@ public class PostFaker {
           .setComments(FakerUtil.generateNumber())
           .setVotes(FakerUtil.generateNumber())
           .setMediaUrl(FakerUtil.getMediaUrl())
+          .setAcceptedCommentId("c1")
           .setType(TYPE_RICH)
           .setFeedItem(true);
 
       PostRealm p6 = new PostRealm()
           .setId("p6")
+          .setOwnerId("a1")
           .setAvatarUrl(FakerUtil.getAvatarRandomUrl())
           .setUsername("duygukeskek")
           .setCreated(FakerUtil.getRandomDate())
@@ -93,6 +106,7 @@ public class PostFaker {
           .setComments(FakerUtil.generateNumber())
           .setVotes(FakerUtil.generateNumber())
           .setMediaUrl(FakerUtil.getMediaUrl())
+          .setAcceptedCommentId("c1")
           .setType(TYPE_RICH)
           .setFeedItem(false);
 
@@ -112,6 +126,7 @@ public class PostFaker {
   public static PostRealm generateOne() {
     return new PostRealm()
         .setId(UUID.randomUUID().toString())
+        .setOwnerId("a1")
         .setAvatarUrl(FakerUtil.getAvatarRandomUrl())
         .setUsername("yasinsinankayacan")
         .setCreated(FakerUtil.getRandomDate())

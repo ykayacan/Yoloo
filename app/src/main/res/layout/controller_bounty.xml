@@ -28,7 +28,7 @@
         android:drawablePadding="8dp"
         android:gravity="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-        app:drawableStart="@drawable/ic_coin_stack"
+        app:drawableStart="@drawable/ic_coin_stack_24dp"
         tools:text="100" />
 
     </android.support.v7.widget.Toolbar>

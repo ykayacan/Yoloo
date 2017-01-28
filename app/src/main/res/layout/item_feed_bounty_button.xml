@@ -15,5 +15,5 @@
   android:paddingRight="72dp"
   android:paddingStart="72dp"
   android:paddingTop="12dp"
-  android:text="@string/action_bounty_questions"
+  android:text="@string/action_feed_bounty_questions"
   android:theme="@style/Widget.Yoloo.BountyButton" />

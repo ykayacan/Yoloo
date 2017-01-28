@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
-  xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="@color/background_lightish_2"
-  tools:context=".feature.feed.userfeed.UserFeedController">
+  android:id="@+id/feed_root"
+  android:background="@color/background_lightish_2">
 
   <android.support.design.widget.AppBarLayout
     android:id="@+id/appbar_feed"
@@ -25,13 +24,13 @@
   <android.support.v4.widget.SwipeRefreshLayout
     android:id="@+id/swipe_feed"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <android.support.v7.widget.RecyclerView
       android:id="@+id/rv_feed"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content" />
+      android:layout_height="match_parent" />
 
   </android.support.v4.widget.SwipeRefreshLayout>
 
@@ -69,7 +68,7 @@
       android:id="@+id/fab_ask_question"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:contentDescription="@string/action_ask_question"
+      android:contentDescription="@string/action_feed_fab_ask_question"
       app:fabSize="mini"
       app:srcCompat="@drawable/ic_edit_white_18dp" />
 
@@ -77,7 +76,7 @@
       android:id="@+id/fab_share_trip"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:contentDescription="@string/action_share_trip"
+      android:contentDescription="@string/action_feed_fab_share_trip"
       app:fabSize="mini"
       app:srcCompat="@drawable/ic_edit_white_18dp" />
 

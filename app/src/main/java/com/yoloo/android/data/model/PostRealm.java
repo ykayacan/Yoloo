@@ -1,5 +1,6 @@
 package com.yoloo.android.data.model;
 
+import com.yoloo.android.backend.modal.yolooApi.model.FeedItem;
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.Index;
@@ -10,10 +11,8 @@ import java.util.List;
 
 public class PostRealm extends RealmObject {
 
-  @PrimaryKey
-  private String id;
-  @Index
-  private String ownerId;
+  @PrimaryKey private String id;
+  @Index private String ownerId;
   private String avatarUrl;
   private String username;
   private String content;
@@ -21,27 +20,26 @@ public class PostRealm extends RealmObject {
   private String mediaUrl;
   private RealmList<TagRealm> tags;
   private RealmList<CategoryRealm> categories;
-  @Index
-  private boolean commented;
-  @Index
-  private String acceptedCommentId;
-  @Index
-  private Date created;
+  @Index private boolean commented;
+  @Index private String acceptedCommentId;
+  @Index private Date created;
   private int dir;
   private long votes;
   private long comments;
   private int reports;
   private int type;
   private String title;
-  private boolean self;
   private double rank;
   private String categoriesAsString;
-  @Index
-  private boolean isFeedItem;
-  @Index
-  private boolean pending;
-  @Index
-  private boolean draft;
+  @Index private boolean isFeedItem;
+  @Index private boolean pending;
+  @Index private boolean bookmarked;
+
+  public PostRealm(FeedItem feedItem) {
+  }
+
+  public PostRealm() {
+  }
 
   public String getId() {
     return id;
@@ -119,6 +117,11 @@ public class PostRealm extends RealmObject {
     return categories;
   }
 
+  public PostRealm setCategories(RealmList<CategoryRealm> categories) {
+    this.categories = categories;
+    return this;
+  }
+
   public List<String> getCategoryNames() {
     List<String> names = new ArrayList<>(3);
     for (CategoryRealm category : categories) {
@@ -126,11 +129,6 @@ public class PostRealm extends RealmObject {
     }
 
     return names;
-  }
-
-  public PostRealm setCategories(RealmList<CategoryRealm> categories) {
-    this.categories = categories;
-    return this;
   }
 
   public PostRealm addCategory(CategoryRealm categoryRealm) {
@@ -255,21 +253,12 @@ public class PostRealm extends RealmObject {
     return this;
   }
 
-  public boolean isSelf() {
-    return self;
+  public boolean isBookmarked() {
+    return bookmarked;
   }
 
-  public PostRealm setSelf(boolean self) {
-    this.self = self;
-    return this;
-  }
-
-  public boolean isDraft() {
-    return draft;
-  }
-
-  public PostRealm setDraft(boolean draft) {
-    this.draft = draft;
+  public PostRealm setBookmarked(boolean bookmarked) {
+    this.bookmarked = bookmarked;
     return this;
   }
 
@@ -279,6 +268,18 @@ public class PostRealm extends RealmObject {
 
   public void decreaseVotes() {
     --this.votes;
+  }
+
+  public void increaseComments() {
+    ++this.comments;
+  }
+
+  public void decreaseComments() {
+    --this.comments;
+  }
+
+  public boolean hasReadMore() {
+    return content.length() >= 200;
   }
 
   @Override public String toString() {
@@ -301,12 +302,11 @@ public class PostRealm extends RealmObject {
         ", reports=" + reports +
         ", type=" + type +
         ", title='" + title + '\'' +
-        ", self=" + self +
         ", rank=" + rank +
         ", categoriesAsString='" + categoriesAsString + '\'' +
         ", isFeedItem=" + isFeedItem +
         ", pending=" + pending +
-        ", draft=" + draft +
+        ", bookmarked=" + bookmarked +
         '}';
   }
 }

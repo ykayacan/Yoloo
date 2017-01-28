@@ -2,19 +2,15 @@ package com.yoloo.android.feature.feed.userfeed;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -33,15 +29,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 import butterknife.BindColor;
+import butterknife.BindInt;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
+import com.bluelinelabs.conductor.changehandler.AnimatorChangeHandler;
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
@@ -50,11 +48,11 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.RemoteMessage;
 import com.yoloo.android.R;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.faker.AccountFaker;
 import com.yoloo.android.data.faker.CategoryFaker;
 import com.yoloo.android.data.faker.CommentFaker;
 import com.yoloo.android.data.faker.NotificationFaker;
 import com.yoloo.android.data.faker.PostFaker;
+import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.CategoryRealm;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.category.CategoryRepository;
@@ -66,16 +64,20 @@ import com.yoloo.android.data.repository.notification.datasource.NotificationRem
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.post.datasource.PostDiskDataStore;
 import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
+import com.yoloo.android.data.repository.user.UserRepository;
+import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
+import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.feature.base.BaseActivity;
 import com.yoloo.android.feature.base.framework.MvpController;
 import com.yoloo.android.feature.category.MainCatalogController;
 import com.yoloo.android.feature.comment.CommentController;
 import com.yoloo.android.feature.fcm.FCMListener;
 import com.yoloo.android.feature.fcm.FCMManager;
-import com.yoloo.android.feature.feed.bountyfeed.BountyFeedController;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
-import com.yoloo.android.feature.feed.common.listener.OnChangeListener;
+import com.yoloo.android.feature.feed.common.event.DeleteEvent;
+import com.yoloo.android.feature.feed.common.event.UpdateEvent;
+import com.yoloo.android.feature.feed.common.event.WriteNewPostEvent;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnOptionsClickListener;
@@ -83,26 +85,31 @@ import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnReadMoreClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
-import com.yoloo.android.feature.feed.globalfeed.GlobalFeedController;
+import com.yoloo.android.feature.feed.postfeed.PostController;
 import com.yoloo.android.feature.login.AuthController;
 import com.yoloo.android.feature.login.AuthUI;
 import com.yoloo.android.feature.notification.NotificationController;
 import com.yoloo.android.feature.photo.PhotoController;
 import com.yoloo.android.feature.postdetail.PostDetailController;
+import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.search.SearchController;
+import com.yoloo.android.feature.ui.CircularRevealChangeHandler;
 import com.yoloo.android.feature.ui.recyclerview.EndlessRecyclerViewScrollListener;
 import com.yoloo.android.feature.ui.recyclerview.SlideInItemAnimator;
 import com.yoloo.android.feature.ui.recyclerview.SpaceItemDecoration;
-import com.yoloo.android.feature.ui.widget.badgeview.MenuItemBadge;
 import com.yoloo.android.feature.ui.widget.floatingactionmenu.widget.FloatingActionMenu;
-import com.yoloo.android.feature.write.SendPostService;
+import com.yoloo.android.feature.ui.widget.materialbadge.MenuItemBadge;
+import com.yoloo.android.feature.write.EditorType;
 import com.yoloo.android.feature.write.catalog.CatalogController;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.MenuHelper;
 import com.yoloo.android.util.NotificationHelper;
-import com.yoloo.android.util.ViewUtil;
+import com.yoloo.android.util.RxBus;
+import com.yoloo.android.util.ShareUtil;
+import com.yoloo.android.util.VersionUtil;
 import com.yoloo.android.util.WeakHandler;
 import com.yoloo.android.util.glide.CropCircleTransformation;
+import io.reactivex.disposables.Disposable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,10 +122,9 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     OnReadMoreClickListener, OnShareClickListener, OnCommentClickListener,
     FeedAdapter.OnBountyClickListener, FeedAdapter.OnCategoryClickListener,
     FeedAdapter.OnExploreCategoriesClickListener, OnVoteClickListener, OnContentImageClickListener,
-    OnChangeListener, FCMListener {
+    FCMListener {
 
   static {
-    AccountFaker.generate();
     CategoryFaker.generate();
     PostFaker.generate();
     CommentFaker.generate();
@@ -126,22 +132,19 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
   }
 
   @BindView(R.id.drawer_layout_feed) DrawerLayout drawerLayout;
-
   @BindView(R.id.nav_view_feed) NavigationView navigationView;
-
   @BindView(R.id.toolbar_feed) Toolbar toolbar;
-
   @BindView(R.id.rv_feed) RecyclerView rvFeed;
-
   @BindView(R.id.swipe_feed) SwipeRefreshLayout swipeRefreshLayout;
-
   @BindView(R.id.view_feed_action) View actionView;
-
   @BindView(R.id.dimming_view) View dimmingView;
-
   @BindView(R.id.fab_menu_feed) FloatingActionMenu fabMenu;
+  @BindView(R.id.feed_root) ViewGroup root;
 
   @BindColor(R.color.primary_dark) int primaryDarkColor;
+  @BindColor(R.color.primary_blue) int primaryBlueColor;
+
+  @BindInt(android.R.integer.config_mediumAnimTime) int mediumAnimTime;
 
   private FeedAdapter adapter;
 
@@ -149,20 +152,14 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
 
   private WeakHandler handler = new WeakHandler();
 
-  private BroadcastReceiver newPostReceiver = new BroadcastReceiver() {
-    @Override public void onReceive(Context context, Intent intent) {
-      final String postId = intent.getStringExtra(SendPostService.KEY_NEW_POST_ID);
-
-      getPresenter().loadPost(postId);
-    }
-  };
+  private boolean hasNotification;
 
   private String cursor;
   private String eTag;
 
-  public UserFeedController() {
-    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
-  }
+  private Disposable disposable;
+
+  private String userId;
 
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
@@ -183,23 +180,40 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
 
   @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-    ViewUtil.setStatusBarColor(getActivity(), primaryDarkColor);
     rvFeed.addOnScrollListener(endlessRecyclerViewScrollListener);
 
-    LocalBroadcastManager.getInstance(getActivity())
-        .registerReceiver(newPostReceiver, new IntentFilter(SendPostService.KEY_NEW_POST_EVENT));
+    disposable = RxBus.get().observeEvents(getClass())
+        .subscribe(e -> {
+          if (e instanceof UpdateEvent) {
+            adapter.updatePost(FeedAction.UPDATE, ((UpdateEvent) e).getPost());
+          } else if (e instanceof DeleteEvent) {
+            adapter.updatePost(FeedAction.DELETE, ((DeleteEvent) e).getPost());
+          } else if (e instanceof WriteNewPostEvent) {
+            rvFeed.smoothScrollToPosition(0);
+            handler.postDelayed(
+                () -> adapter.addPostAfterBountyButton(((WriteNewPostEvent) e).getPost()), 450);
+          }
+        });
   }
 
   @Override protected void onDetach(@NonNull View view) {
     super.onDetach(view);
     rvFeed.removeOnScrollListener(endlessRecyclerViewScrollListener);
-
-    LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(newPostReceiver);
+    disposable.dispose();
   }
 
   @Override protected void onDestroy() {
     super.onDestroy();
     FCMManager.getInstance(getApplicationContext()).unRegister();
+  }
+
+  @Override protected void onChangeStarted(@NonNull ControllerChangeHandler changeHandler,
+      @NonNull ControllerChangeType changeType) {
+    super.onChangeStarted(changeHandler, changeType);
+    if (changeType.equals(ControllerChangeType.PUSH_EXIT)) {
+      disposable.dispose();
+      RxBus.get().clear();
+    }
   }
 
   @Override public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
@@ -208,34 +222,50 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     DrawableHelper.withContext(getActivity()).withColor(android.R.color.white).applyTo(menu);
 
     MenuItem menuMessage = menu.findItem(R.id.action_feed_message);
-    MenuItemBadge.update(getActivity(), menuMessage, new MenuItemBadge.Builder().iconDrawable(
-        AppCompatResources.getDrawable(getActivity(), R.drawable.ic_email_black_24dp))
-        .textBackgroundColor(ContextCompat.getColor(getActivity(), R.color.primary_blue))
-        .textColor(Color.WHITE));
+    MenuItemBadge.update(getActivity(), menuMessage, new MenuItemBadge.Builder());
   }
 
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     final int itemId = item.getItemId();
 
     switch (itemId) {
-      case R.id.action_feed_notification:
-        startTransaction(new NotificationController(), new VerticalChangeHandler());
-        return true;
       case R.id.action_feed_search:
         startTransaction(new SearchController(), new VerticalChangeHandler());
+        return true;
+      case R.id.action_feed_message:
+        if (hasNotification) {
+          MenuItemBadge.getBadgeTextView(item).setBadgeCount(23, true);
+
+          MenuItemBadge.update(getActivity(), item, new MenuItemBadge.Builder()
+              .iconDrawable(AppCompatResources.getDrawable(getApplicationContext(),
+                  R.drawable.ic_email_black_24dp))
+              .textBackgroundColor(primaryBlueColor));
+
+          hasNotification = false;
+        } else {
+          MenuItemBadge.getBadgeTextView(item).setBadgeCount(0, true);
+
+          MenuItemBadge.update(getActivity(), item, new MenuItemBadge.Builder()
+              .iconDrawable(AppCompatResources.getDrawable(getApplicationContext(),
+                  R.drawable.ic_email_outline_24dp)));
+
+          hasNotification = true;
+        }
+        return true;
+      case R.id.action_feed_notification:
+        startTransaction(new NotificationController(), new VerticalChangeHandler());
         return true;
       default:
         return super.onOptionsItemSelected(item);
     }
   }
 
-  @Override public void onTrendingCategoriesLoaded(List<CategoryRealm> topics) {
-    adapter.updateTrendingCategories(topics);
+  @Override public void onAccountLoaded(AccountRealm account) {
+    userId = account.getId();
   }
 
-  @Override public void onNewPost(PostRealm post) {
-    rvFeed.smoothScrollToPosition(0);
-    handler.postDelayed(() -> adapter.addPostToBeginning(post), 250);
+  @Override public void onTrendingCategoriesLoaded(List<CategoryRealm> topics) {
+    adapter.addTrendingCategories(topics);
   }
 
   @Override public void onLoading(boolean pullToRefresh) {
@@ -243,15 +273,16 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
   }
 
   @Override public void onLoaded(Response<List<PostRealm>> value) {
-    swipeRefreshLayout.setRefreshing(false);
-
     cursor = value.getCursor();
     eTag = value.geteTag();
+
+    adapter.showLoadMoreIndicator(false);
+    endlessRecyclerViewScrollListener.setProgressBarVisible(false);
     adapter.addPosts(value.getData());
   }
 
   @Override public void onError(Throwable e) {
-
+    Timber.e(e);
   }
 
   @Override public void onEmpty() {
@@ -267,21 +298,37 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
 
   @Override public void onLoadMore() {
     Timber.d("onLoadMore");
+    adapter.showLoadMoreIndicator(true);
+    endlessRecyclerViewScrollListener.setProgressBarVisible(true);
+    handler.postDelayed(() -> getPresenter().loadFeed(false, cursor, eTag, 20), 700);
   }
 
   @NonNull @Override public UserFeedPresenter createPresenter() {
-    return new UserFeedPresenter(PostRepository.getInstance(PostRemoteDataStore.getInstance(),
-        PostDiskDataStore.getInstance()),
-        CategoryRepository.getInstance(CategoryRemoteDataStore.getInstance(),
+    return new UserFeedPresenter(
+        PostRepository.getInstance(
+            PostRemoteDataStore.getInstance(),
+            PostDiskDataStore.getInstance()),
+        CategoryRepository.getInstance(
+            CategoryRemoteDataStore.getInstance(),
             CategoryDiskDataStore.getInstance()),
-        NotificationRepository.getInstance(NotificationRemoteDataSource.getInstance(),
-            NotificationDiskDataSource.getInstance()));
+        NotificationRepository.getInstance(
+            NotificationRemoteDataSource.getInstance(),
+            NotificationDiskDataSource.getInstance()),
+        UserRepository.getInstance(
+            UserRemoteDataStore.getInstance(),
+            UserDiskDataStore.getInstance()));
   }
 
   @Override public boolean onNavigationItemSelected(@NonNull MenuItem item) {
     final int itemId = item.getItemId();
 
     switch (itemId) {
+      case R.id.action_nav_profile:
+        drawerLayout.closeDrawer(GravityCompat.START);
+        handler.postDelayed(
+            () -> startTransaction(ProfileController.create(userId), new VerticalChangeHandler()),
+            400);
+        return false;
       case R.id.action_nav_settings:
         AuthUI.getInstance().signOut(getActivity());
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -302,20 +349,27 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
   }
 
   @Override public void onCommentClick(View v, String itemId, String acceptedCommentId) {
-    startTransaction(CommentController.create(itemId, acceptedCommentId, (long) v.getTag()),
-        new VerticalChangeHandler());
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
+    startTransaction(CommentController.create(itemId), new VerticalChangeHandler());
   }
 
-  @Override public void onOptionsClick(View v, EpoxyModel<?> model, String postId, boolean self) {
+  @Override
+  public void onOptionsClick(View v, EpoxyModel<?> model, String postId, String postOwnerId) {
     final PopupMenu optionsMenu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
-    if (self) {
-      optionsMenu.getMenu().getItem(1).setVisible(false);
-      optionsMenu.getMenu().getItem(2).setVisible(false);
-    }
+    final boolean self = userId.equals(postOwnerId);
+    optionsMenu.getMenu().getItem(1).setVisible(self);
+    optionsMenu.getMenu().getItem(2).setVisible(self);
+
     optionsMenu.setOnMenuItemClickListener(item -> {
       final int itemId = item.getItemId();
       switch (itemId) {
-        case R.id.action_post_delete:
+        case R.id.action_feed_popup_bookmark:
+          getPresenter().bookmarkPost(postId);
+          Snackbar.make(getView(), R.string.label_feed_bookmarked, Snackbar.LENGTH_SHORT).show();
+          return true;
+        case R.id.action_feed_popup_edit:
+          return true;
+        case R.id.action_feed_popup_delete:
           getPresenter().deletePost(postId);
           adapter.delete(model);
           return true;
@@ -326,47 +380,63 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
   }
 
   @Override public void onProfileClick(View v, String ownerId) {
-    Toast.makeText(getActivity(), "Profile clicked! " + ownerId, Toast.LENGTH_SHORT).show();
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
+    startTransaction(ProfileController.create(ownerId), new VerticalChangeHandler());
   }
 
-  @Override public void onReadMoreClickListener(View v, String postId, String acceptedCommentId,
-      long modelId) {
-    startTransaction(PostDetailController.create(postId, acceptedCommentId, this),
-        new VerticalChangeHandler());
+  @Override public void onReadMoreClickListener(View v, String postId) {
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
+    startTransaction(PostDetailController.create(postId), new VerticalChangeHandler());
   }
 
-  @Override public void onShareClick(View v) {
-    Toast.makeText(getActivity(), "Share clicked!", Toast.LENGTH_SHORT).show();
+  @Override public void onShareClick(View v, PostRealm post) {
+    ShareUtil.share(this, null, post.getContent());
   }
 
   @Override public void onBountyClick(View v) {
-    startTransaction(BountyFeedController.create(this), new VerticalChangeHandler());
+    setRetainViewMode(RetainViewMode.RELEASE_DETACH);
+    startTransaction(PostController.ofBounty(), new VerticalChangeHandler());
   }
 
   @Override public void onCategoryClick(View v, String categoryId, String name) {
-    startTransaction(GlobalFeedController.create(name, this), new VerticalChangeHandler());
+    setRetainViewMode(RetainViewMode.RELEASE_DETACH);
+    startTransaction(PostController.ofCategory(name), new VerticalChangeHandler());
   }
 
   @Override public void onExploreCategoriesClick(View v) {
+    setRetainViewMode(RetainViewMode.RELEASE_DETACH);
     startTransaction(new MainCatalogController(), new VerticalChangeHandler());
   }
 
-  @Override public void onVoteClick(String votableId, int direction, @VotableType int type) {
-    getPresenter().vote(votableId, direction);
+  @Override public void onVoteClick(String votableId, int direction, @Type int type) {
+    getPresenter().votePost(votableId, direction);
   }
 
   @Override public void onContentImageClick(View v, String url) {
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
     startTransaction(PhotoController.create(url), new FadeChangeHandler());
   }
 
-  @Override
-  public void onChange(@NonNull String itemId, @FeedAction int action, @Nullable Object payload) {
-    adapter.update(itemId, action, payload);
+  @OnClick(R.id.fab_ask_question) void openAskQuestion() {
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
+    fabMenu.collapseImmediately();
+
+    AnimatorChangeHandler handler = VersionUtil.hasL()
+        ? new CircularRevealChangeHandler(fabMenu, root, mediumAnimTime)
+        : new VerticalChangeHandler(mediumAnimTime);
+
+    startTransaction(CatalogController.create(EditorType.ASK_QUESTION), handler);
   }
 
-  @OnClick(R.id.fab_ask_question) void openWriteScreen() {
+  @OnClick(R.id.fab_share_trip) void openShareTrip() {
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
     fabMenu.collapseImmediately();
-    startTransaction(new CatalogController(), new VerticalChangeHandler());
+
+    AnimatorChangeHandler handler = VersionUtil.hasL()
+        ? new CircularRevealChangeHandler(fabMenu, root, mediumAnimTime)
+        : new VerticalChangeHandler(mediumAnimTime);
+
+    startTransaction(CatalogController.create(EditorType.SHARE_TRIP), handler);
   }
 
   @Override public void onDeviceRegistered(String deviceToken) {
@@ -408,11 +478,31 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
       tvRealname.setText(user.getDisplayName());
       tvUsername.setText(user.getDisplayName().trim().replace(" ", "").toLowerCase());
     }
+
+    ivNavAvatar.setOnClickListener(v -> {
+      drawerLayout.closeDrawer(GravityCompat.START);
+      handler.postDelayed(
+          () -> startTransaction(ProfileController.create(userId), new VerticalChangeHandler()),
+          400);
+    });
+    tvUsername.setOnClickListener(v -> {
+      drawerLayout.closeDrawer(GravityCompat.START);
+      handler.postDelayed(
+          () -> startTransaction(ProfileController.create(userId), new VerticalChangeHandler()),
+          400);
+    });
+    tvRealname.setOnClickListener(v -> {
+      drawerLayout.closeDrawer(GravityCompat.START);
+      handler.postDelayed(
+          () -> startTransaction(ProfileController.create(userId), new VerticalChangeHandler()),
+          400);
+    });
   }
 
   private void setupRecyclerView() {
     adapter = FeedAdapter.builder()
         .isMainFeed(true)
+        .context(getApplicationContext())
         .onProfileClickListener(this)
         .onBountyClickListener(this)
         .onCommentClickListener(this)
@@ -434,7 +524,7 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     animator.setSupportsChangeAnimations(false);
     rvFeed.setItemAnimator(animator);
 
-    rvFeed.setHasFixedSize(true);
+    rvFeed.setHasFixedSize(false);
     rvFeed.setAdapter(adapter);
 
     endlessRecyclerViewScrollListener = new EndlessRecyclerViewScrollListener(layoutManager, this);
@@ -487,7 +577,7 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     NotificationManager notificationManager =
         (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
 
-    notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+    notificationManager.notify(0 /* ID get notification */, notificationBuilder.build());
   }
 
   private void startTransaction(Controller to, ControllerChangeHandler handler) {

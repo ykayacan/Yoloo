@@ -10,11 +10,13 @@ public class SearchAdapter extends EpoxyAdapter {
 
   private final OnTagClickListener onTagClickListener;
   private final OnProfileClickListener onProfileClickListener;
+  private final OnFollowClickListener onFollowClickListener;
 
   public SearchAdapter(OnTagClickListener onTagClickListener,
-      OnProfileClickListener onProfileClickListener) {
+      OnProfileClickListener onProfileClickListener, OnFollowClickListener onFollowClickListener) {
     this.onTagClickListener = onTagClickListener;
     this.onProfileClickListener = onProfileClickListener;
+    this.onFollowClickListener = onFollowClickListener;
 
     enableDiffing();
   }
@@ -33,7 +35,10 @@ public class SearchAdapter extends EpoxyAdapter {
     models.clear();
 
     for (AccountRealm account : accounts) {
-      models.add(new UserModel_().account(account).onProfileClickListener(onProfileClickListener));
+      models.add(new UserModel_()
+          .account(account)
+          .onProfileClickListener(onProfileClickListener)
+          .onFollowClickListener(onFollowClickListener));
     }
 
     notifyModelsChanged();

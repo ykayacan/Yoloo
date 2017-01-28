@@ -19,6 +19,8 @@ import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.google.android.gms.common.Scopes;
 import com.yoloo.android.R;
+import com.yoloo.android.data.faker.AccountFaker;
+import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
@@ -36,22 +38,19 @@ import java.net.SocketTimeoutException;
 public class SignInController extends MvpController<SignInView, SignInPresenter>
     implements SignInView, IdpProvider.IdpCallback {
 
-  @BindView(R.id.et_login_email) EditText etEmail;
+  static {
+    AccountFaker.generate();
+  }
 
+  @BindView(R.id.et_login_email) EditText etEmail;
   @BindView(R.id.et_login_password) EditText etPassword;
 
   @BindString(R.string.error_google_play_services) String errorGooglePlayServicesString;
-
   @BindString(R.string.error_auth_failed) String errorAuthFailedString;
-
   @BindString(R.string.error_server_down) String errorServerDownString;
-
   @BindString(R.string.label_loading) String loadingString;
-
   @BindString(R.string.error_field_required) String errorFieldRequiredString;
-
   @BindString(R.string.error_invalid_email) String errorInvalidEmail;
-
   @BindString(R.string.error_invalid_password) String errorInvalidPassword;
 
   private ProgressDialog progressDialog;
@@ -90,8 +89,10 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
   }
 
   @NonNull @Override public SignInPresenter createPresenter() {
-    return new SignInPresenter(UserRepository.getInstance(UserRemoteDataStore.getInstance(),
-        UserDiskDataStore.getInstance()));
+    return new SignInPresenter(
+        UserRepository.getInstance(
+            UserRemoteDataStore.getInstance(),
+            UserDiskDataStore.getInstance()));
   }
 
   @Override public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -144,13 +145,13 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
       // form field with an error.
       focusView.requestFocus();
     } else {
-      KeyboardUtil.hideKeyboard(getActivity(), etPassword);
+      KeyboardUtil.hideKeyboard(etPassword);
 
       getPresenter().signIn(email, password);
     }
   }
 
-  @Override public void onSignedIn() {
+  @Override public void onSignedIn(AccountRealm account) {
     getParentController().getRouter()
         .setRoot(RouterTransaction.with(new UserFeedController())
             .pushChangeHandler(new FadeChangeHandler()));

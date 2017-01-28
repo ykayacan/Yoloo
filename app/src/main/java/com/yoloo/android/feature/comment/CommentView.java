@@ -8,9 +8,13 @@ import java.util.List;
 
 public interface CommentView extends MvpDataView<Response<List<CommentRealm>>> {
 
-  void onCommentLoaded(CommentRealm comment);
+  void onCommentsLoaded(Response<List<CommentRealm>> value, boolean self, boolean hasAcceptedId,
+      long totalCommentCount);
 
-  void onAcceptedCommentLoaded(CommentRealm comment);
+  void onAcceptedCommentLoaded(CommentRealm comment, boolean self, boolean hasAcceptedId);
+
+  void onNewCommentLoaded(CommentRealm comment, boolean self, boolean hasAcceptedId,
+      long totalCommentCount);
 
   void onMentionSuggestionsLoaded(List<AccountRealm> suggestions);
 }

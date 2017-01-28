@@ -17,7 +17,7 @@ import com.yoloo.android.data.repository.category.CategoryRepository;
 import com.yoloo.android.data.repository.category.datasource.CategoryDiskDataStore;
 import com.yoloo.android.data.repository.category.datasource.CategoryRemoteDataStore;
 import com.yoloo.android.feature.base.framework.MvpController;
-import com.yoloo.android.feature.feed.globalfeed.GlobalFeedController;
+import com.yoloo.android.feature.feed.postfeed.PostController;
 import com.yoloo.android.feature.ui.recyclerview.GridInsetItemDecoration;
 import com.yoloo.android.feature.ui.recyclerview.SlideInItemAnimator;
 import com.yoloo.android.feature.write.catalog.CatalogController;
@@ -98,7 +98,7 @@ public class CategoryController extends MvpController<CategoryView, CategoryPres
       }
     } else {
       getParentController().getRouter()
-          .pushController(RouterTransaction.with(GlobalFeedController.create(name))
+          .pushController(RouterTransaction.with(PostController.ofCategory(name))
               .pushChangeHandler(new VerticalChangeHandler())
               .popChangeHandler(new VerticalChangeHandler()));
     }

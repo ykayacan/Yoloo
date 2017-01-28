@@ -6,4 +6,6 @@ import com.yoloo.android.feature.base.framework.MvpView;
 public interface CatalogView extends MvpView {
 
   void onDraftLoaded(PostRealm draft);
+
+  void onDraftSaved();
 }

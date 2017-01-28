@@ -16,7 +16,7 @@ public class BountyButtonModel extends EpoxyModel<Button> {
 
   @Override public void bind(Button view) {
     super.bind(view);
-    view.setText(R.string.action_bounty_questions);
+    view.setText(R.string.action_feed_bounty_questions);
     view.setOnClickListener(v -> onBountyClickListener.onBountyClick(v));
   }
 

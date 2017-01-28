@@ -1,22 +1,19 @@
 package com.yoloo.android.data.repository.post.datasource;
 
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.AccountRealmFields;
 import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.data.model.CommentRealmFields;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.model.PostRealmFields;
 import com.yoloo.android.data.sorter.PostSorter;
+import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.reactivex.Single;
 import io.realm.Realm;
-import io.realm.RealmChangeListener;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
 import io.realm.Sort;
+import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 public class PostDiskDataStore {
 
@@ -39,102 +36,65 @@ public class PostDiskDataStore {
    * @return the observable
    */
   public Observable<PostRealm> get(String postId) {
-    Realm realm = Realm.getDefaultInstance();
+    return Observable.fromCallable(() -> {
+      Realm realm = Realm.getDefaultInstance();
 
-    PostRealm post = realm.copyFromRealm(
-        realm.where(PostRealm.class).equalTo(PostRealmFields.ID, postId).findFirst());
+      PostRealm post = realm.copyFromRealm(realm.where(PostRealm.class)
+          .equalTo(PostRealmFields.ID, postId)
+          .findFirst());
 
-    realm.close();
+      realm.close();
 
-    return Observable.just(post);
+      return post;
+    });
   }
 
   /**
    * Add.
    *
    * @param post the post realm
+   * @return the completable
    */
-  public void add(PostRealm post) {
-    Realm realm = Realm.getDefaultInstance();
-    realm.executeTransaction(tx -> tx.insertOrUpdate(post));
-    realm.close();
+  public Completable add(PostRealm post) {
+    return addAll(Collections.singletonList(post));
   }
 
   /**
-   * Add all.
+   * Add all completable.
    *
-   * @param posts the realms
+   * @param posts the posts
+   * @return the completable
    */
-  public void addAll(List<PostRealm> posts) {
-    Realm realm = Realm.getDefaultInstance();
-    realm.executeTransactionAsync(tx -> tx.insertOrUpdate(posts));
-    realm.close();
-  }
-
-  public Single<PostRealm> addOrGetDraft() {
-    Realm realm = Realm.getDefaultInstance();
-    PostRealm oldDraft =
-        realm.where(PostRealm.class).equalTo(PostRealmFields.DRAFT, true).findFirst();
-
-    if (oldDraft == null) {
-      AccountRealm me = realm.copyFromRealm(
-          realm.where(AccountRealm.class).equalTo(AccountRealmFields.ME, true).findFirst());
-
-      PostRealm newDraft = new PostRealm().setId(UUID.randomUUID().toString())
-          .setUsername(me.getUsername())
-          .setOwnerId(me.getId())
-          .setAvatarUrl(me.getAvatarUrl())
-          .setDir(0)
-          .setFeedItem(true)
-          .setDraft(true);
-
-      realm.executeTransactionAsync(tx -> tx.insertOrUpdate(newDraft));
+  public Completable addAll(List<PostRealm> posts) {
+    return Completable.fromAction(() -> {
+      Realm realm = Realm.getDefaultInstance();
+      realm.executeTransaction(tx -> tx.insertOrUpdate(posts));
       realm.close();
-
-      return Single.just(newDraft);
-    } else {
-      PostRealm post = realm.copyFromRealm(oldDraft);
-      realm.close();
-
-      return Single.just(post);
-    }
-  }
-
-  public void updateDraft(PostRealm draft) {
-    Realm realm = Realm.getDefaultInstance();
-    realm.executeTransaction(tx -> tx.insertOrUpdate(draft));
-    realm.close();
+    });
   }
 
   /**
    * Delete.
    *
    * @param postId the post id
+   * @return the completable
    */
-  public void delete(String postId) {
-    Realm realm = Realm.getDefaultInstance();
+  public Completable delete(String postId) {
+    return Completable.fromAction(() -> {
+      Realm realm = Realm.getDefaultInstance();
 
-    realm.executeTransactionAsync(tx -> {
-      PostRealm post = tx.where(PostRealm.class).equalTo(PostRealmFields.ID, postId).findFirst();
-      post.deleteFromRealm();
+      realm.executeTransaction(tx -> {
+        tx.where(PostRealm.class)
+            .equalTo(PostRealmFields.ID, postId)
+            .findFirst().deleteFromRealm();
 
-      RealmResults<CommentRealm> commentResults =
-          tx.where(CommentRealm.class).equalTo(CommentRealmFields.POST_ID, postId).findAll();
-      commentResults.deleteAllFromRealm();
+        tx.where(CommentRealm.class)
+            .equalTo(CommentRealmFields.POST_ID, postId)
+            .findAll().deleteAllFromRealm();
+      });
+
+      realm.close();
     });
-
-    realm.close();
-  }
-
-  public void deleteDraft() {
-    Realm realm = Realm.getDefaultInstance();
-
-    realm.executeTransactionAsync(tx -> {
-      PostRealm post = tx.where(PostRealm.class).equalTo(PostRealmFields.DRAFT, true).findFirst();
-      post.deleteFromRealm();
-    });
-
-    realm.close();
   }
 
   /**
@@ -142,72 +102,91 @@ public class PostDiskDataStore {
    *
    * @return the observable
    */
-  public Observable<Response<List<PostRealm>>> listFeed() {
-    return Observable.create(e -> {
+  public Observable<Response<List<PostRealm>>> listByUserFeed() {
+    return Observable.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 
-      RealmResults<PostRealm> results = realm.where(PostRealm.class)
+      List<PostRealm> posts = realm.copyFromRealm(realm.where(PostRealm.class)
           .equalTo(PostRealmFields.IS_FEED_ITEM, true)
           .notEqualTo(PostRealmFields.PENDING, true)
-          .notEqualTo(PostRealmFields.DRAFT, true)
-          .findAllSortedAsync(PostRealmFields.CREATED, Sort.DESCENDING);
+          .findAllSorted(PostRealmFields.CREATED, Sort.DESCENDING));
 
-      final RealmChangeListener<RealmResults<PostRealm>> listener = element -> {
-        e.onNext(Response.create(realm.copyFromRealm(element), null, null));
-        e.onComplete();
+      realm.close();
 
-        realm.close();
-      };
-
-      results.addChangeListener(listener);
-
-      e.setCancellable(() -> results.removeChangeListener(listener));
+      return Response.create(posts, null, null);
     });
   }
 
   /**
    * List observable.
    *
+   * @param categoryName the category name
    * @param sorter the sorter
-   * @param category the category
    * @return the observable
    */
-  public Observable<Response<List<PostRealm>>> list(PostSorter sorter, String category) {
-    return Observable.create(e -> {
+  public Observable<Response<List<PostRealm>>> listByCategory(String categoryName,
+      PostSorter sorter) {
+    return Observable.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 
       RealmQuery<PostRealm> query = realm.where(PostRealm.class);
 
       RealmResults<PostRealm> results;
 
-      query.notEqualTo(PostRealmFields.PENDING, true).notEqualTo(PostRealmFields.DRAFT, true);
+      query.notEqualTo(PostRealmFields.PENDING, true);
 
       if (sorter.equals(PostSorter.NEWEST)) {
-        results = query.equalTo(PostRealmFields.CATEGORIES.NAME, category)
-            .findAllSortedAsync(PostRealmFields.CREATED, Sort.DESCENDING);
+        results = query.equalTo(PostRealmFields.CATEGORIES.NAME, categoryName)
+            .findAllSorted(PostRealmFields.CREATED, Sort.DESCENDING);
       } else if (sorter.equals(PostSorter.HOT)) {
-        results = query.equalTo(PostRealmFields.CATEGORIES.NAME, category)
-            .findAllSortedAsync(PostRealmFields.RANK, Sort.DESCENDING);
+        results = query.equalTo(PostRealmFields.CATEGORIES.NAME, categoryName)
+            .findAllSorted(PostRealmFields.RANK, Sort.DESCENDING);
       } else if (sorter.equals(PostSorter.UNANSWERED)) {
-        results = query.equalTo(PostRealmFields.CATEGORIES.NAME, category)
-            .findAllSortedAsync(PostRealmFields.CREATED, Sort.DESCENDING);
+        results = query.equalTo(PostRealmFields.CATEGORIES.NAME, categoryName)
+            .findAllSorted(PostRealmFields.CREATED, Sort.DESCENDING);
       } else if (sorter.equals(PostSorter.BOUNTY)) {
         results = query.notEqualTo(PostRealmFields.BOUNTY, 0)
-            .findAllSortedAsync(PostRealmFields.RANK, Sort.DESCENDING);
+            .findAllSorted(PostRealmFields.RANK, Sort.DESCENDING);
       } else {
-        results = query.findAllAsync();
+        results = query.findAll();
       }
 
-      final RealmChangeListener<RealmResults<PostRealm>> listener = element -> {
-        e.onNext(Response.create(realm.copyFromRealm(element), null, null));
-        e.onComplete();
+      List<PostRealm> posts = realm.copyFromRealm(results);
 
-        realm.close();
-      };
+      realm.close();
 
-      results.addChangeListener(listener);
+      return Response.create(posts, null, null);
+    });
+  }
 
-      e.setCancellable(() -> results.removeChangeListener(listener));
+  public Observable<Response<List<PostRealm>>> listByBounty() {
+    return Observable.fromCallable(() -> {
+      Realm realm = Realm.getDefaultInstance();
+
+      RealmResults<PostRealm> results = realm.where(PostRealm.class)
+          .notEqualTo(PostRealmFields.PENDING, true)
+          .notEqualTo(PostRealmFields.BOUNTY, 0)
+          .findAllSorted(PostRealmFields.RANK, Sort.DESCENDING);
+
+      List<PostRealm> posts = results.isEmpty()
+          ? Collections.emptyList()
+          : realm.copyFromRealm(results);
+
+      return Response.create(posts, null, null);
+    });
+  }
+
+  public Observable<Response<List<PostRealm>>> listBookmarkedPosts() {
+    return Observable.fromCallable(() -> {
+      Realm realm = Realm.getDefaultInstance();
+
+      List<PostRealm> posts = realm.copyFromRealm(realm.where(PostRealm.class)
+          .equalTo(PostRealmFields.BOOKMARKED, true)
+          .findAllSorted(PostRealmFields.CREATED, Sort.DESCENDING));
+
+      realm.close();
+
+      return Response.create(posts, null, null);
     });
   }
 
@@ -217,16 +196,39 @@ public class PostDiskDataStore {
    * @param postId the post id
    * @param direction the direction
    */
-  public void vote(String postId, int direction) {
-    Realm realm = Realm.getDefaultInstance();
-    PostRealm post = realm.where(PostRealm.class).equalTo(PostRealmFields.ID, postId).findFirst();
+  public Completable vote(String postId, int direction) {
+    return Completable.fromAction(() -> {
+      Realm realm = Realm.getDefaultInstance();
 
-    realm.executeTransaction(tx -> {
-      setVoteCounter(direction, post);
-      post.setDir(direction);
-      tx.insertOrUpdate(post);
+      PostRealm post = realm.where(PostRealm.class)
+          .equalTo(PostRealmFields.ID, postId)
+          .findFirst();
+
+      realm.executeTransaction(tx -> {
+        setVoteCounter(direction, post);
+        post.setDir(direction);
+        tx.insertOrUpdate(post);
+      });
+
+      realm.close();
     });
-    realm.close();
+  }
+
+  public Completable bookmark(String postId) {
+    return Completable.fromAction(() -> {
+      Realm realm = Realm.getDefaultInstance();
+
+      PostRealm post = realm.where(PostRealm.class)
+          .equalTo(PostRealmFields.ID, postId)
+          .findFirst();
+
+      realm.executeTransaction(tx -> {
+        post.setBookmarked(true);
+        tx.insertOrUpdate(post);
+      });
+
+      realm.close();
+    });
   }
 
   private void setVoteCounter(int direction, PostRealm post) {

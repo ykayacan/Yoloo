@@ -1,7 +1,9 @@
 package com.yoloo.android.feature.write.catalog;
 
 import android.content.res.Resources;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
@@ -17,6 +19,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindView;
 import com.bluelinelabs.conductor.Controller;
+import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 import com.bluelinelabs.conductor.support.ControllerPagerAdapter;
@@ -26,31 +30,46 @@ import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.post.datasource.PostDiskDataStore;
 import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
+import com.yoloo.android.data.repository.user.UserRepository;
+import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
+import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.feature.base.framework.MvpController;
 import com.yoloo.android.feature.category.CategoryController;
 import com.yoloo.android.feature.category.CategoryType;
+import com.yoloo.android.feature.write.EditorType;
 import com.yoloo.android.feature.write.editor.EditorController;
+import com.yoloo.android.util.BundleBuilder;
 import io.reactivex.Observable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import timber.log.Timber;
 
 public class CatalogController extends MvpController<CatalogView, CatalogPresenter>
     implements CatalogView {
 
+  private static final String KEY_EDITOR_TYPE = "EDITOR_TYPE";
+
   @BindView(R.id.tablayout_catalog) TabLayout tabLayout;
-
   @BindView(R.id.viewpager_catalog) ViewPager viewPager;
-
   @BindView(R.id.toolbar_catalog) Toolbar toolbar;
 
   private PostRealm draft;
 
   private Map<String, List<CategoryRealm>> selectedCategories;
 
-  public CatalogController() {
+  private int editorType;
+
+  public CatalogController(@Nullable Bundle args) {
+    super(args);
     setRetainViewMode(RetainViewMode.RETAIN_DETACH);
+  }
+
+  public static CatalogController create(@EditorType int editorType) {
+    final Bundle bundle = new BundleBuilder()
+        .putInt(KEY_EDITOR_TYPE, editorType)
+        .build();
+
+    return new CatalogController(bundle);
   }
 
   @Override
@@ -62,7 +81,10 @@ public class CatalogController extends MvpController<CatalogView, CatalogPresent
     super.onViewCreated(view);
     selectedCategories = new HashMap<>();
 
-    final ControllerPagerAdapter pagerAdapter = new CatalogPagerAdapter(this, true, getResources());
+    editorType = getArgs().getInt(KEY_EDITOR_TYPE);
+
+    final ControllerPagerAdapter pagerAdapter =
+        new CatalogPagerAdapter(this, true, getResources());
 
     viewPager.setAdapter(pagerAdapter);
     tabLayout.setupWithViewPager(viewPager);
@@ -74,6 +96,19 @@ public class CatalogController extends MvpController<CatalogView, CatalogPresent
   @Override protected void onDestroyView(@NonNull View view) {
     viewPager.setAdapter(null);
     super.onDestroyView(view);
+  }
+
+  @Override protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+      @NonNull ControllerChangeType changeType) {
+    super.onChangeEnded(changeHandler, changeType);
+    if (changeType.equals(ControllerChangeType.POP_ENTER)) {
+      getPresenter().loadDraft();
+    }
+  }
+
+  @Override public boolean handleBack() {
+    showDiscardDraftDialog();
+    return false;
   }
 
   @Override public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
@@ -89,33 +124,35 @@ public class CatalogController extends MvpController<CatalogView, CatalogPresent
         return false;
       case R.id.action_next:
         if (selectedCategories.isEmpty()) {
-          Snackbar.make(getView(), R.string.error_select_category, Snackbar.LENGTH_SHORT).show();
-          return false;
+          Snackbar.make(getView(), R.string.error_catalog_select_category, Snackbar.LENGTH_SHORT).show();
+        } else {
+          draft.setCategoriesAsString(getCategoryIdsAsString());
+          getPresenter().updateDraft(draft);
         }
-
-        String categoryIdsAsString = getCategoryIdsAsString();
-
-        draft.setCategoriesAsString(categoryIdsAsString);
-
-        getPresenter().updateDraft(draft);
-
-        getRouter().pushController(RouterTransaction.with(new EditorController())
-            .pushChangeHandler(new HorizontalChangeHandler())
-            .popChangeHandler(new HorizontalChangeHandler()));
-        return true;
+        return false;
       default:
         return super.onOptionsItemSelected(item);
     }
   }
 
   @NonNull @Override public CatalogPresenter createPresenter() {
-    return new CatalogPresenter(PostRepository.getInstance(PostRemoteDataStore.getInstance(),
-        PostDiskDataStore.getInstance()));
+    return new CatalogPresenter(
+        PostRepository.getInstance(
+            PostRemoteDataStore.getInstance(),
+            PostDiskDataStore.getInstance()),
+        UserRepository.getInstance(
+            UserRemoteDataStore.getInstance(),
+            UserDiskDataStore.getInstance()));
   }
 
   @Override public void onDraftLoaded(PostRealm draft) {
     this.draft = draft;
-    Timber.d("Catalog: %s", draft.getBounty());
+  }
+
+  @Override public void onDraftSaved() {
+    getRouter().pushController(RouterTransaction.with(EditorController.create(editorType))
+        .pushChangeHandler(new HorizontalChangeHandler())
+        .popChangeHandler(new HorizontalChangeHandler()));
   }
 
   private String getCategoryIdsAsString() {
@@ -144,7 +181,7 @@ public class CatalogController extends MvpController<CatalogView, CatalogPresent
     // add back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
     if (ab != null) {
-      ab.setTitle(R.string.label_catalog_title);
+      ab.setTitle(R.string.label_catalog_toolbar_title);
       ab.setDisplayHomeAsUpEnabled(true);
       ab.setHomeAsUpIndicator(
           AppCompatResources.getDrawable(getActivity(), R.drawable.ic_close_white_24dp));
@@ -153,7 +190,7 @@ public class CatalogController extends MvpController<CatalogView, CatalogPresent
   }
 
   private void showDiscardDraftDialog() {
-    new AlertDialog.Builder(getActivity()).setTitle(R.string.label_discard_draft)
+    new AlertDialog.Builder(getActivity()).setTitle(R.string.action_catalog_discard_draft)
         .setCancelable(false)
         .setPositiveButton(android.R.string.ok, (dialog, which) -> {
           getPresenter().deleteDraft();
@@ -191,9 +228,9 @@ public class CatalogController extends MvpController<CatalogView, CatalogPresent
     @Override public CharSequence getPageTitle(int position) {
       switch (position) {
         case 0:
-          return resources.getString(R.string.label_destination);
+          return resources.getString(R.string.label_catalog_tab_destination);
         case 1:
-          return resources.getString(R.string.label_theme);
+          return resources.getString(R.string.label_catalog_tab_theme);
         default:
           return null;
       }

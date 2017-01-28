@@ -6,7 +6,9 @@
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
   android:clickable="true"
-  android:foreground="?android:attr/selectableItemBackgroundBorderless">
+  android:foreground="?selectableItemBackgroundBorderless"
+  android:paddingBottom="8dp"
+  android:paddingTop="8dp">
 
   <ImageView
     android:id="@+id/iv_not_item_avatar"
@@ -50,10 +52,10 @@
     android:id="@+id/ib_not_follow"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:layout_marginEnd="8dp"
+    android:layout_marginRight="8dp"
     android:background="?android:attr/selectableItemBackground"
     android:padding="8dp"
-    android:layout_marginRight="8dp"
-    android:layout_marginEnd="8dp"
     android:tint="@color/accent"
     app:layout_constraintBottom_toBottomOf="@+id/iv_not_item_avatar"
     app:layout_constraintRight_toRightOf="parent"

@@ -25,7 +25,6 @@ import com.yoloo.backend.shard.ShardUtil;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagController;
 import com.yoloo.backend.tag.TagControllerFactory;
-import com.yoloo.backend.tag.TagGroup;
 import com.yoloo.backend.topic.Topic;
 import com.yoloo.backend.topic.TopicController;
 import com.yoloo.backend.topic.TopicControllerFactory;
@@ -56,7 +55,7 @@ public class QuestionControllerTest extends TestBase {
   private Topic budgetTravel;
   private Topic europe;
 
-  private TagGroup passport;
+  private Tag passport;
 
   private Tag visa;
   private Tag visa2;
@@ -292,10 +291,9 @@ public class QuestionControllerTest extends TestBase {
 
     CollectionResponse<Question> response = questionController.list(
         Optional.absent(),
-        Optional.fromNullable(budgetTravel.getName()),
+        Optional.fromNullable(budgetTravel.getName()), ,
         Optional.absent(),
-        Optional.absent(),
-        user);
+        Optional.absent(), user);
 
     assertNotNull(response.getItems());
     assertEquals(1, response.getItems().size());

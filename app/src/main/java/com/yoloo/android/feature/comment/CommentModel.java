@@ -16,19 +16,19 @@ import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.feature.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.feature.ui.widget.VoteView;
 import com.yoloo.android.feature.ui.widget.linkabletextview.LinkableTextView;
-import com.yoloo.android.feature.ui.widget.zamanview.ZamanTextView;
+import com.yoloo.android.feature.ui.widget.zamanview.TimeTextView;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.glide.CropCircleTransformation;
 
 public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolder> {
 
   @EpoxyAttribute CommentRealm comment;
-
+  @EpoxyAttribute boolean self;
+  @EpoxyAttribute boolean hasAcceptedId;
   @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
-
   @EpoxyAttribute(hash = false) OnVoteClickListener onVoteClickListener;
-
   @EpoxyAttribute(hash = false) OnMentionClickListener onMentionClickListener;
+  @EpoxyAttribute(hash = false) OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener;
 
   @Override protected CommentHolder createNewHolder() {
     return new CommentHolder();
@@ -39,29 +39,7 @@ public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolde
   }
 
   @Override public void bind(CommentHolder holder) {
-    final Context context = holder.ivUserAvatar.getContext().getApplicationContext();
-
-    Glide.with(context)
-        .load(comment.getAvatarUrl())
-        .bitmapTransform(CropCircleTransformation.getInstance(context))
-        .into(holder.ivUserAvatar);
-
-    holder.tvUsername.setText(comment.getUsername());
-    holder.tvTime.setTimeStamp(comment.getCreated().getTime() / 1000);
-    holder.tvContent.setText(comment.getContent());
-    holder.voteView.setVotes(comment.getVotes());
-    holder.voteView.setCurrentStatus(comment.getDir());
-
-    if (comment.isAccepted()) {
-      holder.tvMarkAsAccepted.setVisibility(View.GONE);
-    } else {
-      holder.tvMarkAsAccepted.setVisibility(View.VISIBLE);
-      DrawableHelper.withContext(context)
-          .withDrawable(holder.tvMarkAsAccepted.getCompoundDrawables()[0])
-          .withColor(android.R.color.secondary_text_dark)
-          .tint();
-    }
-
+    holder.bindDataWithViewHolder(comment, self, hasAcceptedId);
     setupClickListeners(holder);
   }
 
@@ -79,9 +57,21 @@ public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolde
         onMentionClickListener.onMentionClick(value);
       }
     });
-    holder.voteView.setOnVoteEventListener(
-        direction -> onVoteClickListener.onVoteClick(comment.getId(), direction,
-            OnVoteClickListener.VotableType.COMMENT));
+    holder.tvAccept.setOnClickListener(v -> {
+      comment.setAccepted(true);
+      holder.tvAccept.setVisibility(View.GONE);
+      holder.tvAcceptedMark.setVisibility(View.VISIBLE);
+      DrawableHelper.withContext(v.getContext())
+          .withDrawable(holder.tvAcceptedMark.getCompoundDrawables()[1])
+          .withColor(R.color.accepted)
+          .tint();
+
+      onMarkAsAcceptedClickListener.onMarkAsAccepted(v, comment.getPostId(), comment.getId());
+    });
+    holder.voteView.setOnVoteEventListener(direction -> {
+      comment.setDir(direction);
+      onVoteClickListener.onVoteClick(comment.getId(), direction, OnVoteClickListener.Type.COMMENT);
+    });
   }
 
   private void clearClickListeners(CommentHolder holder) {
@@ -92,15 +82,39 @@ public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolde
 
   static class CommentHolder extends BaseEpoxyHolder {
     @BindView(R.id.iv_comment_user_avatar) ImageView ivUserAvatar;
-
     @BindView(R.id.tv_comment_username) TextView tvUsername;
-
-    @BindView(R.id.tv_comment_time) ZamanTextView tvTime;
-
+    @BindView(R.id.tv_comment_time) TimeTextView tvTime;
+    @BindView(R.id.tv_comment_accepted) TextView tvAcceptedMark;
     @BindView(R.id.tv_comment_content) LinkableTextView tvContent;
-
     @BindView(R.id.tv_comment_vote) VoteView voteView;
+    @BindView(R.id.tv_mark_as_accepted) TextView tvAccept;
 
-    @BindView(R.id.tv_mark_as_accepted) TextView tvMarkAsAccepted;
+    void bindDataWithViewHolder(CommentRealm comment, boolean self, boolean hasAcceptedId) {
+      final Context context = ivUserAvatar.getContext().getApplicationContext();
+
+      Glide.with(context)
+          .load(comment.getAvatarUrl())
+          .bitmapTransform(CropCircleTransformation.getInstance(context))
+          .into(ivUserAvatar);
+
+      tvUsername.setText(comment.getUsername());
+      tvTime.setTimeStamp(comment.getCreated().getTime() / 1000);
+      tvContent.setText(comment.getContent());
+      voteView.setVotes(comment.getVotes());
+      voteView.setCurrentStatus(comment.getDir());
+
+      tvAcceptedMark.setVisibility(comment.isAccepted() ? View.VISIBLE : View.GONE);
+      tvAccept.setVisibility(self && !hasAcceptedId ? View.VISIBLE : View.GONE);
+
+      DrawableHelper.withContext(context)
+          .withDrawable(tvAccept.getCompoundDrawables()[0])
+          .withColor(android.R.color.secondary_text_dark)
+          .tint();
+
+      DrawableHelper.withContext(context)
+          .withDrawable(tvAcceptedMark.getCompoundDrawables()[1])
+          .withColor(R.color.accepted)
+          .tint();
+    }
   }
 }
