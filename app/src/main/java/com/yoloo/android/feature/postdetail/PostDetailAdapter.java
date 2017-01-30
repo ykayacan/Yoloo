@@ -12,7 +12,7 @@ import com.yoloo.android.feature.comment.OnMarkAsAcceptedClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnOptionsClickListener;
+import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
@@ -32,7 +32,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
   public static final int TYPE_BLOG = 2;
 
   private final OnProfileClickListener onProfileClickListener;
-  private final OnOptionsClickListener onOptionsClickListener;
+  private final OnPostOptionsClickListener onPostOptionsClickListener;
   private final OnShareClickListener onShareClickListener;
   private final OnCommentClickListener onCommentClickListener;
   private final OnContentImageClickListener onContentImageClickListener;
@@ -44,7 +44,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
 
   private PostDetailAdapter(
       OnProfileClickListener onProfileClickListener,
-      OnOptionsClickListener onOptionsClickListener,
+      OnPostOptionsClickListener onPostOptionsClickListener,
       OnShareClickListener onShareClickListener,
       OnCommentClickListener onCommentClickListener,
       OnContentImageClickListener onContentImageClickListener,
@@ -52,7 +52,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
       OnMentionClickListener onMentionClickListener,
       OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener) {
     this.onProfileClickListener = onProfileClickListener;
-    this.onOptionsClickListener = onOptionsClickListener;
+    this.onPostOptionsClickListener = onPostOptionsClickListener;
     this.onShareClickListener = onShareClickListener;
     this.onCommentClickListener = onCommentClickListener;
     this.onContentImageClickListener = onContentImageClickListener;
@@ -129,7 +129,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
   private RichQuestionModel createRichQuestionDetail(PostRealm post) {
     return new RichQuestionModel_()
         .onProfileClickListener(onProfileClickListener)
-        .onOptionsClickListener(onOptionsClickListener)
+        .onPostOptionsClickListener(onPostOptionsClickListener)
         .onShareClickListener(onShareClickListener)
         .onCommentClickListener(onCommentClickListener)
         .onVoteClickListener(onVoteClickListener)
@@ -141,7 +141,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
   private NormalQuestionModel createNormalQuestionDetail(PostRealm post) {
     return new NormalQuestionModel_()
         .onProfileClickListener(onProfileClickListener)
-        .onOptionsClickListener(onOptionsClickListener)
+        .onPostOptionsClickListener(onPostOptionsClickListener)
         .onShareClickListener(onShareClickListener)
         .onCommentClickListener(onCommentClickListener)
         .onVoteClickListener(onVoteClickListener)
@@ -152,7 +152,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
   private BlogModel createBlog(PostRealm post) {
     return new BlogModel_()
         .onProfileClickListener(onProfileClickListener)
-        .onOptionsClickListener(onOptionsClickListener)
+        .onPostOptionsClickListener(onPostOptionsClickListener)
         .onShareClickListener(onShareClickListener)
         .onCommentClickListener(onCommentClickListener)
         .onVoteClickListener(onVoteClickListener)
@@ -162,7 +162,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
 
   public static class PostDetailAdapterBuilder {
     private OnProfileClickListener onProfileClickListener;
-    private OnOptionsClickListener onOptionsClickListener;
+    private OnPostOptionsClickListener onPostOptionsClickListener;
     private OnShareClickListener onShareClickListener;
     private OnCommentClickListener onCommentClickListener;
     private OnVoteClickListener onVoteClickListener;
@@ -180,8 +180,8 @@ public class PostDetailAdapter extends EpoxyAdapter {
     }
 
     public PostDetailAdapter.PostDetailAdapterBuilder onOptionsClickListener(
-        OnOptionsClickListener onOptionsClickListener) {
-      this.onOptionsClickListener = onOptionsClickListener;
+        OnPostOptionsClickListener onPostOptionsClickListener) {
+      this.onPostOptionsClickListener = onPostOptionsClickListener;
       return this;
     }
 
@@ -222,7 +222,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
     }
 
     public PostDetailAdapter build() {
-      return new PostDetailAdapter(onProfileClickListener, onOptionsClickListener,
+      return new PostDetailAdapter(onProfileClickListener, onPostOptionsClickListener,
           onShareClickListener, onCommentClickListener, onContentImageClickListener,
           onVoteClickListener, onMentionClickListener, onMarkAsAcceptedClickListener);
     }

@@ -3,7 +3,7 @@ package com.yoloo.android.feature.write.bountyoverview;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
-import com.yoloo.android.feature.base.framework.MvpPresenter;
+import com.yoloo.android.framework.MvpPresenter;
 import com.yoloo.android.util.Pair;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;

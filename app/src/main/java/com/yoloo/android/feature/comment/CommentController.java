@@ -5,13 +5,15 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -33,7 +35,6 @@ import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.base.framework.MvpController;
 import com.yoloo.android.feature.feed.common.event.UpdateEvent;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
@@ -44,9 +45,9 @@ import com.yoloo.android.feature.ui.recyclerview.SlideInItemAnimator;
 import com.yoloo.android.feature.ui.widget.AutoCompleteMentionAdapter;
 import com.yoloo.android.feature.ui.widget.DelayedMultiAutoCompleteTextView;
 import com.yoloo.android.feature.ui.widget.SpaceTokenizer;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.ControllerUtil;
-import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.RxBus;
 import com.yoloo.android.util.WeakHandler;
@@ -62,11 +63,14 @@ public class CommentController extends MvpController<CommentView, CommentPresent
     OnMarkAsAcceptedClickListener {
 
   private static final String KEY_POST_ID = "POST_ID";
+  private static final String KEY_POST_OWNER_ID = "POST_OWNER_ID";
+  private static final String KEY_ACCEPTED_COMMENT_ID = "ACCEPTED_COMMENT_ID";
+  private static final String KEY_POST_TYPE = "POST_TYPE";
 
   @BindView(R.id.rv_comment) RecyclerView rvComment;
   @BindView(R.id.swipe_comment) SwipeRefreshLayout swipeRefreshLayout;
   @BindView(R.id.tv_comment_write_comment) DelayedMultiAutoCompleteTextView tvWriteComment;
-  @BindView(R.id.tv_comment_count) TextView tvCommentCount;
+  @BindView(R.id.toolbar_comment) Toolbar toolbar;
 
   @BindColor(R.color.primary) int primaryColor;
 
@@ -83,15 +87,22 @@ public class CommentController extends MvpController<CommentView, CommentPresent
   private String eTag;
 
   private String postId;
+  private String postOwnerId;
+  private String acceptedCommentId;
+  private int postType;
 
   public CommentController(@Nullable Bundle args) {
     super(args);
     setRetainViewMode(RetainViewMode.RETAIN_DETACH);
   }
 
-  public static CommentController create(String postId) {
+  public static CommentController create(String postId, String postOwnerId,
+      String acceptedCommentId, @PostType int postType) {
     final Bundle bundle = new BundleBuilder()
         .putString(KEY_POST_ID, postId)
+        .putString(KEY_POST_OWNER_ID, postOwnerId)
+        .putString(KEY_ACCEPTED_COMMENT_ID, acceptedCommentId)
+        .putInt(KEY_POST_TYPE, postType)
         .build();
 
     return new CommentController(bundle);
@@ -106,17 +117,22 @@ public class CommentController extends MvpController<CommentView, CommentPresent
     super.onViewCreated(view);
     handler = new WeakHandler();
 
+    final Bundle args = getArgs();
+    postId = args.getString(KEY_POST_ID);
+    postOwnerId = args.getString(KEY_POST_OWNER_ID);
+    acceptedCommentId = args.getString(KEY_ACCEPTED_COMMENT_ID);
+    postType = args.getInt(KEY_POST_TYPE);
+
     setupPullToRefresh();
+    setupToolbar();
+    setHasOptionsMenu(true);
     setupRecyclerView();
     setupMentionsAdapter();
   }
 
   @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-    final Bundle bundle = getArgs();
-    postId = bundle.getString(KEY_POST_ID);
-
-    getPresenter().loadPostAndComments(postId);
+    getPresenter().loadPostAndComments(postId, postOwnerId, acceptedCommentId);
 
     rvComment.addOnScrollListener(endlessRecyclerViewScrollListener);
   }
@@ -126,13 +142,24 @@ public class CommentController extends MvpController<CommentView, CommentPresent
     rvComment.removeOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
+  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    final int itemId = item.getItemId();
+    switch (itemId) {
+      case android.R.id.home:
+        getRouter().handleBack();
+        return true;
+      default:
+        return super.onOptionsItemSelected(item);
+    }
+  }
+
   @Override public boolean handleBack() {
     KeyboardUtil.hideKeyboard(tvWriteComment);
     return super.handleBack();
   }
 
   @Override public void onLoading(boolean pullToRefresh) {
-    swipeRefreshLayout.setRefreshing(pullToRefresh);
+
   }
 
   @Override public void onLoaded(Response<List<CommentRealm>> value) {
@@ -141,32 +168,30 @@ public class CommentController extends MvpController<CommentView, CommentPresent
 
   @Override
   public void onCommentsLoaded(Response<List<CommentRealm>> value, boolean self,
-      boolean hasAcceptedId, long totalCommentCount) {
-    setTotalCommentCountText((int) totalCommentCount);
-
-    swipeRefreshLayout.setRefreshing(false);
-
+      boolean hasAcceptedCommentId) {
     cursor = value.getCursor();
     eTag = value.geteTag();
 
-    adapter.addComments(value.getData(), self, hasAcceptedId);
+    adapter.addComments(value.getData(), self, hasAcceptedCommentId);
+    swipeRefreshLayout.setRefreshing(false);
   }
 
   @Override public void onAcceptedCommentLoaded(CommentRealm comment, boolean self,
-      boolean hasAcceptedId) {
-    adapter.addAcceptedComment(comment, self, hasAcceptedId);
+      boolean hasAcceptedCommentId) {
+    adapter.addAcceptedComment(comment, self, hasAcceptedCommentId);
   }
 
   @Override public void onNewCommentLoaded(CommentRealm comment, boolean self,
-      boolean hasAcceptedId, long totalCommentCount) {
-    setTotalCommentCountText((int) totalCommentCount);
-
-    adapter.addComment(comment, self, hasAcceptedId);
+      boolean hasAcceptedCommentId) {
+    adapter.addComment(comment, self, hasAcceptedCommentId);
     adapter.scrollToEnd(rvComment);
 
-    RxBus.get()
-        .sendEvent(new UpdateEvent(new PostRealm().setId(postId).setComments(totalCommentCount)),
-            ControllerUtil.getPreviousControllerClass(this));
+    RxBus.get().sendEvent(new UpdateEvent(new PostRealm().setId(postId)),
+        ControllerUtil.getPreviousControllerClass(this));
+  }
+
+  @Override public void onNewAccept(String commentId) {
+    acceptedCommentId = commentId;
   }
 
   @Override public void onError(Throwable e) {
@@ -181,7 +206,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
     endlessRecyclerViewScrollListener.resetState();
     adapter.clear();
 
-    getPresenter().loadPostAndComments(postId);
+    getPresenter().loadPostAndComments(postId, postOwnerId, acceptedCommentId);
   }
 
   @Override public void onMentionSuggestionsLoaded(List<AccountRealm> suggestions) {
@@ -196,8 +221,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
             CommentDiskDataStore.getInstance()),
         PostRepository.getInstance(
             PostRemoteDataStore.getInstance(),
-            PostDiskDataStore.getInstance()
-        ),
+            PostDiskDataStore.getInstance()),
         UserRepository.getInstance(
             UserRemoteDataStore.getInstance(),
             UserDiskDataStore.getInstance()));
@@ -217,8 +241,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
   }
 
   @Override public void onMarkAsAccepted(View v, String postId, String commentId) {
-    Snackbar.make(getView(), R.string.label_comment_accepted_confirm, Snackbar.LENGTH_SHORT)
-        .show();
+    Snackbar.make(getView(), R.string.label_comment_accepted_confirm, Snackbar.LENGTH_SHORT).show();
 
     getPresenter().acceptComment(postId, commentId);
   }
@@ -237,6 +260,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
     if (TextUtils.isEmpty(content)) {
       return;
     }
+
     CommentRealm comment = new CommentRealm()
         .setId(UUID.randomUUID().toString())
         .setContent(content)
@@ -249,7 +273,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
   }
 
   private void setupRecyclerView() {
-    adapter = new CommentAdapter(this, this, this, this);
+    adapter = new CommentAdapter(this, this, this, this, postType);
 
     final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
 
@@ -281,10 +305,14 @@ public class CommentController extends MvpController<CommentView, CommentPresent
         RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
   }
 
-  private void setTotalCommentCountText(int comments) {
-    String quantityText =
-        getResources().getQuantityString(R.plurals.label_comment_text, comments, comments);
+  private void setupToolbar() {
+    setSupportActionBar(toolbar);
 
-    tvCommentCount.setText(CountUtil.format(comments) + " " + quantityText);
+    // add back arrow to toolbar
+    final ActionBar ab = getSupportActionBar();
+    if (ab != null) {
+      ab.setDisplayHomeAsUpEnabled(true);
+      ab.setDisplayShowHomeEnabled(true);
+    }
   }
 }

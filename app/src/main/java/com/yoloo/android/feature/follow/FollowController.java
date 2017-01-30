@@ -23,7 +23,7 @@ import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.base.framework.MvpController;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.search.OnFollowClickListener;

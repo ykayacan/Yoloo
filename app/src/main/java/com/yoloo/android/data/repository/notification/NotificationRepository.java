@@ -35,20 +35,24 @@ public class NotificationRepository {
   public Observable<FcmRealm> registerFcmToken(FcmRealm fcm) {
     Preconditions.checkNotNull(fcm, "Fcm token can not be null.");
 
-    return remoteDataStore.registerFcmToken(fcm).subscribeOn(Schedulers.io());
+    return remoteDataStore.registerFcmToken(fcm)
+        .doOnNext(diskDataStore::registerFcmToken)
+        .subscribeOn(Schedulers.io());
   }
 
   public Completable unregisterFcmToken(FcmRealm fcm) {
     Preconditions.checkNotNull(fcm, "Fcm token can not be null.");
     
-    return remoteDataStore.unregisterFcmToken(fcm).subscribeOn(Schedulers.io());
+    return remoteDataStore.unregisterFcmToken(fcm)
+        .doOnComplete(diskDataStore::unregisterFcmToken)
+        .subscribeOn(Schedulers.io());
   }
 
   public Observable<Response<List<NotificationRealm>>> list(String cursor, String eTag, int limit) {
     return Observable.mergeDelayError(
-        diskDataStore.list(),
+        diskDataStore.list().subscribeOn(Schedulers.io()),
         remoteDataStore.list(cursor, limit)
-            .subscribeOn(Schedulers.io())
-            .doOnNext(response -> diskDataStore.addAll(response.getData())));
+            .doOnNext(response -> diskDataStore.addAll(response.getData()))
+            .subscribeOn(Schedulers.io()));
   }
 }

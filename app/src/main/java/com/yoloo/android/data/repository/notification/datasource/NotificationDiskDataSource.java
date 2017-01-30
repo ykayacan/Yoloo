@@ -6,9 +6,9 @@ import com.yoloo.android.data.model.NotificationRealm;
 import com.yoloo.android.data.model.NotificationRealmFields;
 import io.reactivex.Observable;
 import io.realm.Realm;
-import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
 import io.realm.Sort;
+import java.util.Collections;
 import java.util.List;
 
 public class NotificationDiskDataSource {
@@ -27,39 +27,37 @@ public class NotificationDiskDataSource {
 
   public void registerFcmToken(FcmRealm fcm) {
     Realm realm = Realm.getDefaultInstance();
-    realm.executeTransactionAsync(tx -> tx.insertOrUpdate(fcm));
+    realm.executeTransaction(tx -> tx.insertOrUpdate(fcm));
     realm.close();
   }
 
   public void unregisterFcmToken() {
     Realm realm = Realm.getDefaultInstance();
-    realm.executeTransactionAsync(tx -> tx.delete(FcmRealm.class));
+    realm.executeTransaction(tx -> tx.delete(FcmRealm.class));
     realm.close();
   }
 
   public void addAll(List<NotificationRealm> notifications) {
     Realm realm = Realm.getDefaultInstance();
-    realm.executeTransactionAsync(tx -> tx.insertOrUpdate(notifications));
+    realm.executeTransaction(tx -> tx.insertOrUpdate(notifications));
     realm.close();
   }
 
   public Observable<Response<List<NotificationRealm>>> list() {
-    return Observable.create(e -> {
+    return Observable.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 
       RealmResults<NotificationRealm> results = realm.where(NotificationRealm.class)
-          .findAllSortedAsync(NotificationRealmFields.CREATED, Sort.DESCENDING);
+          .findAllSorted(NotificationRealmFields.CREATED, Sort.DESCENDING);
 
-      final RealmChangeListener<RealmResults<NotificationRealm>> listener = element -> {
-        e.onNext(Response.create(realm.copyFromRealm(element), null, null));
-        e.onComplete();
-
+      if (results.isEmpty()) {
         realm.close();
-      };
-
-      results.addChangeListener(listener);
-
-      e.setCancellable(() -> results.removeChangeListener(listener));
+        return Response.create(Collections.emptyList(), null, null);
+      } else {
+        List<NotificationRealm> notifications = realm.copyFromRealm(results);
+        realm.close();
+        return Response.create(notifications, null, null);
+      }
     });
   }
 }

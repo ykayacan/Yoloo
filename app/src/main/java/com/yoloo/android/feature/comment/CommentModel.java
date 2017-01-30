@@ -23,8 +23,9 @@ import com.yoloo.android.util.glide.CropCircleTransformation;
 public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolder> {
 
   @EpoxyAttribute CommentRealm comment;
-  @EpoxyAttribute boolean self;
-  @EpoxyAttribute boolean hasAcceptedId;
+  @EpoxyAttribute(hash = false) boolean self;
+  @EpoxyAttribute(hash = false) boolean hasAcceptedId;
+  @EpoxyAttribute(hash = false) int postType;
   @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
   @EpoxyAttribute(hash = false) OnVoteClickListener onVoteClickListener;
   @EpoxyAttribute(hash = false) OnMentionClickListener onMentionClickListener;
@@ -39,7 +40,7 @@ public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolde
   }
 
   @Override public void bind(CommentHolder holder) {
-    holder.bindDataWithViewHolder(comment, self, hasAcceptedId);
+    holder.bindDataWithViewHolder(comment, self, hasAcceptedId, postType);
     setupClickListeners(holder);
   }
 
@@ -89,7 +90,8 @@ public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolde
     @BindView(R.id.tv_comment_vote) VoteView voteView;
     @BindView(R.id.tv_mark_as_accepted) TextView tvAccept;
 
-    void bindDataWithViewHolder(CommentRealm comment, boolean self, boolean hasAcceptedId) {
+    void bindDataWithViewHolder(CommentRealm comment, boolean self, boolean hasAcceptedId,
+        @PostType int postType) {
       final Context context = ivUserAvatar.getContext().getApplicationContext();
 
       Glide.with(context)
@@ -104,7 +106,8 @@ public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolde
       voteView.setCurrentStatus(comment.getDir());
 
       tvAcceptedMark.setVisibility(comment.isAccepted() ? View.VISIBLE : View.GONE);
-      tvAccept.setVisibility(self && !hasAcceptedId ? View.VISIBLE : View.GONE);
+      tvAccept.setVisibility(
+          isValidToShow(self, hasAcceptedId, postType) ? View.VISIBLE : View.GONE);
 
       DrawableHelper.withContext(context)
           .withDrawable(tvAccept.getCompoundDrawables()[0])
@@ -115,6 +118,10 @@ public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolde
           .withDrawable(tvAcceptedMark.getCompoundDrawables()[1])
           .withColor(R.color.accepted)
           .tint();
+    }
+
+    private boolean isValidToShow(boolean self, boolean hasAcceptedId, @PostType int postType) {
+      return self && !hasAcceptedId && postType != PostType.TYPE_BLOG;
     }
   }
 }

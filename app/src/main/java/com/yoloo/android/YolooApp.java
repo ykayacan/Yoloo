@@ -46,11 +46,7 @@ public class YolooApp extends Application {
     //initializeLeakCanary();
     initializeRealm();
     //enabledStrictMode();
-    Stetho.initialize(
-        Stetho.newInitializerBuilder(this)
-            .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
-            .enableWebKitInspector(RealmInspectorModulesProvider.builder(this).build())
-            .build());
+    initializeStetho();
 
     /*TinyDancer.create()
         .show(this);*/
@@ -62,6 +58,14 @@ public class YolooApp extends Application {
   protected void attachBaseContext(Context base) {
     super.attachBaseContext(base);
     MultiDex.install(this);
+  }
+
+  public void initializeStetho() {
+    Stetho.initialize(
+        Stetho.newInitializerBuilder(this)
+            .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
+            .enableWebKitInspector(RealmInspectorModulesProvider.builder(this).build())
+            .build());
   }
 
   private void initializeFacebook() {

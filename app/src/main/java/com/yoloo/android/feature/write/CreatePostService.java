@@ -10,15 +10,13 @@ import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.post.datasource.PostDiskDataStore;
 import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
-import com.yoloo.android.feature.feed.common.event.WriteNewPostEvent;
-import com.yoloo.android.feature.feed.userfeed.UserFeedController;
+import com.yoloo.android.localmesaagemanager.LocalMessageManager;
 import com.yoloo.android.util.NotificationUtil;
-import com.yoloo.android.util.RxBus;
 import com.yoloo.android.util.WeakHandler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 
-public class SendPostService extends Service {
+public class CreatePostService extends Service {
 
   public static final String KEY_NEW_POST_ID = "NEW_POST_ID";
   public static final String KEY_NEW_POST_EVENT = "NEW_POST_EVENT";
@@ -68,7 +66,7 @@ public class SendPostService extends Service {
   }
 
   private void showSendingNotification() {
-    Notification.Builder builder = new Notification.Builder(SendPostService.this).setTicker(
+    Notification.Builder builder = new Notification.Builder(CreatePostService.this).setTicker(
         getString(R.string.label_sending_post))
         .setContentTitle(getString(R.string.label_sending_post))
         .setContentText("Text is sending")
@@ -83,7 +81,7 @@ public class SendPostService extends Service {
   }
 
   private void showSuccessfulNotification() {
-    Notification.Builder builder = new Notification.Builder(SendPostService.this).setTicker(
+    Notification.Builder builder = new Notification.Builder(CreatePostService.this).setTicker(
         getString(R.string.label_sending_post_successful))
         .setContentTitle(getString(R.string.label_sending_post_successful))
         .setOnlyAlertOnce(true)
@@ -103,11 +101,6 @@ public class SendPostService extends Service {
   }
 
   public void broadcastNewPostEvent(PostRealm post) {
-    RxBus.get().sendEvent(new WriteNewPostEvent(post), UserFeedController.class);
-
-    /*Intent intent = new Intent(KEY_NEW_POST_EVENT);
-    intent.putExtra(KEY_NEW_POST_ID, post.getId());
-
-    LocalBroadcastManager.getInstance(SendPostService.this).sendBroadcast(intent);*/
+    LocalMessageManager.getInstance().send(R.integer.message_create_new_post, post);
   }
 }

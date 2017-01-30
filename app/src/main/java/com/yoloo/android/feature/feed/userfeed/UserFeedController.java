@@ -28,6 +28,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import butterknife.BindColor;
 import butterknife.BindInt;
@@ -41,6 +42,7 @@ import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.AnimatorChangeHandler;
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
+import com.bluelinelabs.conductor.changehandler.SimpleSwapChangeHandler;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
@@ -68,9 +70,10 @@ import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.feature.base.BaseActivity;
-import com.yoloo.android.feature.base.framework.MvpController;
+import com.yoloo.android.feature.base.LceAnimator;
 import com.yoloo.android.feature.category.MainCatalogController;
 import com.yoloo.android.feature.comment.CommentController;
+import com.yoloo.android.feature.comment.PostType;
 import com.yoloo.android.feature.fcm.FCMListener;
 import com.yoloo.android.feature.fcm.FCMManager;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
@@ -80,7 +83,7 @@ import com.yoloo.android.feature.feed.common.event.UpdateEvent;
 import com.yoloo.android.feature.feed.common.event.WriteNewPostEvent;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnOptionsClickListener;
+import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnReadMoreClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
@@ -101,6 +104,10 @@ import com.yoloo.android.feature.ui.widget.floatingactionmenu.widget.FloatingAct
 import com.yoloo.android.feature.ui.widget.materialbadge.MenuItemBadge;
 import com.yoloo.android.feature.write.EditorType;
 import com.yoloo.android.feature.write.catalog.CatalogController;
+import com.yoloo.android.framework.MvpController;
+import com.yoloo.android.localmesaagemanager.LocalMessage;
+import com.yoloo.android.localmesaagemanager.LocalMessageCallback;
+import com.yoloo.android.localmesaagemanager.LocalMessageManager;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.MenuHelper;
 import com.yoloo.android.util.NotificationHelper;
@@ -113,16 +120,17 @@ import io.reactivex.disposables.Disposable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import timber.log.Timber;
 
 public class UserFeedController extends MvpController<UserFeedView, UserFeedPresenter>
     implements UserFeedView, SwipeRefreshLayout.OnRefreshListener,
     EndlessRecyclerViewScrollListener.OnLoadMoreListener,
-    NavigationView.OnNavigationItemSelectedListener, OnProfileClickListener, OnOptionsClickListener,
-    OnReadMoreClickListener, OnShareClickListener, OnCommentClickListener,
-    FeedAdapter.OnBountyClickListener, FeedAdapter.OnCategoryClickListener,
+    NavigationView.OnNavigationItemSelectedListener, OnProfileClickListener,
+    OnPostOptionsClickListener, OnReadMoreClickListener, OnShareClickListener,
+    OnCommentClickListener, FeedAdapter.OnBountyClickListener, FeedAdapter.OnCategoryClickListener,
     FeedAdapter.OnExploreCategoriesClickListener, OnVoteClickListener, OnContentImageClickListener,
-    FCMListener {
+    FCMListener, LocalMessageCallback {
 
   static {
     CategoryFaker.generate();
@@ -140,17 +148,21 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
   @BindView(R.id.dimming_view) View dimmingView;
   @BindView(R.id.fab_menu_feed) FloatingActionMenu fabMenu;
   @BindView(R.id.feed_root) ViewGroup root;
+  @BindView(R.id.loading_view) ProgressBar loadingView;
+  @BindView(R.id.error_view) TextView errorView;
 
+  @BindColor(R.color.primary) int primaryColor;
   @BindColor(R.color.primary_dark) int primaryDarkColor;
   @BindColor(R.color.primary_blue) int primaryBlueColor;
 
   @BindInt(android.R.integer.config_mediumAnimTime) int mediumAnimTime;
+  @BindInt(android.R.integer.config_longAnimTime) int longAnimTime;
 
   private FeedAdapter adapter;
 
   private EndlessRecyclerViewScrollListener endlessRecyclerViewScrollListener;
 
-  private WeakHandler handler = new WeakHandler();
+  private WeakHandler handler;
 
   private boolean hasNotification;
 
@@ -160,6 +172,10 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
   private Disposable disposable;
 
   private String userId;
+
+  public UserFeedController() {
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
+  }
 
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
@@ -180,25 +196,17 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
 
   @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-    rvFeed.addOnScrollListener(endlessRecyclerViewScrollListener);
+    handler = new WeakHandler();
 
-    disposable = RxBus.get().observeEvents(getClass())
-        .subscribe(e -> {
-          if (e instanceof UpdateEvent) {
-            adapter.updatePost(FeedAction.UPDATE, ((UpdateEvent) e).getPost());
-          } else if (e instanceof DeleteEvent) {
-            adapter.updatePost(FeedAction.DELETE, ((DeleteEvent) e).getPost());
-          } else if (e instanceof WriteNewPostEvent) {
-            rvFeed.smoothScrollToPosition(0);
-            handler.postDelayed(
-                () -> adapter.addPostAfterBountyButton(((WriteNewPostEvent) e).getPost()), 450);
-          }
-        });
+    LocalMessageManager.getInstance().addListener(this);
+    listenEventChanges();
+    rvFeed.addOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
   @Override protected void onDetach(@NonNull View view) {
     super.onDetach(view);
     rvFeed.removeOnScrollListener(endlessRecyclerViewScrollListener);
+    LocalMessageManager.getInstance().removeListener(this);
     disposable.dispose();
   }
 
@@ -253,7 +261,7 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
         }
         return true;
       case R.id.action_feed_notification:
-        startTransaction(new NotificationController(), new VerticalChangeHandler());
+        startTransaction(new NotificationController(), new VerticalChangeHandler(400));
         return true;
       default:
         return super.onOptionsItemSelected(item);
@@ -265,11 +273,13 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
   }
 
   @Override public void onTrendingCategoriesLoaded(List<CategoryRealm> topics) {
-    adapter.addTrendingCategories(topics);
+    adapter.addTrendingCategories(topics, this);
   }
 
   @Override public void onLoading(boolean pullToRefresh) {
-    swipeRefreshLayout.setRefreshing(pullToRefresh);
+    if (!pullToRefresh) {
+      LceAnimator.showLoading(loadingView, swipeRefreshLayout, errorView);
+    }
   }
 
   @Override public void onLoaded(Response<List<PostRealm>> value) {
@@ -281,7 +291,13 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     adapter.addPosts(value.getData());
   }
 
+  @Override public void showContent() {
+    LceAnimator.showContent(loadingView, swipeRefreshLayout, errorView);
+    swipeRefreshLayout.setRefreshing(false);
+  }
+
   @Override public void onError(Throwable e) {
+    swipeRefreshLayout.setRefreshing(false);
     Timber.e(e);
   }
 
@@ -297,10 +313,54 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
   }
 
   @Override public void onLoadMore() {
-    Timber.d("onLoadMore");
     adapter.showLoadMoreIndicator(true);
     endlessRecyclerViewScrollListener.setProgressBarVisible(true);
-    handler.postDelayed(() -> getPresenter().loadFeed(false, cursor, eTag, 20), 700);
+    handler.postDelayed(
+        () -> getPresenter().loadFeed(true, UUID.randomUUID().toString(), eTag, 20), 700);
+  }
+
+  @Override public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+    final int itemId = item.getItemId();
+
+    drawerLayout.closeDrawer(GravityCompat.START);
+
+    switch (itemId) {
+      case R.id.action_nav_profile:
+        handler.postDelayed(
+            () -> startTransaction(ProfileController.create(userId), new VerticalChangeHandler()),
+            400);
+        return false;
+      case R.id.action_nav_bookmarks:
+        handler.postDelayed(
+            () -> startTransaction(PostController.ofBookmarked(), new VerticalChangeHandler()),
+            400);
+        return false;
+      case R.id.action_nav_settings:
+        AuthUI.getInstance().signOut(getActivity());
+        handler.postDelayed(() -> getRouter().setRoot(RouterTransaction.with(new AuthController())
+            .pushChangeHandler(new FadeChangeHandler())), 400);
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  @Override public boolean handleBack() {
+    if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+      drawerLayout.closeDrawer(GravityCompat.START);
+      return true;
+    }
+    return super.handleBack();
+  }
+
+  @Override public void handleMessage(@NonNull LocalMessage msg) {
+    switch (msg.getId()) {
+      case R.integer.message_create_new_post:
+        msg.getObject();
+        rvFeed.smoothScrollToPosition(0);
+        adapter.addPostAfterBountyButton((PostRealm) msg.getObject());
+        break;
+    }
   }
 
   @NonNull @Override public UserFeedPresenter createPresenter() {
@@ -319,46 +379,18 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
             UserDiskDataStore.getInstance()));
   }
 
-  @Override public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-    final int itemId = item.getItemId();
-
-    switch (itemId) {
-      case R.id.action_nav_profile:
-        drawerLayout.closeDrawer(GravityCompat.START);
-        handler.postDelayed(
-            () -> startTransaction(ProfileController.create(userId), new VerticalChangeHandler()),
-            400);
-        return false;
-      case R.id.action_nav_settings:
-        AuthUI.getInstance().signOut(getActivity());
-        drawerLayout.closeDrawer(GravityCompat.START);
-        getRouter().setRoot(RouterTransaction.with(new AuthController())
-            .pushChangeHandler(new FadeChangeHandler()));
-        return true;
-      default:
-        return false;
-    }
-  }
-
-  @Override public boolean handleBack() {
-    if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-      drawerLayout.closeDrawer(GravityCompat.START);
-      return true;
-    }
-    return super.handleBack();
-  }
-
-  @Override public void onCommentClick(View v, String itemId, String acceptedCommentId) {
-    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
-    startTransaction(CommentController.create(itemId), new VerticalChangeHandler());
+  @Override public void onCommentClick(View v, String postId, String postOwnerId,
+      String acceptedCommentId, @PostType int postType) {
+    startTransaction(CommentController.create(postId, postOwnerId, acceptedCommentId, postType),
+        new SimpleSwapChangeHandler());
   }
 
   @Override
-  public void onOptionsClick(View v, EpoxyModel<?> model, String postId, String postOwnerId) {
+  public void onPostOptionsClick(View v, EpoxyModel<?> model, String postId, String postOwnerId) {
     final PopupMenu optionsMenu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
     final boolean self = userId.equals(postOwnerId);
-    optionsMenu.getMenu().getItem(1).setVisible(self);
     optionsMenu.getMenu().getItem(2).setVisible(self);
+    optionsMenu.getMenu().getItem(3).setVisible(self);
 
     optionsMenu.setOnMenuItemClickListener(item -> {
       final int itemId = item.getItemId();
@@ -380,12 +412,10 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
   }
 
   @Override public void onProfileClick(View v, String ownerId) {
-    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
     startTransaction(ProfileController.create(ownerId), new VerticalChangeHandler());
   }
 
   @Override public void onReadMoreClickListener(View v, String postId) {
-    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
     startTransaction(PostDetailController.create(postId), new VerticalChangeHandler());
   }
 
@@ -394,17 +424,14 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
   }
 
   @Override public void onBountyClick(View v) {
-    setRetainViewMode(RetainViewMode.RELEASE_DETACH);
     startTransaction(PostController.ofBounty(), new VerticalChangeHandler());
   }
 
   @Override public void onCategoryClick(View v, String categoryId, String name) {
-    setRetainViewMode(RetainViewMode.RELEASE_DETACH);
     startTransaction(PostController.ofCategory(name), new VerticalChangeHandler());
   }
 
   @Override public void onExploreCategoriesClick(View v) {
-    setRetainViewMode(RetainViewMode.RELEASE_DETACH);
     startTransaction(new MainCatalogController(), new VerticalChangeHandler());
   }
 
@@ -413,23 +440,20 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
   }
 
   @Override public void onContentImageClick(View v, String url) {
-    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
     startTransaction(PhotoController.create(url), new FadeChangeHandler());
   }
 
   @OnClick(R.id.fab_ask_question) void openAskQuestion() {
-    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
     fabMenu.collapseImmediately();
 
     AnimatorChangeHandler handler = VersionUtil.hasL()
-        ? new CircularRevealChangeHandler(fabMenu, root, mediumAnimTime)
-        : new VerticalChangeHandler(mediumAnimTime);
+        ? new CircularRevealChangeHandler(fabMenu, root, 1100)
+        : new VerticalChangeHandler();
 
     startTransaction(CatalogController.create(EditorType.ASK_QUESTION), handler);
   }
 
   @OnClick(R.id.fab_share_trip) void openShareTrip() {
-    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
     fabMenu.collapseImmediately();
 
     AnimatorChangeHandler handler = VersionUtil.hasL()
@@ -512,7 +536,6 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
         .onReadMoreClickListener(this)
         .onVoteClickListener(this)
         .onShareClickListener(this)
-        .onCategoryClickListener(this)
         .build();
 
     final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
@@ -532,7 +555,7 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
 
   private void setupPullToRefresh() {
     swipeRefreshLayout.setOnRefreshListener(this);
-    swipeRefreshLayout.setColorSchemeColors(ContextCompat.getColor(getActivity(), R.color.primary));
+    swipeRefreshLayout.setColorSchemeColors(primaryColor);
   }
 
   private void setupToolbar() {
@@ -583,5 +606,20 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
   private void startTransaction(Controller to, ControllerChangeHandler handler) {
     getRouter().pushController(
         RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
+  }
+
+  private void listenEventChanges() {
+    disposable = RxBus.get().observeEvents(getClass())
+        .subscribe(e -> {
+          if (e instanceof UpdateEvent) {
+            adapter.updatePost(FeedAction.UPDATE, ((UpdateEvent) e).getPost());
+          } else if (e instanceof DeleteEvent) {
+            adapter.updatePost(FeedAction.DELETE, ((DeleteEvent) e).getPost());
+          } else if (e instanceof WriteNewPostEvent) {
+            rvFeed.smoothScrollToPosition(0);
+            handler.postDelayed(
+                () -> adapter.addPostAfterBountyButton(((WriteNewPostEvent) e).getPost()), 450);
+          }
+        });
   }
 }

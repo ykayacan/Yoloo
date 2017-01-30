@@ -57,7 +57,8 @@
     app:drawableTop="@drawable/ic_beenhere_black_24dp"
     app:layout_constraintLeft_toLeftOf="@+id/iv_comment_user_avatar"
     app:layout_constraintRight_toRightOf="@+id/iv_comment_user_avatar"
-    app:layout_constraintTop_toBottomOf="@+id/iv_comment_user_avatar" />
+    app:layout_constraintTop_toBottomOf="@+id/iv_comment_user_avatar"
+    app:layout_constraintHorizontal_bias="0.42" />
 
   <com.yoloo.android.feature.ui.widget.linkabletextview.LinkableTextView
     android:id="@+id/tv_comment_content"
@@ -85,7 +86,7 @@
     android:drawablePadding="8dp"
     android:gravity="center"
     android:padding="4dp"
-    android:text="@string/action_accept"
+    android:text="@string/action_comment_accept"
     android:textAppearance="@style/TextAppearance.AppCompat.Small"
     app:drawableStart="@drawable/ic_check_white_18dp"
     app:layout_constraintBaseline_toBaselineOf="@+id/tv_comment_vote"
@@ -95,7 +96,7 @@
     android:id="@+id/tv_comment_vote"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="4dp"
+    android:layout_marginBottom="0dp"
     android:layout_marginEnd="0dp"
     android:layout_marginRight="0dp"
     android:layout_marginTop="8dp"

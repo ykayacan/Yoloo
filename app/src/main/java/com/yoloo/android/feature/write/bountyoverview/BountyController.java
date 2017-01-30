@@ -26,7 +26,7 @@ import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.base.framework.MvpController;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.feature.ui.recyclerview.GridInsetItemDecoration;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.ViewUtil;
@@ -67,7 +67,7 @@ public class BountyController extends MvpController<BountyView, BountyPresenter>
         .withDrawable(tvTotalBounty.getCompoundDrawables()[0])
         .tint();
 
-    final String[] bountyValues = getResources().getStringArray(R.array.label_bounties);
+    final String[] bountyValues = getResources().getStringArray(R.array.label_editor_bounties);
 
     List<Drawable> drawables = new ArrayList<>(bountyValues.length);
     drawables.add(AppCompatResources.getDrawable(getActivity(), R.drawable.ic_bounty_1));
@@ -86,7 +86,7 @@ public class BountyController extends MvpController<BountyView, BountyPresenter>
 
   @Override public boolean handleBack() {
     getPresenter().updateDraft(draft);
-    return false;
+    return super.handleBack();
   }
 
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -94,7 +94,7 @@ public class BountyController extends MvpController<BountyView, BountyPresenter>
     final int itemId = item.getItemId();
     switch (itemId) {
       case android.R.id.home:
-        getPresenter().updateDraft(draft);
+        getRouter().handleBack();
         return false;
       default:
         return super.onOptionsItemSelected(item);
@@ -154,7 +154,7 @@ public class BountyController extends MvpController<BountyView, BountyPresenter>
 
   private boolean isBountyQuantityValid(int value) {
     if (value > account.getBounties()) {
-      Snackbar.make(getView(), R.string.error_not_enough_bounty, Snackbar.LENGTH_SHORT).show();
+      Snackbar.make(getView(), R.string.error_editor_not_enough_bounty, Snackbar.LENGTH_SHORT).show();
       return false;
     } else {
       return true;
@@ -167,7 +167,7 @@ public class BountyController extends MvpController<BountyView, BountyPresenter>
     // add back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
     if (ab != null) {
-      ab.setTitle(R.string.label_select_a_bounty);
+      ab.setTitle(R.string.label_editor_select_bounty_value);
       ab.setDisplayHomeAsUpEnabled(true);
       ab.setDisplayShowHomeEnabled(true);
     }
@@ -175,10 +175,9 @@ public class BountyController extends MvpController<BountyView, BountyPresenter>
 
   private void showBountyConfirmDialog(int value) {
     new AlertDialog.Builder(getActivity()).setCancelable(false)
-        .setTitle(getResources().getString(R.string.label_ensure_bounty, value))
+        .setTitle(getResources().getString(R.string.label_editor_ensure_bounty, value))
         .setPositiveButton(android.R.string.ok, (dialog, which) -> {
           draft.setBounty(value);
-          //getPresenter().updateBounty(totalBounty - value, -1);
           getPresenter().updateDraft(draft);
         })
         .setNegativeButton(android.R.string.cancel, (dialog, which) -> adapter.clearSelection())

@@ -5,27 +5,39 @@
     Morbi sit amet massa pharetra, volutpat risus ac, lobortis ante.
     Ut tempor, ex vitae egestas varius.</string>
 
-  <!-- USER FEED -->
+  <string name="facebook_app_id">1587185934920884</string>
+  <string name="fb_login_protocol_scheme">fb1587185934920884</string>
 
-  <!-- Labels -->
+  <!-- NAV DRAWER -->
+  <string name="label_nav_profile">Profile</string>
+  <string name="label_nav_bookmarks">Bookmarks</string>
+  <string name="label_nav_change_view">Change View</string>
+  <string name="label_nav_invite_friends">Invite Friends</string>
+  <string name="label_nav_settings">Settings</string>
+
+  <string name="navigation_drawer_open">Open navigation drawer</string>
+  <string name="navigation_drawer_close">Close navigation drawer</string>
+
+  <!-- USER FEED -->
   <string name="label_feed_toolbar_title">Home</string>
 
   <string name="label_feed_trending_now">Trending now</string>
   <string name="label_feed_explore">Explore</string>
   <string name="label_feed_bookmarked">Post saved.</string>
+  <string name="label_feed_unbookmarked">Post unsaved.</string>
 
-  <!-- Actions -->
   <string name="action_feed_popup_bookmark">Bookmark</string>
+  <string name="action_feed_popup_unbookmark">Unbookmark</string>
   <string name="action_feed_popup_edit">Edit</string>
   <string name="action_feed_popup_delete">Delete</string>
-
   <string name="action_feed_share">Share</string>
   <string name="action_feed_bounty_questions">Bounty Questions</string>
-
   <string name="action_feed_fab_ask_question">Ask question</string>
   <string name="action_feed_fab_share_trip">Share trip</string>
+  <string name="action_feed_menu_search">Search</string>
+  <string name="action_feed_menu_message">Message</string>
+  <string name="action_feed_menu_notification">Notification</string>
 
-  <!-- Transitions -->
   <string name="transition_content_photo">transition_content_photo</string>
 
   <!-- BOOKMARK -->
@@ -33,46 +45,45 @@
 
   <!-- EDITOR -->
   <string name="hint_editor_write_title">Write title of your story here</string>
-  <string name="hint_editor_blog_content">Write anything about your trip here…</string>
-
+  <string name="hint_editor_blog_content">Write anything about your story here…</string>
   <string name="hint_editor_question_content">Ask anything about your trip here…</string>
+  <string name="hint_editor_max_tags">Enter maximum 7 tags here</string>
 
   <string name="action_editor_ask_bounty">Ask a bounty question</string>
-
-  <string name="label_editor_select_media_source_title">Select media</string>
-  <string name="label_select_media">Select media</string>
-  <string name="label_editor_crop_image_title">Crop Image</string>
-
-  <string-array name="action_list_add_media">
+  <string-array name="action_editor_list_media_source">
     <item>From gallery</item>
     <item>From camera</item>
   </string-array>
+  <string name="action_editor_post">POST</string>
 
+  <string name="label_editor_delete_cover_image">Do you want to delete image?</string>
+  <string name="label_editor_select_media_source_title">Select media</string>
+  <string name="label_select_media">Select media</string>
+  <string name="label_editor_crop_image_title">Crop Image</string>
   <string name="label_tag"># %1$s</string>
-
-  <string-array name="label_bounties">
+  <string name="label_editor_ensure_bounty">Do you want to add %1$d bounties?</string>
+  <string name="label_editor_bounty_description">
+    You will increase the chance of getting answered by asking bounty questions.
+  </string>
+  <string-array name="label_editor_bounties">
     <item>10</item>
     <item>20</item>
     <item>30</item>
     <item>40</item>
     <item>50</item>
   </string-array>
+  <string name="label_editor_select_bounty_value">SELECT A BOUNTY</string>
+  <string name="label_editor_recommended_tags">Recommended Tags</string>
 
-  <string name="label_select_a_bounty">SELECT A BOUNTY</string>
-
-  <string name="error_not_enough_bounty">You don\'t have enough bounty!</string>
-  <string name="label_ensure_bounty">Do you want to add %1$d bounties?</string>
+  <string name="error_editor_not_enough_bounty">You don\'t have enough bounty!</string>
 
   <string name="label_sending_post">Sending post…</string>
   <string name="label_sending_post_successful">Successfully sent.</string>
   <string name="label_sending_post_failed">Failed.</string>
 
   <!-- CATALOG -->
-
-  <!-- Labels -->
   <string name="label_catalog_toolbar_title">Select a Category</string>
   <string name="label_main_catalog_toolbar_title">All Categories</string>
-
   <string name="label_catalog_tab_destination">Destination</string>
   <string name="label_catalog_tab_theme">Theme</string>
 
@@ -83,13 +94,108 @@
 
   <string name="error_catalog_select_category">Please select category!</string>
 
-  <!-- EDITOR -->
-
   <!-- COMMENT -->
-  <!-- Labels -->
+  <string name="label_comment_toolbar_title">Comments</string>
   <string name="label_comment_accepted">Accepted</string>
   <string name="label_comment_accepted_confirm">You accepted this comment.</string>
+  <plurals name="label_comment_comment_text">
+    <item quantity="zero">No comment is available.</item>
+    <item quantity="one">comment</item>
+    <item quantity="other">comments</item>
+  </plurals>
+
+  <string name="hint_comment_write">Write a comment…</string>
+
+  <string name="action_comment_accept">Accept</string>
 
   <string name="error_comment_accept_exists">You can\'t accept comment.</string>
+
+  <!-- FOLLOW -->
+  <string name="label_follow_followers_title">Followers</string>
+  <string name="label_follow_following_title">Following</string>
+
+  <!-- PROFILE -->
+  <string name="label_profile_level">Level %1$d</string>
+  <string name="label_profile_posts">%1$s\nposts</string>
+  <string name="label_profile_followers">%1$s\nfollowers</string>
+  <string name="label_profile_following">%1$s\nfollowing</string>
+  <string name="label_profile_points">%1$s\nPOINTS</string>
+  <string name="label_profile_bounties">%1$d\nBOUNTIES</string>
+  <string name="label_profile_achievements">%1$d\nACHIEVEMENTS</string>
+  <string name="label_profile_questions">Questions</string>
+  <string name="label_profile_commented">Commented</string>
+
+  <string name="action_profile_follow">FOLLOW</string>
+  <string name="action_profile_unfollow">UNFOLLOW</string>
+
+  <!-- SEARCH -->
+  <string name="hint_search">Search…</string>
+
+  <string name="label_search_tags">Tags</string>
+  <string name="label_search_users">People</string>
+  <string name="label_search_post_count">%1$d public posts</string>
+  <string name="label_search_followed">%1$s followed.</string>
+
+  <!-- NOTIFICATION -->
+  <string name="label_notification_title">Notifications</string>
+  <string name="label_notification_comment">\@%1$s commented on your post.</string>
+  <string name="label_notification_mention">\@%1$s mentioned you in a comment: %2$s</string>
+  <string name="label_notification_follow">\@%1$s followed you.</string>
+  <string name="label_notification_accept">Your comment is accepted.</string>
+
+  <!-- LOGIN -->
+  <string name="label_login_welcome_title">Welcome to Yoloo</string>
+  <string name="label_login_welcome_description">Plan your trip, share your experience,
+    and connect with travelers.
+  </string>
+  <string name="label_login_select_categories">
+    Select at least 3 categories to personalize your feed.
+  </string>
+  <string name="label_login_or">or</string>
+  <string name="label_loading">Loading</string>
+
+  <string name="action_login_start_using">Start Using</string>
+  <string name="action_login_already_have_account">Already have an account?
+    <b>Login</b>
+  </string>
+  <string name="action_login_sign_up">Sign Up</string>
+  <string name="action_login_google_sign_in">Continue with Google</string>
+  <string name="action_login_facebook_sing_in">Continue with Facebook</string>
+  <string name="action_login_ready">I\'m ready</string>
+  <string name="action_login_sign_in">Sign In</string>
+
+  <string name="error_google_play_services">Google Play Services error.</string>
+  <string name="error_auth_failed">Authentication failed.</string>
+  <string name="error_server_down">Server is not available!</string>
+  <string name="error_already_registered">Already registered.</string>
+
+  <string name="error_invalid_email">Invalid email</string>
+  <string name="error_email_already_taken">Email is in use</string>
+  <string name="error_invalid_password">Your password must include at least 4 characters</string>
+  <string name="error_field_required">Required field</string>
+
+  <string name="hint_full_name">Full Name</string>
+  <string name="hint_email">E-mail</string>
+  <string name="hint_password">Password</string>
+
+  <string name="com_facebook_loginview_log_in_button_long">Continue with Facebook</string>
+
+  <string name="idp_name_google">Google</string>
+  <string name="idp_name_facebook">Facebook</string>
+
+
+
+  <string-array name="label_sub_feed_list">
+    <item>Questions</item>
+    <item>Tags</item>
+    <item>Users</item>
+  </string-array>
+
+  <string name="label_toolbar_bounty_title">Bounty Questions</string>
+
+  <string name="action_sort">Sort</string>
+  <string name="action_sort_newest">Newest</string>
+  <string name="action_sort_hot">Hot</string>
+  <string name="action_sort_unanswered">Unanswered</string>
 
 </resources>

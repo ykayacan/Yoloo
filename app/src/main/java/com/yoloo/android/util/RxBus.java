@@ -5,7 +5,6 @@ import com.bluelinelabs.conductor.Controller;
 import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.Subject;
-import timber.log.Timber;
 
 public final class RxBus {
 
@@ -28,7 +27,6 @@ public final class RxBus {
   public Observable<BusEvent> observeEvents(Class<? extends Controller> current) {
     return getSubject(current).doOnDispose(() -> {
       subjects.remove(current);
-      Timber.d("Remaining: %s", subjects.size());
     });
   }
 

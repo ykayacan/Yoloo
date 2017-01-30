@@ -38,18 +38,11 @@ public class CategoryRepository {
     diskDataStore.addAll(categories);
   }
 
-  /**
-   * List observable.
-   *
-   * @param limit the limit
-   * @param sorter the sorter
-   * @return the observable
-   */
   public Observable<List<CategoryRealm>> list(int limit, CategorySorter sorter) {
     return Observable.mergeDelayError(
-        diskDataStore.list(sorter),
+        diskDataStore.list(sorter).subscribeOn(Schedulers.io()),
         remoteDataStore.list(sorter, limit)
-            .subscribeOn(Schedulers.io())
-            .doOnNext(diskDataStore::addAll));
+            .doOnNext(diskDataStore::addAll)
+            .subscribeOn(Schedulers.io()));
   }
 }

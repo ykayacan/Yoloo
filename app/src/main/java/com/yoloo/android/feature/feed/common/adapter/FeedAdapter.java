@@ -1,10 +1,6 @@
 package com.yoloo.android.feature.feed.common.adapter;
 
 import android.content.Context;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.LinearSnapHelper;
-import android.support.v7.widget.OrientationHelper;
 import android.view.View;
 import com.airbnb.epoxy.EpoxyAdapter;
 import com.airbnb.epoxy.EpoxyModel;
@@ -14,7 +10,7 @@ import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnOptionsClickListener;
+import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnReadMoreClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
@@ -38,7 +34,7 @@ public class FeedAdapter extends EpoxyAdapter {
   private final LoadingModel loadingModel = new LoadingModel();
 
   private final OnProfileClickListener onProfileClickListener;
-  private final OnOptionsClickListener onOptionsClickListener;
+  private final OnPostOptionsClickListener onPostOptionsClickListener;
   private final OnReadMoreClickListener onReadMoreClickListener;
   private final OnShareClickListener onShareClickListener;
   private final OnCommentClickListener onCommentClickListener;
@@ -50,18 +46,17 @@ public class FeedAdapter extends EpoxyAdapter {
 
   private FeedAdapter(
       OnProfileClickListener onProfileClickListener,
-      OnOptionsClickListener onOptionsClickListener,
+      OnPostOptionsClickListener onPostOptionsClickListener,
       OnReadMoreClickListener onReadMoreClickListener,
       OnShareClickListener onShareClickListener,
       OnCommentClickListener onCommentClickListener,
-      OnCategoryClickListener onCategoryClickListener,
       OnExploreCategoriesClickListener onExploreCategoriesClickListener,
       OnVoteClickListener onVoteClickListener,
       OnBountyClickListener onBountyClickListener,
       OnContentImageClickListener onContentImageClickListener,
       boolean isMainFeed, Context context) {
     this.onProfileClickListener = onProfileClickListener;
-    this.onOptionsClickListener = onOptionsClickListener;
+    this.onPostOptionsClickListener = onPostOptionsClickListener;
     this.onReadMoreClickListener = onReadMoreClickListener;
     this.onShareClickListener = onShareClickListener;
     this.onCommentClickListener = onCommentClickListener;
@@ -72,15 +67,7 @@ public class FeedAdapter extends EpoxyAdapter {
     enableDiffing();
 
     if (isMainFeed) {
-      final DefaultItemAnimator animator = new DefaultItemAnimator();
-      animator.setSupportsChangeAnimations(false);
-
-      trendingCategoriesModel.snapHelper(new LinearSnapHelper())
-          .adapter(new TrendingCategoryAdapter())
-          .itemAnimator(animator)
-          .layoutManager(new LinearLayoutManager(context, OrientationHelper.HORIZONTAL, false))
-          .onExploreCategoriesClickListener(onExploreCategoriesClickListener)
-          .onCategoryClickListener(onCategoryClickListener);
+      trendingCategoriesModel.onExploreCategoriesClickListener(onExploreCategoriesClickListener);
       addModel(trendingCategoriesModel);
 
       bountyButtonModel.onBountyClickListener(onBountyClickListener);
@@ -92,8 +79,9 @@ public class FeedAdapter extends EpoxyAdapter {
     return new FeedAdapterBuilder();
   }
 
-  public void addTrendingCategories(List<CategoryRealm> items) {
-    trendingCategoriesModel.updateTrendingCategories(items);
+  public void addTrendingCategories(List<CategoryRealm> items,
+      OnCategoryClickListener onCategoryClickListener) {
+    trendingCategoriesModel.addTrendingCategories(items, onCategoryClickListener);
   }
 
   public void addPostAfterBountyButton(PostRealm post) {
@@ -177,7 +165,7 @@ public class FeedAdapter extends EpoxyAdapter {
   private RichQuestionModel createRichQuestion(PostRealm post) {
     return new RichQuestionModel_()
         .onProfileClickListener(onProfileClickListener)
-        .onOptionsClickListener(onOptionsClickListener)
+        .onPostOptionsClickListener(onPostOptionsClickListener)
         .onReadMoreClickListener(onReadMoreClickListener)
         .onShareClickListener(onShareClickListener)
         .onCommentClickListener(onCommentClickListener)
@@ -190,7 +178,7 @@ public class FeedAdapter extends EpoxyAdapter {
   private NormalQuestionModel createNormalQuestion(PostRealm post) {
     return new NormalQuestionModel_()
         .onProfileClickListener(onProfileClickListener)
-        .onOptionsClickListener(onOptionsClickListener)
+        .onPostOptionsClickListener(onPostOptionsClickListener)
         .onReadMoreClickListener(onReadMoreClickListener)
         .onShareClickListener(onShareClickListener)
         .onCommentClickListener(onCommentClickListener)
@@ -202,7 +190,7 @@ public class FeedAdapter extends EpoxyAdapter {
   private BlogModel createBlog(PostRealm post) {
     return new BlogModel_()
         .onProfileClickListener(onProfileClickListener)
-        .onOptionsClickListener(onOptionsClickListener)
+        .onPostOptionsClickListener(onPostOptionsClickListener)
         .onReadMoreClickListener(onReadMoreClickListener)
         .onShareClickListener(onShareClickListener)
         .onCommentClickListener(onCommentClickListener)
@@ -225,11 +213,10 @@ public class FeedAdapter extends EpoxyAdapter {
 
   public static class FeedAdapterBuilder {
     private OnProfileClickListener onProfileClickListener;
-    private OnOptionsClickListener onOptionsClickListener;
+    private OnPostOptionsClickListener onPostOptionsClickListener;
     private OnReadMoreClickListener onReadMoreClickListener;
     private OnShareClickListener onShareClickListener;
     private OnCommentClickListener onCommentClickListener;
-    private OnCategoryClickListener onCategoryClickListener;
     private OnExploreCategoriesClickListener onExploreCategoriesClickListener;
     private OnVoteClickListener onVoteClickListener;
     private OnContentImageClickListener onContentImageClickListener;
@@ -247,8 +234,8 @@ public class FeedAdapter extends EpoxyAdapter {
     }
 
     public FeedAdapter.FeedAdapterBuilder onOptionsClickListener(
-        OnOptionsClickListener onOptionsClickListener) {
-      this.onOptionsClickListener = onOptionsClickListener;
+        OnPostOptionsClickListener onPostOptionsClickListener) {
+      this.onPostOptionsClickListener = onPostOptionsClickListener;
       return this;
     }
 
@@ -267,12 +254,6 @@ public class FeedAdapter extends EpoxyAdapter {
     public FeedAdapter.FeedAdapterBuilder onCommentClickListener(
         OnCommentClickListener onCommentClickListener) {
       this.onCommentClickListener = onCommentClickListener;
-      return this;
-    }
-
-    public FeedAdapter.FeedAdapterBuilder onCategoryClickListener(
-        OnCategoryClickListener onCategoryClickListener) {
-      this.onCategoryClickListener = onCategoryClickListener;
       return this;
     }
 
@@ -311,9 +292,9 @@ public class FeedAdapter extends EpoxyAdapter {
     }
 
     public FeedAdapter build() {
-      return new FeedAdapter(onProfileClickListener, onOptionsClickListener,
+      return new FeedAdapter(onProfileClickListener, onPostOptionsClickListener,
           onReadMoreClickListener, onShareClickListener, onCommentClickListener,
-          onCategoryClickListener, onExploreCategoriesClickListener, onVoteClickListener,
+          onExploreCategoriesClickListener, onVoteClickListener,
           onBountyClickListener, onContentImageClickListener, isMainFeed, context);
     }
   }

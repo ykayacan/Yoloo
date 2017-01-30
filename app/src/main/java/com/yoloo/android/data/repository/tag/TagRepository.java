@@ -31,23 +31,23 @@ public class TagRepository {
 
   public Observable<List<TagRealm>> list(TagSorter sorter) {
     return Observable.mergeDelayError(
-        diskDataStore.list(sorter),
+        diskDataStore.list(sorter).subscribeOn(Schedulers.io()),
         remoteDataStore.list(sorter)
-            .subscribeOn(Schedulers.io())
-            .doOnNext(diskDataStore::replace));
+            .doOnNext(diskDataStore::replace)
+            .subscribeOn(Schedulers.io()));
   }
 
   public Observable<Response<List<TagRealm>>> list(String name, String cursor, int limit) {
     return remoteDataStore.list(name, cursor, limit)
-        .subscribeOn(Schedulers.io())
         .doOnNext(response -> Observable.fromIterable(response.getData())
             .map(tag -> tag.setRecent(true))
             .toList()
             .toObservable()
-            .subscribe(diskDataStore::addAll));
+            .subscribe(diskDataStore::addAll))
+        .subscribeOn(Schedulers.io());
   }
 
   public Observable<List<TagRealm>> listRecent() {
-    return diskDataStore.listRecent();
+    return diskDataStore.listRecent().subscribeOn(Schedulers.io());
   }
 }

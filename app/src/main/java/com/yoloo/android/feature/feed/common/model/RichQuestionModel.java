@@ -2,6 +2,7 @@ package com.yoloo.android.feature.feed.common.model;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -11,9 +12,10 @@ import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.feature.comment.PostType;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnOptionsClickListener;
+import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnReadMoreClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
@@ -37,7 +39,7 @@ public class RichQuestionModel extends EpoxyModelWithHolder<RichQuestionModel.Ri
   @EpoxyAttribute(hash = false) OnShareClickListener onShareClickListener;
   @EpoxyAttribute(hash = false) OnCommentClickListener onCommentClickListener;
   @EpoxyAttribute(hash = false) OnReadMoreClickListener onReadMoreClickListener;
-  @EpoxyAttribute(hash = false) OnOptionsClickListener onOptionsClickListener;
+  @EpoxyAttribute(hash = false) OnPostOptionsClickListener onPostOptionsClickListener;
   @EpoxyAttribute(hash = false) OnVoteClickListener onVoteClickListener;
   @EpoxyAttribute(hash = false) OnContentImageClickListener onContentImageClickListener;
 
@@ -55,7 +57,10 @@ public class RichQuestionModel extends EpoxyModelWithHolder<RichQuestionModel.Ri
         PostRealm post = (PostRealm) payloads.get(0);
         holder.voteView.setVotes(post.getVotes());
         holder.voteView.setCurrentStatus(post.getDir());
-        holder.tvComment.setText(CountUtil.format(post.getComments()));
+
+        long comments = this.post.getComments();
+        comments += 1;
+        holder.tvComment.setText(CountUtil.format(comments));
       }
     } else {
       super.bind(holder, payloads);
@@ -91,10 +96,12 @@ public class RichQuestionModel extends EpoxyModelWithHolder<RichQuestionModel.Ri
     holder.tvShare.setOnClickListener(v -> onShareClickListener.onShareClick(v, post));
 
     holder.tvComment.setOnClickListener(
-        v -> onCommentClickListener.onCommentClick(v, post.getId(), post.getAcceptedCommentId()));
+        v -> onCommentClickListener.onCommentClick(v, post.getId(), post.getOwnerId(),
+            post.getAcceptedCommentId(), PostType.TYPE_RICH));
 
     holder.ibOptions.setOnClickListener(
-        v -> onOptionsClickListener.onOptionsClick(v, this, post.getId(), post.getOwnerId()));
+        v -> onPostOptionsClickListener.onPostOptionsClick(v, this, post.getId(),
+            post.getOwnerId()));
 
     holder.voteView.setOnVoteEventListener(direction -> {
       post.setDir(direction);
@@ -128,6 +135,7 @@ public class RichQuestionModel extends EpoxyModelWithHolder<RichQuestionModel.Ri
     @BindView(R.id.iv_item_feed_user_avatar) ImageView ivUserAvatar;
     @BindView(R.id.tv_item_feed_username) TextView tvUsername;
     @BindView(R.id.tv_item_feed_time) TimeTextView tvTime;
+    @BindView(R.id.tv_item_feed_bounty) TextView tvBounty;
     @BindView(R.id.ib_item_feed_options) ImageButton ibOptions;
     @BindView(R.id.tv_item_question_rich_content) TextView tvContent;
     @BindView(R.id.iv_item_question_rich_cover) ImageView ivContentImage;
@@ -146,8 +154,11 @@ public class RichQuestionModel extends EpoxyModelWithHolder<RichQuestionModel.Ri
 
       tvUsername.setText(post.getUsername());
       tvTime.setTimeStamp(post.getCreated().getTime() / 1000);
-      tvContent.setText(
-          isNormal ? ReadMoreUtil.readMoreContent(post.getContent(), 135) : post.getContent());
+      tvBounty.setVisibility(post.getBounty() == 0 ? View.GONE : View.VISIBLE);
+      tvBounty.setText(String.valueOf(post.getBounty()));
+      tvContent.setText(isNormal
+          ? ReadMoreUtil.readMoreContent(post.getContent(), 135)
+          : post.getContent());
 
       final int w = isNormal ? 80 : 320;
       final int h = isNormal ? 80 : 180;

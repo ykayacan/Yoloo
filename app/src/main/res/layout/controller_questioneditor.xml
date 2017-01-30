@@ -28,7 +28,7 @@
         android:layout_gravity="end"
         android:foreground="?android:attr/selectableItemBackgroundBorderless"
         android:padding="16dp"
-        android:text="@string/action_post"
+        android:text="@string/action_editor_post"
         android:textAppearance="@style/TextAppearance.AppCompat.Menu" />
 
     </android.support.v7.widget.Toolbar>

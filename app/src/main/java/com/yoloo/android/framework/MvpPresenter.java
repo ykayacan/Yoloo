@@ -1,4 +1,4 @@
-package com.yoloo.android.feature.base.framework;
+package com.yoloo.android.framework;
 
 import android.support.annotation.CallSuper;
 import android.support.annotation.Nullable;
@@ -34,7 +34,11 @@ public abstract class MvpPresenter<V extends MvpView> {
    * @return <code>null</code>, if view is not attached, otherwise the concrete view instance
    */
   @UiThread @Nullable public final V getView() {
-    return Preconditions.checkNotNull(view, "View has been detach!");
+    return Preconditions.checkNotNull(view, "View has been detached!");
+  }
+
+  @UiThread public boolean isViewAttached() {
+    return view != null;
   }
 
   /**

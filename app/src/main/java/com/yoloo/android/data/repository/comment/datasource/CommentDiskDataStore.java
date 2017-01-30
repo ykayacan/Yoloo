@@ -50,26 +50,24 @@ public class CommentDiskDataStore {
    *
    * @param comment the comment
    */
-  public Completable add(CommentRealm comment) {
-    return Completable.fromAction(() -> {
-      Realm realm = Realm.getDefaultInstance();
+  public void add(CommentRealm comment) {
+    Realm realm = Realm.getDefaultInstance();
 
-      realm.executeTransaction(tx -> {
-        PostRealm post = tx.where(PostRealm.class)
-            .equalTo(PostRealmFields.ID, comment.getPostId())
-            .findFirst();
-        post.increaseComments();
+    realm.executeTransaction(tx -> {
+      PostRealm post = tx.where(PostRealm.class)
+          .equalTo(PostRealmFields.ID, comment.getPostId())
+          .findFirst();
+      post.increaseComments();
 
-        if (comment.isAccepted()) {
-          post.setAcceptedCommentId(comment.getId());
-        }
+      if (comment.isAccepted()) {
+        post.setAcceptedCommentId(comment.getId());
+      }
 
-        tx.insertOrUpdate(post);
-        tx.insertOrUpdate(comment);
-      });
-
-      realm.close();
+      tx.insertOrUpdate(post);
+      tx.insertOrUpdate(comment);
     });
+
+    realm.close();
   }
 
   /**
@@ -77,12 +75,10 @@ public class CommentDiskDataStore {
    *
    * @param comments the comments
    */
-  public Completable addAll(List<CommentRealm> comments) {
-    return Completable.fromAction(() -> {
-      Realm realm = Realm.getDefaultInstance();
-      realm.executeTransaction(tx -> tx.insertOrUpdate(comments));
-      realm.close();
-    });
+  public void addAll(List<CommentRealm> comments) {
+    Realm realm = Realm.getDefaultInstance();
+    realm.executeTransaction(tx -> tx.insertOrUpdate(comments));
+    realm.close();
   }
 
   /**

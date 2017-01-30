@@ -37,7 +37,7 @@ public class PostRepository {
     return Observable.mergeDelayError(
         diskDataStore.get(postId).subscribeOn(Schedulers.io()),
         remoteDataStore.get(postId)
-            .doOnNext(postRealm -> diskDataStore.add(postRealm).subscribe())
+            .doOnNext(diskDataStore::add)
             .subscribeOn(Schedulers.io()));
   }
 
@@ -45,7 +45,7 @@ public class PostRepository {
     Preconditions.checkNotNull(post, "post can not be null.");
 
     return remoteDataStore.add(post)
-        .doOnNext(postRealm -> diskDataStore.add(postRealm).subscribe())
+        .doOnNext(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }
 
@@ -62,7 +62,7 @@ public class PostRepository {
   }
 
   public Completable addDraft(PostRealm draft) {
-    return diskDataStore.add(draft).subscribeOn(Schedulers.io());
+    return Completable.fromAction(() -> diskDataStore.add(draft)).subscribeOn(Schedulers.io());
   }
 
   public Completable deleteDraft() {
@@ -74,7 +74,7 @@ public class PostRepository {
     return Observable.mergeDelayError(
         diskDataStore.listByUserFeed().subscribeOn(Schedulers.io()),
         remoteDataStore.listByUserFeed(cursor, eTag, limit)
-            .doOnNext(response -> diskDataStore.addAll(response.getData()).subscribe())
+            .doOnNext(response -> diskDataStore.addAll(response.getData()))
             .subscribeOn(Schedulers.io()));
   }
 
@@ -82,7 +82,7 @@ public class PostRepository {
     return Observable.mergeDelayError(
         diskDataStore.listByBounty().subscribeOn(Schedulers.io()),
         remoteDataStore.listByBounty(cursor, eTag, limit)
-            .doOnNext(response -> diskDataStore.addAll(response.getData()).subscribe())
+            .doOnNext(response -> diskDataStore.addAll(response.getData()))
             .subscribeOn(Schedulers.io()));
   }
 
@@ -93,7 +93,7 @@ public class PostRepository {
     return Observable.mergeDelayError(
         diskDataStore.listByCategory(categoryName, sorter).subscribeOn(Schedulers.io()),
         remoteDataStore.listByCategory(categoryName, sorter, cursor, eTag, limit)
-            .doOnNext(response -> diskDataStore.addAll(response.getData()).subscribe())
+            .doOnNext(response -> diskDataStore.addAll(response.getData()))
             .subscribeOn(Schedulers.io()));
   }
 
@@ -102,7 +102,7 @@ public class PostRepository {
     Preconditions.checkNotNull(tagNames, "tagNames can not be null.");
 
     return remoteDataStore.listByTags(tagNames, sorter, cursor, eTag, limit)
-        .doOnNext(response -> diskDataStore.addAll(response.getData()).subscribe())
+        .doOnNext(response -> diskDataStore.addAll(response.getData()))
         .subscribeOn(Schedulers.io());
   }
 
@@ -119,7 +119,7 @@ public class PostRepository {
     return Observable.mergeDelayError(
         diskDataStore.listBookmarkedPosts().subscribeOn(Schedulers.io()),
         remoteDataStore.listByBookmarked(cursor, eTag, limit)
-            .doOnNext(response -> diskDataStore.addAll(response.getData()).subscribe())
+            .doOnNext(response -> diskDataStore.addAll(response.getData()))
             .subscribeOn(Schedulers.io()));
   }
 
@@ -133,5 +133,11 @@ public class PostRepository {
     Preconditions.checkNotNull(postId, "postId can not be null.");
 
     return diskDataStore.bookmark(postId).subscribeOn(Schedulers.io());
+  }
+
+  public Completable unBookmarkPost(String postId) {
+    Preconditions.checkNotNull(postId, "postId can not be null.");
+
+    return diskDataStore.unBookmark(postId).subscribeOn(Schedulers.io());
   }
 }

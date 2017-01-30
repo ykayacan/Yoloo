@@ -4,7 +4,7 @@ import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.data.model.PostRealm;
-import com.yoloo.android.feature.base.framework.MvpDataView;
+import com.yoloo.android.framework.MvpDataView;
 import java.util.List;
 
 interface PostDetailView extends MvpDataView<Response<List<CommentRealm>>> {

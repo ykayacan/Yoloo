@@ -16,7 +16,6 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
 import com.bluelinelabs.conductor.RouterTransaction;
-import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.google.android.gms.common.Scopes;
 import com.yoloo.android.R;
 import com.yoloo.android.data.faker.AccountFaker;
@@ -24,7 +23,7 @@ import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.base.framework.MvpController;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.feature.feed.userfeed.UserFeedController;
 import com.yoloo.android.feature.login.AuthUI;
 import com.yoloo.android.feature.login.FacebookProvider;
@@ -152,9 +151,7 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
   }
 
   @Override public void onSignedIn(AccountRealm account) {
-    getParentController().getRouter()
-        .setRoot(RouterTransaction.with(new UserFeedController())
-            .pushChangeHandler(new FadeChangeHandler()));
+    getParentController().getRouter().setRoot(RouterTransaction.with(new UserFeedController()));
   }
 
   @Override public void onError(Throwable t) {

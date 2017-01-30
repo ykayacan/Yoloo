@@ -38,7 +38,7 @@
     android:textAppearance="@style/TextAppearance.AppCompat.Body2"
     app:layout_constraintBottom_toTopOf="@+id/tv_nav_username"
     app:layout_constraintLeft_toLeftOf="parent"
-    tools:text="@string/placeholder_nav_realname" />
+    tools:text="realname" />
 
   <TextView
     android:id="@+id/tv_nav_username"
@@ -50,6 +50,6 @@
     android:textAppearance="@style/TextAppearance.AppCompat.Small"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintLeft_toLeftOf="parent"
-    tools:text="@string/placeholder_nav_username" />
+    tools:text="username" />
 
 </android.support.constraint.ConstraintLayout>

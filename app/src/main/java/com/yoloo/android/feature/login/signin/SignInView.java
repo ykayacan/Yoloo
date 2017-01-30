@@ -1,7 +1,7 @@
 package com.yoloo.android.feature.login.signin;
 
 import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.feature.base.framework.MvpView;
+import com.yoloo.android.framework.MvpView;
 
 public interface SignInView extends MvpView {
 

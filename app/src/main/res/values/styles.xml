@@ -5,8 +5,12 @@
     <item name="colorPrimaryDark">@color/primary_dark</item>
     <item name="colorAccent">@color/accent</item>
 
+    <item name="android:windowBackground">@android:color/transparent</item>
     <item name="colorControlHighlight">@color/ripple_light</item>
-    <item name="android:windowBackground">@null</item>
+  </style>
+
+  <style name="Yoloo.Splash">
+    <item name="android:windowBackground">@drawable/layer_splash</item>
   </style>
 
   <style name="Yoloo.Button" parent="@style/Widget.AppCompat.Button">
@@ -47,6 +51,7 @@
 
 
   <style name="Yoloo.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+  <style name="Yoloo.AppBarOverlay.Light" parent="ThemeOverlay.AppCompat.ActionBar" />
 
   <style name="Yoloo.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 

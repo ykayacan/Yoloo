@@ -3,7 +3,7 @@ package com.yoloo.android.feature.login.signup;
 import com.google.firebase.auth.FirebaseAuth;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.repository.user.UserRepository;
-import com.yoloo.android.feature.base.framework.MvpPresenter;
+import com.yoloo.android.framework.MvpPresenter;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;

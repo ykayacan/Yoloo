@@ -24,14 +24,14 @@ android {
     javaMaxHeapSize "4g"
   }
 
-  splits {
+  /*splits {
     abi {
       enable true
       reset()
       include 'x86', 'armeabi', 'armeabi-v7a', 'mips'
-      universalApk false
+      universalApk true
     }
-  }
+  }*/
 
   productFlavors {
     // Define separate dev and prod product flavors.

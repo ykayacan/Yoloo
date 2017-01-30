@@ -3,7 +3,7 @@ package com.yoloo.android.feature.notification;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.NotificationRealm;
 import com.yoloo.android.data.repository.notification.NotificationRepository;
-import com.yoloo.android.feature.base.framework.MvpPresenter;
+import com.yoloo.android.framework.MvpPresenter;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import java.util.List;
@@ -22,12 +22,9 @@ public class NotificationPresenter extends MvpPresenter<NotificationView> {
   }
 
   public void loadNotifications(boolean pullToRefresh, String cursor, int limit) {
-    if (pullToRefresh) {
-      getView().onLoading(pullToRefresh);
-    }
-
     Disposable d = notificationRepository.list(cursor, null, limit)
         .observeOn(AndroidSchedulers.mainThread())
+        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .subscribe(this::showNotifications, this::showError);
 
     getDisposable().add(d);

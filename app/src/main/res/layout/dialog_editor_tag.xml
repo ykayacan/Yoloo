@@ -14,7 +14,7 @@
     android:layout_marginRight="24dp"
     android:layout_marginStart="24dp"
     android:layout_marginTop="20dp"
-    android:hint="@string/hint_max_tags"
+    android:hint="@string/hint_editor_max_tags"
     app:allowSpaceInTag="true" />
 
   <TextView
@@ -27,7 +27,7 @@
     android:layout_marginRight="24dp"
     android:layout_marginStart="24dp"
     android:layout_marginTop="8dp"
-    android:text="@string/label_tag_overlay_recommended"
+    android:text="@string/label_editor_recommended_tags"
     android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
     android:textColor="@color/primary_blue" />
 

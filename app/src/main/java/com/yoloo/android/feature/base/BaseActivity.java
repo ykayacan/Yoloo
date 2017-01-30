@@ -40,22 +40,10 @@ public class BaseActivity extends AppCompatActivity {
     ButterKnife.bind(this);
 
     router = Conductor.attachRouter(this, container, savedInstanceState);
+    authStateListener = BaseActivity.this::setRootController;
 
-    router.addChangeListener(new ControllerChangeHandler.ControllerChangeListener() {
-      @Override
-      public void onChangeStarted(@Nullable Controller to, @Nullable Controller from,
-          boolean isPush, @NonNull ViewGroup container, @NonNull ControllerChangeHandler handler) {
-        if (from != null) from.setOptionsMenuHidden(true);
-      }
+    setOptionsMenuVisibility();
 
-      @Override
-      public void onChangeCompleted(@Nullable Controller to, @Nullable Controller from,
-          boolean isPush, @NonNull ViewGroup container, @NonNull ControllerChangeHandler handler) {
-        if (from != null) from.setOptionsMenuHidden(false);
-      }
-    });
-
-    authStateListener = this::setRootController;
   }
 
   @Override protected void onNewIntent(Intent intent) {
@@ -89,12 +77,16 @@ public class BaseActivity extends AppCompatActivity {
     }
   }
 
+  @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    router.onActivityResult(requestCode, resultCode, data);
+  }
+
   private void setRootController(FirebaseAuth auth) {
     FirebaseUser user = auth.getCurrentUser();
 
     if (!router.hasRootController()) {
       if (user == null) {
-        router.setRoot(RouterTransaction.with(new AuthController()).tag("test"));
+        router.setRoot(RouterTransaction.with(new AuthController()));
       } else {
         router.setRoot(RouterTransaction.with(new UserFeedController()));
       }
@@ -121,5 +113,21 @@ public class BaseActivity extends AppCompatActivity {
   private void startTransaction(Controller to, ControllerChangeHandler handler) {
     router.pushController(
         RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
+  }
+
+  private void setOptionsMenuVisibility() {
+    router.addChangeListener(new ControllerChangeHandler.ControllerChangeListener() {
+      @Override
+      public void onChangeStarted(@Nullable Controller to, @Nullable Controller from,
+          boolean isPush, @NonNull ViewGroup container, @NonNull ControllerChangeHandler handler) {
+        if (from != null) from.setOptionsMenuHidden(true);
+      }
+
+      @Override
+      public void onChangeCompleted(@Nullable Controller to, @Nullable Controller from,
+          boolean isPush, @NonNull ViewGroup container, @NonNull ControllerChangeHandler handler) {
+        if (from != null) from.setOptionsMenuHidden(false);
+      }
+    });
   }
 }

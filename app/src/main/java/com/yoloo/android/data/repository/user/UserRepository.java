@@ -55,7 +55,7 @@ public class UserRepository {
     return Observable.mergeDelayError(
         diskDataStore.getMe().subscribeOn(Schedulers.io()),
         remoteDataStore.getMe()
-            .doOnNext(account -> diskDataStore.add(account).subscribe())
+            .doOnNext(diskDataStore::add)
             .subscribeOn(Schedulers.io()));
   }
 
@@ -65,7 +65,7 @@ public class UserRepository {
    * @return the local me
    */
   public Observable<AccountRealm> getLocalMe() {
-    return diskDataStore.getMe().subscribeOn(Schedulers.io());
+    return diskDataStore.getMe().subscribeOn(Schedulers.io()).cache();
   }
 
   /**
@@ -78,7 +78,7 @@ public class UserRepository {
     Preconditions.checkNotNull(account, "account can not be null.");
 
     return remoteDataStore.add(account)
-        .doOnSuccess(accountRealm -> diskDataStore.add(accountRealm).subscribe())
+        .doOnSuccess(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }
 

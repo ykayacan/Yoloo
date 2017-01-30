@@ -6,6 +6,10 @@
       android:id="@+id/action_feed_popup_bookmark"
       android:title="@string/action_feed_popup_bookmark" />
     <item
+      android:id="@+id/action_feed_popup_unbookmark"
+      android:title="@string/action_feed_popup_unbookmark"
+      android:visible="false" />
+    <item
       android:id="@+id/action_feed_popup_edit"
       android:title="@string/action_feed_popup_edit" />
   </group>

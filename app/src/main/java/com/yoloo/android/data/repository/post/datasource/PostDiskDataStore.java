@@ -55,8 +55,8 @@ public class PostDiskDataStore {
    * @param post the post realm
    * @return the completable
    */
-  public Completable add(PostRealm post) {
-    return addAll(Collections.singletonList(post));
+  public void add(PostRealm post) {
+    addAll(Collections.singletonList(post));
   }
 
   /**
@@ -65,12 +65,10 @@ public class PostDiskDataStore {
    * @param posts the posts
    * @return the completable
    */
-  public Completable addAll(List<PostRealm> posts) {
-    return Completable.fromAction(() -> {
-      Realm realm = Realm.getDefaultInstance();
-      realm.executeTransaction(tx -> tx.insertOrUpdate(posts));
-      realm.close();
-    });
+  public void addAll(List<PostRealm> posts) {
+    Realm realm = Realm.getDefaultInstance();
+    realm.executeTransaction(tx -> tx.insertOrUpdate(posts));
+    realm.close();
   }
 
   /**
@@ -166,7 +164,7 @@ public class PostDiskDataStore {
       RealmResults<PostRealm> results = realm.where(PostRealm.class)
           .notEqualTo(PostRealmFields.PENDING, true)
           .notEqualTo(PostRealmFields.BOUNTY, 0)
-          .findAllSorted(PostRealmFields.RANK, Sort.DESCENDING);
+          .findAllSorted(PostRealmFields.BOUNTY, Sort.DESCENDING);
 
       List<PostRealm> posts = results.isEmpty()
           ? Collections.emptyList()
@@ -224,6 +222,23 @@ public class PostDiskDataStore {
 
       realm.executeTransaction(tx -> {
         post.setBookmarked(true);
+        tx.insertOrUpdate(post);
+      });
+
+      realm.close();
+    });
+  }
+
+  public Completable unBookmark(String postId) {
+    return Completable.fromAction(() -> {
+      Realm realm = Realm.getDefaultInstance();
+
+      PostRealm post = realm.where(PostRealm.class)
+          .equalTo(PostRealmFields.ID, postId)
+          .findFirst();
+
+      realm.executeTransaction(tx -> {
+        post.setBookmarked(false);
         tx.insertOrUpdate(post);
       });
 

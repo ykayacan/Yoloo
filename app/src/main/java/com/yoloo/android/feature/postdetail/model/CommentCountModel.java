@@ -18,7 +18,7 @@ public class CommentCountModel extends EpoxyModel<TextView> {
     String countsFound = CountUtil.format(counts);
     String text = view.getContext()
         .getResources()
-        .getQuantityString(R.plurals.label_comment_text, (int) counts, counts);
+        .getQuantityString(R.plurals.label_comment_comment_text, (int) counts, counts);
     view.setText(countsFound + " " + text);
   }
 }

@@ -22,7 +22,7 @@ import com.yoloo.android.data.model.NotificationRealm;
 import com.yoloo.android.data.repository.notification.NotificationRepository;
 import com.yoloo.android.data.repository.notification.datasource.NotificationDiskDataSource;
 import com.yoloo.android.data.repository.notification.datasource.NotificationRemoteDataSource;
-import com.yoloo.android.feature.base.framework.MvpController;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.ui.recyclerview.EndlessRecyclerViewScrollListener;
@@ -47,6 +47,10 @@ public class NotificationController extends MvpController<NotificationView, Noti
   private String eTag;
 
   private EndlessRecyclerViewScrollListener endlessRecyclerViewScrollListener;
+
+  public NotificationController() {
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
+  }
 
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
@@ -84,7 +88,7 @@ public class NotificationController extends MvpController<NotificationView, Noti
   }
 
   @Override public void onLoading(boolean pullToRefresh) {
-    swipeRefreshLayout.setRefreshing(pullToRefresh);
+
   }
 
   @Override public void onLoaded(Response<List<NotificationRealm>> value) {
@@ -94,9 +98,11 @@ public class NotificationController extends MvpController<NotificationView, Noti
     eTag = value.geteTag();
 
     adapter.addAll(value.getData());
+    swipeRefreshLayout.setRefreshing(false);
   }
 
   @Override public void onError(Throwable e) {
+    swipeRefreshLayout.setRefreshing(false);
     Timber.d(e);
   }
 

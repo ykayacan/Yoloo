@@ -55,10 +55,10 @@ public class CommentRemoteDataStore {
         .toObservable()
         .flatMap(s -> Observable.just(
             new CommentRealm()
+                .setId(commentId)
                 .setOwnerId("a1")
                 .setUsername("krialix")
                 .setAvatarUrl(FakerUtil.getAvatarRandomUrl())
-                .setId(commentId)
                 .setAccepted(true)
                 .setPostId(questionId)
                 .setContent("Accepted")

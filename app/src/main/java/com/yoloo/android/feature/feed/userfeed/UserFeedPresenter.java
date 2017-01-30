@@ -1,16 +1,13 @@
 package com.yoloo.android.feature.feed.userfeed;
 
-import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.CategoryRealm;
 import com.yoloo.android.data.model.FcmRealm;
-import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.category.CategoryRepository;
 import com.yoloo.android.data.repository.notification.NotificationRepository;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.sorter.CategorySorter;
-import com.yoloo.android.feature.base.framework.MvpPresenter;
+import com.yoloo.android.framework.MvpPresenter;
 import com.yoloo.android.util.Pair;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -55,9 +52,19 @@ public class UserFeedPresenter extends MvpPresenter<UserFeedView> {
             postRepository.listByUserFeed(cursor, eTag, limit),
             userRepository.getLocalMe(),
             Pair::create)
-        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .observeOn(AndroidSchedulers.mainThread(), true)
-        .subscribe(this::showData, this::showError);
+        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
+        .subscribe(pair -> {
+          getView().onAccountLoaded(pair.second);
+
+          if (pair.first.getData() == null) {
+            getView().onEmpty();
+          } else {
+            getView().onLoaded(pair.first);
+          }
+
+          getView().showContent();
+        }, this::showError);
 
     getDisposable().add(d);
   }
@@ -115,7 +122,7 @@ public class UserFeedPresenter extends MvpPresenter<UserFeedView> {
     getDisposable().add(d);
   }
 
-  private void loadTrendingCategories() {
+  public void loadTrendingCategories() {
     Disposable d = categoryRepository.list(7, CategorySorter.TRENDING)
         .observeOn(AndroidSchedulers.mainThread(), true)
         .subscribe(this::showTrendingCategories, this::showError);
@@ -125,17 +132,6 @@ public class UserFeedPresenter extends MvpPresenter<UserFeedView> {
 
   private void showTrendingCategories(List<CategoryRealm> topicRealms) {
     getView().onTrendingCategoriesLoaded(topicRealms);
-  }
-
-  private void showData(Pair<Response<List<PostRealm>>, AccountRealm> pair) {
-    getView().onLoading(false);
-    getView().onAccountLoaded(pair.second);
-
-    if (pair.first.getData() == null) {
-      getView().onEmpty();
-    } else {
-      getView().onLoaded(pair.first);
-    }
   }
 
   private void showError(Throwable throwable) {

@@ -7,19 +7,12 @@ import java.util.List;
 
 public class TrendingCategoryAdapter extends EpoxyAdapter {
 
-  private FeedAdapter.OnCategoryClickListener onCategoryClickListener;
-
   public TrendingCategoryAdapter() {
     enableDiffing();
   }
 
-  public void setOnCategoryClickListener(FeedAdapter.OnCategoryClickListener listener) {
-    this.onCategoryClickListener = listener;
-  }
-
-  public void updateTrendingCategories(List<CategoryRealm> items) {
-    models.clear();
-
+  public void addTrendingCategories(List<CategoryRealm> items,
+      FeedAdapter.OnCategoryClickListener onCategoryClickListener) {
     for (CategoryRealm category : items) {
       models.add(new CategoryModel_()
           .category(category)

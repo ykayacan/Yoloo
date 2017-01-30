@@ -17,10 +17,9 @@ public class PostFaker {
   public static void generate() {
     Realm realm = Realm.getDefaultInstance();
     realm.executeTransactionAsync(tx -> {
-      CategoryRealm category =
-          tx.where(CategoryRealm.class)
-              .equalTo(CategoryRealmFields.NAME, "Activities")
-              .findFirst();
+      CategoryRealm category = tx.where(CategoryRealm.class)
+          .equalTo(CategoryRealmFields.NAME, "Activities")
+          .findFirst();
 
       RealmList<CategoryRealm> categories = new RealmList<>();
       categories.add(category);
@@ -110,12 +109,61 @@ public class PostFaker {
           .setType(TYPE_RICH)
           .setFeedItem(false);
 
+      PostRealm p7 = new PostRealm()
+          .setId("p7")
+          .setOwnerId("a1")
+          .setAvatarUrl(FakerUtil.getAvatarRandomUrl())
+          .setUsername("duygukeskek")
+          .setCreated(FakerUtil.getRandomDate())
+          .setContent(FakerUtil.getContent())
+          .setComments(FakerUtil.generateNumber())
+          .setVotes(FakerUtil.generateNumber())
+          .setMediaUrl(FakerUtil.getMediaUrl())
+          .setAcceptedCommentId("c1")
+          .setCategories(categories)
+          .setType(TYPE_RICH)
+          .setFeedItem(false);
+
+      PostRealm p8 = new PostRealm()
+          .setId("p8")
+          .setOwnerId("a1")
+          .setAvatarUrl(FakerUtil.getAvatarRandomUrl())
+          .setUsername("duygukeskek")
+          .setCreated(FakerUtil.getRandomDate())
+          .setContent(FakerUtil.getContent())
+          .setComments(FakerUtil.generateNumber())
+          .setVotes(FakerUtil.generateNumber())
+          .setMediaUrl(FakerUtil.getMediaUrl())
+          .setAcceptedCommentId("c1")
+          .setType(TYPE_RICH)
+          .setCategories(categories)
+          .setFeedItem(false);
+
+      PostRealm p9 = new PostRealm()
+          .setId("p9")
+          .setOwnerId("a1")
+          .setAvatarUrl(FakerUtil.getAvatarRandomUrl())
+          .setUsername("duygukeskek")
+          .setCreated(FakerUtil.getRandomDate())
+          .setContent(FakerUtil.getContent())
+          .setComments(FakerUtil.generateNumber())
+          .setVotes(FakerUtil.generateNumber())
+          .setMediaUrl(FakerUtil.getMediaUrl())
+          .setAcceptedCommentId("c1")
+          .setType(TYPE_RICH)
+          .setBookmarked(true)
+          .setCategories(categories)
+          .setFeedItem(false);
+
       list.add(p1);
       list.add(p2);
       list.add(p3);
       list.add(p4);
       list.add(p5);
       list.add(p6);
+      list.add(p7);
+      list.add(p8);
+      list.add(p9);
 
       tx.insertOrUpdate(list);
     });

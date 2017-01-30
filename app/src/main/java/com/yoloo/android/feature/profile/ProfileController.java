@@ -42,7 +42,7 @@ import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.base.framework.MvpController;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.feature.feed.postfeed.PostController;
 import com.yoloo.android.feature.follow.FollowController;
 import com.yoloo.android.feature.notification.NotificationController;

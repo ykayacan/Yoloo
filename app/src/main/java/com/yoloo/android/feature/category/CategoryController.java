@@ -16,11 +16,11 @@ import com.yoloo.android.data.model.CategoryRealm;
 import com.yoloo.android.data.repository.category.CategoryRepository;
 import com.yoloo.android.data.repository.category.datasource.CategoryDiskDataStore;
 import com.yoloo.android.data.repository.category.datasource.CategoryRemoteDataStore;
-import com.yoloo.android.feature.base.framework.MvpController;
 import com.yoloo.android.feature.feed.postfeed.PostController;
 import com.yoloo.android.feature.ui.recyclerview.GridInsetItemDecoration;
 import com.yoloo.android.feature.ui.recyclerview.SlideInItemAnimator;
 import com.yoloo.android.feature.write.catalog.CatalogController;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import java.util.List;
 
@@ -84,7 +84,8 @@ public class CategoryController extends MvpController<CategoryView, CategoryPres
 
   @NonNull @Override public CategoryPresenter createPresenter() {
     return new CategoryPresenter(
-        CategoryRepository.getInstance(CategoryRemoteDataStore.getInstance(),
+        CategoryRepository.getInstance(
+            CategoryRemoteDataStore.getInstance(),
             CategoryDiskDataStore.getInstance()));
   }
 

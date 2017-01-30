@@ -5,7 +5,7 @@ import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.model.TagRealm;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.tag.TagRepository;
-import com.yoloo.android.feature.base.framework.MvpPresenter;
+import com.yoloo.android.framework.MvpPresenter;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import java.util.ArrayList;

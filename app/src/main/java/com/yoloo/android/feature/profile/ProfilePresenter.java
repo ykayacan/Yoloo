@@ -2,7 +2,7 @@ package com.yoloo.android.feature.profile;
 
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
-import com.yoloo.android.feature.base.framework.MvpPresenter;
+import com.yoloo.android.framework.MvpPresenter;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 

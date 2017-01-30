@@ -15,16 +15,19 @@ public class CommentAdapter extends EpoxyAdapter {
   private final OnVoteClickListener onVoteClickListener;
   private final OnMentionClickListener onMentionClickListener;
   private final OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener;
+  @PostType private final int postType;
 
   public CommentAdapter(
       OnProfileClickListener onProfileClickListener,
       OnVoteClickListener onVoteClickListener,
       OnMentionClickListener onMentionClickListener,
-      OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener) {
+      OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener,
+      @PostType int postType) {
     this.onProfileClickListener = onProfileClickListener;
     this.onVoteClickListener = onVoteClickListener;
     this.onMentionClickListener = onMentionClickListener;
     this.onMarkAsAcceptedClickListener = onMarkAsAcceptedClickListener;
+    this.postType = postType;
 
     enableDiffing();
   }
@@ -35,19 +38,19 @@ public class CommentAdapter extends EpoxyAdapter {
         continue;
       }
 
-      models.add(createCommentModel(comment, self, hasAcceptedId));
+      models.add(createCommentModel(comment, self, hasAcceptedId, postType));
     }
 
     notifyModelsChanged();
   }
 
   public void addAcceptedComment(CommentRealm comment, boolean self, boolean hasAcceptedId) {
-    models.add(0, createCommentModel(comment, self, hasAcceptedId));
+    models.add(0, createCommentModel(comment, self, hasAcceptedId, postType));
     notifyItemInserted(0);
   }
 
   public void addComment(CommentRealm comment, boolean self, boolean hasAcceptedId) {
-    addModel(createCommentModel(comment, self, hasAcceptedId));
+    addModel(createCommentModel(comment, self, hasAcceptedId, postType));
   }
 
   public void clear() {
@@ -65,10 +68,11 @@ public class CommentAdapter extends EpoxyAdapter {
   }
 
   private CommentModel createCommentModel(CommentRealm comment, boolean self,
-      boolean hasAcceptedId) {
+      boolean hasAcceptedId, @PostType int postType) {
     return new CommentModel_().comment(comment)
         .self(self)
         .hasAcceptedId(hasAcceptedId)
+        .postType(postType)
         .onProfileClickListener(onProfileClickListener)
         .onMentionClickListener(onMentionClickListener)
         .onMarkAsAcceptedClickListener(onMarkAsAcceptedClickListener)

@@ -34,11 +34,8 @@ public class CategoryModel extends EpoxyModelWithHolder<CategoryModel.CategoryHo
 
     holder.tvTopicText.setText(category.getName());
 
-    holder.rootView.setOnClickListener(v -> {
-      if (onCategoryClickListener != null) {
-        onCategoryClickListener.onCategoryClick(v, category.getId(), category.getName());
-      }
-    });
+    holder.rootView.setOnClickListener(
+        v -> onCategoryClickListener.onCategoryClick(v, category.getId(), category.getName()));
   }
 
   static class CategoryHolder extends BaseEpoxyHolder {

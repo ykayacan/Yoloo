@@ -46,7 +46,7 @@ public class CommentRepository {
     return Observable.mergeDelayError(
         diskDataStore.get(commentId).subscribeOn(Schedulers.io()),
         remoteDataStore.get(commentId)
-            .doOnNext(commentRealm -> diskDataStore.add(commentRealm).subscribe())
+            .doOnNext(diskDataStore::add)
             .subscribeOn(Schedulers.io()));
   }
 
@@ -69,7 +69,7 @@ public class CommentRepository {
         .setAvatarUrl(account.getAvatarUrl());
 
     return remoteDataStore.add(comment)
-        .doOnNext(commentRealm -> diskDataStore.add(commentRealm).subscribe())
+        .doOnNext(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }
 
@@ -102,7 +102,7 @@ public class CommentRepository {
     return Observable.mergeDelayError(
         diskDataStore.list(postId).subscribeOn(Schedulers.io()),
         remoteDataStore.list(postId, cursor, eTag, limit)
-            .doOnNext(response -> diskDataStore.addAll(response.getData()).subscribe())
+            .doOnNext(response -> diskDataStore.addAll(response.getData()))
             .subscribeOn(Schedulers.io()));
   }
 
@@ -117,9 +117,9 @@ public class CommentRepository {
     return diskDataStore.vote(commentId, direction).subscribeOn(Schedulers.io());
   }
 
-  public Completable accept(String questionId, String commentId) {
+  public Observable<CommentRealm> accept(String questionId, String commentId) {
     return remoteDataStore.accept(questionId, commentId)
-        .flatMapCompletable(diskDataStore::add)
+        .doOnNext(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }
 }

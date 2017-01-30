@@ -69,8 +69,8 @@ public class UserDiskDataStore {
    * @param account the account
    * @return the completable
    */
-  public Completable add(AccountRealm account) {
-    return addAll(Collections.singletonList(account));
+  public void add(AccountRealm account) {
+    addAll(Collections.singletonList(account));
   }
 
   /**
@@ -79,12 +79,10 @@ public class UserDiskDataStore {
    * @param accounts the accounts
    * @return the completable
    */
-  public Completable addAll(List<AccountRealm> accounts) {
-    return Completable.fromAction(() -> {
-      Realm realm = Realm.getDefaultInstance();
-      realm.executeTransaction(tx -> tx.insertOrUpdate(accounts));
-      realm.close();
-    });
+  public void addAll(List<AccountRealm> accounts) {
+    Realm realm = Realm.getDefaultInstance();
+    realm.executeTransaction(tx -> tx.insertOrUpdate(accounts));
+    realm.close();
   }
 
   /**

@@ -6,7 +6,7 @@ import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.repository.category.CategoryRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.sorter.CategorySorter;
-import com.yoloo.android.feature.base.framework.MvpPresenter;
+import com.yoloo.android.framework.MvpPresenter;
 import com.yoloo.android.feature.login.AuthUI;
 import com.yoloo.android.feature.login.FacebookProvider;
 import com.yoloo.android.feature.login.GoogleProvider;

@@ -35,9 +35,4 @@ public class WelcomeController extends BaseController {
         .pushChangeHandler(new HorizontalChangeHandler())
         .popChangeHandler(new HorizontalChangeHandler()));
   }
-
-  @Override public boolean handleBack() {
-    getActivity().finish();
-    return true;
-  }
 }

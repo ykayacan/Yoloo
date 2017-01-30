@@ -1,11 +1,11 @@
-package com.yoloo.android.feature.base.framework;
+package com.yoloo.android.framework;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import com.yoloo.android.feature.base.BaseController;
-import com.yoloo.android.feature.base.framework.delegate.MvpConductorDelegateCallback;
-import com.yoloo.android.feature.base.framework.delegate.MvpConductorLifecycleListener;
+import com.yoloo.android.framework.delegate.MvpConductorDelegateCallback;
+import com.yoloo.android.framework.delegate.MvpConductorLifecycleListener;
 
 public abstract class MvpController<V extends MvpView, P extends MvpPresenter<V>>
     extends BaseController implements MvpView, MvpConductorDelegateCallback<V, P> {

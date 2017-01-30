@@ -1,11 +1,11 @@
-package com.yoloo.android.feature.base.framework.delegate;
+package com.yoloo.android.framework.delegate;
 
 import android.support.annotation.NonNull;
 import android.view.View;
 import com.bluelinelabs.conductor.Controller;
-import com.yoloo.android.feature.base.framework.MvpController;
-import com.yoloo.android.feature.base.framework.MvpPresenter;
-import com.yoloo.android.feature.base.framework.MvpView;
+import com.yoloo.android.framework.MvpController;
+import com.yoloo.android.framework.MvpPresenter;
+import com.yoloo.android.framework.MvpView;
 
 /**
  * This {@link Controller.LifecycleListener} has to added to your Controller to integrate Mosby.

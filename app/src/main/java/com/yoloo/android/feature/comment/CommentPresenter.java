@@ -3,11 +3,10 @@ package com.yoloo.android.feature.comment;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.CommentRealm;
-import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.comment.CommentRepository;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
-import com.yoloo.android.feature.base.framework.MvpPresenter;
+import com.yoloo.android.framework.MvpPresenter;
 import com.yoloo.android.util.Group;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -22,7 +21,6 @@ public class CommentPresenter extends MvpPresenter<CommentView> {
 
   private boolean self;
   private boolean hasAcceptedId;
-  private long totalComments;
 
   public CommentPresenter(
       CommentRepository commentRepository,
@@ -33,24 +31,22 @@ public class CommentPresenter extends MvpPresenter<CommentView> {
     this.userRepository = userRepository;
   }
 
-  void loadPostAndComments(String postId) {
-    Disposable d = postRepository.get(postId)
-        .flatMap(post -> Observable.zip(
-            Observable.just(post),
-            getAcceptedCommentObservable(post),
+  void loadPostAndComments(String postId, String postOwnerId, String acceptedCommentId) {
+    Disposable d = Observable
+        .zip(getAcceptedCommentObservable(acceptedCommentId),
             commentRepository.list(postId, null, null, 20),
             userRepository.getLocalMe(),
-            Group.Of4::create))
-        .observeOn(AndroidSchedulers.mainThread())
+            Group.Of3::create)
+        .observeOn(AndroidSchedulers.mainThread(), true)
         .subscribe(group -> {
-          self = group.fourth.getId().equals(group.first.getOwnerId());
-          hasAcceptedId = group.first.getAcceptedCommentId() != null;
-          totalComments = group.first.getComments();
+          self = group.third.getId().equals(postOwnerId);
+          hasAcceptedId = acceptedCommentId != null;
 
-          if (group.second.getId() != null) {
-            getView().onAcceptedCommentLoaded(group.second, self, hasAcceptedId);
+          if (group.first.getId() != null) {
+            getView().onAcceptedCommentLoaded(group.first, self, hasAcceptedId);
           }
-          getView().onCommentsLoaded(group.third, self, hasAcceptedId, totalComments);
+
+          getView().onCommentsLoaded(group.second, self, hasAcceptedId);
         }, this::showError);
 
     getDisposable().add(d);
@@ -58,8 +54,8 @@ public class CommentPresenter extends MvpPresenter<CommentView> {
 
   void loadComments(boolean pullToRefresh, String postId, String cursor, String eTag, int limit) {
     Disposable d = commentRepository.list(postId, cursor, eTag, limit)
-        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .observeOn(AndroidSchedulers.mainThread(), true)
+        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .subscribe(this::showComments, this::showError);
 
     getDisposable().add(d);
@@ -93,13 +89,13 @@ public class CommentPresenter extends MvpPresenter<CommentView> {
   void acceptComment(String postId, String commentId) {
     Disposable d = commentRepository.accept(postId, commentId)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe();
+        .subscribe(comment -> getView().onNewAccept(comment.getId()), this::showError);
 
     getDisposable().add(d);
   }
 
   private void showComments(Response<List<CommentRealm>> response) {
-    getView().onCommentsLoaded(response, self, hasAcceptedId, totalComments);
+    getView().onCommentsLoaded(response, self, hasAcceptedId);
   }
 
   private void showError(Throwable throwable) {
@@ -107,16 +103,16 @@ public class CommentPresenter extends MvpPresenter<CommentView> {
   }
 
   private void showNewComment(CommentRealm comment) {
-    totalComments += 1;
-    getView().onNewCommentLoaded(comment, self, hasAcceptedId, totalComments);
+    getView().onNewCommentLoaded(comment, self, hasAcceptedId);
   }
 
   private void showSuggestions(Response<List<AccountRealm>> response) {
     getView().onMentionSuggestionsLoaded(response.getData());
   }
 
-  private Observable<CommentRealm> getAcceptedCommentObservable(PostRealm post) {
-    return post.getAcceptedCommentId() == null ? Observable.just(new CommentRealm())
-        : commentRepository.get(post.getAcceptedCommentId());
+  private Observable<CommentRealm> getAcceptedCommentObservable(String acceptedCommentId) {
+    return acceptedCommentId == null
+        ? Observable.just(new CommentRealm())
+        : commentRepository.get(acceptedCommentId);
   }
 }

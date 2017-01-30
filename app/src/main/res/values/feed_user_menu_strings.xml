@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-  <string name="action_search">Search</string>
-  <string name="action_message">Message</string>
-  <string name="action_notification">Notification</string>
-</resources>

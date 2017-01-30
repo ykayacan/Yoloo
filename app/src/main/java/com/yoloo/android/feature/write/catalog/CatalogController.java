@@ -11,6 +11,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -33,11 +34,11 @@ import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.base.framework.MvpController;
 import com.yoloo.android.feature.category.CategoryController;
 import com.yoloo.android.feature.category.CategoryType;
 import com.yoloo.android.feature.write.EditorType;
 import com.yoloo.android.feature.write.editor.EditorController;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import io.reactivex.Observable;
 import java.util.HashMap;
@@ -93,22 +94,22 @@ public class CatalogController extends MvpController<CatalogView, CatalogPresent
     setHasOptionsMenu(true);
   }
 
+  @Override protected void onAttach(@NonNull View view) {
+    super.onAttach(view);
+    setKeyListenerOnView(view);
+  }
+
   @Override protected void onDestroyView(@NonNull View view) {
     viewPager.setAdapter(null);
     super.onDestroyView(view);
   }
 
-  @Override protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+  @Override protected void onChangeStarted(@NonNull ControllerChangeHandler changeHandler,
       @NonNull ControllerChangeType changeType) {
-    super.onChangeEnded(changeHandler, changeType);
+    super.onChangeStarted(changeHandler, changeType);
     if (changeType.equals(ControllerChangeType.POP_ENTER)) {
       getPresenter().loadDraft();
     }
-  }
-
-  @Override public boolean handleBack() {
-    showDiscardDraftDialog();
-    return false;
   }
 
   @Override public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
@@ -124,7 +125,8 @@ public class CatalogController extends MvpController<CatalogView, CatalogPresent
         return false;
       case R.id.action_next:
         if (selectedCategories.isEmpty()) {
-          Snackbar.make(getView(), R.string.error_catalog_select_category, Snackbar.LENGTH_SHORT).show();
+          Snackbar.make(getView(), R.string.error_catalog_select_category, Snackbar.LENGTH_SHORT)
+              .show();
         } else {
           draft.setCategoriesAsString(getCategoryIdsAsString());
           getPresenter().updateDraft(draft);
@@ -190,15 +192,32 @@ public class CatalogController extends MvpController<CatalogView, CatalogPresent
   }
 
   private void showDiscardDraftDialog() {
-    new AlertDialog.Builder(getActivity()).setTitle(R.string.action_catalog_discard_draft)
+    new AlertDialog.Builder(getActivity())
+        .setTitle(R.string.action_catalog_discard_draft)
         .setCancelable(false)
         .setPositiveButton(android.R.string.ok, (dialog, which) -> {
           getPresenter().deleteDraft();
-          getRouter().popCurrentController();
+          getRouter().handleBack();
         })
-        .setNegativeButton(android.R.string.cancel, (dialog, which) -> {
-        })
+        .setNegativeButton(android.R.string.cancel, null)
         .show();
+  }
+
+  // Listens for onBackPressed event from activity.
+  private void setKeyListenerOnView(View v) {
+    v.setFocusableInTouchMode(true);
+    v.requestFocus();
+    v.setOnKeyListener((view, keyCode, event) -> {
+      if (event.getAction() != KeyEvent.ACTION_DOWN) {
+        return true;
+      }
+
+      if (keyCode == KeyEvent.KEYCODE_BACK) {
+        showDiscardDraftDialog();
+      }
+
+      return true;
+    });
   }
 
   private static class CatalogPagerAdapter extends ControllerPagerAdapter {

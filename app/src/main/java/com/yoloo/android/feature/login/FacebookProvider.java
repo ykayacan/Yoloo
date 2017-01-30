@@ -26,14 +26,18 @@ import com.facebook.FacebookException;
 import com.facebook.FacebookRequestError;
 import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
+import com.facebook.internal.CallbackManagerImpl;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.yoloo.android.R;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.json.JSONException;
+import timber.log.Timber;
 
 public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResult> {
   private static final String TAG = "FacebookProvider";
@@ -73,22 +77,21 @@ public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResu
   }
 
   @Override public void startLogin(Controller controller) {
+    controller.registerForActivityResult(
+        CallbackManagerImpl.RequestCodeOffset.Login.toRequestCode());
+
     sCallbackManager = CallbackManager.Factory.create();
     LoginManager loginManager = LoginManager.getInstance();
     loginManager.registerCallback(sCallbackManager, this);
 
-    List<String> permissionsList = new ArrayList<>(mScopes);
+    Set<String> permissionsList = new HashSet<>(mScopes);
 
     // Ensure we have email and public_profile scopes
-    if (!permissionsList.contains(EMAIL)) {
-      permissionsList.add(EMAIL);
-    }
-
-    if (!permissionsList.contains(PUBLIC_PROFILE)) {
-      permissionsList.add(PUBLIC_PROFILE);
-    }
+    permissionsList.add(EMAIL);
+    permissionsList.add(PUBLIC_PROFILE);
 
     // Log in with permissions
+    Timber.d("startLogin()");
     loginManager.logInWithReadPermissions(controller.getActivity(), permissionsList);
   }
 
@@ -103,6 +106,7 @@ public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResu
   }
 
   @Override public void onSuccess(final LoginResult loginResult) {
+    Timber.d("onSuccess(): %s", loginResult.getAccessToken());
     GraphRequest request =
         GraphRequest.newMeRequest(loginResult.getAccessToken(), (object, response) -> {
           FacebookRequestError requestError = response.getError();

@@ -38,7 +38,8 @@ import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.base.framework.MvpController;
+import com.yoloo.android.feature.comment.PostType;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.feature.comment.OnMarkAsAcceptedClickListener;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
 import com.yoloo.android.feature.feed.common.event.DeleteEvent;
@@ -46,7 +47,7 @@ import com.yoloo.android.feature.feed.common.event.UpdateEvent;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnOptionsClickListener;
+import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
@@ -72,7 +73,7 @@ import timber.log.Timber;
 public class PostDetailController extends MvpController<PostDetailView, PostDetailPresenter>
     implements PostDetailView, SwipeRefreshLayout.OnRefreshListener,
     EndlessRecyclerViewScrollListener.OnLoadMoreListener, OnProfileClickListener,
-    OnOptionsClickListener, OnShareClickListener, OnCommentClickListener,
+    OnPostOptionsClickListener, OnShareClickListener, OnCommentClickListener,
     FeedAdapter.OnCategoryClickListener, OnVoteClickListener, OnContentImageClickListener,
     OnMentionClickListener, AutoCompleteMentionAdapter.OnMentionFilterListener,
     OnMarkAsAcceptedClickListener {
@@ -242,13 +243,14 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   }
 
-  @Override public void onCommentClick(View v, String itemId, String acceptedCommentId) {
+  @Override public void onCommentClick(View v, String postId, String postOwnerId,
+      String acceptedCommentId, @PostType int postType) {
     tvWriteComment.requestFocus();
     KeyboardUtil.showDelayedKeyboard(tvWriteComment);
   }
 
   @Override
-  public void onOptionsClick(View v, EpoxyModel<?> model, String postId, String postOwnerId) {
+  public void onPostOptionsClick(View v, EpoxyModel<?> model, String postId, String postOwnerId) {
     final PopupMenu optionsMenu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
     final boolean self = userId.equals(postOwnerId);
     optionsMenu.getMenu().getItem(1).setVisible(self);

@@ -1,4 +1,4 @@
-package com.yoloo.android.feature.base.framework;
+package com.yoloo.android.framework;
 
 /**
  * The interface Mvp data view.

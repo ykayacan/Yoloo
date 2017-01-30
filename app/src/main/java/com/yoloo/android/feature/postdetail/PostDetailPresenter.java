@@ -6,7 +6,7 @@ import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.data.repository.comment.CommentRepository;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
-import com.yoloo.android.feature.base.framework.MvpPresenter;
+import com.yoloo.android.framework.MvpPresenter;
 import com.yoloo.android.util.Group;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;

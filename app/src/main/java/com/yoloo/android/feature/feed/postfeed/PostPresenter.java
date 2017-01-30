@@ -6,7 +6,7 @@ import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.sorter.PostSorter;
-import com.yoloo.android.feature.base.framework.MvpPresenter;
+import com.yoloo.android.framework.MvpPresenter;
 import com.yoloo.android.util.Pair;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -30,8 +30,8 @@ public class PostPresenter extends MvpPresenter<PostView> {
             postRepository.listByCategory(categoryName, sorter, cursor, eTag, limit),
             userRepository.getLocalMe(),
             Pair::create)
-        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .observeOn(AndroidSchedulers.mainThread(), true)
+        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .subscribe(this::showData, this::showError);
 
     getDisposable().add(d);
@@ -44,8 +44,8 @@ public class PostPresenter extends MvpPresenter<PostView> {
             postRepository.listByTags(tagName, sorter, cursor, eTag, limit),
             userRepository.getLocalMe(),
             Pair::create)
-        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .observeOn(AndroidSchedulers.mainThread(), true)
+        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .subscribe(this::showData, this::showError);
 
     getDisposable().add(d);
@@ -58,8 +58,8 @@ public class PostPresenter extends MvpPresenter<PostView> {
             postRepository.listByUser(userId, commented, cursor, eTag, limit),
             userRepository.getLocalMe(),
             Pair::create)
-        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .observeOn(AndroidSchedulers.mainThread(), true)
+        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .subscribe(this::showData, this::showError);
 
     getDisposable().add(d);
@@ -71,8 +71,8 @@ public class PostPresenter extends MvpPresenter<PostView> {
             postRepository.listByBounty(cursor, eTag, limit),
             userRepository.getLocalMe(),
             Pair::create)
-        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .observeOn(AndroidSchedulers.mainThread(), true)
+        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .subscribe(this::showData, this::showError);
 
     getDisposable().add(d);
@@ -84,8 +84,8 @@ public class PostPresenter extends MvpPresenter<PostView> {
             postRepository.listByBookmarked(cursor, eTag, limit),
             userRepository.getLocalMe(),
             Pair::create)
-        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .observeOn(AndroidSchedulers.mainThread(), true)
+        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .subscribe(this::showData, this::showError);
 
     getDisposable().add(d);
@@ -117,8 +117,15 @@ public class PostPresenter extends MvpPresenter<PostView> {
     getDisposable().add(d);
   }
 
+  public void unBookmarkPost(String postId) {
+    Disposable d = postRepository.unBookmarkPost(postId)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe();
+
+    getDisposable().add(d);
+  }
+
   private void showData(Pair<Response<List<PostRealm>>, AccountRealm> pair) {
-    getView().onLoading(false);
     getView().onAccountLoaded(pair.second);
 
     if (pair.first.getData() == null) {
@@ -126,6 +133,8 @@ public class PostPresenter extends MvpPresenter<PostView> {
     } else {
       getView().onLoaded(pair.first);
     }
+
+    getView().showContent();
   }
 
   private void showError(Throwable throwable) {

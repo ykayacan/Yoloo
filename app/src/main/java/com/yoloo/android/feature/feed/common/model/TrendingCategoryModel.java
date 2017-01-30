@@ -1,5 +1,9 @@
 package com.yoloo.android.feature.feed.common.model;
 
+import android.content.Context;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSnapHelper;
+import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SnapHelper;
 import android.widget.TextView;
@@ -16,13 +20,11 @@ import java.util.List;
 public class TrendingCategoryModel
     extends EpoxyModelWithHolder<TrendingCategoryModel.TrendingCategoriesHolder> {
 
-  @EpoxyAttribute(hash = false) RecyclerView.ItemAnimator itemAnimator;
-  @EpoxyAttribute(hash = false) TrendingCategoryAdapter adapter;
-  @EpoxyAttribute(hash = false) RecyclerView.LayoutManager layoutManager;
-  @EpoxyAttribute(hash = false) SnapHelper snapHelper;
   @EpoxyAttribute(hash = false) FeedAdapter.OnCategoryClickListener onCategoryClickListener;
   @EpoxyAttribute(hash = false) FeedAdapter.OnExploreCategoriesClickListener
       onExploreCategoriesClickListener;
+
+  private TrendingCategoryAdapter adapter = new TrendingCategoryAdapter();
 
   @Override protected TrendingCategoriesHolder createNewHolder() {
     return new TrendingCategoriesHolder();
@@ -36,13 +38,15 @@ public class TrendingCategoryModel
     holder.tvTrendingNow.setText(R.string.label_feed_trending_now);
     holder.tvCategoryExplore.setText(R.string.label_feed_explore);
 
+    final Context context = holder.rvTrendingCategory.getContext();
+
     holder.rvTrendingCategory.setAdapter(adapter);
-    holder.rvTrendingCategory.setLayoutManager(layoutManager);
+    holder.rvTrendingCategory.setLayoutManager(
+        new LinearLayoutManager(context, OrientationHelper.HORIZONTAL, false));
     holder.rvTrendingCategory.setHasFixedSize(true);
-    holder.rvTrendingCategory.setItemAnimator(itemAnimator);
     holder.rvTrendingCategory.setOnFlingListener(null);
+    final SnapHelper snapHelper = new LinearSnapHelper();
     snapHelper.attachToRecyclerView(holder.rvTrendingCategory);
-    adapter.setOnCategoryClickListener(onCategoryClickListener);
 
     holder.tvCategoryExplore.setOnClickListener(
         v -> onExploreCategoriesClickListener.onExploreCategoriesClick(v));
@@ -52,8 +56,9 @@ public class TrendingCategoryModel
     holder.tvCategoryExplore.setOnClickListener(null);
   }
 
-  public void updateTrendingCategories(List<CategoryRealm> items) {
-    adapter.updateTrendingCategories(items);
+  public void addTrendingCategories(List<CategoryRealm> items,
+      FeedAdapter.OnCategoryClickListener onCategoryClickListener) {
+    adapter.addTrendingCategories(items, onCategoryClickListener);
   }
 
   static class TrendingCategoriesHolder extends BaseEpoxyHolder {

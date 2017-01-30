@@ -64,7 +64,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="@string/action_ready"
+        android:text="@string/action_login_ready"
         android:textAllCaps="false"
         android:textAppearance="@style/TextAppearance.AppCompat.Title"
         android:textColor="@color/accent" />

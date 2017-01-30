@@ -52,16 +52,16 @@ import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.tag.TagRepository;
 import com.yoloo.android.data.repository.tag.datasource.TagDiskDataStore;
 import com.yoloo.android.data.repository.tag.datasource.TagRemoteDataStore;
-import com.yoloo.android.feature.base.framework.MvpController;
 import com.yoloo.android.feature.ui.widget.AutoCompleteTagAdapter;
 import com.yoloo.android.feature.ui.widget.PhotoThumbnail;
 import com.yoloo.android.feature.ui.widget.SpaceTokenizer;
 import com.yoloo.android.feature.ui.widget.TagAutoCompleteTextView;
 import com.yoloo.android.feature.ui.widget.ThumbView;
 import com.yoloo.android.feature.ui.widget.tagview.TagView;
+import com.yoloo.android.feature.write.CreatePostService;
 import com.yoloo.android.feature.write.EditorType;
-import com.yoloo.android.feature.write.SendPostService;
 import com.yoloo.android.feature.write.bountyoverview.BountyController;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.WeakHandler;
@@ -155,16 +155,12 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
     }
   }
 
-  @Override public boolean handleBack() {
-    getPresenter().updateDraft(draft, EditorPresenter.NAV_BACK);
-    return false;
-  }
-
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     // handle arrow click here
     final int itemId = item.getItemId();
     switch (itemId) {
       case android.R.id.home:
+        KeyboardUtil.hideKeyboard(etEditor);
         setTempDraft();
         getPresenter().updateDraft(draft, EditorPresenter.NAV_BACK);
         return false;
@@ -209,13 +205,13 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
 
   @Override public void onDraftSaved(int navigation) {
     if (navigation == EditorPresenter.NAV_BACK) {
-      processBackButton();
+      getRouter().handleBack();
     } else if (navigation == EditorPresenter.NAV_BOUNTY) {
       getRouter().pushController(RouterTransaction.with(new BountyController())
           .pushChangeHandler(new VerticalChangeHandler())
           .popChangeHandler(new VerticalChangeHandler()));
     } else if (navigation == EditorPresenter.NAV_POST) {
-      Intent intent = new Intent(getActivity(), SendPostService.class);
+      Intent intent = new Intent(getActivity(), CreatePostService.class);
       getActivity().startService(intent);
       getRouter().popToRoot();
     }
@@ -260,7 +256,7 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
 
   @OnClick(R.id.ib_add_photo) void showAddPhotoDialog() {
     new AlertDialog.Builder(getActivity()).setTitle(R.string.label_editor_select_media_source_title)
-        .setItems(R.array.action_list_add_media, (dialog, which) -> {
+        .setItems(R.array.action_editor_list_media_source, (dialog, which) -> {
           KeyboardUtil.hideKeyboard(etEditor);
 
           switch (which) {
@@ -280,6 +276,17 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
 
     getPresenter().updateDraft(draft, EditorPresenter.NAV_POST);
     KeyboardUtil.hideKeyboard(etEditor);
+  }
+
+  @Optional @OnClick(R.id.iv_blogeditor_cover) void removeCover() {
+    new AlertDialog.Builder(getActivity())
+        .setTitle(R.string.label_editor_delete_cover_image)
+        .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+          ivBlogCover.setImageDrawable(null);
+          ivBlogCover.setVisibility(View.GONE);
+        })
+        .setNegativeButton(android.R.string.cancel, null)
+        .show();
   }
 
   private void setTempDraft() {
@@ -429,6 +436,7 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
   }
 
   private void addCoverView(Uri uri) {
+    ivBlogCover.setVisibility(View.VISIBLE);
     ivBlogCover.setImageURI(uri);
 
     draft.setMediaUrl(uri.getPath());
@@ -449,14 +457,10 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
         Locale.US).format(new Date(System.currentTimeMillis())) + ".webp";
   }
 
-  private void processBackButton() {
-    KeyboardUtil.hideKeyboard(etEditor);
-    getRouter().popCurrentController();
-  }
-
   private void checkCameraPermissions() {
     new Permissive.Request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        Manifest.permission.RECORD_AUDIO).whenPermissionsGranted(permissions -> openCamera())
+        Manifest.permission.RECORD_AUDIO)
+        .whenPermissionsGranted(permissions -> openCamera())
         .whenPermissionsRefused(
             permissions -> Snackbar.make(getView(), "Permission is denied!", Snackbar.LENGTH_SHORT)
                 .show())

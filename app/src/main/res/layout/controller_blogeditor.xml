@@ -29,7 +29,7 @@
         android:layout_gravity="end"
         android:foreground="?android:attr/selectableItemBackgroundBorderless"
         android:padding="16dp"
-        android:text="@string/action_post"
+        android:text="@string/action_editor_post"
         android:textAppearance="@style/TextAppearance.AppCompat.Menu" />
 
     </android.support.v7.widget.Toolbar>
@@ -46,18 +46,21 @@
 
     <android.support.constraint.ConstraintLayout
       android:layout_width="match_parent"
-      android:layout_height="wrap_content">
+      android:layout_height="wrap_content"
+      android:animateLayoutChanges="true">
 
       <ImageView
         android:id="@+id/iv_blogeditor_cover"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="centerCrop"
+        android:visibility="gone"
         app:layout_constraintDimensionRatio="16:9"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:src="@drawable/profile_bg_1x" />
+        tools:src="@drawable/profile_bg_1x"
+        tools:visibility="visible" />
 
       <EditText
         android:id="@+id/et_blogeditor_title"
@@ -71,6 +74,7 @@
         android:hint="@string/hint_editor_write_title"
         android:inputType="textMultiLine|textCapSentences"
         android:maxLength="60"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/iv_blogeditor_cover" />
@@ -80,7 +84,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
-        android:hint="@string/hint_editor_question_content"
+        android:hint="@string/hint_editor_blog_content"
         android:inputType="textMultiLine|textCapSentences"
         android:padding="16dp"
         app:layout_constraintLeft_toLeftOf="parent"

@@ -3,6 +3,8 @@
   <dimen name="activity_horizontal_margin">16dp</dimen>
   <dimen name="activity_vertical_margin">16dp</dimen>
 
+  <dimen name="lce_content_view_animation_translate_y">40dp</dimen>
+
   <dimen name="min_item_width">0dp</dimen>
   <dimen name="default_text_size">14sp</dimen>
   <dimen name="default_item_margin">2dp</dimen>

@@ -46,7 +46,7 @@ public class CategoryDiskDataStore {
    */
   public void addAll(List<CategoryRealm> realms) {
     Realm realm = Realm.getDefaultInstance();
-    realm.executeTransactionAsync(tx -> tx.insertOrUpdate(realms));
+    realm.executeTransaction(tx -> tx.insertOrUpdate(realms));
     realm.close();
   }
 
@@ -57,27 +57,29 @@ public class CategoryDiskDataStore {
    * @return the observable
    */
   public Observable<List<CategoryRealm>> list(CategorySorter sorter) {
-    Realm realm = Realm.getDefaultInstance();
+    return Observable.fromCallable(() -> {
+      Realm realm = Realm.getDefaultInstance();
 
-    List<CategoryRealm> categoryRealms;
-    switch (sorter) {
-      case TRENDING:
-        RealmResults<CategoryRealm> results = realm.where(CategoryRealm.class)
-            .findAllSorted(CategoryRealmFields.RANK, Sort.DESCENDING);
+      List<CategoryRealm> categories;
+      switch (sorter) {
+        case TRENDING:
+          RealmResults<CategoryRealm> results = realm.where(CategoryRealm.class)
+              .findAllSorted(CategoryRealmFields.RANK, Sort.DESCENDING);
 
-        categoryRealms = new ArrayList<>(7);
-        for (int i = 0; i < 7; i++) {
-          categoryRealms.add(realm.copyFromRealm(results.get(i)));
-        }
-        break;
-      case DEFAULT:
-      default:
-        categoryRealms = realm.copyFromRealm(realm.where(CategoryRealm.class).findAll());
-        break;
-    }
+          categories = new ArrayList<>(7);
+          for (int i = 0; i < 7; i++) {
+            categories.add(realm.copyFromRealm(results.get(i)));
+          }
+          break;
+        case DEFAULT:
+        default:
+          categories = realm.copyFromRealm(realm.where(CategoryRealm.class).findAll());
+          break;
+      }
 
-    realm.close();
+      realm.close();
 
-    return Observable.just(categoryRealms);
+      return categories;
+    });
   }
 }

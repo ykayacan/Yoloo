@@ -15,7 +15,6 @@ import butterknife.BindViews;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.bluelinelabs.conductor.RouterTransaction;
-import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 import com.google.android.gms.common.Scopes;
 import com.yoloo.android.R;
@@ -26,7 +25,6 @@ import com.yoloo.android.data.repository.category.datasource.CategoryRemoteDataS
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.base.framework.MvpController;
 import com.yoloo.android.feature.feed.userfeed.UserFeedController;
 import com.yoloo.android.feature.login.AuthUI;
 import com.yoloo.android.feature.login.FacebookProvider;
@@ -35,6 +33,7 @@ import com.yoloo.android.feature.login.IdpProvider;
 import com.yoloo.android.feature.login.IdpResponse;
 import com.yoloo.android.feature.login.signup.SignUpController;
 import com.yoloo.android.feature.ui.widget.tagview.TagView;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.LocaleUtil;
 import io.reactivex.Observable;
 import java.net.SocketTimeoutException;
@@ -51,7 +50,10 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
 
   @BindView(R.id.view_login_topics) TagView tagView;
   @BindViews({
-      R.id.btn_facebook_sign_in, R.id.btn_google_sign_in, R.id.tv_login_or, R.id.btn_login_sign_up
+      R.id.btn_facebook_sign_in,
+      R.id.btn_google_sign_in,
+      R.id.tv_login_or,
+      R.id.btn_login_sign_up
   }) View[] views;
 
   @BindString(R.string.error_auth_failed) String errorAuthFailedString;
@@ -139,9 +141,7 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
   }
 
   @Override public void onSignedUp() {
-    getParentController().getRouter()
-        .setRoot(RouterTransaction.with(new UserFeedController())
-            .pushChangeHandler(new FadeChangeHandler()));
+    getParentController().getRouter().setRoot(RouterTransaction.with(new UserFeedController()));
   }
 
   @Override public void onError(Throwable t) {

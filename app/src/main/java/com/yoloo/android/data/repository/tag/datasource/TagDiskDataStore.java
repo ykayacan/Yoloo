@@ -5,9 +5,9 @@ import com.yoloo.android.data.model.TagRealmFields;
 import com.yoloo.android.data.sorter.TagSorter;
 import io.reactivex.Observable;
 import io.realm.Realm;
-import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
 import io.realm.Sort;
+import java.util.Collections;
 import java.util.List;
 
 public class TagDiskDataStore {
@@ -27,7 +27,7 @@ public class TagDiskDataStore {
   public void addAll(List<TagRealm> tags) {
     Realm realm = Realm.getDefaultInstance();
 
-    realm.executeTransactionAsync(tx -> tx.insertOrUpdate(tags));
+    realm.executeTransaction(tx -> tx.insertOrUpdate(tags));
 
     realm.close();
   }
@@ -35,7 +35,7 @@ public class TagDiskDataStore {
   public void replace(List<TagRealm> realms) {
     Realm realm = Realm.getDefaultInstance();
 
-    realm.executeTransactionAsync(tx -> {
+    realm.executeTransaction(tx -> {
       tx.where(TagRealm.class)
           .equalTo(TagRealmFields.IS_RECOMMENDED, true)
           .findAll()
@@ -48,47 +48,42 @@ public class TagDiskDataStore {
   }
 
   public Observable<List<TagRealm>> list(TagSorter sorter) {
-    Realm realm = Realm.getDefaultInstance();
+    return Observable.fromCallable(() -> {
+      Realm realm = Realm.getDefaultInstance();
 
-    List<TagRealm> tagRealms;
-    switch (sorter) {
-      case RECOMMENDED:
-        tagRealms = realm.copyFromRealm(
-            realm.where(TagRealm.class)
-                .equalTo(TagRealmFields.IS_RECOMMENDED, true)
-                .findAllSorted(TagRealmFields.POSTS, Sort.DESCENDING));
-        break;
-      case DEFAULT:
-      default:
-        tagRealms = realm.copyFromRealm(
-            realm.where(TagRealm.class)
-                .findAll());
-        break;
-    }
+      List<TagRealm> tags;
+      switch (sorter) {
+        case RECOMMENDED:
+          tags = realm.copyFromRealm(realm.where(TagRealm.class)
+              .equalTo(TagRealmFields.IS_RECOMMENDED, true)
+              .findAllSorted(TagRealmFields.POSTS, Sort.DESCENDING));
+          break;
+        case DEFAULT:
+        default:
+          tags = realm.copyFromRealm(realm.where(TagRealm.class).findAll());
+          break;
+      }
 
-    realm.close();
-
-    return Observable.just(tagRealms);
+      return tags;
+    });
   }
 
   public Observable<List<TagRealm>> listRecent() {
-    return Observable.create(e -> {
+    return Observable.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 
       RealmResults<TagRealm> results = realm.where(TagRealm.class)
           .equalTo(TagRealmFields.RECENT, true)
-          .findAllAsync();
+          .findAll();
 
-      final RealmChangeListener<RealmResults<TagRealm>> listener = element -> {
-        e.onNext(realm.copyFromRealm(results));
-        e.onComplete();
-
+      if (results.isEmpty()) {
         realm.close();
-      };
-
-      results.addChangeListener(listener);
-
-      e.setCancellable(() -> results.removeChangeListener(listener));
+        return Collections.emptyList();
+      } else {
+        List<TagRealm> tags = realm.copyFromRealm(results);
+        realm.close();
+        return tags;
+      }
     });
   }
 }

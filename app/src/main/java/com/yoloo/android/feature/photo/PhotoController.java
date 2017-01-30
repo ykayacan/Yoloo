@@ -61,11 +61,10 @@ public class PhotoController extends BaseController {
   }
 
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    // handle arrow click here
     final int itemId = item.getItemId();
     switch (itemId) {
       case android.R.id.home:
-        getRouter().popCurrentController();
+        getRouter().handleBack();
         return true;
       default:
         return super.onOptionsItemSelected(item);

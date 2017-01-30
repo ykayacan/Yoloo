@@ -18,7 +18,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import butterknife.BindColor;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyModel;
@@ -38,15 +40,16 @@ import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.data.sorter.PostSorter;
-import com.yoloo.android.feature.base.framework.MvpController;
+import com.yoloo.android.feature.base.LceAnimator;
 import com.yoloo.android.feature.comment.CommentController;
+import com.yoloo.android.feature.comment.PostType;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
 import com.yoloo.android.feature.feed.common.event.DeleteEvent;
 import com.yoloo.android.feature.feed.common.event.UpdateEvent;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnOptionsClickListener;
+import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnReadMoreClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
@@ -54,10 +57,12 @@ import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.feature.photo.PhotoController;
 import com.yoloo.android.feature.postdetail.PostDetailController;
 import com.yoloo.android.feature.profile.ProfileController;
+import com.yoloo.android.feature.search.SearchController;
 import com.yoloo.android.feature.ui.recyclerview.EndlessRecyclerViewScrollListener;
 import com.yoloo.android.feature.ui.recyclerview.SlideInItemAnimator;
 import com.yoloo.android.feature.ui.recyclerview.SpaceItemDecoration;
 import com.yoloo.android.feature.ui.widget.SpinnerTitleArrayAdapter;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.ControllerUtil;
 import com.yoloo.android.util.DrawableHelper;
@@ -72,7 +77,8 @@ import timber.log.Timber;
 public class PostController extends MvpController<PostView, PostPresenter>
     implements PostView, SwipeRefreshLayout.OnRefreshListener,
     EndlessRecyclerViewScrollListener.OnLoadMoreListener, OnProfileClickListener,
-    OnOptionsClickListener, OnReadMoreClickListener, OnShareClickListener, OnCommentClickListener,
+    OnPostOptionsClickListener, OnReadMoreClickListener, OnShareClickListener,
+    OnCommentClickListener,
     OnVoteClickListener, OnContentImageClickListener {
 
   private static final int VIEW_TYPE_CATEGORY = 0;
@@ -93,6 +99,8 @@ public class PostController extends MvpController<PostView, PostPresenter>
   @BindView(R.id.spinner_feed_global) Spinner spinner;
   @BindView(R.id.swipe_feed_global) SwipeRefreshLayout swipeRefreshLayout;
   @BindView(R.id.view_feed_sub_action) View actionView;
+  @BindView(R.id.loading_view) ProgressBar loadingView;
+  @BindView(R.id.error_view) TextView errorView;
 
   @BindColor(R.color.primary) int primaryColor;
 
@@ -187,7 +195,7 @@ public class PostController extends MvpController<PostView, PostPresenter>
     super.onAttach(view);
 
     if (!reEnter) {
-      chooseLoadMethod();
+      chooseLoadMethod(false);
       reEnter = true;
     }
 
@@ -222,12 +230,13 @@ public class PostController extends MvpController<PostView, PostPresenter>
   }
 
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    // handle arrow click here
     final int itemId = item.getItemId();
     switch (itemId) {
       case android.R.id.home:
-        getRouter().popCurrentController();
+        getRouter().handleBack();
         return true;
+      case R.id.action_feed_search:
+        startTransaction(new SearchController(), new VerticalChangeHandler());
       case R.id.action_feed_sort_newest:
         reloadQuestions(item, PostSorter.NEWEST);
         return true;
@@ -243,7 +252,9 @@ public class PostController extends MvpController<PostView, PostPresenter>
   }
 
   @Override public void onLoading(boolean pullToRefresh) {
-    swipeRefreshLayout.setRefreshing(pullToRefresh);
+    if (!pullToRefresh) {
+      LceAnimator.showLoading(loadingView, swipeRefreshLayout, errorView);
+    }
   }
 
   @Override public void onLoaded(Response<List<PostRealm>> value) {
@@ -253,6 +264,11 @@ public class PostController extends MvpController<PostView, PostPresenter>
     adapter.showLoadMoreIndicator(false);
     endlessRecyclerViewScrollListener.setProgressBarVisible(false);
     adapter.addPosts(value.getData());
+  }
+
+  @Override public void showContent() {
+    LceAnimator.showContent(loadingView, swipeRefreshLayout, errorView);
+    swipeRefreshLayout.setRefreshing(false);
   }
 
   @Override public void onError(Throwable e) {
@@ -267,13 +283,13 @@ public class PostController extends MvpController<PostView, PostPresenter>
     endlessRecyclerViewScrollListener.resetState();
     adapter.clear();
 
-    chooseLoadMethod();
+    chooseLoadMethod(true);
   }
 
   @Override public void onLoadMore() {
-    Timber.d("onLoadMore");
+    adapter.showLoadMoreIndicator(true);
     endlessRecyclerViewScrollListener.setProgressBarVisible(true);
-    handler.postDelayed(this::chooseLoadMethod, 700);
+    handler.postDelayed(() -> chooseLoadMethod(true), 700);
   }
 
   @Override public void onAccountLoaded(AccountRealm account) {
@@ -292,18 +308,25 @@ public class PostController extends MvpController<PostView, PostPresenter>
   }
 
   @Override
-  public void onOptionsClick(View v, EpoxyModel<?> model, String postId, String postOwnerId) {
-    final PopupMenu optionsMenu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
+  public void onPostOptionsClick(View v, EpoxyModel<?> model, String postId, String postOwnerId) {
+    final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
     final boolean self = currentUserId.equals(postOwnerId);
-    optionsMenu.getMenu().getItem(1).setVisible(self);
-    optionsMenu.getMenu().getItem(2).setVisible(self);
+    menu.getMenu().getItem(0).setVisible(viewType != VIEW_TYPE_BOOKMARKED);
+    menu.getMenu().getItem(1).setVisible(viewType == VIEW_TYPE_BOOKMARKED);
+    menu.getMenu().getItem(2).setVisible(self);
+    menu.getMenu().getItem(3).setVisible(self);
 
-    optionsMenu.setOnMenuItemClickListener(item -> {
+    menu.setOnMenuItemClickListener(item -> {
       final int itemId = item.getItemId();
       switch (itemId) {
         case R.id.action_feed_popup_bookmark:
           getPresenter().bookmarkPost(postId);
           Snackbar.make(getView(), R.string.label_feed_bookmarked, Snackbar.LENGTH_SHORT).show();
+          return true;
+        case R.id.action_feed_popup_unbookmark:
+          getPresenter().unBookmarkPost(postId);
+          adapter.delete(model);
+          Snackbar.make(getView(), R.string.label_feed_unbookmarked, Snackbar.LENGTH_SHORT).show();
           return true;
         case R.id.action_feed_popup_edit:
           return true;
@@ -316,8 +339,10 @@ public class PostController extends MvpController<PostView, PostPresenter>
     });
   }
 
-  @Override public void onCommentClick(View v, String itemId, String acceptedCommentId) {
-    startTransaction(CommentController.create(itemId), new VerticalChangeHandler());
+  @Override public void onCommentClick(View v, String postId, String postOwnerId,
+      String acceptedCommentId, @PostType int postType) {
+    startTransaction(CommentController.create(postId, postOwnerId, acceptedCommentId, postType),
+        new VerticalChangeHandler());
   }
 
   @Override public void onContentImageClick(View v, String url) {
@@ -400,6 +425,7 @@ public class PostController extends MvpController<PostView, PostPresenter>
 
   private void reloadQuestions(@NonNull MenuItem item, PostSorter sorter) {
     item.setChecked(true);
+    endlessRecyclerViewScrollListener.resetState();
     adapter.clear();
     getPresenter().loadPostsByCategory(false, categoryName, sorter, cursor, eTag, 20);
   }
@@ -434,17 +460,19 @@ public class PostController extends MvpController<PostView, PostPresenter>
         RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
   }
 
-  private void chooseLoadMethod() {
+  private void chooseLoadMethod(boolean pullToRefresh) {
     if (viewType == VIEW_TYPE_USER) {
-      getPresenter().loadPostsByUser(false, userId, isCommented, cursor, eTag, 20);
+      getPresenter().loadPostsByUser(pullToRefresh, userId, isCommented, cursor, eTag, 20);
     } else if (viewType == VIEW_TYPE_TAGS) {
-      getPresenter().loadPostsByTag(false, tagName, PostSorter.NEWEST, cursor, eTag, 20);
+      getPresenter().loadPostsByTag(pullToRefresh, tagName, PostSorter.NEWEST, cursor, eTag, 20);
     } else if (viewType == VIEW_TYPE_CATEGORY) {
-      getPresenter().loadPostsByCategory(false, categoryName, PostSorter.NEWEST, cursor, eTag, 20);
+      Timber.d("chooseLoadMethod()");
+      getPresenter().loadPostsByCategory(pullToRefresh, categoryName, PostSorter.NEWEST, cursor,
+          eTag, 20);
     } else if (viewType == VIEW_TYPE_BOUNTY) {
-      getPresenter().loadPostsByBounty(false, cursor, eTag, 20);
+      getPresenter().loadPostsByBounty(pullToRefresh, cursor, eTag, 20);
     } else if (viewType == VIEW_TYPE_BOOKMARKED) {
-      getPresenter().loadPostsByBookmarked(false, cursor, eTag, 20);
+      getPresenter().loadPostsByBookmarked(pullToRefresh, cursor, eTag, 20);
     }
   }
 
