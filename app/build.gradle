@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.cloud.tools.endpoints-framework-client'
 apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'realm-android'
 apply from: '../config/quality/quality.gradle'
@@ -101,7 +102,8 @@ def PLAY_SERVICES_VERSION = "10.0.1"
 
 dependencies {
   compile fileTree(include: ['*.jar'], dir: 'libs')
-  compile project(path: ':backend', configuration: 'android-endpoints')
+  endpointsServer project(path: ':backend', configuration: 'endpoints')
+  compile "com.google.api-client:google-api-client:1.22.0"
 
   compile "com.android.support:appcompat-v7:$SUPPORT_LIBRARY_VERSION"
   compile "com.android.support:recyclerview-v7:$SUPPORT_LIBRARY_VERSION"

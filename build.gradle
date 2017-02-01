@@ -9,6 +9,8 @@ buildscript {
     classpath 'com.google.gms:google-services:3.0.0'
     classpath 'me.tatarka:gradle-retrolambda:3.4.0'
     classpath "io.realm:realm-gradle-plugin:2.2.1"
+    classpath "com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0-beta"
+    classpath 'com.google.guava:guava:20.0'
 
     // NOTE: Do not place your application dependencies here; they belong
     // in the individual module build.gradle files

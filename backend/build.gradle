@@ -6,8 +6,9 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.google.appengine:gradle-appengine-plugin:1.9.49'
     classpath 'me.tatarka:gradle-retrolambda:3.4.0'
+    classpath 'com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0-beta3'
+    classpath 'com.google.cloud.tools:appengine-gradle-plugin:1.0.0'
   }
 }
 
@@ -17,7 +18,8 @@ repositories {
 
 apply plugin: 'java'
 apply plugin: 'war'
-apply plugin: 'appengine'
+apply plugin: 'com.google.cloud.tools.appengine'
+apply plugin: 'com.google.cloud.tools.endpoints-framework-server'
 apply plugin: 'me.tatarka.retrolambda'
 
 sourceCompatibility = JavaVersion.VERSION_1_8
@@ -27,18 +29,15 @@ final APP_ENGINE_VERSION = '1.9.49'
 
 dependencies {
   // App Engine
-  appengineSdk "com.google.appengine:appengine-java-sdk:$APP_ENGINE_VERSION"
   compile "com.google.appengine:appengine-api-1.0-sdk:$APP_ENGINE_VERSION"
-  compile "com.google.appengine:appengine-tools-sdk:$APP_ENGINE_VERSION"
+  //compile "com.google.appengine:appengine-tools-sdk:$APP_ENGINE_VERSION"
   //compile 'com.google.appengine.tools:appengine-gcs-client:0.6'
   compile 'com.google.cloud:google-cloud:0.8.1-alpha'
 
   // Endpoints
-  compile "com.google.appengine:appengine-endpoints:$APP_ENGINE_VERSION"
-  compile "com.google.appengine:appengine-endpoints-deps:$APP_ENGINE_VERSION"
-
+  compile 'com.google.endpoints:endpoints-framework:2.0.0-beta.12'
   compile 'javax.inject:javax.inject:1'
-  compile 'javax.servlet:servlet-api:2.5'
+  providedCompile 'javax.servlet:servlet-api:2.5'
 
   compile 'com.googlecode.objectify:objectify:5.1.14'
   compile 'commons-fileupload:commons-fileupload:1.3.2'
@@ -48,12 +47,14 @@ dependencies {
   compileOnly 'org.projectlombok:lombok:1.16.12'
   compile 'io.reactivex.rxjava2:rxjava:2.0.5'
   compile 'com.google.firebase:firebase-admin:4.0.4'
-  compile 'com.google.http-client:google-http-client-android:1.22.0'
   compile 'com.twitter:twitter-text:1.14.3'
 
   // Collections
   compile 'com.google.guava:guava:20.0'
   compile 'org.magicwerk:brownies-collections:0.9.13'
+
+  compile 'com.fasterxml.jackson.core:jackson-core:2.8.6'
+  compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.6'
 
   testCompile 'junit:junit:4.12'
   compile "com.google.appengine:appengine-api-labs:$APP_ENGINE_VERSION"
@@ -62,13 +63,12 @@ dependencies {
   testCompile 'org.mockito:mockito-all:2.0.2-beta'
 }
 
-appengine {
-  downloadSdk = true
-  appcfg {
-    oauth2 = true
+appengine {  // App Engine tasks configuration
+  run {      // local (dev_appserver) configuration (standard environments only)
+
   }
-  endpoints {
-    getClientLibsOnBuild = true
-    getDiscoveryDocsOnBuild = true
+
+  deploy {   // deploy configuration
+
   }
 }

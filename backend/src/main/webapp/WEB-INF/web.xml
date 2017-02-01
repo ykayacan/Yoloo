@@ -13,39 +13,11 @@
 
   <!-- End Listeners -->
 
-  <!-- Begin Filters -->
-
-  <filter>
-    <filter-name>ObjectifyFilter</filter-name>
-    <filter-class>com.googlecode.objectify.ObjectifyFilter</filter-class>
-  </filter>
-
-  <filter-mapping>
-    <filter-name>ObjectifyFilter</filter-name>
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
-
-  <filter>
-    <filter-name>appstats</filter-name>
-    <filter-class>com.google.appengine.tools.appstats.AppstatsFilter</filter-class>
-    <init-param>
-      <param-name>calculateRpcCosts</param-name>
-      <param-value>true</param-value>
-    </init-param>
-  </filter>
-
-  <filter-mapping>
-    <filter-name>appstats</filter-name>
-    <url-pattern>/*</url-pattern>
-  </filter-mapping>
-
-  <!-- End Filters -->
-
   <!-- Begin Servlets -->
 
   <servlet>
-    <servlet-name>SystemServiceServlet</servlet-name>
-    <servlet-class>com.google.api.server.spi.SystemServiceServlet</servlet-class>
+    <servlet-name>EndpointsServlet</servlet-name>
+    <servlet-class>com.google.api.server.spi.EndpointsServlet</servlet-class>
     <init-param>
       <param-name>services</param-name>
       <param-value>
@@ -63,11 +35,15 @@
         com.yoloo.backend.notification.NotificationEndpoint
       </param-value>
     </init-param>
+    <init-param>
+      <param-name>restricted</param-name>
+      <param-value>false</param-value>
+    </init-param>
   </servlet>
 
   <servlet-mapping>
-    <servlet-name>SystemServiceServlet</servlet-name>
-    <url-pattern>/_ah/spi/*</url-pattern>
+    <servlet-name>EndpointsServlet</servlet-name>
+    <url-pattern>/_ah/api/*</url-pattern>
   </servlet-mapping>
 
   <servlet>
@@ -121,6 +97,64 @@
   </servlet-mapping>
 
   <!-- End Servlets -->
+
+  <!-- Begin Filters -->
+
+  <filter>
+    <filter-name>ObjectifyFilter</filter-name>
+    <filter-class>com.googlecode.objectify.ObjectifyFilter</filter-class>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>ObjectifyFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <filter>
+    <filter-name>appstats</filter-name>
+    <filter-class>com.google.appengine.tools.appstats.AppstatsFilter</filter-class>
+    <init-param>
+      <param-name>calculateRpcCosts</param-name>
+      <param-value>true</param-value>
+    </init-param>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>appstats</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <!-- Add a filter that fetches the service config from service management. -->
+  <!--<filter>
+    <filter-name>endpoints-api-configuration</filter-name>
+    <filter-class>com.google.api.control.ServiceManagementConfigFilter</filter-class>
+  </filter>
+
+  &lt;!&ndash; Add a filter that performs Endpoints logging and monitoring. &ndash;&gt;
+  <filter>
+    <filter-name>endpoints-api-controller</filter-name>
+    <filter-class>com.google.api.control.extensions.appengine.GoogleAppEngineControlFilter</filter-class>
+    <init-param>
+      <param-name>endpoints.projectId</param-name>
+      <param-value>${endpoints.project.id}</param-value>
+    </init-param>
+    <init-param>
+      <param-name>endpoints.serviceName</param-name>
+      <param-value>echo-api.endpoints.${endpoints.project.id}.cloud.goog</param-value>
+    </init-param>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>endpoints-api-configuration</filter-name>
+    <servlet-name>EndpointsServlet</servlet-name>
+  </filter-mapping>
+
+  <filter-mapping>
+    <filter-name>endpoints-api-controller</filter-name>
+    <servlet-name>EndpointsServlet</servlet-name>
+  </filter-mapping>-->
+
+  <!-- End Filters -->
 
   <security-constraint>
     <web-resource-collection>
