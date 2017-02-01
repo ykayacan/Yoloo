@@ -6,7 +6,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.google.appengine:gradle-appengine-plugin:1.9.48'
+    classpath 'com.google.appengine:gradle-appengine-plugin:1.9.49'
     classpath 'me.tatarka:gradle-retrolambda:3.4.0'
   }
 }
@@ -23,7 +23,7 @@ apply plugin: 'me.tatarka.retrolambda'
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
-final APP_ENGINE_VERSION = '1.9.48'
+final APP_ENGINE_VERSION = '1.9.49'
 
 dependencies {
   // App Engine
@@ -46,10 +46,10 @@ dependencies {
   compile 'com.drewnoakes:metadata-extractor:2.9.1'
   compile 'joda-time:joda-time:2.9.7'
   compileOnly 'org.projectlombok:lombok:1.16.12'
-  compile 'io.reactivex.rxjava2:rxjava:2.0.4'
+  compile 'io.reactivex.rxjava2:rxjava:2.0.5'
   compile 'com.google.firebase:firebase-admin:4.0.4'
   compile 'com.google.http-client:google-http-client-android:1.22.0'
-  compile 'com.twitter:twitter-text:1.6.1'
+  compile 'com.twitter:twitter-text:1.14.3'
 
   // Collections
   compile 'com.google.guava:guava:20.0'

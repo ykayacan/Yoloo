@@ -25,12 +25,6 @@ public class CommentDiskDataStore {
     return INSTANCE;
   }
 
-  /**
-   * Get observable.
-   *
-   * @param commentId the comment id
-   * @return the observable
-   */
   public Observable<CommentRealm> get(String commentId) {
     return Observable.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
@@ -45,11 +39,6 @@ public class CommentDiskDataStore {
     });
   }
 
-  /**
-   * Add.
-   *
-   * @param comment the comment
-   */
   public void add(CommentRealm comment) {
     Realm realm = Realm.getDefaultInstance();
 
@@ -70,40 +59,36 @@ public class CommentDiskDataStore {
     realm.close();
   }
 
-  /**
-   * Add all.
-   *
-   * @param comments the comments
-   */
   public void addAll(List<CommentRealm> comments) {
     Realm realm = Realm.getDefaultInstance();
     realm.executeTransaction(tx -> tx.insertOrUpdate(comments));
     realm.close();
   }
 
-  /**
-   * Delete.
-   *
-   * @param commentId the comment id
-   */
-  public Completable delete(String commentId) {
+  public Completable delete(CommentRealm comment) {
     return Completable.fromAction(() -> {
       Realm realm = Realm.getDefaultInstance();
 
-      realm.executeTransaction(tx -> tx.where(CommentRealm.class)
-          .equalTo(CommentRealmFields.ID, commentId)
-          .findFirst().deleteFromRealm());
+      realm.executeTransaction(tx -> {
+        PostRealm post = tx.where(PostRealm.class)
+            .equalTo(PostRealmFields.ID, comment.getPostId())
+            .findFirst();
+        post.decreaseComments();
+
+        if (comment.isAccepted()) {
+          post.setAcceptedCommentId(null);
+        }
+        tx.insertOrUpdate(post);
+
+        tx.where(CommentRealm.class)
+            .equalTo(CommentRealmFields.ID, comment.getId())
+            .findFirst().deleteFromRealm();
+      });
 
       realm.close();
     });
   }
 
-  /**
-   * List observable.
-   *
-   * @param postId the post id
-   * @return the observable
-   */
   public Observable<Response<List<CommentRealm>>> list(String postId) {
     return Observable.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
@@ -134,6 +119,25 @@ public class CommentDiskDataStore {
 
       realm.close();
     });
+  }
+
+  public void accept(CommentRealm comment) {
+    Realm realm = Realm.getDefaultInstance();
+
+    realm.executeTransaction(tx -> {
+      PostRealm post = tx.where(PostRealm.class)
+          .equalTo(PostRealmFields.ID, comment.getPostId())
+          .findFirst();
+
+      if (comment.isAccepted()) {
+        post.setAcceptedCommentId(comment.getId());
+      }
+
+      tx.insertOrUpdate(post);
+      tx.insertOrUpdate(comment);
+    });
+
+    realm.close();
   }
 
   private void setVoteCounter(int direction, CommentRealm comment) {

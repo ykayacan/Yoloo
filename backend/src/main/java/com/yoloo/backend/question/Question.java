@@ -10,10 +10,12 @@ import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Ignore;
+import com.googlecode.objectify.annotation.IgnoreSave;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
 import com.googlecode.objectify.annotation.Parent;
 import com.googlecode.objectify.condition.IfNotDefault;
+import com.googlecode.objectify.condition.IfNull;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.feed.FeedItem;
@@ -53,41 +55,28 @@ public class Question implements FeedItem {
   public static final String FIELD_RANK = "rank";
   public static final String FIELD_BOUNTY = "bounty";
 
-  @Id
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+  @Id @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private long id;
 
   @Parent
   @NonFinal
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-  private Key<Account> parentUserKey;
+  private Key<Account> parent;
 
-  @Wither
-  private Link avatarUrl;
+  @Wither private Link avatarUrl;
 
-  @Wither
-  private String username;
+  @Wither private String username;
 
-  @Wither
-  private String content;
+  @Wither private String content;
 
   @Load(ShardGroup.class)
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private List<Ref<QuestionCounterShard>> shardRefs;
 
   @Singular
+  @IgnoreSave(IfNull.class)
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private Set<Key<Account>> reportedByKeys;
-
-  @Index
-  @Wither
-  @NonFinal
-  private Set<String> tags;
-
-  @Index
-  @Wither
-  @NonFinal
-  private Set<String> categories;
 
   @Wither
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
@@ -100,21 +89,32 @@ public class Question implements FeedItem {
   @Wither
   private int bounty;
 
+  @Wither
+  @IgnoreSave(IfNull.class)
+  private Media media;
+
+  @Index
+  @Wither
+  @NonFinal
+  private Set<String> tags;
+
+  @Index
+  @Wither
+  @NonFinal
+  private Set<String> categories;
+
   /**
    * If a user questions a comment for given post then commented is true otherwise false.
    */
-  @Index(value = IfNotDefault.class)
+  @Index(IfNotDefault.class)
   @Wither
   @NonFinal
   private boolean commented;
 
-  @Index(value = IfNotDefault.class)
+  @Index(IfNotDefault.class)
   @Wither
   @NonFinal
   private double rank;
-
-  @Wither
-  private Media media;
 
   @Index
   @NonFinal
@@ -148,28 +148,25 @@ public class Question implements FeedItem {
 
   @ApiResourceProperty(name = "ownerId")
   public String getWebsafeOwnerId() {
-    return this.parentUserKey.toWebSafeString();
+    return this.parent.toWebSafeString();
   }
 
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   public Key<Question> getKey() {
-    return Key.create(parentUserKey, getClass(), id);
+    return Key.create(parent, getClass(), id);
   }
 
   public String getAcceptedCommentId() {
     return acceptedCommentKey.toWebSafeString();
   }
 
-  @Override
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+  @Override @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   public <T> Key<T> getVotableKey() {
     //noinspection unchecked
     return (Key<T>) getKey();
   }
 
-  @Override
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-  public <E> List<E> getShards() {
+  @Override @ApiResourceProperty(ignored = AnnotationBoolean.TRUE) public <E> List<E> getShards() {
     //noinspection unchecked
     return (List<E>) Deref.deref(this.shardRefs);
   }

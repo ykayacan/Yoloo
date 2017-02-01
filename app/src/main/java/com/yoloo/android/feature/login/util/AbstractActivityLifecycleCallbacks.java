@@ -20,7 +20,7 @@ import android.os.Bundle;
 
 /**
  * Implementation of {@link Application.ActivityLifecycleCallbacks} which does nothing in response
- * to each callback; a useful base class for implementors that only care about a subset of the
+ * to each delegateCallback; a useful base class for implementors that only care about a subset of the
  * callbacks.
  */
 abstract class AbstractActivityLifecycleCallbacks

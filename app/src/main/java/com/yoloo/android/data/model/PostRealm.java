@@ -283,30 +283,62 @@ public class PostRealm extends RealmObject {
   }
 
   @Override public String toString() {
-    return "PostRealm{" +
-        "id='" + id + '\'' +
-        ", ownerId='" + ownerId + '\'' +
-        ", avatarUrl='" + avatarUrl + '\'' +
-        ", username='" + username + '\'' +
-        ", content='" + content + '\'' +
-        ", bounty=" + bounty +
-        ", mediaUrl='" + mediaUrl + '\'' +
-        ", tags=" + tags +
-        ", categories=" + categories +
-        ", commented=" + commented +
-        ", acceptedCommentId='" + acceptedCommentId + '\'' +
-        ", created=" + created +
-        ", dir=" + dir +
-        ", votes=" + votes +
-        ", comments=" + comments +
-        ", reports=" + reports +
-        ", type=" + type +
-        ", title='" + title + '\'' +
-        ", rank=" + rank +
-        ", categoriesAsString='" + categoriesAsString + '\'' +
-        ", isFeedItem=" + isFeedItem +
-        ", pending=" + pending +
-        ", bookmarked=" + bookmarked +
-        '}';
+    return "PostRealm{"
+        + "id='"
+        + id
+        + '\''
+        + ", ownerId='"
+        + ownerId
+        + '\''
+        + ", avatarUrl='"
+        + avatarUrl
+        + '\''
+        + ", username='"
+        + username
+        + '\''
+        + ", content='"
+        + content
+        + '\''
+        + ", bounty="
+        + bounty
+        + ", mediaUrl='"
+        + mediaUrl
+        + '\''
+        + ", tags="
+        + tags
+        + ", categories="
+        + categories
+        + ", commented="
+        + commented
+        + ", acceptedCommentId='"
+        + acceptedCommentId
+        + '\''
+        + ", created="
+        + created
+        + ", dir="
+        + dir
+        + ", votes="
+        + votes
+        + ", comments="
+        + comments
+        + ", reports="
+        + reports
+        + ", type="
+        + type
+        + ", title='"
+        + title
+        + '\''
+        + ", rank="
+        + rank
+        + ", categoriesAsString='"
+        + categoriesAsString
+        + '\''
+        + ", isFeedItem="
+        + isFeedItem
+        + ", pending="
+        + pending
+        + ", bookmarked="
+        + bookmarked
+        + '}';
   }
 }

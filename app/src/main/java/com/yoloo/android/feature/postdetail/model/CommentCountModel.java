@@ -4,7 +4,6 @@ import android.widget.TextView;
 import com.airbnb.epoxy.EpoxyAttribute;
 import com.airbnb.epoxy.EpoxyModel;
 import com.yoloo.android.R;
-import com.yoloo.android.util.CountUtil;
 
 public class CommentCountModel extends EpoxyModel<TextView> {
 
@@ -15,10 +14,10 @@ public class CommentCountModel extends EpoxyModel<TextView> {
   }
 
   @Override public void bind(TextView view) {
-    String countsFound = CountUtil.format(counts);
+    /*String countsFound = CountUtil.format(counts);
     String text = view.getContext()
         .getResources()
         .getQuantityString(R.plurals.label_comment_comment_text, (int) counts, counts);
-    view.setText(countsFound + " " + text);
+    view.setText(countsFound + " " + text);*/
   }
 }

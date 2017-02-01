@@ -13,21 +13,23 @@ import android.widget.Filter;
 import android.widget.TextView;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.TagRealm;
+import io.reactivex.Observable;
+import io.reactivex.subjects.PublishSubject;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
 
-  private final OnAutoCompleteListener onAutoCompleteListener;
+  private PublishSubject<String> subject = PublishSubject.create();
+
   private final List<TagRealm> items;
 
   private LayoutInflater inflater;
   private Resources res;
 
-  public AutoCompleteTagAdapter(Context context, OnAutoCompleteListener onAutoCompleteListener) {
+  public AutoCompleteTagAdapter(Context context) {
     super(context, 0);
     this.res = context.getResources();
-    this.onAutoCompleteListener = onAutoCompleteListener;
     this.items = new ArrayList<>(5);
     this.inflater = LayoutInflater.from(context);
   }
@@ -52,8 +54,8 @@ public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
         items.clear();
 
         if (isConditionsValid(constraint)) {
-          final String filtered = constraint.toString().toLowerCase().trim();
-          onAutoCompleteListener.onAutoCompleteFilter(filtered);
+          final String query = constraint.toString().toLowerCase().trim();
+          subject.onNext(query);
         }
         return null;
       }
@@ -103,12 +105,12 @@ public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
     this.items.addAll(tags);
   }
 
-  private boolean isConditionsValid(CharSequence constraint) {
-    return !TextUtils.isEmpty(constraint) && constraint.length() > 2;
+  public Observable<String> getQuery() {
+    return subject;
   }
 
-  public interface OnAutoCompleteListener {
-    void onAutoCompleteFilter(String filtered);
+  private boolean isConditionsValid(CharSequence constraint) {
+    return !TextUtils.isEmpty(constraint) && constraint.length() > 2;
   }
 
   private static class TagViewHolder {

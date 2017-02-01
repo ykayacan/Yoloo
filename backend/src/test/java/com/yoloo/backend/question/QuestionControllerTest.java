@@ -291,9 +291,11 @@ public class QuestionControllerTest extends TestBase {
 
     CollectionResponse<Question> response = questionController.list(
         Optional.absent(),
-        Optional.fromNullable(budgetTravel.getName()), ,
+        Optional.fromNullable(budgetTravel.getName()),
         Optional.absent(),
-        Optional.absent(), user);
+        Optional.absent(),
+        Optional.absent(),
+        user);
 
     assertNotNull(response.getItems());
     assertEquals(1, response.getItems().size());

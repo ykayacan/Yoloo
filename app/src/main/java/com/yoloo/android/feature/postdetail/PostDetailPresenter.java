@@ -3,11 +3,14 @@ package com.yoloo.android.feature.postdetail;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.comment.CommentRepository;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
+import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.framework.MvpPresenter;
 import com.yoloo.android.util.Group;
+import com.yoloo.android.util.Pair;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -19,6 +22,11 @@ public class PostDetailPresenter extends MvpPresenter<PostDetailView> {
   private final PostRepository postRepository;
   private final UserRepository userRepository;
 
+  private boolean postOwner;
+  private boolean accepted;
+  private String currentUserId;
+  @PostType private int postType;
+
   public PostDetailPresenter(
       CommentRepository commentRepository,
       PostRepository postRepository,
@@ -29,47 +37,33 @@ public class PostDetailPresenter extends MvpPresenter<PostDetailView> {
   }
 
   public void loadData(String postId) {
-    Disposable d = postRepository.get(postId)
-        .doOnSubscribe(disposable -> getView().onLoading(true))
-        .flatMap(post ->
-            Observable.zip(
-                Observable.just(post),
-                post.getAcceptedCommentId() == null
-                    ? Observable.just(new CommentRealm())
-                    : commentRepository.get(post.getAcceptedCommentId()),
-                commentRepository.list(postId, null, null, 20),
-                userRepository.getLocalMe(),
-                Group.Of4::create))
+    Disposable d = Observable
+        .zip(
+            postRepository.get(postId)
+                .flatMap(post -> Observable.zip(Observable.just(post),
+                    getAcceptedCommentObservable(post),
+                    Pair::create)),
+            commentRepository.list(postId, null, null, 20),
+            userRepository.getLocalMe(),
+            Group.Of3::create)
         .observeOn(AndroidSchedulers.mainThread(), true)
         .subscribe(group -> {
-          getView().onLoading(false);
-          getView().onPostLoaded(group.first);
+          AccountRealm account = group.third;
+          PostRealm post = group.first.first;
 
-          if (group.second.getId() != null) {
-            getView().onAcceptedCommentLoaded(group.second);
+          this.postOwner = account.getId().equals(post.getOwnerId());
+          this.currentUserId = account.getId();
+          this.accepted = post.getAcceptedCommentId() != null;
+          this.postType = getPostType(post);
+
+          getView().onPostLoaded(group.first.first);
+
+          if (accepted) {
+            getView().onAcceptedCommentLoaded(group.first.second, postOwner, postType);
           }
 
-          getView().onLoaded(group.third);
+          getView().onCommentsLoaded(group.second, currentUserId, postOwner, accepted, postType);
         }, this::showError);
-
-    getDisposable().add(d);
-  }
-
-  public void deletePost(String postId) {
-    Disposable d =
-        postRepository.delete(postId).observeOn(AndroidSchedulers.mainThread()).subscribe();
-
-    getDisposable().add(d);
-  }
-
-  public void loadAcceptedComment(String commentId) {
-    if (commentId == null) {
-      return;
-    }
-
-    Disposable d = commentRepository.get(commentId)
-        .observeOn(AndroidSchedulers.mainThread(), true)
-        .subscribe(this::showAcceptedComment, this::showError);
 
     getDisposable().add(d);
   }
@@ -84,10 +78,27 @@ public class PostDetailPresenter extends MvpPresenter<PostDetailView> {
     getDisposable().add(d);
   }
 
+  public void deletePost(String postId) {
+    Disposable d = postRepository
+        .delete(postId)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe();
+
+    getDisposable().add(d);
+  }
+
+  void acceptComment(CommentRealm comment) {
+    Disposable d = commentRepository.accept(comment)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(c -> getView().onNewAccept(c.getId()), this::showError);
+
+    getDisposable().add(d);
+  }
+
   public void sendComment(CommentRealm comment) {
     Disposable d = commentRepository.add(comment)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(this::showComment, this::showError);
+        .subscribe(this::showNewComment, this::showError);
 
     getDisposable().add(d);
   }
@@ -120,23 +131,37 @@ public class PostDetailPresenter extends MvpPresenter<PostDetailView> {
   }
 
   private void showComments(Response<List<CommentRealm>> response) {
-    getView().onLoading(false);
-    getView().onLoaded(response);
+    getView().onCommentsLoaded(response, currentUserId, postOwner, accepted, postType);
   }
 
   private void showError(Throwable throwable) {
     getView().onError(throwable);
   }
 
-  private void showAcceptedComment(CommentRealm comment) {
-    getView().onAcceptedCommentLoaded(comment);
-  }
-
-  private void showComment(CommentRealm comment) {
-    getView().onCommentLoaded(comment);
+  private void showNewComment(CommentRealm comment) {
+    getView().onNewCommentLoaded(comment, postOwner, postType);
   }
 
   private void showSuggestions(Response<List<AccountRealm>> response) {
     getView().onMentionSuggestionsLoaded(response.getData());
+  }
+
+  private Observable<CommentRealm> getAcceptedCommentObservable(PostRealm post) {
+    return post.getAcceptedCommentId() == null
+        ? Observable.just(new CommentRealm())
+        : commentRepository.get(post.getAcceptedCommentId());
+  }
+
+  @PostType private int getPostType(PostRealm post) {
+    switch (post.getType()) {
+      case 0:
+        return PostType.TYPE_NORMAL;
+      case 1:
+        return PostType.TYPE_RICH;
+      case 2:
+        return PostType.TYPE_BLOG;
+      default:
+        return PostType.TYPE_NORMAL;
+    }
   }
 }

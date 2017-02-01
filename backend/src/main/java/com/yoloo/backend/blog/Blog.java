@@ -10,12 +10,13 @@ import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Ignore;
+import com.googlecode.objectify.annotation.IgnoreSave;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
 import com.googlecode.objectify.annotation.Parent;
 import com.googlecode.objectify.condition.IfNotDefault;
+import com.googlecode.objectify.condition.IfNull;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.feed.FeedItem;
 import com.yoloo.backend.media.Media;
 import com.yoloo.backend.media.size.LargeSize;
@@ -59,7 +60,7 @@ public class Blog implements FeedItem {
   @Parent
   @NonFinal
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-  private Key<Account> parentUserKey;
+  private Key<Account> parent;
 
   @Wither
   private Link avatarUrl;
@@ -91,10 +92,6 @@ public class Blog implements FeedItem {
   @NonFinal
   private Set<String> categories;
 
-  @Wither
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-  private Key<Comment> acceptedCommentKey;
-
   /**
    * If a user questions a comment for given post then commented is true otherwise false.
    */
@@ -110,6 +107,7 @@ public class Blog implements FeedItem {
   private double rank;
 
   @Wither
+  @IgnoreSave(IfNull.class)
   private Media media;
 
   @Index
@@ -143,16 +141,12 @@ public class Blog implements FeedItem {
 
   @ApiResourceProperty(name = "ownerId")
   public String getWebsafeOwnerId() {
-    return this.parentUserKey.toWebSafeString();
+    return this.parent.toWebSafeString();
   }
 
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   public Key<Blog> getKey() {
-    return Key.create(parentUserKey, getClass(), id);
-  }
-
-  public String getAcceptedCommentId() {
-    return acceptedCommentKey.toWebSafeString();
+    return Key.create(parent, getClass(), id);
   }
 
   @Override
@@ -166,7 +160,7 @@ public class Blog implements FeedItem {
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   public <E> List<E> getShards() {
     //noinspection unchecked
-    return (List<E>) Deref.deref(this.shardRefs);
+    return (List<E>) Deref.deref(shardRefs);
   }
 
   public Media getMedia() {

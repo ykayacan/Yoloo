@@ -34,12 +34,6 @@ public class CommentRepository {
     return INSTANCE;
   }
 
-  /**
-   * Get observable.
-   *
-   * @param commentId the comment id
-   * @return the observable
-   */
   public Observable<CommentRealm> get(String commentId) {
     Preconditions.checkNotNull(commentId, "commentId can not be null.");
 
@@ -50,12 +44,6 @@ public class CommentRepository {
             .subscribeOn(Schedulers.io()));
   }
 
-  /**
-   * Add observable.
-   *
-   * @param comment the comment
-   * @return the observable
-   */
   public Observable<CommentRealm> add(CommentRealm comment) {
     Preconditions.checkNotNull(comment, "comment can not be null.");
 
@@ -73,28 +61,14 @@ public class CommentRepository {
         .subscribeOn(Schedulers.io());
   }
 
-  /**
-   * Delete completable.
-   *
-   * @param commentId the comment id
-   * @return the completable
-   */
-  public Completable delete(String commentId) {
-    Preconditions.checkNotNull(commentId, "commentId can not be null.");
+  public Completable delete(CommentRealm comment) {
+    Preconditions.checkNotNull(comment, "comment can not be null.");
 
-    return remoteDataStore.delete(commentId)
-        .andThen(diskDataStore.delete(commentId))
+    return remoteDataStore.delete(comment)
+        .andThen(diskDataStore.delete(comment))
         .subscribeOn(Schedulers.io());
   }
 
-  /**
-   * List observable.
-   *
-   * @param postId the post id
-   * @param cursor the cursor
-   * @param eTag the e tag
-   * @param limit the limit    @return the observable
-   */
   public Observable<Response<List<CommentRealm>>> list(String postId, String cursor, String eTag,
       int limit) {
     Preconditions.checkNotNull(postId, "postId can not be null.");
@@ -106,20 +80,13 @@ public class CommentRepository {
             .subscribeOn(Schedulers.io()));
   }
 
-  /**
-   * Vote completable.
-   *
-   * @param commentId the comment id
-   * @param direction the direction
-   * @return the completable
-   */
   public Completable vote(String commentId, int direction) {
     return diskDataStore.vote(commentId, direction).subscribeOn(Schedulers.io());
   }
 
-  public Observable<CommentRealm> accept(String questionId, String commentId) {
-    return remoteDataStore.accept(questionId, commentId)
-        .doOnNext(diskDataStore::add)
+  public Observable<CommentRealm> accept(CommentRealm comment) {
+    return remoteDataStore.accept(comment)
+        .doOnNext(diskDataStore::accept)
         .subscribeOn(Schedulers.io());
   }
 }

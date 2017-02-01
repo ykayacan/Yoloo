@@ -3,7 +3,7 @@
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="@color/background_lightish_2">
+  android:background="@android:color/white">
 
   <android.support.design.widget.AppBarLayout
     android:id="@+id/appbar_post_detail"
@@ -36,7 +36,7 @@
     <android.support.v7.widget.RecyclerView
       android:id="@+id/rv_post_detail"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content" />
+      android:layout_height="match_parent" />
 
   </android.support.v4.widget.SwipeRefreshLayout>
 
@@ -45,7 +45,7 @@
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:background="@color/background_light"
-    android:elevation="4dp"
+    android:elevation="6dp"
     android:orientation="horizontal"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintLeft_toLeftOf="parent"

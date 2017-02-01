@@ -73,12 +73,13 @@ import com.yoloo.android.feature.base.BaseActivity;
 import com.yoloo.android.feature.base.LceAnimator;
 import com.yoloo.android.feature.category.MainCatalogController;
 import com.yoloo.android.feature.comment.CommentController;
-import com.yoloo.android.feature.comment.PostType;
+import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.feature.fcm.FCMListener;
 import com.yoloo.android.feature.fcm.FCMManager;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
-import com.yoloo.android.feature.feed.common.event.DeleteEvent;
+import com.yoloo.android.feature.feed.common.event.AcceptedEvent;
+import com.yoloo.android.feature.feed.common.event.PostDeleteEvent;
 import com.yoloo.android.feature.feed.common.event.UpdateEvent;
 import com.yoloo.android.feature.feed.common.event.WriteNewPostEvent;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
@@ -387,12 +388,12 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
 
   @Override
   public void onPostOptionsClick(View v, EpoxyModel<?> model, String postId, String postOwnerId) {
-    final PopupMenu optionsMenu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
+    final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
     final boolean self = userId.equals(postOwnerId);
-    optionsMenu.getMenu().getItem(2).setVisible(self);
-    optionsMenu.getMenu().getItem(3).setVisible(self);
+    menu.getMenu().getItem(2).setVisible(self);
+    menu.getMenu().getItem(3).setVisible(self);
 
-    optionsMenu.setOnMenuItemClickListener(item -> {
+    menu.setOnMenuItemClickListener(item -> {
       final int itemId = item.getItemId();
       switch (itemId) {
         case R.id.action_feed_popup_bookmark:
@@ -447,7 +448,7 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     fabMenu.collapseImmediately();
 
     AnimatorChangeHandler handler = VersionUtil.hasL()
-        ? new CircularRevealChangeHandler(fabMenu, root, 1100)
+        ? new CircularRevealChangeHandler(fabMenu, root, mediumAnimTime)
         : new VerticalChangeHandler();
 
     startTransaction(CatalogController.create(EditorType.ASK_QUESTION), handler);
@@ -526,7 +527,6 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
   private void setupRecyclerView() {
     adapter = FeedAdapter.builder()
         .isMainFeed(true)
-        .context(getApplicationContext())
         .onProfileClickListener(this)
         .onBountyClickListener(this)
         .onCommentClickListener(this)
@@ -613,12 +613,14 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
         .subscribe(e -> {
           if (e instanceof UpdateEvent) {
             adapter.updatePost(FeedAction.UPDATE, ((UpdateEvent) e).getPost());
-          } else if (e instanceof DeleteEvent) {
-            adapter.updatePost(FeedAction.DELETE, ((DeleteEvent) e).getPost());
+          } else if (e instanceof PostDeleteEvent) {
+            adapter.updatePost(FeedAction.DELETE, ((PostDeleteEvent) e).getPost());
           } else if (e instanceof WriteNewPostEvent) {
             rvFeed.smoothScrollToPosition(0);
             handler.postDelayed(
                 () -> adapter.addPostAfterBountyButton(((WriteNewPostEvent) e).getPost()), 450);
+          } else if (e instanceof AcceptedEvent) {
+            adapter.updatePost(FeedAction.UPDATE, ((AcceptedEvent) e).getPost());
           }
         });
   }

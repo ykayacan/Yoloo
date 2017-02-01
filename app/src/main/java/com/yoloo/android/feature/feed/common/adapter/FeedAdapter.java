@@ -1,6 +1,5 @@
 package com.yoloo.android.feature.feed.common.adapter;
 
-import android.content.Context;
 import android.view.View;
 import com.airbnb.epoxy.EpoxyAdapter;
 import com.airbnb.epoxy.EpoxyModel;
@@ -54,7 +53,7 @@ public class FeedAdapter extends EpoxyAdapter {
       OnVoteClickListener onVoteClickListener,
       OnBountyClickListener onBountyClickListener,
       OnContentImageClickListener onContentImageClickListener,
-      boolean isMainFeed, Context context) {
+      boolean isMainFeed) {
     this.onProfileClickListener = onProfileClickListener;
     this.onPostOptionsClickListener = onPostOptionsClickListener;
     this.onReadMoreClickListener = onReadMoreClickListener;
@@ -146,18 +145,19 @@ public class FeedAdapter extends EpoxyAdapter {
   }
 
   public void showLoadMoreIndicator(boolean show) {
-    if (show) {
-      handler.post(() -> addModel(loadingModel));
-    } else {
-      handler.post(() -> removeModel(loadingModel));
-    }
+    handler.post(() -> {
+      if (show) {
+        addModel(loadingModel);
+      } else {
+        removeModel(loadingModel);
+      }
+    });
   }
 
   private void setAction(@FeedAction int action, Object payload, EpoxyModel<?> model) {
     if (action == FeedAction.DELETE) {
       removeModel(model);
     } else if (action == FeedAction.UPDATE) {
-      int index = getModelPosition(model);
       notifyModelChanged(model, payload);
     }
   }
@@ -222,7 +222,6 @@ public class FeedAdapter extends EpoxyAdapter {
     private OnContentImageClickListener onContentImageClickListener;
     private OnBountyClickListener onBountyClickListener;
     private boolean isMainFeed;
-    private Context context;
 
     FeedAdapterBuilder() {
     }
@@ -286,16 +285,11 @@ public class FeedAdapter extends EpoxyAdapter {
       return this;
     }
 
-    public FeedAdapter.FeedAdapterBuilder context(Context context) {
-      this.context = context;
-      return this;
-    }
-
     public FeedAdapter build() {
       return new FeedAdapter(onProfileClickListener, onPostOptionsClickListener,
           onReadMoreClickListener, onShareClickListener, onCommentClickListener,
           onExploreCategoriesClickListener, onVoteClickListener,
-          onBountyClickListener, onContentImageClickListener, isMainFeed, context);
+          onBountyClickListener, onContentImageClickListener, isMainFeed);
     }
   }
 }

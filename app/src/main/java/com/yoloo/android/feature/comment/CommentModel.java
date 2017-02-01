@@ -2,6 +2,7 @@ package com.yoloo.android.feature.comment;
 
 import android.content.Context;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindView;
@@ -10,6 +11,7 @@ import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
@@ -23,9 +25,11 @@ import com.yoloo.android.util.glide.CropCircleTransformation;
 public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolder> {
 
   @EpoxyAttribute CommentRealm comment;
-  @EpoxyAttribute(hash = false) boolean self;
-  @EpoxyAttribute(hash = false) boolean hasAcceptedId;
-  @EpoxyAttribute(hash = false) int postType;
+  @EpoxyAttribute boolean isPostOwner;
+  @EpoxyAttribute boolean isCommentOwner;
+  @EpoxyAttribute boolean postAccepted;
+  @EpoxyAttribute int postType;
+  @EpoxyAttribute(hash = false) OnCommentLongClickListener onCommentLongClickListener;
   @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
   @EpoxyAttribute(hash = false) OnVoteClickListener onVoteClickListener;
   @EpoxyAttribute(hash = false) OnMentionClickListener onMentionClickListener;
@@ -40,15 +44,50 @@ public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolde
   }
 
   @Override public void bind(CommentHolder holder) {
-    holder.bindDataWithViewHolder(comment, self, hasAcceptedId, postType);
+    final Context context = holder.ivUserAvatar.getContext().getApplicationContext();
+
+    Glide.with(context)
+        .load(comment.getAvatarUrl())
+        .bitmapTransform(CropCircleTransformation.getInstance(context))
+        .into(holder.ivUserAvatar);
+
+    holder.tvUsername.setText(comment.getUsername());
+    holder.tvTime.setTimeStamp(comment.getCreated().getTime() / 1000);
+    holder.tvContent.setText(comment.getContent());
+    holder.voteView.setVotes(comment.getVotes());
+    holder.voteView.setCurrentStatus(comment.getDir());
+
+    holder.tvAcceptedMark.setVisibility(comment.isAccepted() ? View.VISIBLE : View.GONE);
+    holder.tvAccept.setVisibility(isPostOwner
+        /*&& !isCommentOwner*/
+        && !postAccepted
+        && postType != PostType.TYPE_BLOG
+        ? View.VISIBLE : View.GONE);
+
+    DrawableHelper.withContext(context)
+        .withDrawable(holder.tvAccept.getCompoundDrawables()[0])
+        .withColor(android.R.color.secondary_text_dark)
+        .tint();
+
+    DrawableHelper.withContext(context)
+        .withDrawable(holder.tvAcceptedMark.getCompoundDrawables()[1])
+        .withColor(R.color.accepted)
+        .tint();
+
     setupClickListeners(holder);
   }
 
-  @Override public void unbind(CommentHolder holder) {
-    clearClickListeners(holder);
-  }
-
   private void setupClickListeners(CommentHolder holder) {
+    if (isCommentOwner) {
+      holder.root.setOnLongClickListener(v -> {
+        onCommentLongClickListener.onCommentLongClick(v, this, comment);
+        return true;
+      });
+      holder.tvContent.setOnLongClickListener(v -> {
+        onCommentLongClickListener.onCommentLongClick(v, this, comment);
+        return true;
+      });
+    }
     holder.ivUserAvatar.setOnClickListener(
         v -> onProfileClickListener.onProfileClick(v, comment.getOwnerId()));
     holder.tvUsername.setOnClickListener(
@@ -58,6 +97,7 @@ public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolde
         onMentionClickListener.onMentionClick(value);
       }
     });
+
     holder.tvAccept.setOnClickListener(v -> {
       comment.setAccepted(true);
       holder.tvAccept.setVisibility(View.GONE);
@@ -67,7 +107,7 @@ public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolde
           .withColor(R.color.accepted)
           .tint();
 
-      onMarkAsAcceptedClickListener.onMarkAsAccepted(v, comment.getPostId(), comment.getId());
+      onMarkAsAcceptedClickListener.onMarkAsAccepted(v, comment);
     });
     holder.voteView.setOnVoteEventListener(direction -> {
       comment.setDir(direction);
@@ -75,13 +115,8 @@ public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolde
     });
   }
 
-  private void clearClickListeners(CommentHolder holder) {
-    holder.ivUserAvatar.setOnClickListener(null);
-    holder.tvUsername.setOnClickListener(null);
-    holder.voteView.setOnVoteEventListener(null);
-  }
-
   static class CommentHolder extends BaseEpoxyHolder {
+    @BindView(R.id.root_view) ViewGroup root;
     @BindView(R.id.iv_comment_user_avatar) ImageView ivUserAvatar;
     @BindView(R.id.tv_comment_username) TextView tvUsername;
     @BindView(R.id.tv_comment_time) TimeTextView tvTime;
@@ -89,39 +124,5 @@ public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolde
     @BindView(R.id.tv_comment_content) LinkableTextView tvContent;
     @BindView(R.id.tv_comment_vote) VoteView voteView;
     @BindView(R.id.tv_mark_as_accepted) TextView tvAccept;
-
-    void bindDataWithViewHolder(CommentRealm comment, boolean self, boolean hasAcceptedId,
-        @PostType int postType) {
-      final Context context = ivUserAvatar.getContext().getApplicationContext();
-
-      Glide.with(context)
-          .load(comment.getAvatarUrl())
-          .bitmapTransform(CropCircleTransformation.getInstance(context))
-          .into(ivUserAvatar);
-
-      tvUsername.setText(comment.getUsername());
-      tvTime.setTimeStamp(comment.getCreated().getTime() / 1000);
-      tvContent.setText(comment.getContent());
-      voteView.setVotes(comment.getVotes());
-      voteView.setCurrentStatus(comment.getDir());
-
-      tvAcceptedMark.setVisibility(comment.isAccepted() ? View.VISIBLE : View.GONE);
-      tvAccept.setVisibility(
-          isValidToShow(self, hasAcceptedId, postType) ? View.VISIBLE : View.GONE);
-
-      DrawableHelper.withContext(context)
-          .withDrawable(tvAccept.getCompoundDrawables()[0])
-          .withColor(android.R.color.secondary_text_dark)
-          .tint();
-
-      DrawableHelper.withContext(context)
-          .withDrawable(tvAcceptedMark.getCompoundDrawables()[1])
-          .withColor(R.color.accepted)
-          .tint();
-    }
-
-    private boolean isValidToShow(boolean self, boolean hasAcceptedId, @PostType int postType) {
-      return self && !hasAcceptedId && postType != PostType.TYPE_BLOG;
-    }
   }
 }

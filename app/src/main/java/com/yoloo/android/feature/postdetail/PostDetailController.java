@@ -38,11 +38,11 @@ import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.comment.PostType;
+import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.feature.comment.OnMarkAsAcceptedClickListener;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
-import com.yoloo.android.feature.feed.common.event.DeleteEvent;
+import com.yoloo.android.feature.feed.common.event.PostDeleteEvent;
 import com.yoloo.android.feature.feed.common.event.UpdateEvent;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
@@ -90,20 +90,18 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   private PostDetailAdapter adapter;
 
   private AutoCompleteMentionAdapter mentionAdapter;
-  private WeakHandler handler = new WeakHandler();
+  private WeakHandler handler;
   private Runnable mentionDropdownRunnable = () -> tvWriteComment.showDropDown();
 
   private EndlessRecyclerViewScrollListener endlessRecyclerViewScrollListener;
 
-  private String postId;
-
   private String cursor;
   private String eTag;
 
-  private boolean reEnter;
+  private String postId;
 
-  private String acceptedCommentId;
-  private String userId;
+  private boolean reEnter;
+  private boolean refresh;
 
   public PostDetailController(@Nullable Bundle args) {
     super(args);
@@ -111,7 +109,9 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   }
 
   public static PostDetailController create(String postId) {
-    final Bundle bundle = new BundleBuilder().putString(KEY_POST_ID, postId).build();
+    final Bundle bundle = new BundleBuilder()
+        .putString(KEY_POST_ID, postId)
+        .build();
 
     return new PostDetailController(bundle);
   }
@@ -123,6 +123,11 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   @Override protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
+    handler = new WeakHandler();
+
+    final Bundle args = getArgs();
+    postId = args.getString(KEY_POST_ID);
+
     setupPullToRefresh();
     setupToolbar();
     setHasOptionsMenu(true);
@@ -132,11 +137,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-    final Bundle bundle = getArgs();
-
     if (!reEnter) {
-      postId = bundle.getString(KEY_POST_ID);
-
       getPresenter().loadData(postId);
       reEnter = true;
     }
@@ -150,12 +151,10 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   }
 
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    // handle arrow click here
     final int itemId = item.getItemId();
     switch (itemId) {
       case android.R.id.home:
-        KeyboardUtil.hideKeyboard(tvWriteComment);
-        getRouter().popCurrentController();
+        getRouter().handleBack();
         return true;
       default:
         return super.onOptionsItemSelected(item);
@@ -168,36 +167,46 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   }
 
   @Override public void onLoading(boolean pullToRefresh) {
-    swipeRefreshLayout.setRefreshing(pullToRefresh);
+
   }
 
   @Override public void onLoaded(Response<List<CommentRealm>> value) {
-    cursor = value.getCursor();
-    eTag = value.geteTag();
-
-    adapter.addComments(value.getData(), true);
+    // empty
   }
 
   @Override public void onPostLoaded(PostRealm post) {
-    acceptedCommentId = post.getAcceptedCommentId();
-    adapter.addPost(post);
-  }
-
-  @Override public void onCommentLoaded(CommentRealm comment) {
-    adapter.addComment(comment);
-    adapter.scrollToEnd(rvFeed);
-  }
-
-  @Override public void onAcceptedCommentLoaded(CommentRealm comment) {
-    adapter.addAcceptedComment(comment);
-  }
-
-  @Override public void onAccountLoaded(AccountRealm account) {
-    userId = account.getId();
+    adapter.addPost(post, refresh);
   }
 
   @Override public void onPostUpdated(PostRealm post) {
     RxBus.get().sendEvent(new UpdateEvent(post), ControllerUtil.getPreviousControllerClass(this));
+  }
+
+  @Override public void onCommentsLoaded(Response<List<CommentRealm>> value, String currentUserId,
+      boolean postOwner, boolean accepted, @PostType int postType) {
+    cursor = value.getCursor();
+    eTag = value.geteTag();
+
+    adapter.addComments(value.getData(), currentUserId, postOwner, accepted, postType);
+    swipeRefreshLayout.setRefreshing(false);
+  }
+
+  @Override public void onAcceptedCommentLoaded(CommentRealm comment, boolean postOwner,
+      @PostType int postType) {
+    adapter.addAcceptedComment(comment, postOwner, postType);
+  }
+
+  @Override
+  public void onNewCommentLoaded(CommentRealm comment, boolean postOwner, @PostType int postType) {
+    adapter.addComment(comment, postOwner, postType);
+    adapter.scrollToEnd(rvFeed);
+
+    RxBus.get().sendEvent(new UpdateEvent(new PostRealm().setId(postId)),
+        ControllerUtil.getPreviousControllerClass(this));
+  }
+
+  @Override public void onNewAccept(String commentId) {
+
   }
 
   @Override public void onMentionSuggestionsLoaded(List<AccountRealm> suggestions) {
@@ -214,16 +223,16 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     Timber.d("onEmpty()");
   }
 
+  @Override public void onLoadMore() {
+    Timber.d("onLoadMore");
+  }
+
   @Override public void onRefresh() {
+    refresh = true;
     endlessRecyclerViewScrollListener.resetState();
     adapter.clear();
 
-    getPresenter().loadComments(true, postId, cursor, eTag, 20);
-    getPresenter().loadAcceptedComment(acceptedCommentId);
-  }
-
-  @Override public void onLoadMore() {
-    Timber.d("onLoadMore");
+    getPresenter().loadData(postId);
   }
 
   @NonNull @Override public PostDetailPresenter createPresenter() {
@@ -252,7 +261,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   @Override
   public void onPostOptionsClick(View v, EpoxyModel<?> model, String postId, String postOwnerId) {
     final PopupMenu optionsMenu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
-    final boolean self = userId.equals(postOwnerId);
+    final boolean self = false;
     optionsMenu.getMenu().getItem(1).setVisible(self);
     optionsMenu.getMenu().getItem(2).setVisible(self);
 
@@ -261,7 +270,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
       switch (itemId) {
         case R.id.action_feed_popup_delete:
           getPresenter().deletePost(postId);
-          RxBus.get().sendEvent(new DeleteEvent(new PostRealm().setId(postId)),
+          RxBus.get().sendEvent(new PostDeleteEvent(new PostRealm().setId(postId)),
               ControllerUtil.getPreviousControllerClass(this));
           getRouter().popCurrentController();
           return true;
@@ -294,23 +303,24 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     Snackbar.make(getView(), value, Snackbar.LENGTH_SHORT).show();
   }
 
-  @Override public void onMentionFilter(String filtered) {
-    getPresenter().suggestUser(filtered);
+  @Override public void onMentionFilter(String query) {
+    getPresenter().suggestUser(query);
   }
 
-  @Override public void onMarkAsAccepted(View v, String postId, String commentId) {
+  @Override public void onMarkAsAccepted(View v, CommentRealm comment) {
     Snackbar.make(getView(), R.string.label_comment_accepted_confirm, Snackbar.LENGTH_SHORT).show();
-    Timber.d("onMarkAsAccepted(): %s", commentId);
+    getPresenter().acceptComment(comment);
   }
 
   @OnClick(R.id.btn_post_detail_send_comment) void sendComment() {
-    final String content = tvWriteComment.getText().toString();
+    final String content = tvWriteComment.getText().toString().trim();
 
     if (TextUtils.isEmpty(content)) {
       return;
     }
 
-    CommentRealm comment = new CommentRealm().setId(UUID.randomUUID().toString())
+    CommentRealm comment = new CommentRealm()
+        .setId(UUID.randomUUID().toString())
         .setContent(content)
         .setCreated(new Date())
         .setPostId(postId);

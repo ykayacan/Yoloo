@@ -41,8 +41,10 @@ public class TrendingCategoryModel
     final Context context = holder.rvTrendingCategory.getContext();
 
     holder.rvTrendingCategory.setAdapter(adapter);
-    holder.rvTrendingCategory.setLayoutManager(
-        new LinearLayoutManager(context, OrientationHelper.HORIZONTAL, false));
+    LinearLayoutManager layoutManager =
+        new LinearLayoutManager(context, OrientationHelper.HORIZONTAL, false);
+    layoutManager.setInitialPrefetchItemCount(4);
+    holder.rvTrendingCategory.setLayoutManager(layoutManager);
     holder.rvTrendingCategory.setHasFixedSize(true);
     holder.rvTrendingCategory.setOnFlingListener(null);
     final SnapHelper snapHelper = new LinearSnapHelper();

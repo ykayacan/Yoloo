@@ -51,7 +51,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class WeakHandler {
 
   private final Handler.Callback mCallback;
-  // hard reference to Callback. We need to keep callback in memory
+  // hard reference to Callback. We need to keep delegateCallback in memory
 
   private final ExecHandler mExec;
 
@@ -73,10 +73,10 @@ public class WeakHandler {
 
   /**
    * Constructor associates this handler with the {@link Looper} for the current thread and takes a
-   * callback interface in which you can handle messages. <p> If this thread does not have a looper,
+   * delegateCallback interface in which you can handle messages. <p> If this thread does not have a looper,
    * this handler won't be able to receive messages so an exception is thrown.
    *
-   * @param callback The callback interface in which to handle messages, or null.
+   * @param callback The delegateCallback interface in which to handle messages, or null.
    */
   public WeakHandler(@Nullable Handler.Callback callback) {
     mCallback = callback; // Hard referencing body
@@ -94,11 +94,11 @@ public class WeakHandler {
   }
 
   /**
-   * Use the provided {@link Looper} instead get the default one and take a callback interface in
+   * Use the provided {@link Looper} instead get the default one and take a delegateCallback interface in
    * which to handle messages.
    *
    * @param looper The looper, must not be null.
-   * @param callback The callback interface in which to handle messages, or null.
+   * @param callback The delegateCallback interface in which to handle messages, or null.
    */
   public WeakHandler(@NonNull Looper looper, @NonNull Handler.Callback callback) {
     mCallback = callback;
@@ -123,7 +123,7 @@ public class WeakHandler {
    * The runnable will be run on the thread to which this handler is attached.
    *
    * @param r The Runnable that will be executed.
-   * @param uptimeMillis The absolute time at which the callback should run, using the {@link
+   * @param uptimeMillis The absolute time at which the delegateCallback should run, using the {@link
    * android.os.SystemClock#uptimeMillis} time-base.
    * @return Returns true if the Runnable was successfully placed in to the message queue.  Returns
    * false on failure, usually because the looper processing the message queue is exiting.  Note
@@ -140,7 +140,7 @@ public class WeakHandler {
    * The runnable will be run on the thread to which this handler is attached.
    *
    * @param r The Runnable that will be executed.
-   * @param uptimeMillis The absolute time at which the callback should run, using the {@link
+   * @param uptimeMillis The absolute time at which the delegateCallback should run, using the {@link
    * android.os.SystemClock#uptimeMillis} time-base.
    * @return Returns true if the Runnable was successfully placed in to the message queue.  Returns
    * false on failure, usually because the looper processing the message queue is exiting.  Note
@@ -205,7 +205,7 @@ public class WeakHandler {
 
   /**
    * Pushes a message onto the end get the message queue after all pending messages before the
-   * current time. It will be received in callback, in the thread attached to this handler.
+   * current time. It will be received in delegateCallback, in the thread attached to this handler.
    *
    * @return Returns true if the message was successfully placed in to the message queue.  Returns
    * false on failure, usually because the looper processing the message queue is exiting.
@@ -249,7 +249,7 @@ public class WeakHandler {
 
   /**
    * Enqueue a message into the message queue after all pending messages before (current time +
-   * delayMillis). You will receive it in callback, in the thread attached to this handler.
+   * delayMillis). You will receive it in delegateCallback, in the thread attached to this handler.
    *
    * @return Returns true if the message was successfully placed in to the message queue.  Returns
    * false on failure, usually because the looper processing the message queue is exiting.  Note
@@ -263,7 +263,7 @@ public class WeakHandler {
   /**
    * Enqueue a message into the message queue after all pending messages before the absolute time
    * (in milliseconds) <var>uptimeMillis</var>. <b>The time-base is {@link
-   * android.os.SystemClock#uptimeMillis}.</b> You will receive it in callback, in the thread
+   * android.os.SystemClock#uptimeMillis}.</b> You will receive it in delegateCallback, in the thread
    * attached to this handler.
    *
    * @param uptimeMillis The absolute time at which the message should be delivered, using the
@@ -279,7 +279,7 @@ public class WeakHandler {
 
   /**
    * Enqueue a message at the front get the message queue, to be processed on the next iteration get
-   * the message loop.  You will receive it in callback, in the thread attached to this handler.
+   * the message loop.  You will receive it in delegateCallback, in the thread attached to this handler.
    * <b>This method is only for use in very special circumstances -- it can easily starve the
    * message queue, cause ordering problems, or have other unexpected side-effects.</b>
    *

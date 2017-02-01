@@ -5,7 +5,7 @@
   android:layout_height="match_parent"
   android:orientation="vertical">
 
-  <com.yoloo.android.feature.ui.widget.TagAutoCompleteTextView
+  <com.hootsuite.nachos.NachoTextView
     android:id="@+id/tv_tag_autocomplete"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -14,8 +14,7 @@
     android:layout_marginRight="24dp"
     android:layout_marginStart="24dp"
     android:layout_marginTop="20dp"
-    android:hint="@string/hint_editor_max_tags"
-    app:allowSpaceInTag="true" />
+    android:hint="@string/hint_editor_max_tags" />
 
   <TextView
     android:id="@+id/tv_overlay_recommended_tags"

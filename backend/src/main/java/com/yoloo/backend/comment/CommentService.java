@@ -58,7 +58,7 @@ public class CommentService {
 
   public Pair<Question, Comment> accept(Question question, Comment comment,
       Optional<Boolean> accepted, Key<Account> accountKey) {
-    if (accepted.isPresent() && question.getParentUserKey().equivalent(accountKey)) {
+    if (accepted.isPresent() && question.getParent().equivalent(accountKey)) {
       question = question.withAcceptedCommentKey(comment.getKey());
       comment = comment.withAccepted(true);
     }

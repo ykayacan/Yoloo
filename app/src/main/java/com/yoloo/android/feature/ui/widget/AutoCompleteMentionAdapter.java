@@ -165,7 +165,7 @@ public class AutoCompleteMentionAdapter extends ArrayAdapter<AccountRealm> {
   }
 
   public interface OnMentionFilterListener {
-    void onMentionFilter(String filtered);
+    void onMentionFilter(String query);
   }
 
   private static class MentionViewHolder {

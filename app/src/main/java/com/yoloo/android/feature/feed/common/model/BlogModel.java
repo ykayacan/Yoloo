@@ -13,7 +13,7 @@ import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.PostRealm;
-import com.yoloo.android.feature.comment.PostType;
+import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;

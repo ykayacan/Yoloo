@@ -19,7 +19,7 @@
   <string name="navigation_drawer_close">Close navigation drawer</string>
 
   <!-- USER FEED -->
-  <string name="label_feed_toolbar_title">Home</string>
+  <string name="label_feed_toolbar_title">YOLOO</string>
 
   <string name="label_feed_trending_now">Trending now</string>
   <string name="label_feed_explore">Explore</string>
@@ -107,6 +107,9 @@
   <string name="hint_comment_write">Write a comment…</string>
 
   <string name="action_comment_accept">Accept</string>
+  <string-array name="action_comment_dialog">
+    <item>Delete</item>
+  </string-array>
 
   <string name="error_comment_accept_exists">You can\'t accept comment.</string>
 

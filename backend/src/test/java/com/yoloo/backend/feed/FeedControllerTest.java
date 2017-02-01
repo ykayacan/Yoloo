@@ -119,7 +119,7 @@ public class FeedControllerTest extends TestBase {
         Optional.absent(), user);
 
     Feed feed = Feed.builder()
-        .parentUserKey(question.getParentUserKey())
+        .parentUserKey(question.getParent())
         .feedItemRef(Ref.create(question))
         .build();
 

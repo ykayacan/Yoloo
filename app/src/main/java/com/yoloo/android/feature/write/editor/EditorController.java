@@ -24,7 +24,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import butterknife.BindColor;
 import butterknife.BindView;
-import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnTextChanged;
 import butterknife.Optional;
@@ -52,31 +51,26 @@ import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.tag.TagRepository;
 import com.yoloo.android.data.repository.tag.datasource.TagDiskDataStore;
 import com.yoloo.android.data.repository.tag.datasource.TagRemoteDataStore;
-import com.yoloo.android.feature.ui.widget.AutoCompleteTagAdapter;
 import com.yoloo.android.feature.ui.widget.PhotoThumbnail;
-import com.yoloo.android.feature.ui.widget.SpaceTokenizer;
-import com.yoloo.android.feature.ui.widget.TagAutoCompleteTextView;
 import com.yoloo.android.feature.ui.widget.ThumbView;
 import com.yoloo.android.feature.ui.widget.tagview.TagView;
 import com.yoloo.android.feature.write.CreatePostService;
 import com.yoloo.android.feature.write.EditorType;
 import com.yoloo.android.feature.write.bountyoverview.BountyController;
+import com.yoloo.android.feature.write.tagoverview.TagOverviewDialog;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.KeyboardUtil;
-import com.yoloo.android.util.WeakHandler;
-import io.reactivex.Observable;
 import io.reactivex.annotations.Beta;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import timber.log.Timber;
 
 public class EditorController extends MvpController<EditorView, EditorPresenter>
-    implements EditorView, AutoCompleteTagAdapter.OnAutoCompleteListener {
+    implements EditorView {
 
   private static final TagView.DataTransform<TagRealm> TRANSFORMER = TagRealm::getName;
 
@@ -96,16 +90,6 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
 
   @BindColor(R.color.primary) int primaryColor;
   @BindColor(R.color.primary_dark) int primaryDarkColor;
-
-  private View tagDialogView;
-
-  private AlertDialog tagDialog;
-
-  private TagAutoCompleteTextView tvTagAutoComplete;
-
-  private AutoCompleteTagAdapter tagAdapter;
-  private WeakHandler handler = new WeakHandler();
-  private Runnable tagDropdownRunnable;
 
   private PostRealm draft;
 
@@ -141,7 +125,6 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
     setupToolbar();
     setHasOptionsMenu(true);
     setupTagDialog();
-    setupTagAutoCompleteAdapter();
 
     tvPost.setEnabled(false);
     KeyboardUtil.showDelayedKeyboard(etEditor);
@@ -217,23 +200,8 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
     }
   }
 
-  @Override public void onRecommendedTagsLoaded(List<TagRealm> tags) {
-    final TagView tagView =
-        ButterKnife.findById(tagDialogView, R.id.tagview_overlay_recommended_tags);
-    tagView.setData(tags, TRANSFORMER);
-  }
-
-  @Override public void onSuggestedTagsLoaded(List<TagRealm> tags) {
-    tagAdapter.replaceItems(tags);
-    handler.post(tagDropdownRunnable);
-  }
-
   @Override public void onError(Throwable t) {
 
-  }
-
-  @Override public void onAutoCompleteFilter(String filtered) {
-    getPresenter().loadSuggestedTags(filtered);
   }
 
   @OnTextChanged(R.id.et_editor) void listenInputChanges(CharSequence text) {
@@ -249,9 +217,8 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
   }
 
   @OnClick(R.id.ib_add_tag) void showTagDialog() {
-    tagDialog.show();
-
-    getPresenter().loadRecommendedTags();
+    TagOverviewDialog dialog = new TagOverviewDialog(getActivity());
+    dialog.show();
   }
 
   @OnClick(R.id.ib_add_photo) void showAddPhotoDialog() {
@@ -476,38 +443,14 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
         .execute(getActivity());
   }
 
-  private void setupTagAutoCompleteAdapter() {
-    tagAdapter = new AutoCompleteTagAdapter(getActivity(), this);
-    tvTagAutoComplete.setAdapter(tagAdapter);
-    tvTagAutoComplete.setTokenizer(new SpaceTokenizer());
-  }
-
   private void setupTagDialog() {
-    tagDialogView = View.inflate(getActivity(), R.layout.dialog_editor_tag, null);
-
-    tvTagAutoComplete = ButterKnife.findById(tagDialogView, R.id.tv_tag_autocomplete);
-    tagDropdownRunnable = tvTagAutoComplete::showDropDown;
-
-    tagDialog = new AlertDialog.Builder(getActivity()).setView(tagDialogView)
-        .setCancelable(false)
-        .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-          String text = tvTagAutoComplete.getText().toString();
-          Timber.d("Tags: %s", text);
-        })
-        .setNegativeButton(android.R.string.cancel, (dialog, which) -> {
-        })
-        .create();
-
-    final TagView tagView =
-        ButterKnife.findById(tagDialogView, R.id.tagview_overlay_recommended_tags);
-
-    tagView.getSelectedItemsObservable()
+    /*tagView.getSelectedItemsObservable()
         .flatMap(Observable::fromIterable)
         .cast(TagRealm.class)
         .map(TagRealm::getName)
         .toList()
         .doOnSuccess(tvTagAutoComplete::setTags)
-        .subscribe();
+        .subscribe();*/
   }
 
   public void setEditorContentFromDraft(PostRealm draft) {

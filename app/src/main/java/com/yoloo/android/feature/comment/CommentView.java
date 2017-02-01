@@ -8,14 +8,16 @@ import java.util.List;
 
 public interface CommentView extends MvpDataView<Response<List<CommentRealm>>> {
 
-  void onCommentsLoaded(Response<List<CommentRealm>> value, boolean self,
-      boolean hasAcceptedCommentId);
+  void onCommentsLoaded(Response<List<CommentRealm>> value, String currentUserId, boolean postOwner,
+      boolean accepted);
 
-  void onAcceptedCommentLoaded(CommentRealm comment, boolean self, boolean hasAcceptedCommentId);
+  void onAcceptedCommentLoaded(CommentRealm comment, boolean postOwner);
 
-  void onNewCommentLoaded(CommentRealm comment, boolean self, boolean hasAcceptedCommentId);
+  void onNewCommentLoaded(CommentRealm comment, boolean postOwner);
 
   void onNewAccept(String commentId);
 
   void onMentionSuggestionsLoaded(List<AccountRealm> suggestions);
+
+  void onCommentDeleted();
 }

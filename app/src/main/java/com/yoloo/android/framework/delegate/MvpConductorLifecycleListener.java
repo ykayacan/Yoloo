@@ -6,6 +6,7 @@ import com.bluelinelabs.conductor.Controller;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.framework.MvpPresenter;
 import com.yoloo.android.framework.MvpView;
+import com.yoloo.android.util.Preconditions;
 
 /**
  * This {@link Controller.LifecycleListener} has to added to your Controller to integrate Mosby.
@@ -23,49 +24,42 @@ import com.yoloo.android.framework.MvpView;
 public class MvpConductorLifecycleListener<V extends MvpView, P extends MvpPresenter<V>>
     extends Controller.LifecycleListener {
 
-  protected final MvpConductorDelegateCallback<V, P> callback;
+  protected final MvpConductorDelegateCallback<V, P> delegateCallback;
 
   /**
    * Instantiate a new Mosby MVP Listener
    *
-   * @param callback {@link MvpConductorDelegateCallback} to set presenter. Typically the
-   * controller
-   * himself.
+   * @param delegateCallback {@link MvpConductorDelegateCallback} to set presenter. Typically the
+   * controller himself.
    */
-  public MvpConductorLifecycleListener(MvpConductorDelegateCallback<V, P> callback) {
-    this.callback = callback;
+  public MvpConductorLifecycleListener(MvpConductorDelegateCallback<V, P> delegateCallback) {
+    this.delegateCallback =
+        Preconditions.checkNotNull(delegateCallback, "MvpConductorDelegateCallback is null!");
   }
 
-  protected MvpConductorDelegateCallback<V, P> getCallback() {
-    return callback;
+  protected MvpConductorDelegateCallback<V, P> getDelegateCallback() {
+    return delegateCallback;
   }
 
   @Override public void postCreateView(@NonNull Controller controller, @NonNull View view) {
-    MvpConductorDelegateCallback<V, P> callback = getCallback();
-
-    P presenter = callback.getPresenter();
+    P presenter = delegateCallback.getPresenter();
     if (presenter == null) {
-      presenter = callback.createPresenter();
-      if (presenter == null) {
-        throw new NullPointerException(
-            "Presenter returned from createPresenter() is null in " + callback);
-      }
-      callback.setPresenter(presenter);
+      presenter = delegateCallback.createPresenter();
+      Preconditions.checkNotNull(presenter,
+          "Presenter returned from createPresenter() is null in " + delegateCallback);
+      delegateCallback.setPresenter(presenter);
     }
 
-    V mvpView = callback.getMvpView();
-    if (mvpView == null) {
-      throw new NullPointerException("MVP View returned from getMvpView() is null in " + callback);
-    }
+    V mvpView = delegateCallback.getMvpView();
+    Preconditions.checkNotNull(mvpView,
+        "MVP View returned from getMvpView() is null in " + delegateCallback);
     presenter.onAttachView(mvpView);
   }
 
   @Override public void preDestroyView(@NonNull Controller controller, @NonNull View view) {
-    P presenter = getCallback().getPresenter();
-    if (presenter == null) {
-      throw new NullPointerException(
-          "Presenter returned from getPresenter() is null in " + callback);
-    }
+    P presenter = getDelegateCallback().getPresenter();
+    Preconditions.checkNotNull(presenter,
+        "Presenter returned from getPresenter() is null in " + delegateCallback);
     presenter.onDetachView();
   }
 }

@@ -42,10 +42,10 @@ import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.data.sorter.PostSorter;
 import com.yoloo.android.feature.base.LceAnimator;
 import com.yoloo.android.feature.comment.CommentController;
-import com.yoloo.android.feature.comment.PostType;
+import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
-import com.yoloo.android.feature.feed.common.event.DeleteEvent;
+import com.yoloo.android.feature.feed.common.event.PostDeleteEvent;
 import com.yoloo.android.feature.feed.common.event.UpdateEvent;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
@@ -205,8 +205,8 @@ public class PostController extends MvpController<PostView, PostPresenter>
         .subscribe(e -> {
           if (e instanceof UpdateEvent) {
             adapter.updatePost(FeedAction.UPDATE, ((UpdateEvent) e).getPost());
-          } else if (e instanceof DeleteEvent) {
-            adapter.updatePost(FeedAction.DELETE, ((DeleteEvent) e).getPost());
+          } else if (e instanceof PostDeleteEvent) {
+            adapter.updatePost(FeedAction.DELETE, ((PostDeleteEvent) e).getPost());
           }
         });
 
@@ -372,7 +372,6 @@ public class PostController extends MvpController<PostView, PostPresenter>
   private void setupRecyclerView() {
     adapter = FeedAdapter.builder()
         .isMainFeed(false)
-        .context(getApplicationContext())
         .onProfileClickListener(this)
         .onReadMoreClickListener(this)
         .onOptionsClickListener(this)

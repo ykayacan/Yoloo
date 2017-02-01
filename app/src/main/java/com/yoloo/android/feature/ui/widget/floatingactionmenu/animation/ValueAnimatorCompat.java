@@ -144,7 +144,7 @@ public class ValueAnimatorCompat {
     void onAnimationStart(ValueAnimatorCompat animator);
 
     /**
-     * <p>Notifies the end of the animation. This callback is not invoked for animations with repeat
+     * <p>Notifies the end of the animation. This delegateCallback is not invoked for animations with repeat
      * count set to INFINITE.</p>
      *
      * @param animator The animation which reached its end.
@@ -152,7 +152,7 @@ public class ValueAnimatorCompat {
     void onAnimationEnd(ValueAnimatorCompat animator);
 
     /**
-     * <p>Notifies the cancellation of the animation. This callback is not invoked for animations
+     * <p>Notifies the cancellation of the animation. This delegateCallback is not invoked for animations
      * with repeat count set to INFINITE.</p>
      *
      * @param animator The animation which was canceled.

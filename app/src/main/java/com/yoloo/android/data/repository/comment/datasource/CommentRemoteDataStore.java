@@ -35,7 +35,7 @@ public class CommentRemoteDataStore {
         .flatMap(s -> Observable.just(comment));
   }
 
-  public Completable delete(String commentId) {
+  public Completable delete(CommentRealm comment) {
     ApiManager.getIdToken()
         .toObservable()
         .flatMap(s -> Observable.empty());
@@ -50,17 +50,17 @@ public class CommentRemoteDataStore {
         .flatMap(s -> Observable.empty());
   }
 
-  public Observable<CommentRealm> accept(String questionId, String commentId) {
+  public Observable<CommentRealm> accept(CommentRealm comment) {
     return ApiManager.getIdToken()
         .toObservable()
         .flatMap(s -> Observable.just(
             new CommentRealm()
-                .setId(commentId)
+                .setId(comment.getId())
                 .setOwnerId("a1")
                 .setUsername("krialix")
                 .setAvatarUrl(FakerUtil.getAvatarRandomUrl())
                 .setAccepted(true)
-                .setPostId(questionId)
+                .setPostId(comment.getPostId())
                 .setContent("Accepted")
                 .setCreated(new Date())));
   }

@@ -24,7 +24,6 @@ import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookRequestError;
-import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.internal.CallbackManagerImpl;
 import com.facebook.login.LoginManager;
@@ -53,15 +52,12 @@ public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResu
   private IdpCallback mCallbackObject;
 
   public FacebookProvider(Context context, AuthUI.IdpConfig idpConfig) {
-    Context appContext = context.getApplicationContext();
-
     List<String> scopes = idpConfig.getScopes();
     if (scopes == null) {
       mScopes = new ArrayList<>();
     } else {
       mScopes = scopes;
     }
-    FacebookSdk.sdkInitialize(appContext);
   }
 
   @Nullable public static AuthCredential createAuthCredential(IdpResponse response) {
@@ -90,8 +86,6 @@ public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResu
     permissionsList.add(EMAIL);
     permissionsList.add(PUBLIC_PROFILE);
 
-    // Log in with permissions
-    Timber.d("startLogin()");
     loginManager.logInWithReadPermissions(controller.getActivity(), permissionsList);
   }
 

@@ -35,7 +35,7 @@ public class QuestionService {
 
     Question question = Question.builder()
         .id(questionKey.getId())
-        .parentUserKey(account.getKey())
+        .parent(account.getKey())
         .avatarUrl(account.getAvatarUrl())
         .username(account.getUsername())
         .content(content)
