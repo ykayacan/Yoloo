@@ -20,6 +20,9 @@
 
   </android.support.design.widget.AppBarLayout>
 
+  <include layout="@layout/merge_loading_view" />
+  <include layout="@layout/merge_error_view" />
+
   <android.support.v4.widget.SwipeRefreshLayout
     android:id="@+id/swipe_notification"
     android:layout_width="0dp"

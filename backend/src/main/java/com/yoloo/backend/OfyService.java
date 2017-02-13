@@ -5,21 +5,21 @@ import com.googlecode.objectify.ObjectifyFactory;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.impl.translate.opt.joda.JodaTimeTranslators;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.account.AccountCounterShard;
+import com.yoloo.backend.account.AccountShard;
 import com.yoloo.backend.bookmark.Bookmark;
 import com.yoloo.backend.comment.Comment;
-import com.yoloo.backend.comment.CommentCounterShard;
+import com.yoloo.backend.comment.CommentShard;
 import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.feed.Feed;
 import com.yoloo.backend.follow.Follow;
-import com.yoloo.backend.gamification.Tracker;
+import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.notification.Notification;
-import com.yoloo.backend.question.Question;
-import com.yoloo.backend.question.QuestionCounterShard;
+import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostShard;
 import com.yoloo.backend.tag.Tag;
-import com.yoloo.backend.tag.TagCounterShard;
-import com.yoloo.backend.topic.Topic;
-import com.yoloo.backend.topic.TopicCounterShard;
+import com.yoloo.backend.tag.TagShard;
+import com.yoloo.backend.category.Category;
+import com.yoloo.backend.category.CategoryShard;
 import com.yoloo.backend.vote.Vote;
 
 /**
@@ -32,20 +32,20 @@ public final class OfyService {
     JodaTimeTranslators.add(factory());
 
     factory().register(Account.class);
-    factory().register(AccountCounterShard.class);
+    factory().register(AccountShard.class);
 
     factory().register(Feed.class);
-    factory().register(Question.class);
-    factory().register(QuestionCounterShard.class);
+    factory().register(Post.class);
+    factory().register(PostShard.class);
 
     factory().register(Tag.class);
-    factory().register(TagCounterShard.class);
+    factory().register(TagShard.class);
 
-    factory().register(Topic.class);
-    factory().register(TopicCounterShard.class);
+    factory().register(Category.class);
+    factory().register(CategoryShard.class);
 
     factory().register(Comment.class);
-    factory().register(CommentCounterShard.class);
+    factory().register(CommentShard.class);
 
     factory().register(Vote.class);
 

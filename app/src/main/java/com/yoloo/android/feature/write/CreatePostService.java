@@ -45,7 +45,7 @@ public class CreatePostService extends Service {
     disposable = postRepository.getDraft()
         .doOnSubscribe(disposable -> showSendingNotification())
         .map(draft -> draft.setFeedItem(true).setPending(false))
-        .flatMap(postRepository::add)
+        .flatMap(postRepository::addPost)
         .doOnComplete(() -> postRepository.deleteDraft().subscribe())
         .observeOn(AndroidSchedulers.mainThread())
         .doOnNext(this::broadcastNewPostEvent)

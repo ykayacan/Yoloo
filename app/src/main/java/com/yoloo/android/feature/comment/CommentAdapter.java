@@ -8,11 +8,12 @@ import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
+import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
 import java.util.List;
 
 public class CommentAdapter extends EpoxyAdapter {
 
-  private final OnCommentLongClickListener onCommentLongClickListener;
+  private final OnItemLongClickListener<CommentRealm> onCommentLongClickListener;
   private final OnProfileClickListener onProfileClickListener;
   private final OnVoteClickListener onVoteClickListener;
   private final OnMentionClickListener onMentionClickListener;
@@ -20,7 +21,7 @@ public class CommentAdapter extends EpoxyAdapter {
   @PostType private final int postType;
 
   public CommentAdapter(
-      OnCommentLongClickListener onCommentLongClickListener,
+      OnItemLongClickListener<CommentRealm> onCommentLongClickListener,
       OnProfileClickListener onProfileClickListener,
       OnVoteClickListener onVoteClickListener,
       OnMentionClickListener onMentionClickListener,
@@ -43,7 +44,7 @@ public class CommentAdapter extends EpoxyAdapter {
   public void addComments(List<CommentRealm> comments, String userId, boolean postOwner,
       boolean accepted) {
     for (CommentRealm comment : comments) {
-      // Don't add accepted comment twice.
+      // Don't addPost accepted comment twice.
       if (comment.isAccepted()) {
         continue;
       }
@@ -62,12 +63,6 @@ public class CommentAdapter extends EpoxyAdapter {
 
   public void addComment(CommentRealm comment, boolean postOwner) {
     addModel(createCommentModel(comment, true, postOwner, false, postType));
-  }
-
-  public void clear() {
-    final int size = models.size();
-    models.clear();
-    notifyItemRangeRemoved(0, size);
   }
 
   public void delete(EpoxyModel<?> model) {

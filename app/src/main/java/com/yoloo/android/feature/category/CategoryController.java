@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindView;
+import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
@@ -17,15 +18,18 @@ import com.yoloo.android.data.repository.category.CategoryRepository;
 import com.yoloo.android.data.repository.category.datasource.CategoryDiskDataStore;
 import com.yoloo.android.data.repository.category.datasource.CategoryRemoteDataStore;
 import com.yoloo.android.feature.feed.postfeed.PostController;
-import com.yoloo.android.feature.ui.recyclerview.GridInsetItemDecoration;
-import com.yoloo.android.feature.ui.recyclerview.SlideInItemAnimator;
+import com.yoloo.android.ui.recyclerview.GridInsetItemDecoration;
+import com.yoloo.android.ui.recyclerview.OnItemClickListener;
+import com.yoloo.android.ui.recyclerview.OnMaxSelectionReachedListener;
+import com.yoloo.android.ui.recyclerview.SlideInItemAnimator;
 import com.yoloo.android.feature.write.catalog.CatalogController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import java.util.List;
+import timber.log.Timber;
 
 public class CategoryController extends MvpController<CategoryView, CategoryPresenter>
-    implements CategoryView, CategoryAdapter.OnCategoryClickListener {
+    implements CategoryView, OnItemClickListener<CategoryRealm>, OnMaxSelectionReachedListener {
 
   private static final String KEY_CATEGORY_TYPE = "CATEGORY_TYPE";
   private static final String KEY_MULTI_SELECTION = "MULTI_SELECTION";
@@ -66,19 +70,11 @@ public class CategoryController extends MvpController<CategoryView, CategoryPres
     setupRecyclerView();
   }
 
-  @Override public void onLoading(boolean pullToRefresh) {
-
+  @Override public void onCategoriesLoaded(List<CategoryRealm> categories) {
+    adapter.addCategories(categories);
   }
 
-  @Override public void onLoaded(List<CategoryRealm> value) {
-    adapter.addCategories(value);
-  }
-
-  @Override public void onError(Throwable e) {
-
-  }
-
-  @Override public void onEmpty() {
+  @Override public void onError(Throwable throwable) {
 
   }
 
@@ -89,8 +85,7 @@ public class CategoryController extends MvpController<CategoryView, CategoryPres
             CategoryDiskDataStore.getInstance()));
   }
 
-  @Override
-  public void onCategoryClick(View v, String categoryId, String name, boolean multiSelection) {
+  @Override public void onItemClick(View v, EpoxyModel<?> model, CategoryRealm item) {
     if (multiSelection) {
       final Controller parent = getParentController();
       if (parent instanceof CatalogController) {
@@ -99,17 +94,19 @@ public class CategoryController extends MvpController<CategoryView, CategoryPres
       }
     } else {
       getParentController().getRouter()
-          .pushController(RouterTransaction.with(PostController.ofCategory(name))
+          .pushController(RouterTransaction.with(PostController.ofCategory(item.getName()))
               .pushChangeHandler(new VerticalChangeHandler())
               .popChangeHandler(new VerticalChangeHandler()));
     }
   }
 
   private void setupRecyclerView() {
-    adapter = new CategoryAdapter(categoryType);
-    adapter.setMultiSelection(multiSelection);
-    adapter.setMaxSelectedItems(categoryType.equals(CategoryType.TYPE_DESTINATION) ? 1 : 3);
-    adapter.setOnCategoryClickListener(this);
+    adapter = new CategoryAdapter(categoryType, this);
+
+    final int maxSelection =
+        multiSelection ? (categoryType.equals(CategoryType.TYPE_DESTINATION) ? 1 : 3) : 0;
+    adapter.setMaxSelection(maxSelection);
+    adapter.setOnMaxSelectionReachedListener(this);
 
     rvCatalog.setLayoutManager(new GridLayoutManager(getActivity(), 2));
     rvCatalog.addItemDecoration(new GridInsetItemDecoration(2, 8, true));
@@ -120,5 +117,9 @@ public class CategoryController extends MvpController<CategoryView, CategoryPres
 
     rvCatalog.setHasFixedSize(true);
     rvCatalog.setAdapter(adapter);
+  }
+
+  @Override public void onMaxSelectionReached() {
+    Timber.d("onMaxSelectionReached()");
   }
 }

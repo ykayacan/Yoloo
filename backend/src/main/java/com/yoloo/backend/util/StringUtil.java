@@ -1,5 +1,6 @@
 package com.yoloo.backend.util;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import io.reactivex.Observable;
@@ -19,7 +20,7 @@ public final class StringUtil {
     return Observable.just(ImmutableSet.copyOf(args.split("\\s*" + rule + "\\s*")));
   }
 
-  public static Observable<String> split(final String args, final String rule) {
-    return Observable.fromArray(args.split("\\s*" + rule + "\\s*"));
+  public static ImmutableSet<String> split(String args, String delimiter) {
+    return ImmutableSet.copyOf(Splitter.on(delimiter).trimResults().omitEmptyStrings().split(args));
   }
 }

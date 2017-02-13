@@ -22,7 +22,7 @@ public class TagShardServiceTest extends TestBase {
         super.setUp();
 
         fact().register(Tag.class);
-        fact().register(TagCounterShard.class);
+        fact().register(TagShard.class);
     }
 
     @Test
@@ -31,9 +31,9 @@ public class TagShardServiceTest extends TestBase {
 
         TagShardService shardService = TagShardService.create();
 
-        List<Key<TagCounterShard>> shardKeys = shardService.createShardKeys(hashTagKey);
+        List<Key<TagShard>> shardKeys = shardService.createShardKeys(hashTagKey);
 
-        assertEquals(TagCounterShard.SHARD_COUNT, shardKeys.size());
+        assertEquals(TagShard.SHARD_COUNT, shardKeys.size());
     }
 
     @Test
@@ -42,8 +42,8 @@ public class TagShardServiceTest extends TestBase {
 
         TagShardService shardService = TagShardService.create();
 
-        List<Key<TagCounterShard>> shardKeys = shardService.createShardKeys(hashTagKeyRange);
+        List<Key<TagShard>> shardKeys = shardService.createShardKeys(hashTagKeyRange);
 
-        assertEquals(TagCounterShard.SHARD_COUNT * 5, shardKeys.size());
+        assertEquals(TagShard.SHARD_COUNT * 5, shardKeys.size());
     }
 }

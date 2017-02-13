@@ -13,12 +13,11 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import java.util.Iterator;
 import java.util.logging.Logger;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import static com.yoloo.backend.OfyService.ofy;
 
-@RequiredArgsConstructor(staticName = "create")
+@AllArgsConstructor(staticName = "create")
 public class MediaController extends Controller {
 
   private static final Logger logger =
@@ -29,23 +28,24 @@ public class MediaController extends Controller {
    */
   private static final int DEFAULT_LIST_LIMIT = 20;
 
-  @NonNull
   private MediaService mediaService;
 
   /**
    * List collection response.
    *
-   * @param webssafeAccountId the webssafe account id
+   * @param accountId the webssafe account id
    * @param limit the limit
    * @param cursor the cursor
    * @param user the user
    * @return the collection response
    */
-  public CollectionResponse<Media> list(String webssafeAccountId, Optional<Integer> limit,
-      Optional<String> cursor, User user) {
+  public CollectionResponse<Media> listMedias(
+      String accountId, Optional<Integer> limit,
+      Optional<String> cursor,
+      User user) {
 
     // Create account key from websafe id.
-    final Key<Account> authKey = Key.create(webssafeAccountId);
+    final Key<Account> authKey = Key.create(accountId);
 
     Query<Media> query = ofy().load().type(Media.class).ancestor(authKey);
 

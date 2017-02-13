@@ -5,7 +5,6 @@ import com.google.api.server.spi.response.NotFoundException;
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.users.User;
-import com.google.appengine.repackaged.com.google.common.base.Pair;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -17,34 +16,31 @@ import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.device.DeviceUtil;
-import com.yoloo.backend.gamification.GamificationService;
-import com.yoloo.backend.gamification.Tracker;
-import com.yoloo.backend.gamification.reward.CommentTimeOutReward;
-import com.yoloo.backend.gamification.reward.FirstCommentForQuestionReward;
-import com.yoloo.backend.gamification.reward.FirstCommentReward;
+import com.yoloo.backend.game.GamificationService;
+import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.notification.type.AcceptNotification;
 import com.yoloo.backend.notification.type.CommentNotification;
 import com.yoloo.backend.notification.type.MentionNotification;
-import com.yoloo.backend.question.Question;
-import com.yoloo.backend.question.QuestionCounterShard;
-import com.yoloo.backend.question.QuestionShardService;
-import com.yoloo.backend.util.Group;
+import com.yoloo.backend.notification.type.NotificationBundle;
+import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostShard;
+import com.yoloo.backend.post.PostShardService;
 import com.yoloo.backend.validator.Guard;
 import com.yoloo.backend.vote.Vote;
+import com.yoloo.backend.vote.VoteService;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import static com.yoloo.backend.OfyService.ofy;
 
-@RequiredArgsConstructor(staticName = "create")
+@AllArgsConstructor(staticName = "create")
 public class CommentController extends Controller {
 
-  private static final Logger logger =
+  private static final Logger LOG =
       Logger.getLogger(CommentController.class.getName());
 
   private static final Extractor EXTRACTOR = new Extractor();
@@ -54,20 +50,17 @@ public class CommentController extends Controller {
    */
   private static final int DEFAULT_LIST_LIMIT = 20;
 
-  @NonNull
   private CommentService commentService;
 
-  @NonNull
   private CommentShardService commentShardService;
 
-  @NonNull
-  private QuestionShardService questionShardService;
+  private PostShardService postShardService;
 
-  @NonNull
   private GamificationService gameService;
 
-  @NonNull
   private NotificationService notificationService;
+
+  private VoteService voteService;
 
   /**
    * Get comment.
@@ -76,7 +69,8 @@ public class CommentController extends Controller {
    * @param user the user
    * @return the comment
    */
-  public Comment get(String commentId, User user) throws NotFoundException {
+  public Comment getComment(String commentId, User user) throws NotFoundException {
+
     // Create account key from websafe id.
     final Key<Account> accountKey = Key.create(user.getUserId());
     // Create comment key from websafe id.
@@ -90,19 +84,20 @@ public class CommentController extends Controller {
 
     return CommentUtil
         .mergeCommentCounts(comment)
-        .flatMap(comment1 -> CommentUtil.mergeVoteDirection(comment1, accountKey))
+        .flatMap(comment1 -> voteService.checkCommentVote(comment1, accountKey, true))
         .blockingSingle();
   }
 
   /**
    * Add comment.
    *
-   * @param questionId the websafe question id
+   * @param postId the websafe question id
    * @param content the content
    * @param user the user  @return the comment
    * @return the comment
    */
-  public Comment add(String questionId, String content, User user) {
+  public Comment insertComment(String postId, String content, User user) {
+
     ImmutableSet.Builder<Key<?>> keyBuilder = ImmutableSet.builder();
 
     // Create user key from user id.
@@ -110,12 +105,11 @@ public class CommentController extends Controller {
     keyBuilder.add(accountKey);
 
     // Create post key from websafe id.
-    final Key<Question> questionKey = Key.create(questionId);
+    final Key<Post> questionKey = Key.create(postId);
     keyBuilder.add(questionKey);
 
     // Get a random shard key.
-    final Key<QuestionCounterShard> questionShardKey =
-        questionShardService.getRandomShardKey(questionKey);
+    final Key<PostShard> questionShardKey = postShardService.getRandomShardKey(questionKey);
     keyBuilder.add(questionShardKey);
 
     // Create tracker key.
@@ -134,45 +128,49 @@ public class CommentController extends Controller {
     //noinspection SuspiciousMethodCalls
     Account account = (Account) fetched.get(accountKey);
     //noinspection SuspiciousMethodCalls
-    Question question = (Question) fetched.get(questionKey);
+    Post post = (Post) fetched.get(questionKey);
     //noinspection SuspiciousMethodCalls
-    QuestionCounterShard qqs = (QuestionCounterShard) fetched.get(questionShardKey);
+    PostShard qqs = (PostShard) fetched.get(questionShardKey);
     //noinspection SuspiciousMethodCalls
     Tracker tracker = (Tracker) fetched.get(trackerKey);
     //noinspection SuspiciousMethodCalls
     DeviceRecord record = (DeviceRecord) fetched.get(recordKey);
 
     // Create a new comment from given inputs.
-    CommentModel model = commentService.create(account, questionKey, content);
+    CommentEntity model = commentService.create(account, questionKey, content);
 
     Comment comment = model.getComment();
-    List<CommentCounterShard> shards = model.getShards();
+    List<CommentShard> shards = model.getShards();
 
-    question = question.withCommented(!question.isCommented());
+    post = post.withCommented(!post.isCommented());
 
     // Increase total comment count.
     qqs.increaseComments();
 
     // Start gamification check.
-    tracker = FirstCommentReward.of(tracker).getTracker();
-    tracker = FirstCommentForQuestionReward.of(tracker, question).getTracker();
-    tracker = CommentTimeOutReward.of(question, tracker).getTracker();
+    List<NotificationBundle> notificationBundles = Lists.newArrayList();
+    gameService.addFirstAnswerBonus(record, tracker, notificationBundles::addAll);
+    gameService.addFirstAnswererPerDayBonus(record, tracker, post, notificationBundles::addAll);
+    gameService.addAnswerToUnansweredQuestionBonus(record, tracker, post,
+        notificationBundles::addAll);
 
-    // Immutable helper list object to save all entities in a single db write.
-    // For each single object use builder.addAdmin() method.
-    // For each list object use builder.addAll() method.
-    ImmutableSet.Builder<Object> saveListBuilder = ImmutableSet.builder()
+    ImmutableSet.Builder<Object> saveBuilder = ImmutableSet.builder()
         .add(comment)
         .addAll(shards)
         .add(qqs)
-        .add(question)
+        .add(post)
         .add(tracker);
+
+    for (NotificationBundle bundle : notificationBundles) {
+      saveBuilder.addAll(bundle.getNotifications());
+    }
 
     // Do not send notification to self.
     if (!questionKey.<Account>getParent().equivalent(accountKey)) {
       boolean sendCommentNotification = true;
 
       List<String> mentions = EXTRACTOR.extractMentionedScreennames(content);
+
       if (!mentions.isEmpty()) {
         Query<Account> query = ofy().load().type(Account.class);
 
@@ -181,11 +179,12 @@ public class CommentController extends Controller {
         }
 
         List<Key<Account>> accountKeys = query.keys().list();
-        List<Key<DeviceRecord>> recordKeys = DeviceUtil.createKeysFromAccount(accountKeys);
-        Collection<DeviceRecord> records = ofy().load().keys(recordKeys).values();
+
+        Collection<DeviceRecord> records = ofy().load()
+            .keys(DeviceUtil.createKeysFromAccount(accountKeys)).values();
 
         MentionNotification mentionNotification =
-            MentionNotification.create(question, account, records, comment);
+            MentionNotification.create(post, account, records, comment);
 
         notificationService.send(mentionNotification);
 
@@ -193,16 +192,22 @@ public class CommentController extends Controller {
       }
 
       CommentNotification commentNotification =
-          CommentNotification.create(account, record, comment, question);
+          CommentNotification.create(account, record, comment, post);
 
       if (sendCommentNotification) {
         notificationService.send(commentNotification);
       }
 
-      saveListBuilder.addAll(commentNotification.getNotifications());
+      saveBuilder.addAll(commentNotification.getNotifications());
     }
 
-    ofy().transact(() -> ofy().save().entities(saveListBuilder.build()).now());
+    ofy().transact(() -> {
+      ofy().save().entities(saveBuilder.build()).now();
+
+      for (NotificationBundle bundle : notificationBundles) {
+        notificationService.send(bundle);
+      }
+    });
 
     return comment;
   }
@@ -210,72 +215,92 @@ public class CommentController extends Controller {
   /**
    * Update comment.
    *
-   * @param questionId the websafe question id
+   * @param postId the websafe question id
    * @param commentId the websafe comment id
    * @param content the content
    * @param accepted the accepted
    * @param user the user
    * @return the comment
    */
-  public Comment update(String questionId, String commentId, Optional<String> content,
-      Optional<Boolean> accepted, User user) {
-    // Immutable helper list object to save all entities in a single db write.
+  public Comment updateComment(
+      String postId,
+      String commentId,
+      Optional<String> content,
+      Optional<Boolean> accepted,
+      User user) {
+
     ImmutableSet.Builder<Object> saveBuilder = ImmutableSet.builder();
 
     // Create account key from websafe id.
     final Key<Account> accountKey = Key.create(user.getUserId());
 
-    // Create question key from websafe id.
-    final Key<Question> questionKey = Key.create(questionId);
+    // Create post key from websafe id.
+    final Key<Post> postKey = Key.create(postId);
 
     // Create comment key from websafe id.
     final Key<Comment> commentKey = Key.create(commentId);
 
+    // Create device key from post owner.
+    final Key<DeviceRecord> askerRecordKey = DeviceRecord.createKey(postKey.getParent());
+
     // Create device key from comment owner.
-    final Key<DeviceRecord> recordKey = DeviceRecord.createKey(commentKey.getParent());
+    final Key<DeviceRecord> answererRecordKey = DeviceRecord.createKey(commentKey.getParent());
+
+    // Create tracker key from post owner.
+    final Key<Tracker> askerTrackerKey = Tracker.createKey(postKey.getParent());
 
     // Create tracker key from comment owner.
-    final Key<Tracker> receiverTrackerKey = Tracker.createKey(commentKey.getParent());
+    final Key<Tracker> answererTrackerKey = Tracker.createKey(commentKey.getParent());
 
     // Make a batch load.
     //noinspection unchecked
     Map<Key<Object>, Object> fetched =
-        ofy().load().keys(accountKey, questionKey, commentKey, recordKey, receiverTrackerKey);
+        ofy().load().keys(accountKey, postKey, commentKey, askerRecordKey, answererRecordKey,
+            askerTrackerKey, answererTrackerKey);
 
     //noinspection SuspiciousMethodCalls
     Account account = (Account) fetched.get(accountKey);
     //noinspection SuspiciousMethodCalls
     Comment comment = (Comment) fetched.get(commentKey);
     //noinspection SuspiciousMethodCalls
-    Question question = (Question) fetched.get(questionKey);
+    Post post = (Post) fetched.get(postKey);
     //noinspection SuspiciousMethodCalls
-    DeviceRecord record = (DeviceRecord) fetched.get(recordKey);
+    DeviceRecord askerRecord = (DeviceRecord) fetched.get(askerRecordKey);
     //noinspection SuspiciousMethodCalls
-    Tracker receiverTracker = (Tracker) fetched.get(receiverTrackerKey);
+    DeviceRecord answererRecord = (DeviceRecord) fetched.get(answererRecordKey);
+    //noinspection SuspiciousMethodCalls
+    Tracker askerTracker = (Tracker) fetched.get(askerTrackerKey);
+    //noinspection SuspiciousMethodCalls
+    Tracker answererTracker = (Tracker) fetched.get(answererTrackerKey);
 
     comment = commentService.update(comment, content);
-    Pair<Question, Comment> pair = commentService.accept(question, comment, accepted, accountKey);
+
+    // Start gamification check.
+    List<NotificationBundle> notificationBundles = Lists.newArrayList();
+    if (accepted.isPresent() && post.getParent().equivalent(accountKey)) {
+
+      post = post.withAcceptedCommentKey(comment.getKey());
+      comment = comment.withAccepted(true);
+      post = gameService.addAcceptCommentBonus(askerTracker, answererTracker, askerRecord,
+          answererRecord, post, notificationBundles::addAll, notificationBundles::addAll);
+
+      notificationBundles.add(AcceptNotification.create(account, answererRecord, post));
+
+      saveBuilder.add(askerRecord).add(answererRecord);
+
+      for (NotificationBundle bundle : notificationBundles) {
+        saveBuilder.addAll(bundle.getNotifications());
+      }
+    }
+
+    saveBuilder.add(post).add(comment);
 
     ofy().transact(() -> {
-      // If comment is accepted, then send notification to comment owner.
-      if (accepted.isPresent()) {
-        Group.OfTwo<Tracker, Question> group =
-            gameService.exchangeBounties(receiverTracker, pair.first);
-
-        saveBuilder.add(group.first);
-        saveBuilder.add(group.second);
-        saveBuilder.add(pair.second);
-
-        AcceptNotification acceptNotification = AcceptNotification.create(account, record, question);
-        saveBuilder.addAll(acceptNotification.getNotifications());
-
-        notificationService.send(acceptNotification);
-      } else {
-        saveBuilder.add(pair.first);
-        saveBuilder.add(pair.second);
-      }
-
       ofy().save().entities(saveBuilder.build()).now();
+
+      for (NotificationBundle bundle : notificationBundles) {
+        notificationService.send(bundle);
+      }
     });
 
     return comment;
@@ -284,26 +309,25 @@ public class CommentController extends Controller {
   /**
    * Remove.
    *
-   * @param questionId the websafe question id
+   * @param postId the websafe question id
    * @param commentId the websafe comment id
    * @param user the user
    */
-  public void delete(String questionId, String commentId, User user) {
+  public void deleteComment(String postId, String commentId, User user) {
     // Create comment key from websafe id.
     final Key<Comment> commentKey = Key.create(commentId);
-    final Key<Question> questionKey = Key.create(questionId);
-    final Key<QuestionCounterShard> shardKey =
-        questionShardService.getRandomShardKey(questionKey);
+    final Key<Post> questionKey = Key.create(postId);
+    final Key<PostShard> shardKey = postShardService.getRandomShardKey(questionKey);
 
     final List<Key<Vote>> voteKeys = ofy().load().type(Vote.class)
         .filter(Vote.FIELD_VOTABLE_KEY + " =", commentKey)
         .keys()
         .list();
 
-    QuestionCounterShard shard = ofy().load().key(shardKey).now();
+    PostShard shard = ofy().load().key(shardKey).now();
     shard.decreaseComments();
 
-    // Immutable helper list object to save all entities in a single db write.
+    // Immutable helper listFeed object to save all entities in a single db write.
     final ImmutableList<Key<?>> deleteList = ImmutableList.<Key<?>>builder()
         .add(commentKey)
         .addAll(commentShardService.createShardKeys(commentKey))
@@ -325,10 +349,13 @@ public class CommentController extends Controller {
    * @param user the user
    * @return the collection response
    */
-  public CollectionResponse<Comment> list(String questionId, Optional<String> cursor,
-      Optional<Integer> limit, User user) {
+  public CollectionResponse<Comment> listComments(
+      String questionId,
+      Optional<String> cursor,
+      Optional<Integer> limit,
+      User user) {
     final Key<Account> authKey = Key.create(user.getUserId());
-    final Key<Question> questionKey = Key.create(questionId);
+    final Key<Post> questionKey = Key.create(questionId);
 
     Query<Comment> query = ofy().load()
         .group(Comment.ShardGroup.class)

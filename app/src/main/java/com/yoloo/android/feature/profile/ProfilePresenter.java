@@ -17,16 +17,7 @@ public class ProfilePresenter extends MvpPresenter<ProfileView> {
   }
 
   public void loadUserProfile(String userId) {
-    /*Disposable d = Observable.zip(userRepository.get(userId).toObservable(),
-        postRepository.listByUser(userId, null, null, 20), Pair::ofCategory)
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(pair -> {
-          Timber.d("Account: %s", pair.first);
-          getView().onProfileLoaded(pair.first);
-          getView().onPostsLoaded(pair.second);
-        });*/
-
-    Disposable d = userRepository.get(userId)
+    Disposable d = userRepository.getUser(userId)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(account -> getView().onProfileLoaded(account),
             throwable -> getView().onError(throwable));

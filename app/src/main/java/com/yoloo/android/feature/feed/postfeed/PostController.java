@@ -42,9 +42,9 @@ import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.data.sorter.PostSorter;
 import com.yoloo.android.feature.base.LceAnimator;
 import com.yoloo.android.feature.comment.CommentController;
-import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
+import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.feature.feed.common.event.PostDeleteEvent;
 import com.yoloo.android.feature.feed.common.event.UpdateEvent;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
@@ -58,10 +58,10 @@ import com.yoloo.android.feature.photo.PhotoController;
 import com.yoloo.android.feature.postdetail.PostDetailController;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.search.SearchController;
-import com.yoloo.android.feature.ui.recyclerview.EndlessRecyclerViewScrollListener;
-import com.yoloo.android.feature.ui.recyclerview.SlideInItemAnimator;
-import com.yoloo.android.feature.ui.recyclerview.SpaceItemDecoration;
-import com.yoloo.android.feature.ui.widget.SpinnerTitleArrayAdapter;
+import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
+import com.yoloo.android.ui.recyclerview.SlideInItemAnimator;
+import com.yoloo.android.ui.recyclerview.SpaceItemDecoration;
+import com.yoloo.android.ui.widget.SpinnerTitleArrayAdapter;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.ControllerUtil;
@@ -72,7 +72,6 @@ import com.yoloo.android.util.ShareUtil;
 import com.yoloo.android.util.WeakHandler;
 import io.reactivex.disposables.Disposable;
 import java.util.List;
-import timber.log.Timber;
 
 public class PostController extends MvpController<PostView, PostPresenter>
     implements PostView, SwipeRefreshLayout.OnRefreshListener,
@@ -108,7 +107,7 @@ public class PostController extends MvpController<PostView, PostPresenter>
 
   private EndlessRecyclerViewScrollListener endlessRecyclerViewScrollListener;
 
-  private WeakHandler handler = new WeakHandler();
+  private WeakHandler handler;
 
   private int viewType;
 
@@ -173,6 +172,8 @@ public class PostController extends MvpController<PostView, PostPresenter>
 
   @Override protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
+    handler = new WeakHandler();
+
     final Bundle args = getArgs();
 
     categoryName = args.getString(KEY_CATEGORY_NAME);
@@ -303,8 +304,7 @@ public class PostController extends MvpController<PostView, PostPresenter>
             PostDiskDataStore.getInstance()),
         UserRepository.getInstance(
             UserRemoteDataStore.getInstance(),
-            UserDiskDataStore.getInstance()
-        ));
+            UserDiskDataStore.getInstance()));
   }
 
   @Override
@@ -353,8 +353,8 @@ public class PostController extends MvpController<PostView, PostPresenter>
     startTransaction(ProfileController.create(ownerId), new VerticalChangeHandler());
   }
 
-  @Override public void onReadMoreClickListener(View v, String postId) {
-    startTransaction(PostDetailController.create(postId), new VerticalChangeHandler());
+  @Override public void onReadMoreClickListener(View v, PostRealm post) {
+    startTransaction(PostDetailController.create(post.getId()), new VerticalChangeHandler());
   }
 
   @Override public void onShareClick(View v, PostRealm post) {
@@ -406,19 +406,22 @@ public class PostController extends MvpController<PostView, PostPresenter>
   private void setupToolbar() {
     setSupportActionBar(toolbar);
     final ActionBar ab = getSupportActionBar();
-    ab.setDisplayHomeAsUpEnabled(true);
-    ab.setDisplayShowHomeEnabled(true);
 
-    if (viewType == VIEW_TYPE_USER) {
-      toolbar.setVisibility(View.GONE);
-    } else if (viewType == VIEW_TYPE_CATEGORY) {
-      ab.setDisplayShowTitleEnabled(false);
-    } else if (viewType == VIEW_TYPE_TAGS) {
-      ab.setTitle(tagName);
-    } else if (viewType == VIEW_TYPE_BOUNTY) {
-      ab.setTitle(R.string.label_toolbar_bounty_title);
-    } else if (viewType == VIEW_TYPE_BOOKMARKED) {
-      ab.setTitle(R.string.label_toolbar_bookmark_title);
+    if (ab != null) {
+      ab.setDisplayHomeAsUpEnabled(true);
+      ab.setDisplayShowHomeEnabled(true);
+
+      if (viewType == VIEW_TYPE_USER) {
+        toolbar.setVisibility(View.GONE);
+      } else if (viewType == VIEW_TYPE_CATEGORY) {
+        ab.setDisplayShowTitleEnabled(false);
+      } else if (viewType == VIEW_TYPE_TAGS) {
+        ab.setTitle(tagName);
+      } else if (viewType == VIEW_TYPE_BOUNTY) {
+        ab.setTitle(R.string.label_toolbar_bounty_title);
+      } else if (viewType == VIEW_TYPE_BOOKMARKED) {
+        ab.setTitle(R.string.label_toolbar_bookmark_title);
+      }
     }
   }
 
@@ -465,7 +468,6 @@ public class PostController extends MvpController<PostView, PostPresenter>
     } else if (viewType == VIEW_TYPE_TAGS) {
       getPresenter().loadPostsByTag(pullToRefresh, tagName, PostSorter.NEWEST, cursor, eTag, 20);
     } else if (viewType == VIEW_TYPE_CATEGORY) {
-      Timber.d("chooseLoadMethod()");
       getPresenter().loadPostsByCategory(pullToRefresh, categoryName, PostSorter.NEWEST, cursor,
           eTag, 20);
     } else if (viewType == VIEW_TYPE_BOUNTY) {

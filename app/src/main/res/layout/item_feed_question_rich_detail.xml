@@ -37,7 +37,7 @@
     app:layout_constraintTop_toBottomOf="@+id/iv_item_question_rich_cover"
     tools:text="@string/lorem_ipsum" />
 
-  <com.yoloo.android.feature.ui.widget.tagview.TagView
+  <com.yoloo.android.ui.widget.tagview.TagView
     android:id="@+id/view_item_question_rich_category"
     style="@style/Yoloo.TagView"
     android:layout_width="0dp"

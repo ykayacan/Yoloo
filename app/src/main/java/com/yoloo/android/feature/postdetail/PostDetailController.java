@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
@@ -15,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.MultiAutoCompleteTextView;
 import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -38,10 +40,9 @@ import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.feed.common.annotation.PostType;
-import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.feature.comment.OnMarkAsAcceptedClickListener;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
+import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.feature.feed.common.event.PostDeleteEvent;
 import com.yoloo.android.feature.feed.common.event.UpdateEvent;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
@@ -53,11 +54,10 @@ import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.feature.photo.PhotoController;
 import com.yoloo.android.feature.profile.ProfileController;
-import com.yoloo.android.feature.ui.recyclerview.EndlessRecyclerViewScrollListener;
-import com.yoloo.android.feature.ui.recyclerview.SlideInItemAnimator;
-import com.yoloo.android.feature.ui.widget.AutoCompleteMentionAdapter;
-import com.yoloo.android.feature.ui.widget.DelayedMultiAutoCompleteTextView;
-import com.yoloo.android.feature.ui.widget.SpaceTokenizer;
+import com.yoloo.android.framework.MvpController;
+import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
+import com.yoloo.android.ui.tokenizer.SpaceTokenizer;
+import com.yoloo.android.ui.widget.AutoCompleteMentionAdapter;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.ControllerUtil;
 import com.yoloo.android.util.KeyboardUtil;
@@ -65,9 +65,11 @@ import com.yoloo.android.util.MenuHelper;
 import com.yoloo.android.util.RxBus;
 import com.yoloo.android.util.ShareUtil;
 import com.yoloo.android.util.WeakHandler;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import timber.log.Timber;
 
 public class PostDetailController extends MvpController<PostDetailView, PostDetailPresenter>
@@ -75,15 +77,14 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     EndlessRecyclerViewScrollListener.OnLoadMoreListener, OnProfileClickListener,
     OnPostOptionsClickListener, OnShareClickListener, OnCommentClickListener,
     FeedAdapter.OnCategoryClickListener, OnVoteClickListener, OnContentImageClickListener,
-    OnMentionClickListener, AutoCompleteMentionAdapter.OnMentionFilterListener,
-    OnMarkAsAcceptedClickListener {
+    OnMentionClickListener, OnMarkAsAcceptedClickListener {
 
   private static final String KEY_POST_ID = "POST_ID";
 
   @BindView(R.id.toolbar_post_detail) Toolbar toolbar;
   @BindView(R.id.rv_post_detail) RecyclerView rvFeed;
   @BindView(R.id.swipe_post_detail) SwipeRefreshLayout swipeRefreshLayout;
-  @BindView(R.id.tv_post_detail_write_comment) DelayedMultiAutoCompleteTextView tvWriteComment;
+  @BindView(R.id.tv_input_comment) MultiAutoCompleteTextView tvWriteComment;
 
   @BindColor(R.color.primary) int primaryColor;
 
@@ -143,6 +144,11 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     }
 
     rvFeed.addOnScrollListener(endlessRecyclerViewScrollListener);
+
+    mentionAdapter.getQuery()
+        .debounce(400, TimeUnit.MILLISECONDS)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(s -> getPresenter().suggestUser(s));
   }
 
   @Override protected void onDetach(@NonNull View view) {
@@ -210,7 +216,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   }
 
   @Override public void onMentionSuggestionsLoaded(List<AccountRealm> suggestions) {
-    mentionAdapter.setItems(suggestions);
+    mentionAdapter.replaceItems(suggestions);
     handler.post(mentionDropdownRunnable);
   }
 
@@ -303,16 +309,12 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     Snackbar.make(getView(), value, Snackbar.LENGTH_SHORT).show();
   }
 
-  @Override public void onMentionFilter(String query) {
-    getPresenter().suggestUser(query);
-  }
-
   @Override public void onMarkAsAccepted(View v, CommentRealm comment) {
     Snackbar.make(getView(), R.string.label_comment_accepted_confirm, Snackbar.LENGTH_SHORT).show();
     getPresenter().acceptComment(comment);
   }
 
-  @OnClick(R.id.btn_post_detail_send_comment) void sendComment() {
+  @OnClick(R.id.btn_send_comment) void sendComment() {
     final String content = tvWriteComment.getText().toString().trim();
 
     if (TextUtils.isEmpty(content)) {
@@ -346,7 +348,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
     rvFeed.setLayoutManager(layoutManager);
 
-    final SlideInItemAnimator animator = new SlideInItemAnimator();
+    final DefaultItemAnimator animator = new DefaultItemAnimator();
     animator.setSupportsChangeAnimations(false);
     rvFeed.setItemAnimator(animator);
 
@@ -373,7 +375,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   }
 
   private void setupMentionsAdapter() {
-    mentionAdapter = new AutoCompleteMentionAdapter(getActivity(), this);
+    mentionAdapter = new AutoCompleteMentionAdapter(getActivity());
     tvWriteComment.setAdapter(mentionAdapter);
     tvWriteComment.setTokenizer(new SpaceTokenizer());
   }

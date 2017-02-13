@@ -1,7 +1,7 @@
 package com.yoloo.backend.notification;
 
-import com.google.appengine.repackaged.org.codehaus.jackson.map.ObjectMapper;
-import com.google.appengine.repackaged.org.codehaus.jackson.map.annotate.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +14,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 @Value
 @Builder
-@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public final class PushMessage {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -27,7 +27,7 @@ public final class PushMessage {
   private String to;
 
   /**
-   * This parameter specifies a list of devices (registration tokens, or IDs) receiving a multicast
+   * This parameter specifies a listFeed of devices (registration tokens, or IDs) receiving a multicast
    * message. It must contain at least 1 and at most 1000 registration tokens. Use this parameter
    * only for multicast messaging, not for single recipients. Multicast messages (sending to more
    * than 1 registration tokens) are allowed using HTTP JSON format only.
@@ -48,7 +48,7 @@ public final class PushMessage {
    * This parameter identifies a group of messages (e.g., with collapse_key: "Updates Available")
    * that can be collapsed, so that only the last message gets sent when delivery can be resumed.
    * This is intended to avoid sending too many of the same messages when the device comes back
-   * online or becomes active. Note that there is no guarantee of the order in which messages get
+   * online or becomes active. Note that there is no guarantee of the order in which messages getPost
    * sent.
    *
    * Note: A maximum of 4 different collapse keys is allowed at any given time. This means a FCM
@@ -99,7 +99,7 @@ public final class PushMessage {
 
   private DataBody data;
 
-  public byte[] getJsonAsBytes() throws IOException {
+  byte[] getJsonAsBytes() throws IOException {
     return MAPPER.writeValueAsBytes(this);
   }
 
@@ -127,7 +127,7 @@ public final class PushMessage {
 
     @JsonAnyGetter
     public Map<String, String> getValues() {
-      return this.values;
+      return values;
     }
   }
 }

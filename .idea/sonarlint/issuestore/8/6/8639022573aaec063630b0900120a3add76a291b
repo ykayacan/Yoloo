@@ -1,0 +1,27 @@
+
+7squid:S1214""Move constants to a class or enum.(¸¾®ê
+g
+squid:S134"NRefactor this code to not nest more than 3 if/for/while/switch/try statements.(Ø½´¾üÿÿÿÿ
+g
+squid:S134"NRefactor this code to not nest more than 3 if/for/while/switch/try statements.(ëı§ÿÿÿÿÿ
+g
+squid:S134"NRefactor this code to not nest more than 3 if/for/while/switch/try statements.(”ª‘¾şÿÿÿÿ
+N"squid:SwitchLastCaseIsDefaultCheck""Add a default case to this switch.(ÜŸ•
+e
+squid:S128"LEnd this switch case with an unconditional break, return or throw statement.(êØÊ˜ÿÿÿÿÿ
+Jsquid:S2696"6Make the enclosing method "static" or remove this set.(ÔüÊ
+bsquid:HiddenFieldCheck"BRename "mentionPattern" which hides the field declared at line 26.(ÄÑ…Ã
+g
+squid:S134"NRefactor this code to not nest more than 3 if/for/while/switch/try statements.(°œŸıÿÿÿÿ
+lsquid:S3776"RRefactor this method to reduce its Cognitive Complexity from 18 to the 15 allowed.(¬ï©„şÿÿÿÿ
+bsquid:HiddenFieldCheck"BRename "hashtagPattern" which hides the field declared at line 27.(ş”Û‰
+gsquid:S3776"RRefactor this method to reduce its Cognitive Complexity from 23 to the 15 allowed.(±¿Õ¨
+Ksquid:S2696"6Make the enclosing method "static" or remove this set.(ĞÌ„Á
+gsquid:S3776"RRefactor this method to reduce its Cognitive Complexity from 65 to the 15 allowed.(üÀõŸ
+Ysquid:S1188"DReduce this lambda expression number of lines from 36 to at most 20.(ÜÑ‘‡
+Psquid:S2696"6Make the enclosing method "static" or remove this set.(¶õ‚ıÿÿÿÿ
+g
+squid:S134"NRefactor this code to not nest more than 3 if/for/while/switch/try statements.(ÓÄĞÏùÿÿÿÿ
+Psquid:S2696"6Make the enclosing method "static" or remove this set.(…öâàûÿÿÿÿ
+g
+squid:S134"NRefactor this code to not nest more than 3 if/for/while/switch/try statements.(àïÙ†ıÿÿÿÿ

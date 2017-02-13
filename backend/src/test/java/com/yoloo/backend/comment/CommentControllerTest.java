@@ -8,31 +8,32 @@ import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.NotFoundException;
 import com.googlecode.objectify.Ref;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.account.AccountCounterShard;
-import com.yoloo.backend.account.AccountModel;
+import com.yoloo.backend.account.AccountEntity;
+import com.yoloo.backend.account.AccountShard;
 import com.yoloo.backend.account.AccountShardService;
+import com.yoloo.backend.category.Category;
+import com.yoloo.backend.category.CategoryController;
+import com.yoloo.backend.category.CategoryControllerFactory;
 import com.yoloo.backend.device.DeviceRecord;
-import com.yoloo.backend.gamification.GamificationService;
-import com.yoloo.backend.gamification.Tracker;
-import com.yoloo.backend.question.Question;
-import com.yoloo.backend.question.QuestionController;
-import com.yoloo.backend.question.QuestionControllerFactory;
-import com.yoloo.backend.question.QuestionUtil;
-import com.yoloo.backend.shard.ShardUtil;
+import com.yoloo.backend.game.GamificationService;
+import com.yoloo.backend.game.Tracker;
+import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostController;
+import com.yoloo.backend.post.PostControllerFactory;
+import com.yoloo.backend.post.PostShardService;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagController;
 import com.yoloo.backend.tag.TagControllerFactory;
-import com.yoloo.backend.topic.Topic;
-import com.yoloo.backend.topic.TopicController;
-import com.yoloo.backend.topic.TopicControllerFactory;
 import com.yoloo.backend.util.TestBase;
 import com.yoloo.backend.vote.Vote;
 import com.yoloo.backend.vote.VoteController;
 import com.yoloo.backend.vote.VoteControllerFactory;
+import io.reactivex.Observable;
 import java.util.List;
 import java.util.UUID;
 import org.joda.time.DateTime;
@@ -49,13 +50,15 @@ public class CommentControllerTest extends TestBase {
   private static final String USER_AUTH_DOMAIN = "gmail.com";
 
   private Account owner;
-  private Question question;
+  private Post post;
 
-  private QuestionController questionController;
+  private PostController postController;
   private CommentController commentController;
   private TagController tagController;
-  private TopicController topicController;
+  private CategoryController categoryController;
   private VoteController voteController;
+
+  private PostShardService postShardService;
 
   @Override
   public void setUpGAE() {
@@ -71,21 +74,23 @@ public class CommentControllerTest extends TestBase {
   public void setUp() {
     super.setUp();
 
-    questionController = QuestionControllerFactory.of().create();
+    postController = PostControllerFactory.of().create();
     commentController = CommentControllerFactory.of().create();
     tagController = TagControllerFactory.of().create();
-    topicController = TopicControllerFactory.of().create();
+    categoryController = CategoryControllerFactory.of().create();
     voteController = VoteControllerFactory.of().create();
 
-    AccountModel model = createAccount();
+    postShardService = PostShardService.create();
+
+    AccountEntity model = createAccount();
 
     owner = model.getAccount();
     DeviceRecord record = createRecord(owner);
-    Tracker tracker = GamificationService.create().create(owner.getKey());
+    Tracker tracker = GamificationService.create().createTracker(owner.getKey());
 
     ImmutableSet<Object> saveList = ImmutableSet.builder()
         .add(owner)
-        .addAll(model.getShards())
+        .addAll(model.getShards().values())
         .add(record)
         .add(tracker)
         .build();
@@ -95,16 +100,17 @@ public class CommentControllerTest extends TestBase {
     User user = new User(USER_EMAIL, USER_AUTH_DOMAIN, owner.getWebsafeId());
 
     try {
-      topicController.add("europe", Topic.Type.CONTINENT, user);
+      categoryController.insertCategory("europe", Category.Type.CONTINENT);
     } catch (ConflictException e) {
       e.printStackTrace();
     }
 
-    Tag passport = tagController.addGroup("passport", user);
-    tagController.addTag("visa", "en", passport.getWebsafeId(), user);
+    Tag passport = tagController.insertGroup("passport");
+    tagController.insertTag("visa", "en", passport.getWebsafeId());
 
-    question = questionController.add("Test content", "visa,passport", "europe", Optional.absent(),
-        Optional.absent(), user);
+    post =
+        postController.insertQuestion("Test content", "visa,passport", "europe", Optional.absent(),
+            Optional.absent(), user);
   }
 
   @Test
@@ -113,8 +119,7 @@ public class CommentControllerTest extends TestBase {
 
     String content = "Test comment";
 
-    Comment comment =
-        commentController.add(question.getWebsafeId(), content, user);
+    Comment comment = commentController.insertComment(this.post.getWebsafeId(), content, user);
 
     assertEquals(content, comment.getContent());
     assertEquals(Key.create(user.getUserId()), comment.getParentUserKey());
@@ -124,12 +129,13 @@ public class CommentControllerTest extends TestBase {
     assertEquals(0, comment.getVotes());
     assertEquals(false, comment.isAccepted());
 
-    Question question = ofy().load().group(Question.ShardGroup.class)
-        .key(comment.getQuestionKey()).now();
-    question = QuestionUtil.mergeCounts(question).blockingSingle();
+    Post post = Observable.just(
+        ofy().load().group(Post.ShardGroup.class).key(comment.getQuestionKey()).now())
+        .flatMap(postShardService::mergeShards)
+        .blockingSingle();
 
-    assertEquals(1, question.getComments());
-    assertEquals(true, question.isCommented());
+    assertEquals(1, post.getCommentCount());
+    assertEquals(true, post.isCommented());
 
     Tracker tracker = ofy().load().key(Tracker.createKey(Key.create(user.getUserId()))).now();
 
@@ -146,12 +152,12 @@ public class CommentControllerTest extends TestBase {
     final Key<Tracker> trackerKey = Tracker.createKey(Key.create(user.getUserId()));
 
     Comment comment =
-        commentController.add(question.getWebsafeId(), "Test comment", user);
+        commentController.insertComment(post.getWebsafeId(), "Test comment", user);
 
     Tracker tracker = ofy().load().key(trackerKey).now();
-    Question question = ofy().load().key(comment.getQuestionKey()).now();
+    Post post = ofy().load().key(comment.getQuestionKey()).now();
 
-    assertEquals(true, question.isCommented());
+    assertEquals(true, post.isCommented());
     assertEquals(true, tracker.isFirstComment());
     //assertEquals(240, tracker.getPoints());
     //assertEquals(3, tracker.getBounties());
@@ -164,14 +170,14 @@ public class CommentControllerTest extends TestBase {
     String originalContent = "Test comment";
 
     Comment original =
-        commentController.add(question.getWebsafeId(), originalContent, user);
+        commentController.insertComment(post.getWebsafeId(), originalContent, user);
 
     assertEquals(originalContent, original.getContent());
     assertEquals(false, original.isAccepted());
 
     String changedContent = "Hello Yoloo";
 
-    Comment changed = commentController.update(question.getWebsafeId(), original.getWebsafeId(),
+    Comment changed = commentController.updateComment(post.getWebsafeId(), original.getWebsafeId(),
         Optional.of(changedContent), Optional.absent(), user);
 
     assertEquals(changedContent, changed.getContent());
@@ -185,16 +191,16 @@ public class CommentControllerTest extends TestBase {
     String originalContent = "Test comment";
 
     Comment original =
-        commentController.add(question.getWebsafeId(), originalContent, user);
+        commentController.insertComment(post.getWebsafeId(), originalContent, user);
 
-    Comment changed = commentController.update(question.getWebsafeId(), original.getWebsafeId(),
+    Comment changed = commentController.updateComment(post.getWebsafeId(), original.getWebsafeId(),
         Optional.absent(), Optional.of(true), user);
 
     assertEquals(originalContent, changed.getContent());
     assertEquals(true, changed.isAccepted());
 
-    Question question = ofy().load().key(changed.getQuestionKey()).now();
-    assertEquals(changed.getKey(), question.getAcceptedCommentKey());
+    Post post = ofy().load().key(changed.getQuestionKey()).now();
+    assertEquals(changed.getKey(), post.getAcceptedCommentKey());
   }
 
   @Test(expected = NotFoundException.class)
@@ -204,9 +210,9 @@ public class CommentControllerTest extends TestBase {
     String content = "Test comment";
 
     Comment comment =
-        commentController.add(question.getWebsafeId(), content, user);
+        commentController.insertComment(post.getWebsafeId(), content, user);
 
-    commentController.delete(question.getWebsafeId(), comment.getWebsafeId(), user);
+    commentController.deleteComment(post.getWebsafeId(), comment.getWebsafeId(), user);
 
     ofy().load().key(comment.getKey()).safe();
   }
@@ -218,11 +224,11 @@ public class CommentControllerTest extends TestBase {
     String content = "Test comment";
 
     Comment comment =
-        commentController.add(question.getWebsafeId(), content, user);
+        commentController.insertComment(post.getWebsafeId(), content, user);
 
-    voteController.vote(comment.getWebsafeId(), Vote.Direction.UP, user);
+    voteController.voteComment(comment.getWebsafeId(), Vote.Direction.UP, user);
 
-    commentController.delete(question.getWebsafeId(), comment.getWebsafeId(), user);
+    commentController.deleteComment(post.getWebsafeId(), comment.getWebsafeId(), user);
 
     assertEquals(null, ofy().load().key(comment.getKey()).now());
     assertEquals(true, ofy().load().refs(comment.getShardRefs()).isEmpty());
@@ -241,21 +247,22 @@ public class CommentControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     Comment comment1 =
-        commentController.add(question.getWebsafeId(), "Test comment1", user);
+        commentController.insertComment(post.getWebsafeId(), "Test comment1", user);
     Comment comment2 =
-        commentController.add(question.getWebsafeId(), "Test comment2", user);
+        commentController.insertComment(post.getWebsafeId(), "Test comment2", user);
     Comment comment3 =
-        commentController.add(question.getWebsafeId(), "Test comment3", user);
+        commentController.insertComment(post.getWebsafeId(), "Test comment3", user);
     Comment comment4 =
-        commentController.add(question.getWebsafeId(), "Test comment4", user);
+        commentController.insertComment(post.getWebsafeId(), "Test comment4", user);
 
-    voteController.vote(comment1.getWebsafeId(), Vote.Direction.UP, user);
-    voteController.vote(comment2.getWebsafeId(), Vote.Direction.UP, user);
-    voteController.vote(comment3.getWebsafeId(), Vote.Direction.UP, user);
-    voteController.vote(comment4.getWebsafeId(), Vote.Direction.UP, user);
+    voteController.voteComment(comment1.getWebsafeId(), Vote.Direction.UP, user);
+    voteController.voteComment(comment2.getWebsafeId(), Vote.Direction.UP, user);
+    voteController.voteComment(comment3.getWebsafeId(), Vote.Direction.UP, user);
+    voteController.voteComment(comment4.getWebsafeId(), Vote.Direction.UP, user);
 
     CollectionResponse<Comment> response =
-        commentController.list(question.getWebsafeId(), Optional.absent(), Optional.absent(), user);
+        commentController.listComments(post.getWebsafeId(), Optional.absent(), Optional.absent(),
+            user);
 
     assertEquals(4, response.getItems().size());
 
@@ -266,28 +273,30 @@ public class CommentControllerTest extends TestBase {
     }
   }
 
-  private AccountModel createAccount() {
+  private AccountEntity createAccount() {
     final Key<Account> ownerKey = fact().allocateId(Account.class);
 
     AccountShardService ass = AccountShardService.create();
 
-    List<AccountCounterShard> shards = ass.createShards(ownerKey);
+    return Observable.range(1, AccountShard.SHARD_COUNT)
+        .map(shardNum -> ass.createShard(ownerKey, shardNum))
+        .toMap(Ref::create)
+        .map(shardMap -> {
+          Account account = Account.builder()
+              .id(ownerKey.getId())
+              .avatarUrl(new Link("Test avatar"))
+              .email(new Email(USER_EMAIL))
+              .username("Test user")
+              .shardRefs(Lists.newArrayList(shardMap.keySet()))
+              .created(DateTime.now())
+              .build();
 
-    List<Ref<AccountCounterShard>> refs = ShardUtil.createRefs(shards).toList().blockingGet();
-
-    Account account = Account.builder()
-        .id(ownerKey.getId())
-        .avatarUrl(new Link("Test avatar"))
-        .email(new Email(USER_EMAIL))
-        .username("Test user")
-        .shardRefs(refs)
-        .created(DateTime.now())
-        .build();
-
-    return AccountModel.builder()
-        .account(account)
-        .shards(shards)
-        .build();
+          return AccountEntity.builder()
+              .account(account)
+              .shards(shardMap)
+              .build();
+        })
+        .blockingGet();
   }
 
   private DeviceRecord createRecord(Account owner) {

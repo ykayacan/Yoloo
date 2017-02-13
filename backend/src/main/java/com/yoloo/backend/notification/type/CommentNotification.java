@@ -4,11 +4,11 @@ import com.yoloo.backend.account.Account;
 import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentUtil;
 import com.yoloo.backend.device.DeviceRecord;
-import com.yoloo.backend.notification.MessageConstants;
+import com.yoloo.backend.notification.Action;
+import com.yoloo.backend.notification.PushConstants;
 import com.yoloo.backend.notification.Notification;
 import com.yoloo.backend.notification.PushMessage;
-import com.yoloo.backend.notification.action.Action;
-import com.yoloo.backend.question.Question;
+import com.yoloo.backend.post.Post;
 import java.util.Collections;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -23,19 +23,18 @@ public class CommentNotification implements NotificationBundle {
 
   private Comment comment;
 
-  private Question question;
+  private Post post;
 
   @Override
   public List<Notification> getNotifications() {
     Notification notification = Notification.builder()
         .senderKey(sender.getKey())
         .receiverKey(record.getParentUserKey())
-        .senderId(sender.getWebsafeId())
         .senderUsername(sender.getUsername())
         .senderAvatarUrl(sender.getAvatarUrl())
         .action(Action.COMMENT)
-        .object("comment", CommentUtil.trimmedContent(comment, 50))
-        .object("questionId", comment.getQuestionKey().toWebSafeString())
+        .payload("comment", CommentUtil.trimmedContent(comment, 50))
+        .payload("questionId", comment.getQuestionKey().toWebSafeString())
         .created(DateTime.now())
         .build();
 
@@ -45,11 +44,11 @@ public class CommentNotification implements NotificationBundle {
   @Override
   public PushMessage getPushMessage() {
     PushMessage.DataBody dataBody = PushMessage.DataBody.builder()
-        .value(MessageConstants.ACTION, Action.COMMENT.getValueString())
-        .value(MessageConstants.QUESTION_ID, comment.getQuestionKey().toWebSafeString())
-        .value(MessageConstants.SENDER_USERNAME, sender.getUsername())
-        .value(MessageConstants.SENDER_AVATAR_URL, sender.getAvatarUrl().getValue())
-        .value(MessageConstants.ACCEPTED_ID, question.getAcceptedCommentId())
+        .value(PushConstants.ACTION, Action.COMMENT.getValueString())
+        .value(PushConstants.QUESTION_ID, comment.getQuestionKey().toWebSafeString())
+        .value(PushConstants.SENDER_USERNAME, sender.getUsername())
+        .value(PushConstants.SENDER_AVATAR_URL, sender.getAvatarUrl().getValue())
+        .value(PushConstants.ACCEPTED_ID, post.getAcceptedCommentId())
         .build();
 
     return PushMessage.builder()

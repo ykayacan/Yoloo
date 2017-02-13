@@ -11,7 +11,7 @@
     android:layout_marginBottom="16dp"
     android:layout_marginLeft="32dp"
     android:layout_marginStart="32dp"
-    android:foreground="@drawable/shape_circle"
+    android:foreground="@drawable/shape_avatar_stroke"
     android:scaleType="centerCrop"
     app:layout_constraintBottom_toTopOf="@+id/tv_profile_realname"
     app:layout_constraintLeft_toLeftOf="parent"

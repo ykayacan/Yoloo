@@ -21,41 +21,54 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.View;
-import android.view.View.OnClickListener;
 import com.bluelinelabs.conductor.Controller;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Scope;
+import com.google.android.gms.common.api.Status;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.yoloo.android.R;
+import com.yoloo.android.feature.login.AuthUI.IdpConfig;
 
-public class GoogleProvider
-    implements IdpProvider, OnClickListener, GoogleApiClient.OnConnectionFailedListener {
+public class GoogleProvider implements IdpProvider, GoogleApiClient.OnConnectionFailedListener {
   private static final String TAG = "GoogleProvider";
   private static final int RC_SIGN_IN = 20;
   private static final String ERROR_KEY = "error";
 
   private GoogleApiClient googleApiClient;
   private Controller controller;
+  private IdpConfig idpConfig;
   private IdpCallback idpCallback;
 
-  public GoogleProvider(Controller controller, AuthUI.IdpConfig idpConfig) {
+  public GoogleProvider(Controller controller, IdpConfig idpConfig) {
     this(controller, idpConfig, null);
   }
 
-  public GoogleProvider(Controller controller, AuthUI.IdpConfig idpConfig, @Nullable String email) {
+  public GoogleProvider(Controller controller, IdpConfig idpConfig, @Nullable String email) {
     this.controller = controller;
-    String clientId = controller.getActivity().getString(R.string.default_web_client_id);
+    this.idpConfig = idpConfig;
+
+    googleApiClient = new GoogleApiClient.Builder(controller.getActivity())
+        .addApi(Auth.GOOGLE_SIGN_IN_API, getSignInOptions(email))
+        .build();
+  }
+
+  @Nullable public static AuthCredential createAuthCredential(IdpResponse response) {
+    return GoogleAuthProvider.getCredential(response.getIdpToken(), null);
+  }
+
+  private GoogleSignInOptions getSignInOptions(@Nullable String email) {
+    final String clientId = controller.getActivity().getString(R.string.default_web_client_id);
 
     GoogleSignInOptions.Builder builder =
-        new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail()
-            .requestProfile()
+        new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
             .requestIdToken(clientId);
 
     // Add additional scopes
@@ -67,13 +80,7 @@ public class GoogleProvider
       builder.setAccountName(email);
     }
 
-    googleApiClient =
-        new GoogleApiClient.Builder(controller.getActivity()).addApi(Auth.GOOGLE_SIGN_IN_API,
-            builder.build()).build();
-  }
-
-  @Nullable public static AuthCredential createAuthCredential(IdpResponse response) {
-    return GoogleAuthProvider.getCredential(response.getIdpToken(), null);
+    return builder.build();
   }
 
   public String getName(Context context) {
@@ -127,8 +134,18 @@ public class GoogleProvider
   }
 
   private void onError(GoogleSignInResult result) {
-    String errorMessage = result.getStatus().getStatusMessage();
-    onError(result.getStatus().getStatusCode() + " " + errorMessage);
+    Status status = result.getStatus();
+
+    if (status.getStatusCode() == CommonStatusCodes.INVALID_ACCOUNT) {
+      googleApiClient.disconnect();
+      googleApiClient.connect();
+      googleApiClient = new GoogleApiClient.Builder(controller.getActivity())
+          .addApi(Auth.GOOGLE_SIGN_IN_API, getSignInOptions(null))
+          .build();
+      startLogin(controller);
+    } else {
+      onError(status.getStatusCode() + " " + status.getStatusMessage());
+    }
   }
 
   private void onError(String errorMessage) {
@@ -136,11 +153,6 @@ public class GoogleProvider
     Bundle extra = new Bundle();
     extra.putString(ERROR_KEY, errorMessage);
     idpCallback.onFailure(extra);
-  }
-
-  @Override public void onClick(View view) {
-    Auth.GoogleSignInApi.signOut(googleApiClient);
-    startLogin(controller);
   }
 
   @Override public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {

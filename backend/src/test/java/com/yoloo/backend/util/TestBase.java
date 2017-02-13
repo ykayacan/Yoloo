@@ -3,33 +3,28 @@ package com.yoloo.backend.util;
 import com.googlecode.objectify.impl.translate.opt.joda.JodaTimeTranslators;
 import com.googlecode.objectify.util.Closeable;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.account.AccountCounterShard;
-import com.yoloo.backend.blog.Blog;
-import com.yoloo.backend.blog.BlogCounterShard;
+import com.yoloo.backend.account.AccountShard;
 import com.yoloo.backend.bookmark.Bookmark;
+import com.yoloo.backend.category.Category;
+import com.yoloo.backend.category.CategoryShard;
 import com.yoloo.backend.comment.Comment;
-import com.yoloo.backend.comment.CommentCounterShard;
+import com.yoloo.backend.comment.CommentShard;
 import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.feed.Feed;
 import com.yoloo.backend.follow.Follow;
-import com.yoloo.backend.gamification.Tracker;
+import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.media.Media;
 import com.yoloo.backend.notification.Notification;
-import com.yoloo.backend.question.Question;
-import com.yoloo.backend.question.QuestionCounterShard;
+import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostShard;
 import com.yoloo.backend.tag.Tag;
-import com.yoloo.backend.tag.TagCounterShard;
-import com.yoloo.backend.topic.Topic;
-import com.yoloo.backend.topic.TopicCounterShard;
+import com.yoloo.backend.tag.TagShard;
 import com.yoloo.backend.vote.Vote;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import static com.yoloo.backend.util.TestObjectifyService.fact;
 
-@RunWith(JUnit4.class)
 public class TestBase extends GAETestBase {
 
   private Closeable rootService;
@@ -40,22 +35,19 @@ public class TestBase extends GAETestBase {
     JodaTimeTranslators.add(fact());
 
     fact().register(Account.class);
-    fact().register(AccountCounterShard.class);
+    fact().register(AccountShard.class);
 
-    fact().register(Question.class);
-    fact().register(QuestionCounterShard.class);
-
-    fact().register(Blog.class);
-    fact().register(BlogCounterShard.class);
+    fact().register(Post.class);
+    fact().register(PostShard.class);
 
     fact().register(Tag.class);
-    fact().register(TagCounterShard.class);
+    fact().register(TagShard.class);
 
-    fact().register(Topic.class);
-    fact().register(TopicCounterShard.class);
+    fact().register(Category.class);
+    fact().register(CategoryShard.class);
 
     fact().register(Comment.class);
-    fact().register(CommentCounterShard.class);
+    fact().register(CommentShard.class);
 
     fact().register(Follow.class);
     fact().register(Vote.class);

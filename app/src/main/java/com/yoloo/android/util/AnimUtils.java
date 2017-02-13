@@ -88,14 +88,14 @@ public final class AnimUtils {
     return decelerate;
   }
 
-  public static Interpolator getOvershoot() {
+  public static Interpolator getOvershootInterpolator() {
     if (overshoot == null) {
       overshoot = new OvershootInterpolator();
     }
     return overshoot;
   }
 
-  public static Interpolator getAnticipate() {
+  public static Interpolator getAnticipateInterpolator() {
     if (anticipate == null) {
       anticipate = new AnticipateInterpolator();
     }

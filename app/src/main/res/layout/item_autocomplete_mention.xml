@@ -22,7 +22,7 @@
     android:scaleType="centerCrop"
     tools:src="@drawable/login_bg" />
 
-  <com.yoloo.android.feature.ui.widget.BaselineGridTextView
+  <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/text_username"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"

@@ -33,7 +33,7 @@
     app:layout_constraintTop_toTopOf="parent"
     tools:visibility="visible" />
 
-  <com.yoloo.android.feature.ui.widget.CompatTextView
+  <com.yoloo.android.ui.widget.CompatTextView
     android:id="@+id/tv_category_text"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"

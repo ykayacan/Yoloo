@@ -15,6 +15,7 @@ import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import java.util.List;
+import timber.log.Timber;
 
 public class PostDetailPresenter extends MvpPresenter<PostDetailView> {
 
@@ -39,14 +40,15 @@ public class PostDetailPresenter extends MvpPresenter<PostDetailView> {
   public void loadData(String postId) {
     Disposable d = Observable
         .zip(
-            postRepository.get(postId)
-                .flatMap(post -> Observable.zip(Observable.just(post),
+            postRepository.getPost(postId)
+                .flatMap(post -> Observable.zip(
+                    Observable.just(post),
                     getAcceptedCommentObservable(post),
                     Pair::create)),
-            commentRepository.list(postId, null, null, 20),
+            commentRepository.listComments(postId, null, null, 20),
             userRepository.getLocalMe(),
             Group.Of3::create)
-        .observeOn(AndroidSchedulers.mainThread(), true)
+        .observeOn(AndroidSchedulers.mainThread())
         .subscribe(group -> {
           AccountRealm account = group.third;
           PostRealm post = group.first.first;
@@ -59,10 +61,14 @@ public class PostDetailPresenter extends MvpPresenter<PostDetailView> {
           getView().onPostLoaded(group.first.first);
 
           if (accepted) {
-            getView().onAcceptedCommentLoaded(group.first.second, postOwner, postType);
+            if (group.first.second.getId() != null) {
+              getView().onAcceptedCommentLoaded(group.first.second, postOwner, postType);
+            }
           }
 
           getView().onCommentsLoaded(group.second, currentUserId, postOwner, accepted, postType);
+
+          Timber.d("Hereeee");
         }, this::showError);
 
     getDisposable().add(d);
@@ -70,7 +76,7 @@ public class PostDetailPresenter extends MvpPresenter<PostDetailView> {
 
   public void loadComments(boolean pullToRefresh, String postId, String cursor, String eTag,
       int limit) {
-    Disposable d = commentRepository.list(postId, cursor, eTag, limit)
+    Disposable d = commentRepository.listComments(postId, cursor, eTag, limit)
         .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .observeOn(AndroidSchedulers.mainThread(), true)
         .subscribe(this::showComments, this::showError);
@@ -80,7 +86,7 @@ public class PostDetailPresenter extends MvpPresenter<PostDetailView> {
 
   public void deletePost(String postId) {
     Disposable d = postRepository
-        .delete(postId)
+        .deletePost(postId)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe();
 
@@ -88,7 +94,7 @@ public class PostDetailPresenter extends MvpPresenter<PostDetailView> {
   }
 
   void acceptComment(CommentRealm comment) {
-    Disposable d = commentRepository.accept(comment)
+    Disposable d = commentRepository.acceptComment(comment)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(c -> getView().onNewAccept(c.getId()), this::showError);
 
@@ -96,7 +102,7 @@ public class PostDetailPresenter extends MvpPresenter<PostDetailView> {
   }
 
   public void sendComment(CommentRealm comment) {
-    Disposable d = commentRepository.add(comment)
+    Disposable d = commentRepository.addComment(comment)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showNewComment, this::showError);
 
@@ -106,7 +112,7 @@ public class PostDetailPresenter extends MvpPresenter<PostDetailView> {
   public void votePost(String postId, int direction) {
     Disposable d = postRepository.votePost(postId, direction)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(() -> postRepository.get(postId)
+        .subscribe(() -> postRepository.getPost(postId)
             .observeOn(AndroidSchedulers.mainThread(), true)
             .subscribe(post -> getView().onPostUpdated(post)), this::showError);
 
@@ -114,7 +120,7 @@ public class PostDetailPresenter extends MvpPresenter<PostDetailView> {
   }
 
   public void voteComment(String commentId, int direction) {
-    Disposable d = commentRepository.vote(commentId, direction)
+    Disposable d = commentRepository.voteComment(commentId, direction)
         .observeOn(AndroidSchedulers.mainThread())
         .doOnError(this::showError)
         .subscribe();
@@ -123,7 +129,7 @@ public class PostDetailPresenter extends MvpPresenter<PostDetailView> {
   }
 
   public void suggestUser(String query) {
-    Disposable d = userRepository.search(query, null, 5)
+    Disposable d = userRepository.searchUser(query, null, 5)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showSuggestions, this::showError);
 
@@ -149,7 +155,7 @@ public class PostDetailPresenter extends MvpPresenter<PostDetailView> {
   private Observable<CommentRealm> getAcceptedCommentObservable(PostRealm post) {
     return post.getAcceptedCommentId() == null
         ? Observable.just(new CommentRealm())
-        : commentRepository.get(post.getAcceptedCommentId());
+        : commentRepository.getComment(post.getAcceptedCommentId());
   }
 
   @PostType private int getPostType(PostRealm post) {

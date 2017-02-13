@@ -18,9 +18,9 @@ import com.yoloo.android.R;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.feature.feed.userfeed.UserFeedController;
 import com.yoloo.android.feature.login.AuthUI;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.FormUtil;
 import com.yoloo.android.util.KeyboardUtil;
@@ -73,8 +73,10 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
   }
 
   @NonNull @Override public SignUpPresenter createPresenter() {
-    return new SignUpPresenter(UserRepository.getInstance(UserRemoteDataStore.getInstance(),
-        UserDiskDataStore.getInstance()));
+    return new SignUpPresenter(
+        UserRepository.getInstance(
+            UserRemoteDataStore.getInstance(),
+            UserDiskDataStore.getInstance()));
   }
 
   @OnClick(R.id.btn_login_ready) void signUp() {

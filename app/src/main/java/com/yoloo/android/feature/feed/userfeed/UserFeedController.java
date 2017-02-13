@@ -16,7 +16,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
@@ -50,10 +49,6 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.RemoteMessage;
 import com.yoloo.android.R;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.faker.CategoryFaker;
-import com.yoloo.android.data.faker.CommentFaker;
-import com.yoloo.android.data.faker.NotificationFaker;
-import com.yoloo.android.data.faker.PostFaker;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.CategoryRealm;
 import com.yoloo.android.data.model.PostRealm;
@@ -70,14 +65,14 @@ import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.feature.base.BaseActivity;
-import com.yoloo.android.feature.base.LceAnimator;
 import com.yoloo.android.feature.category.MainCatalogController;
+import com.yoloo.android.feature.chat.conversationlist.ConversationListController;
 import com.yoloo.android.feature.comment.CommentController;
-import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.feature.fcm.FCMListener;
 import com.yoloo.android.feature.fcm.FCMManager;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
+import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.feature.feed.common.event.AcceptedEvent;
 import com.yoloo.android.feature.feed.common.event.PostDeleteEvent;
 import com.yoloo.android.feature.feed.common.event.UpdateEvent;
@@ -97,18 +92,18 @@ import com.yoloo.android.feature.photo.PhotoController;
 import com.yoloo.android.feature.postdetail.PostDetailController;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.search.SearchController;
-import com.yoloo.android.feature.ui.CircularRevealChangeHandler;
-import com.yoloo.android.feature.ui.recyclerview.EndlessRecyclerViewScrollListener;
-import com.yoloo.android.feature.ui.recyclerview.SlideInItemAnimator;
-import com.yoloo.android.feature.ui.recyclerview.SpaceItemDecoration;
-import com.yoloo.android.feature.ui.widget.floatingactionmenu.widget.FloatingActionMenu;
-import com.yoloo.android.feature.ui.widget.materialbadge.MenuItemBadge;
 import com.yoloo.android.feature.write.EditorType;
 import com.yoloo.android.feature.write.catalog.CatalogController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.localmesaagemanager.LocalMessage;
 import com.yoloo.android.localmesaagemanager.LocalMessageCallback;
 import com.yoloo.android.localmesaagemanager.LocalMessageManager;
+import com.yoloo.android.ui.changehandler.CircularRevealChangeHandler;
+import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
+import com.yoloo.android.ui.recyclerview.SlideInItemAnimator;
+import com.yoloo.android.ui.recyclerview.SpaceItemDecoration;
+import com.yoloo.android.ui.widget.floatingactionmenu.widget.FloatingActionMenu;
+import com.yoloo.android.ui.widget.materialbadge.MenuItemBadge;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.MenuHelper;
 import com.yoloo.android.util.NotificationHelper;
@@ -132,13 +127,6 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     OnCommentClickListener, FeedAdapter.OnBountyClickListener, FeedAdapter.OnCategoryClickListener,
     FeedAdapter.OnExploreCategoriesClickListener, OnVoteClickListener, OnContentImageClickListener,
     FCMListener, LocalMessageCallback {
-
-  static {
-    CategoryFaker.generate();
-    PostFaker.generate();
-    CommentFaker.generate();
-    NotificationFaker.generate();
-  }
 
   @BindView(R.id.drawer_layout_feed) DrawerLayout drawerLayout;
   @BindView(R.id.nav_view_feed) NavigationView navigationView;
@@ -164,8 +152,6 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
   private EndlessRecyclerViewScrollListener endlessRecyclerViewScrollListener;
 
   private WeakHandler handler;
-
-  private boolean hasNotification;
 
   private String cursor;
   private String eTag;
@@ -242,7 +228,7 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
         startTransaction(new SearchController(), new VerticalChangeHandler());
         return true;
       case R.id.action_feed_message:
-        if (hasNotification) {
+        /*if (hasNotification) {
           MenuItemBadge.getBadgeTextView(item).setBadgeCount(23, true);
 
           MenuItemBadge.update(getActivity(), item, new MenuItemBadge.Builder()
@@ -259,7 +245,8 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
                   R.drawable.ic_email_outline_24dp)));
 
           hasNotification = true;
-        }
+        }*/
+        startTransaction(new ConversationListController(), new VerticalChangeHandler());
         return true;
       case R.id.action_feed_notification:
         startTransaction(new NotificationController(), new VerticalChangeHandler(400));
@@ -278,8 +265,12 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
   }
 
   @Override public void onLoading(boolean pullToRefresh) {
+    loadingView.setVisibility(View.GONE);
     if (!pullToRefresh) {
-      LceAnimator.showLoading(loadingView, swipeRefreshLayout, errorView);
+      //loadingView.setVisibility(View.VISIBLE);
+      //swipeRefreshLayout.setVisibility(View.GONE);
+      //errorView.setVisibility(View.GONE);
+      //LceAnimator.showLoading(loadingView, swipeRefreshLayout, errorView);
     }
   }
 
@@ -290,11 +281,16 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     adapter.showLoadMoreIndicator(false);
     endlessRecyclerViewScrollListener.setProgressBarVisible(false);
     adapter.addPosts(value.getData());
+
+    //loadingView.setVisibility(View.GONE);
+    //errorView.setVisibility(View.GONE);
+    //swipeRefreshLayout.setVisibility(View.VISIBLE);
+    swipeRefreshLayout.setRefreshing(false);
   }
 
   @Override public void showContent() {
-    LceAnimator.showContent(loadingView, swipeRefreshLayout, errorView);
-    swipeRefreshLayout.setRefreshing(false);
+    //LceAnimator.showContent(loadingView, swipeRefreshLayout, errorView);
+    //swipeRefreshLayout.setRefreshing(false);
   }
 
   @Override public void onError(Throwable e) {
@@ -340,7 +336,7 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
         AuthUI.getInstance().signOut(getActivity());
         handler.postDelayed(() -> getRouter().setRoot(RouterTransaction.with(new AuthController())
             .pushChangeHandler(new FadeChangeHandler())), 400);
-        return true;
+        return false;
       default:
         return false;
     }
@@ -416,8 +412,8 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     startTransaction(ProfileController.create(ownerId), new VerticalChangeHandler());
   }
 
-  @Override public void onReadMoreClickListener(View v, String postId) {
-    startTransaction(PostDetailController.create(postId), new VerticalChangeHandler());
+  @Override public void onReadMoreClickListener(View v, PostRealm post) {
+    startTransaction(PostDetailController.create(post.getId()), new FadeChangeHandler());
   }
 
   @Override public void onShareClick(View v, PostRealm post) {
@@ -447,25 +443,25 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
   @OnClick(R.id.fab_ask_question) void openAskQuestion() {
     fabMenu.collapseImmediately();
 
-    AnimatorChangeHandler handler = VersionUtil.hasL()
+    AnimatorChangeHandler changeHandler = VersionUtil.hasL()
         ? new CircularRevealChangeHandler(fabMenu, root, mediumAnimTime)
         : new VerticalChangeHandler();
 
-    startTransaction(CatalogController.create(EditorType.ASK_QUESTION), handler);
+    startTransaction(CatalogController.create(EditorType.ASK_QUESTION), changeHandler);
   }
 
   @OnClick(R.id.fab_share_trip) void openShareTrip() {
     fabMenu.collapseImmediately();
 
-    AnimatorChangeHandler handler = VersionUtil.hasL()
+    AnimatorChangeHandler changeHandler = VersionUtil.hasL()
         ? new CircularRevealChangeHandler(fabMenu, root, mediumAnimTime)
         : new VerticalChangeHandler(mediumAnimTime);
 
-    startTransaction(CatalogController.create(EditorType.SHARE_TRIP), handler);
+    startTransaction(CatalogController.create(EditorType.SHARE_TRIP), changeHandler);
   }
 
   @Override public void onDeviceRegistered(String deviceToken) {
-    Timber.d("Device token: %s", deviceToken);
+    //Timber.d("Device token: %s", deviceToken);
     getPresenter().registerFcmToken(deviceToken);
   }
 
@@ -600,7 +596,7 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     NotificationManager notificationManager =
         (NotificationManager) getActivity().getSystemService(Context.NOTIFICATION_SERVICE);
 
-    notificationManager.notify(0 /* ID get notification */, notificationBuilder.build());
+    notificationManager.notify(0 /* ID getPost notification */, notificationBuilder.build());
   }
 
   private void startTransaction(Controller to, ControllerChangeHandler handler) {

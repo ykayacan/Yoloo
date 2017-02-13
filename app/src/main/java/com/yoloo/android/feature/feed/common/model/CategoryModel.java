@@ -11,7 +11,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CategoryRealm;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
-import com.yoloo.android.feature.ui.recyclerview.BaseEpoxyHolder;
+import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 
 public class CategoryModel extends EpoxyModelWithHolder<CategoryModel.CategoryHolder> {
 

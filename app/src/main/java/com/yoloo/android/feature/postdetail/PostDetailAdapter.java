@@ -3,12 +3,12 @@ package com.yoloo.android.feature.postdetail;
 import android.support.v7.widget.RecyclerView;
 import com.airbnb.epoxy.EpoxyAdapter;
 import com.airbnb.epoxy.EpoxyModel;
+import com.airbnb.epoxy.SimpleEpoxyModel;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.feature.comment.CommentModel;
 import com.yoloo.android.feature.comment.CommentModel_;
-import com.yoloo.android.feature.comment.OnCommentLongClickListener;
 import com.yoloo.android.feature.comment.OnMarkAsAcceptedClickListener;
 import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
@@ -24,7 +24,7 @@ import com.yoloo.android.feature.feed.common.model.NormalQuestionModel;
 import com.yoloo.android.feature.feed.common.model.NormalQuestionModel_;
 import com.yoloo.android.feature.feed.common.model.RichQuestionModel;
 import com.yoloo.android.feature.feed.common.model.RichQuestionModel_;
-import com.yoloo.android.feature.postdetail.model.CommentCountModel_;
+import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
 import java.util.List;
 
 public class PostDetailAdapter extends EpoxyAdapter {
@@ -37,9 +37,10 @@ public class PostDetailAdapter extends EpoxyAdapter {
   private final OnVoteClickListener onVoteClickListener;
   private final OnMentionClickListener onMentionClickListener;
   private final OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener;
-  private final OnCommentLongClickListener onCommentLongClickListener;
+  private final OnItemLongClickListener<CommentRealm> onCommentLongClickListener;
 
-  private final CommentCountModel_ commentCountModel = new CommentCountModel_();
+  private final SimpleEpoxyModel commentHeaderModel =
+      new SimpleEpoxyModel(R.layout.item_comment_header);
 
   private PostDetailAdapter(
       OnProfileClickListener onProfileClickListener,
@@ -50,7 +51,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
       OnVoteClickListener onVoteClickListener,
       OnMentionClickListener onMentionClickListener,
       OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener,
-      OnCommentLongClickListener onCommentLongClickListener) {
+      OnItemLongClickListener<CommentRealm> onCommentLongClickListener) {
     this.onProfileClickListener = onProfileClickListener;
     this.onPostOptionsClickListener = onPostOptionsClickListener;
     this.onShareClickListener = onShareClickListener;
@@ -68,10 +69,6 @@ public class PostDetailAdapter extends EpoxyAdapter {
     return new PostDetailAdapterBuilder();
   }
 
-  private static boolean isCommentOwner(CommentRealm comment, String userId) {
-    return comment.getOwnerId().equals(userId);
-  }
-
   public void addPost(PostRealm post, boolean refresh) {
     if (!refresh) {
       final int postType = post.getType();
@@ -87,14 +84,14 @@ public class PostDetailAdapter extends EpoxyAdapter {
 
       addModel(model);
 
-      insertModelAfter(commentCountModel, model);
+      insertModelAfter(commentHeaderModel, model);
     }
   }
 
   public void addComments(List<CommentRealm> comments, String userId, boolean postOwner,
       boolean accepted, @PostType int postType) {
     for (CommentRealm comment : comments) {
-      // Don't add accepted comment twice.
+      // Don't addPost accepted comment twice.
       if (comment.isAccepted()) {
         continue;
       }
@@ -115,7 +112,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
   }
 
   public void clear() {
-    removeAllAfterModel(commentCountModel);
+    removeAllAfterModel(commentHeaderModel);
   }
 
   public void delete(EpoxyModel<?> model) {
@@ -175,6 +172,10 @@ public class PostDetailAdapter extends EpoxyAdapter {
         .post(post);
   }
 
+  private boolean isCommentOwner(CommentRealm comment, String userId) {
+    return comment.getOwnerId().equals(userId);
+  }
+
   public static class PostDetailAdapterBuilder {
     private OnProfileClickListener onProfileClickListener;
     private OnPostOptionsClickListener onPostOptionsClickListener;
@@ -184,7 +185,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
     private OnContentImageClickListener onContentImageClickListener;
     private OnMentionClickListener onMentionClickListener;
     private OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener;
-    private OnCommentLongClickListener onCommentLongClickListener;
+    private OnItemLongClickListener<CommentRealm> onCommentLongClickListener;
 
     PostDetailAdapterBuilder() {
     }
@@ -238,7 +239,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
     }
 
     public PostDetailAdapter.PostDetailAdapterBuilder onCommentLongClickListener(
-        OnCommentLongClickListener onCommentLongClickListener) {
+        OnItemLongClickListener<CommentRealm> onCommentLongClickListener) {
       this.onCommentLongClickListener = onCommentLongClickListener;
       return this;
     }

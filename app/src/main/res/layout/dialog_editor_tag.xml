@@ -30,7 +30,7 @@
     android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
     android:textColor="@color/primary_blue" />
 
-  <com.yoloo.android.feature.ui.widget.tagview.TagView
+  <com.yoloo.android.ui.widget.tagview.TagView
     android:id="@+id/tagview_overlay_recommended_tags"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"

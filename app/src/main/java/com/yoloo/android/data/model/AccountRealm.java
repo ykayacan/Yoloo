@@ -1,6 +1,5 @@
 package com.yoloo.android.data.model;
 
-import com.yoloo.android.backend.modal.yolooApi.model.Account;
 import io.reactivex.Observable;
 import io.realm.RealmList;
 import io.realm.RealmObject;
@@ -27,7 +26,7 @@ public class AccountRealm extends RealmObject {
 
   private long followings;
   private long followers;
-  private long questions;
+  private long posts;
 
   private int level;
   private int points;
@@ -36,7 +35,7 @@ public class AccountRealm extends RealmObject {
 
   @Index
   private boolean recent;
-  private boolean pendingChanges;
+  private boolean pending;
 
   @Ignore
   private String categoryIds;
@@ -47,7 +46,7 @@ public class AccountRealm extends RealmObject {
   public AccountRealm() {
   }
 
-  public AccountRealm(Account account) {
+  /*public AccountRealm(Account account) {
     this.id = account.getId();
     this.username = account.getUsername();
     this.realname = account.getRealname();
@@ -57,8 +56,8 @@ public class AccountRealm extends RealmObject {
     this.locale = account.getLocale();
     this.followers = account.getCounts().getFollowers();
     this.followings = account.getCounts().getFollowings();
-    this.questions = account.getCounts().getQuestions();
-  }
+    this.posts = account.getCounts().getPosts();
+  }*/
 
   public String getId() {
     return id;
@@ -177,12 +176,12 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
-  public long getQuestions() {
-    return questions;
+  public long getPosts() {
+    return posts;
   }
 
-  public AccountRealm setQuestions(long questions) {
-    this.questions = questions;
+  public AccountRealm setPosts(long posts) {
+    this.posts = posts;
     return this;
   }
 
@@ -222,12 +221,12 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
-  public boolean isPendingChanges() {
-    return pendingChanges;
+  public boolean isPending() {
+    return pending;
   }
 
-  public AccountRealm setPendingChanges(boolean pendingChanges) {
-    this.pendingChanges = pendingChanges;
+  public AccountRealm setPending(boolean pending) {
+    this.pending = pending;
     return this;
   }
 
@@ -277,13 +276,13 @@ public class AccountRealm extends RealmObject {
         ", categories=" + categories +
         ", followings=" + followings +
         ", followers=" + followers +
-        ", questions=" + questions +
+        ", posts=" + posts +
         ", level=" + level +
         ", points=" + points +
         ", bounties=" + bounties +
         ", achievements=" + achievements +
         ", recent=" + recent +
-        ", pendingChanges=" + pendingChanges +
+        ", pending=" + pending +
         ", categoryIds='" + categoryIds + '\'' +
         ", password='" + password + '\'' +
         '}';

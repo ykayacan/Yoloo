@@ -18,7 +18,7 @@
       android:background="@color/primary_blue"
       app:popupTheme="@style/Yoloo.PopupOverlay">
 
-      <com.yoloo.android.feature.ui.widget.CompatTextView
+      <com.yoloo.android.ui.widget.CompatTextView
         android:id="@+id/tv_total_bounty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

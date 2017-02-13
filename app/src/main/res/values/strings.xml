@@ -1,7 +1,15 @@
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
   <string name="app_name">Yoloo</string>
 
   <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+    Morbi sit amet massa pharetra, volutpat risus ac, lobortis ante.
+    Ut tempor, ex vitae egestas varius.</string>
+
+  <string name="lorem_ipsum_long">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+    Morbi sit amet massa pharetra, volutpat risus ac, lobortis ante.
+    Ut tempor, ex vitae egestas varius. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+    Morbi sit amet massa pharetra, volutpat risus ac, lobortis ante.
+    Ut tempor, ex vitae egestas varius. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
     Morbi sit amet massa pharetra, volutpat risus ac, lobortis ante.
     Ut tempor, ex vitae egestas varius.</string>
 
@@ -14,6 +22,7 @@
   <string name="label_nav_change_view">Change View</string>
   <string name="label_nav_invite_friends">Invite Friends</string>
   <string name="label_nav_settings">Settings</string>
+  <string name="label_nav_refresh_data">Refresh Data</string>
 
   <string name="navigation_drawer_open">Open navigation drawer</string>
   <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -158,8 +167,8 @@
   <string name="label_loading">Loading</string>
 
   <string name="action_login_start_using">Start Using</string>
-  <string name="action_login_already_have_account">Already have an account?
-    <b>Login</b>
+  <string name="action_login_already_have_account">
+    <![CDATA[Already have an account?&#160;&#160;<b>Sign in</b>]]>
   </string>
   <string name="action_login_sign_up">Sign Up</string>
   <string name="action_login_google_sign_in">Continue with Google</string>
@@ -187,7 +196,6 @@
   <string name="idp_name_facebook">Facebook</string>
 
 
-
   <string-array name="label_sub_feed_list">
     <item>Questions</item>
     <item>Tags</item>
@@ -200,5 +208,26 @@
   <string name="action_sort_newest">Newest</string>
   <string name="action_sort_hot">Hot</string>
   <string name="action_sort_unanswered">Unanswered</string>
+
+  <string name="posted_just_now">"Just now"</string>
+  <string name="posted_now">"Now"</string>
+  <!-- Abbreviated message to express that something occurred some number of minutes in the past (e.g., 5 minutes ago). -->
+  <plurals name="num_minutes_ago">
+    <item quantity="one"><xliff:g id="count">%d</xliff:g> min</item>
+    <item quantity="other"><xliff:g id="count">%d</xliff:g> mins</item>
+  </plurals>
+  <!-- Abbreviated message to express that something occurred some number of hours in the past (e.g., 5 hours ago). -->
+  <plurals name="num_hours_ago">
+    <item quantity="one"><xliff:g id="count">%d</xliff:g> hour</item>
+    <item quantity="other"><xliff:g id="count">%d</xliff:g> hours</item>
+  </plurals>
+  <!-- Abbreviated message to express that something occurred some number of days in the past (e.g., 5 days ago). -->
+  <plurals name="num_days_ago">
+    <item quantity="one"><xliff:g id="count">%d</xliff:g> day</item>
+    <item quantity="other"><xliff:g id="count">%d</xliff:g> days</item>
+  </plurals>
+
+  <!-- CHAT -->
+  <string name="label_toolbar_conversationlist_title">Conversations</string>
 
 </resources>

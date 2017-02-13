@@ -13,9 +13,8 @@ import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
 import com.yoloo.backend.follow.FollowController;
-import com.yoloo.backend.follow.FollowService;
 import com.yoloo.backend.follow.ListType;
-import com.yoloo.backend.gamification.GamificationService;
+import com.yoloo.backend.game.GamificationService;
 import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.validator.Validator;
 import com.yoloo.backend.validator.rule.common.AuthValidator;
@@ -49,7 +48,7 @@ import javax.servlet.http.HttpServletRequest;
 )
 public class AccountEndpoint {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       Logger.getLogger(AccountEndpoint.class.getSimpleName());
 
   /**
@@ -71,7 +70,7 @@ public class AccountEndpoint {
         .addRule(new NotFoundRule(accountId))
         .validate();
 
-    return getAccountController().get(accountId, user);
+    return getAccountController().getAccount(accountId, user);
   }
 
   /**
@@ -86,10 +85,13 @@ public class AccountEndpoint {
       name = "accounts.register",
       path = "accounts",
       httpMethod = ApiMethod.HttpMethod.POST)
-  public Account register(@Named("locale") String locale, @Named("gender") Account.Gender gender,
-      @Named("topicIds") String topicIds, HttpServletRequest request) throws ServiceException {
+  public Account register(
+      @Named("locale") String locale,
+      @Named("gender") Account.Gender gender,
+      @Named("topicIds") String topicIds,
+      HttpServletRequest request) throws ServiceException {
 
-    return getAccountController().add(locale, gender, topicIds, request);
+    return getAccountController().insertAccount(locale, gender, topicIds, request);
   }
 
   /**
@@ -104,7 +106,7 @@ public class AccountEndpoint {
       path = "accounts/admin",
       httpMethod = ApiMethod.HttpMethod.POST)
   public Account registerAdmin(HttpServletRequest request) throws ServiceException {
-    return getAccountController().addAdmin(request);
+    return getAccountController().insertAdmin(request);
   }
 
   /**
@@ -122,19 +124,21 @@ public class AccountEndpoint {
       name = "accounts.update",
       path = "accounts/{accountId}",
       httpMethod = ApiMethod.HttpMethod.PUT)
-  public Account update(@Named("accountId") String accountId,
-      @Nullable @Named("mediaId") String mediaId, @Nullable @Named("username") String username,
-      @Nullable @Named("badge") String badge, User user) throws ServiceException {
+  public Account update(
+      @Named("accountId") String accountId,
+      @Nullable @Named("mediaId") String mediaId,
+      @Nullable @Named("username") String username,
+      @Nullable @Named("badge") String badge,
+      User user) throws ServiceException {
 
     Validator.builder()
         .addRule(new AuthValidator(user))
         .validate();
 
-    return getAccountController().update(
+    return getAccountController().updateAccount(
         accountId,
         Optional.fromNullable(mediaId),
-        Optional.fromNullable(username),
-        user);
+        Optional.fromNullable(username));
   }
 
   /**
@@ -153,15 +157,17 @@ public class AccountEndpoint {
         .addRule(new AuthValidator(user))
         .validate();
 
-    getAccountController().delete(user);
+    getAccountController().deleteAccount(user);
   }
 
   @ApiMethod(
-      name = "accounts.list",
+      name = "accounts.search",
       path = "accounts",
       httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Account> search(@Named("q") String query,
-      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit,
+  public CollectionResponse<Account> search(
+      @Named("q") String query,
+      @Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit,
       User user) throws ServiceException {
 
     Validator.builder()
@@ -169,8 +175,10 @@ public class AccountEndpoint {
         .addRule(new BadRequestValidator(query))
         .validate();
 
-    return getAccountController().searchAccounts(query, Optional.fromNullable(cursor),
-        Optional.fromNullable(limit), user);
+    return getAccountController().searchAccounts(
+        query,
+        Optional.fromNullable(cursor),
+        Optional.fromNullable(limit));
   }
 
   /**
@@ -180,13 +188,13 @@ public class AccountEndpoint {
    * @return the wrapper boolean
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
+  /*@ApiMethod(
       name = "accounts.checkUsername",
       path = "accounts/check",
       httpMethod = ApiMethod.HttpMethod.GET)
   public WrapperBoolean checkUsername(@Named("username") String username) throws ServiceException {
     return getAccountController().checkUsername(username);
-  }
+  }*/
 
   /**
    * Returns the {@link Account}.
@@ -202,9 +210,11 @@ public class AccountEndpoint {
       name = "accounts.followers",
       path = "accounts/{accountId}/followers",
       httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Account> followers(@Named("accountId") String accountId,
-      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
-      throws ServiceException {
+  public CollectionResponse<Account> followers(
+      @Named("accountId") String accountId,
+      @Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit,
+      User user) throws ServiceException {
 
     Validator.builder()
         .addRule(new AuthValidator(user))
@@ -232,9 +242,11 @@ public class AccountEndpoint {
       name = "accounts.followings",
       path = "accounts/{accountId}/followings",
       httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Account> followings(@Named("accountId") String accountId,
-      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
-      throws ServiceException {
+  public CollectionResponse<Account> followings(
+      @Named("accountId") String accountId,
+      @Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit,
+      User user) throws ServiceException {
 
     Validator.builder()
         .addRule(new AuthValidator(user))
@@ -249,16 +261,11 @@ public class AccountEndpoint {
   }
 
   private AccountController getAccountController() {
-    return AccountController.create(
-        AccountService.create(),
-        AccountShardService.create(),
-        GamificationService.create()
-    );
+    return AccountController.create(AccountShardService.create(), GamificationService.create());
   }
 
   private FollowController getFollowController() {
     return FollowController.create(
-        FollowService.create(),
         AccountShardService.create(),
         NotificationService.create(URLFetchServiceFactory.getURLFetchService())
     );

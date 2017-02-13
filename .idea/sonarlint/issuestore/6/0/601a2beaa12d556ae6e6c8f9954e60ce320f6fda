@@ -1,0 +1,7 @@
+
+¢squid:S1186"€Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.(œ›Àıûÿÿÿÿ8ôÔ×ò¢+
+Z"squid:SwitchLastCaseIsDefaultCheck""Add a default case to this switch.(û¸ôşÿÿÿÿ8ôÔ×ò¢+
+gsquid:CommentedOutCodeLine"<This block of commented-out lines of code should be removed.(Ö²¼8ôÔ×ò¢+
+Osquid:S1068"3Remove this unused "hasNotification" private field.(“¬†é8ôÔ×ò¢+
+lsquid:S1301"KReplace this "switch" statement by "if" statements to increase readability.(û¸ôşÿÿÿÿ8ôÔ×ò¢+
+lsquid:CommentedOutCodeLine"<This block of commented-out lines of code should be removed.(€Î‰ãşÿÿÿÿ8ôÔ×ò¢+

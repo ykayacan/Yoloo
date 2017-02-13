@@ -1,12 +1,10 @@
 package com.yoloo.android.feature.category;
 
-import com.yoloo.android.data.model.CategoryRealm;
 import com.yoloo.android.data.repository.category.CategoryRepository;
 import com.yoloo.android.data.sorter.CategorySorter;
 import com.yoloo.android.framework.MvpPresenter;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import java.util.List;
 
 class CategoryPresenter extends MvpPresenter<CategoryView> {
 
@@ -21,19 +19,12 @@ class CategoryPresenter extends MvpPresenter<CategoryView> {
     loadCategories();
   }
 
-  public void loadCategories() {
-    Disposable d = categoryRepository.list(100, CategorySorter.DEFAULT)
+  private void loadCategories() {
+    Disposable d = categoryRepository.listCategories(100, CategorySorter.DEFAULT)
         .observeOn(AndroidSchedulers.mainThread(), true)
-        .subscribe(this::showCategories, this::showError);
+        .subscribe(categories -> getView().onCategoriesLoaded(categories),
+            throwable -> getView().onError(throwable));
 
     getDisposable().add(d);
-  }
-
-  private void showCategories(List<CategoryRealm> realms) {
-    getView().onLoaded(realms);
-  }
-
-  private void showError(Throwable throwable) {
-    getView().onError(throwable);
   }
 }

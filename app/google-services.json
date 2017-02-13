@@ -15,21 +15,13 @@
       },
       "oauth_client": [
         {
-          "client_id": "175355244637-3aq6ffehp3lqch8l91h77k1a1g4ghbj1.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.yoloo.android",
-            "certificate_hash": "4DF762525E62EC0961403E7929E8689E34E16994"
-          }
-        },
-        {
-          "client_id": "175355244637-485ebjcca507s7rgfvehf39idg9cchmj.apps.googleusercontent.com",
+          "client_id": "175355244637-cnod9pcii71rsqpjj17mp24v95uul63o.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyB3W6DWYfKLip7l-7bmnucFSPAbg2OciRE"
+          "current_key": "AIzaSyAUjUhcJ84ZgKvXWZ4qwomXzKjqP7t6GI0"
         }
       ],
       "services": {
@@ -40,7 +32,7 @@
           "status": 2,
           "other_platform_oauth_client": [
             {
-              "client_id": "175355244637-485ebjcca507s7rgfvehf39idg9cchmj.apps.googleusercontent.com",
+              "client_id": "175355244637-cnod9pcii71rsqpjj17mp24v95uul63o.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

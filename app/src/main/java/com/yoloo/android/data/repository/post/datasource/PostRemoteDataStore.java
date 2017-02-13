@@ -1,16 +1,15 @@
 package com.yoloo.android.data.repository.post.datasource;
 
-import com.google.api.client.http.HttpHeaders;
-import com.yoloo.android.backend.modal.yolooApi.model.CollectionResponseFeedItem;
 import com.yoloo.android.data.ApiManager;
 import com.yoloo.android.data.Response;
+import com.yoloo.android.data.faker.PostFaker;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.sorter.PostSorter;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
-import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class PostRemoteDataStore {
 
@@ -40,19 +39,11 @@ public class PostRemoteDataStore {
     return Completable.complete();
   }
 
-  public Observable<Response<List<PostRealm>>> listByUserFeed(String cursor, String eTag, int limit) {
-    return ApiManager.getIdToken()
-        .toObservable()
-        .flatMap(s -> Observable.empty());
-        /*.fromCallable(() -> getFeedApi(idToken, cursor, limit, eTag))
-        .map(response -> {
-          List<PostRealm> search = Observable.fromIterable(response.getItems())
-              .map(this::mapToFeedModel)
-              .toList()
-              .blockingGet();
+  public Observable<Response<List<PostRealm>>> listByFeed(String cursor, String eTag,
+      int limit) {
 
-          return Response.ofCategory(search, response.getNextPageToken(), (String) response.get("etag"));
-        });*/
+    return Observable.just(Response.create(PostFaker.generateAll(), null, null))
+        .delay(700, TimeUnit.MILLISECONDS);
   }
 
   public Observable<Response<List<PostRealm>>> listByBounty(String cursor, String eTag, int limit) {
@@ -91,7 +82,7 @@ public class PostRemoteDataStore {
             .execute()*/
   }
 
-  private CollectionResponseFeedItem getFeedApi(String idToken, String cursor, int limit,
+  /*private CollectionResponseFeedItem getFeedApi(String idToken, String cursor, int limit,
       String eTag) throws IOException {
     return ApiManager.INSTANCE.getApi()
         .accounts()
@@ -101,5 +92,5 @@ public class PostRemoteDataStore {
         .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + idToken))
         .setRequestHeaders(new HttpHeaders().setIfNoneMatch(eTag))
         .execute();
-  }
+  }*/
 }

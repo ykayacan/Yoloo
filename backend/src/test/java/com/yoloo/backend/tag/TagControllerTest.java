@@ -1,8 +1,6 @@
 package com.yoloo.backend.tag;
 
 import com.google.api.server.spi.response.CollectionResponse;
-import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.base.Optional;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.NotFoundException;
@@ -20,8 +18,6 @@ public class TagControllerTest extends TestBase {
   private static final String USER_EMAIL = "test@gmail.com";
   private static final String USER_AUTH_DOMAIN = "gmail.com";
 
-  private TagController tagController;
-
   @Override
   public void setUpGAE() {
     super.setUpGAE();
@@ -32,82 +28,75 @@ public class TagControllerTest extends TestBase {
         .setEnvEmail(USER_EMAIL);
   }
 
-  @Override
-  public void setUp() {
-    super.setUp();
-
-    tagController = TagControllerFactory.of().create();
-  }
-
   @Test
   public void testAddGroup() throws Exception {
-    final User user = UserServiceFactory.getUserService().getCurrentUser();
+    TagController tagController = TagControllerFactory.of().create();
 
-    Tag group = tagController.addGroup("test group", user);
+    Tag group = tagController.insertGroup("test group");
 
     assertEquals("test group", group.getName());
-    assertEquals(0, group.getQuestions());
+    assertEquals(0, group.getPosts());
     assertEquals(0, group.getTotalTagCount());
   }
 
   @Test
   public void testUpdateGroup() throws Exception {
-    final User user = UserServiceFactory.getUserService().getCurrentUser();
+    TagController tagController = TagControllerFactory.of().create();
 
-    Tag original = tagController.addGroup("test group", user);
+    Tag original = tagController.insertGroup("test group");
 
     Tag updated = tagController
-        .updateGroup(original.getWebsafeId(), Optional.of("test group 2"), user);
+        .updateGroup(original.getWebsafeId(), Optional.of("test group 2"));
 
     assertEquals(original.getKey(), updated.getKey());
     assertEquals(original.getTotalTagCount(), updated.getTotalTagCount());
-    assertEquals(original.getQuestions(), updated.getQuestions());
+    assertEquals(original.getPosts(), updated.getPosts());
     assertEquals("test group 2", updated.getName());
   }
 
   @Test(expected = NotFoundException.class)
   public void testDeleteGroup() throws Exception {
-    final User user = UserServiceFactory.getUserService().getCurrentUser();
+    TagController tagController = TagControllerFactory.of().create();
 
-    Tag original = tagController.addGroup("test group", user);
+    Tag original = tagController.insertGroup("test group");
 
     ofy().save().entity(original).now();
 
-    tagController.deleteGroup(original.getWebsafeId(), user);
+    tagController.deleteGroup(original.getWebsafeId());
 
     ofy().load().key(original.getKey()).safe();
   }
 
   @Test
   public void testAddTag_singleGroup() throws Exception {
-    final User user = UserServiceFactory.getUserService().getCurrentUser();
+    TagController tagController = TagControllerFactory.of().create();
 
-    Tag group = tagController.addGroup("test group", user);
+    Tag group = tagController.insertGroup("test group");
 
     Tag tag = tagController
-        .addTag("tag1", Locale.ENGLISH.getISO3Language(), group.getWebsafeId(), user);
+        .insertTag("tag1", Locale.ENGLISH.getISO3Language(), group.getWebsafeId());
 
     assertEquals("tag1", tag.getName());
     assertEquals(Locale.ENGLISH.getISO3Language(), tag.getLanguage());
-    assertEquals(TagCounterShard.SHARD_COUNT, tag.getShards().size());
+    assertEquals(TagShard.SHARD_COUNT, tag.getShards().size());
 
     List<Key<Tag>> keys = new ArrayList<>(1);
     keys.add(group.getKey());
 
     assertEquals(keys, tag.getGroupKeys());
-    assertEquals(0, tag.getQuestions());
+    assertEquals(0, tag.getPosts());
   }
 
   @Test
   public void testAddTag_multipleGroup() throws Exception {
-    final User user = UserServiceFactory.getUserService().getCurrentUser();
+    TagController tagController = TagControllerFactory.of().create();
 
-    Tag group1 = tagController.addGroup("test group", user);
-    Tag group2 = tagController.addGroup("test group 2", user);
+    Tag group1 = tagController.insertGroup("test group");
+    Tag group2 = tagController.insertGroup("test group 2");
 
     String groupIds = group1.getWebsafeId() + "," + group2.getWebsafeId();
 
-    Tag tag = tagController.addTag("h1", Locale.ENGLISH.getISO3Language(), groupIds, user);
+    Tag tag = tagController.insertTag("h1", Locale.ENGLISH.getISO3Language(), groupIds);
 
     assertEquals("h1", tag.getName());
     assertEquals(Locale.ENGLISH.getISO3Language(), tag.getLanguage());
@@ -117,40 +106,40 @@ public class TagControllerTest extends TestBase {
     keys.add(group2.getKey());
 
     assertEquals(keys, tag.getGroupKeys());
-    assertEquals(0, tag.getQuestions());
+    assertEquals(0, tag.getPosts());
   }
 
   @Test
   public void testSuggestTags_suggestByTagSimilarity() throws Exception {
-    final User user = UserServiceFactory.getUserService().getCurrentUser();
+    TagController tagController = TagControllerFactory.of().create();
 
-    Tag group1 = tagController.addGroup("travel", user);
-    Tag group2 = tagController.addGroup("budget", user);
+    Tag group1 = tagController.insertGroup("travel");
+    Tag group2 = tagController.insertGroup("budget");
 
-    Tag cheap = tagController.addTag("cheap", "en", group2.getWebsafeId(), user);
-    Tag lowBudget = tagController.addTag("low budget", "en", group2.getWebsafeId(), user);
+    Tag cheap = tagController.insertTag("cheap", "en", group2.getWebsafeId());
+    Tag lowBudget = tagController.insertTag("low budget", "en", group2.getWebsafeId());
 
     CollectionResponse<Tag> response =
-        tagController.list(cheap.getName(), Optional.absent(), Optional.<Integer>absent(), user);
+        tagController.list(cheap.getName(), Optional.absent(), Optional.<Integer>absent());
 
     assertEquals(1, response.getItems().size());
   }
 
   @Test
   public void testSuggestTags_suggestByGroup() throws Exception {
-    final User user = UserServiceFactory.getUserService().getCurrentUser();
+    TagController tagController = TagControllerFactory.of().create();
 
-    Tag group1 = tagController.addGroup("travel", user);
-    Tag group2 = tagController.addGroup("budget", user);
+    Tag group1 = tagController.insertGroup("travel");
+    Tag group2 = tagController.insertGroup("budget");
 
-    tagController.addTag("female travel", "en", group1.getWebsafeId(), user);
-    tagController.addTag("camp", "en", group1.getWebsafeId(), user);
+    tagController.insertTag("female travel", "en", group1.getWebsafeId());
+    tagController.insertTag("camp", "en", group1.getWebsafeId());
 
-    tagController.addTag("cheap", "en", group2.getWebsafeId(), user);
-    tagController.addTag("low budget", "en", group2.getWebsafeId(), user);
+    tagController.insertTag("cheap", "en", group2.getWebsafeId());
+    tagController.insertTag("low budget", "en", group2.getWebsafeId());
 
     CollectionResponse<Tag> response =
-        tagController.list(group1.getName(), Optional.absent(), Optional.<Integer>absent(), user);
+        tagController.list(group1.getName(), Optional.absent(), Optional.<Integer>absent());
 
     assertEquals(2, response.getItems().size());
   }

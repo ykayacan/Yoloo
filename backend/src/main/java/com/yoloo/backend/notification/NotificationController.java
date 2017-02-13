@@ -23,8 +23,11 @@ public class NotificationController extends Controller {
    */
   private static final int DEFAULT_LIST_LIMIT = 20;
 
-  public CollectionResponse<Notification> list(Optional<String> cursor, Optional<Integer> limit,
+  public CollectionResponse<Notification> listNotifications(
+      Optional<String> cursor,
+      Optional<Integer> limit,
       User user) {
+
     final Key<Account> authKey = Key.create(user.getUserId());
 
     Query<Notification> query = ofy().load().type(Notification.class)

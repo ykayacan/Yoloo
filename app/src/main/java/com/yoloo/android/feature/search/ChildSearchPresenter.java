@@ -22,7 +22,7 @@ public class ChildSearchPresenter extends MvpPresenter<ChildSearchView> {
   }
 
   public void loadRecentTags() {
-    Disposable d = tagRepository.listRecent()
+    Disposable d = tagRepository.listRecentTags()
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showRecentTags);
 
@@ -30,7 +30,7 @@ public class ChildSearchPresenter extends MvpPresenter<ChildSearchView> {
   }
 
   public void loadTags(String name, String cursor) {
-    Disposable d = tagRepository.list(name, cursor, 20)
+    Disposable d = tagRepository.listTags(name, cursor, 20)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showTags, Timber::e);
 
@@ -38,7 +38,7 @@ public class ChildSearchPresenter extends MvpPresenter<ChildSearchView> {
   }
 
   public void loadRecentUsers() {
-    Disposable d = userRepository.listRecentSearches()
+    Disposable d = userRepository.listRecentSearchedUsers()
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showRecentUsers);
 
@@ -46,7 +46,7 @@ public class ChildSearchPresenter extends MvpPresenter<ChildSearchView> {
   }
 
   public void loadUsers(String name, String cursor) {
-    Disposable d = userRepository.search(name, cursor, 20)
+    Disposable d = userRepository.searchUser(name, cursor, 20)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showUsers, Timber::e);
 

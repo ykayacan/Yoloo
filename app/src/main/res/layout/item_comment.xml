@@ -20,15 +20,13 @@
     app:layout_constraintTop_toTopOf="parent"
     tools:src="@drawable/login_bg" />
 
-  <TextView
+  <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_comment_username"
+    style="@style/TextAppearance.Username"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginLeft="8dp"
     android:layout_marginStart="8dp"
-    android:ellipsize="end"
-    android:maxEms="10"
-    android:maxLines="1"
     android:textAppearance="@style/TextAppearance.AppCompat.Body2"
     app:layout_constraintBottom_toBottomOf="@+id/iv_comment_user_avatar"
     app:layout_constraintLeft_toRightOf="@+id/iv_comment_user_avatar"
@@ -36,7 +34,7 @@
     app:layout_constraintVertical_bias="0.2"
     tools:text="username" />
 
-  <com.yoloo.android.feature.ui.widget.zamanview.TimeTextView
+  <com.yoloo.android.ui.widget.timeview.TimeTextView
     android:id="@+id/tv_comment_time"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -48,7 +46,7 @@
     app:layout_constraintLeft_toRightOf="@+id/tv_comment_username"
     tools:text="1m" />
 
-  <com.yoloo.android.feature.ui.widget.CompatTextView
+  <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_comment_accepted"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -62,7 +60,7 @@
     app:layout_constraintRight_toRightOf="@+id/iv_comment_user_avatar"
     app:layout_constraintTop_toBottomOf="@+id/iv_comment_user_avatar" />
 
-  <com.yoloo.android.feature.ui.widget.linkabletextview.LinkableTextView
+  <com.yoloo.android.ui.widget.linkabletextview.LinkableTextView
     android:id="@+id/tv_comment_content"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
@@ -77,7 +75,7 @@
     app:layout_constraintTop_toBottomOf="@+id/tv_comment_username"
     tools:text="@string/lorem_ipsum" />
 
-  <com.yoloo.android.feature.ui.widget.BaselineGridTextView
+  <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_mark_as_accepted"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
@@ -94,7 +92,7 @@
     app:layout_constraintBaseline_toBaselineOf="@+id/tv_comment_vote"
     app:layout_constraintRight_toLeftOf="@+id/tv_comment_vote" />
 
-  <com.yoloo.android.feature.ui.widget.VoteView
+  <com.yoloo.android.ui.widget.VoteView
     android:id="@+id/tv_comment_vote"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"

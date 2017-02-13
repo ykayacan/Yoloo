@@ -1,8 +1,7 @@
 package com.yoloo.backend.media.size;
 
+import com.fasterxml.jackson.annotation.JsonRootName;
 import com.google.api.server.spi.config.ApiResourceProperty;
-import com.google.appengine.repackaged.org.codehaus.jackson.map.annotate.JsonRootName;
-
 import com.yoloo.backend.config.MediaConfig;
 import com.yoloo.backend.media.Media;
 

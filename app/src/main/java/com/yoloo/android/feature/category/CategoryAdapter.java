@@ -1,65 +1,36 @@
 package com.yoloo.android.feature.category;
 
-import android.view.View;
+import com.annimon.stream.Stream;
 import com.yoloo.android.data.model.CategoryRealm;
-import com.yoloo.android.feature.ui.recyclerview.SelectableEpoxyAdapter;
-import io.reactivex.Observable;
+import com.yoloo.android.ui.recyclerview.OnItemClickListener;
+import com.yoloo.android.ui.recyclerview.SelectableAdapter;
 import java.util.List;
 
-class CategoryAdapter extends SelectableEpoxyAdapter {
+class CategoryAdapter extends SelectableAdapter {
 
   private final String categoryType;
 
-  private boolean multiSelection;
+  private final OnItemClickListener<CategoryRealm> onItemClickListener;
 
-  private int maxSelectedItems;
-
-  private OnCategoryClickListener onCategoryClickListener;
-
-  CategoryAdapter(@CategoryType String categoryType) {
+  CategoryAdapter(@CategoryType String categoryType,
+      OnItemClickListener<CategoryRealm> onItemClickListener) {
     this.categoryType = categoryType;
-    this.maxSelectedItems = Integer.MAX_VALUE;
+    this.onItemClickListener = onItemClickListener;
   }
 
-  public boolean isMultiSelection() {
-    return multiSelection;
+  void addCategories(List<CategoryRealm> categories) {
+    Stream.of(categories)
+        .filter(category -> category.getType().equals(categoryType))
+        .forEach(category -> addModel(new CategoryModel_()
+            .adapter(this)
+            .category(category)
+            .onItemClickListener(onItemClickListener)));
   }
 
-  public void setMultiSelection(boolean multiSelection) {
-    this.multiSelection = multiSelection;
-  }
-
-  @Override public int getMaxSelectedItems() {
-    return maxSelectedItems;
-  }
-
-  public void setMaxSelectedItems(int maxSelectedItems) {
-    this.maxSelectedItems = maxSelectedItems;
-  }
-
-  public void setOnCategoryClickListener(OnCategoryClickListener onCategoryClickListener) {
-    this.onCategoryClickListener = onCategoryClickListener;
-  }
-
-  public void addCategories(List<CategoryRealm> categories) {
-    for (CategoryRealm category : categories) {
-      if (category.getType().equals(categoryType)) {
-        addModel(new CategoryModel_().adapter(this)
-            .onCategoryClickListener(onCategoryClickListener)
-            .category(category));
-      }
-    }
-  }
-
-  public List<CategoryRealm> getSelectedCategories() {
-    return Observable.fromIterable(getSelectedItems())
-        .cast(CategoryModel.class)
+  List<CategoryRealm> getSelectedCategories() {
+    return Stream.of(getSelectedItems())
+        .select(CategoryModel.class)
         .map(CategoryModel::getCategory)
-        .toList()
-        .blockingGet();
-  }
-
-  public interface OnCategoryClickListener {
-    void onCategoryClick(View v, String categoryId, String name, boolean multiSelection);
+        .toList();
   }
 }

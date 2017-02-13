@@ -12,28 +12,23 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyAttribute;
+import com.airbnb.epoxy.EpoxyModelClass;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.NotificationRealm;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
-import com.yoloo.android.feature.ui.recyclerview.BaseEpoxyHolder;
-import com.yoloo.android.feature.ui.widget.linkabletextview.LinkableTextView;
-import com.yoloo.android.feature.ui.widget.zamanview.TimeManager;
+import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
+import com.yoloo.android.ui.widget.linkabletextview.LinkableTextView;
+import com.yoloo.android.ui.widget.timeview.TimeManager;
 import com.yoloo.android.util.glide.CropCircleTransformation;
 
-public class NotificationModel extends EpoxyModelWithHolder<NotificationModel.NotificationHolder> {
+@EpoxyModelClass(layout = R.layout.item_notification)
+abstract class NotificationModel
+    extends EpoxyModelWithHolder<NotificationModel.NotificationHolder> {
 
   @EpoxyAttribute NotificationRealm notification;
   @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
-
-  @Override protected NotificationHolder createNewHolder() {
-    return new NotificationHolder();
-  }
-
-  @Override protected int getDefaultLayout() {
-    return R.layout.item_notification;
-  }
 
   @Override public void bind(NotificationHolder holder) {
     final Context context = holder.ivUserAvatar.getContext();
@@ -49,7 +44,7 @@ public class NotificationModel extends EpoxyModelWithHolder<NotificationModel.No
     final Resources res = context.getResources();
 
     final String time =
-        TimeManager.getInstance(notification.getCreated().getTime() / 1000).getTime();
+        TimeManager.getInstance().calculateTime(notification.getCreated().getTime() / 1000);
 
     String text = getActionString(res);
     holder.tvContent.setText(Html.fromHtml(text

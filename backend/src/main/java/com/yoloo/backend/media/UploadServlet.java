@@ -1,10 +1,10 @@
 package com.yoloo.backend.media;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.ServingUrlOptions;
-import com.google.appengine.repackaged.org.codehaus.jackson.map.ObjectMapper;
-import com.google.appengine.repackaged.org.codehaus.jackson.map.ObjectWriter;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
@@ -32,7 +32,7 @@ import static com.yoloo.backend.OfyService.ofy;
 
 public class UploadServlet extends HttpServlet {
 
-  private static final Logger logger =
+  private static final Logger LOG =
       Logger.getLogger(UploadServlet.class.getName());
 
   private static final ObjectWriter ow =

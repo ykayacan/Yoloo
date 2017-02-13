@@ -8,19 +8,17 @@ import com.yoloo.backend.authentication.oauth2.OAuth2;
 import com.yoloo.backend.notification.type.NotificationBundle;
 import com.yoloo.backend.util.NetworkHelper;
 import com.yoloo.backend.util.ServerConfig;
-import io.reactivex.Single;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Logger;
+import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
-
-import static com.yoloo.backend.OfyService.ofy;
 
 @AllArgsConstructor(staticName = "create")
 public class NotificationService {
 
-  private static final Logger logger =
+  private static final Logger LOG =
       Logger.getLogger(NotificationService.class.getName());
 
   private static final String FCM_ENDPOINT = "https://fcm.googleapis.com/fcm/send";
@@ -32,21 +30,13 @@ public class NotificationService {
    *
    * @param bundle the bundle
    */
-  public void send(NotificationBundle bundle) {
-    ofy().save().entities(bundle.getNotifications());
-
+  public void send(@Nonnull NotificationBundle bundle) {
     if (!ServerConfig.isDev()) {
-      Single
-          .create(e -> {
-            try {
-              e.onSuccess(bundle.getPushMessage().getJsonAsBytes());
-            } catch (IOException t) {
-              e.onError(t);
-            }
-          })
-          .cast(byte[].class)
-          .map(this::buildRequest)
-          .doOnSuccess(httpRequest -> service.fetchAsync(httpRequest));
+      try {
+        service.fetchAsync(buildRequest(bundle.getPushMessage().getJsonAsBytes()));
+      } catch (IOException e) {
+        LOG.info(e.getMessage());
+      }
     }
   }
 
@@ -55,7 +45,7 @@ public class NotificationService {
     final HTTPRequest request = NetworkHelper.INSTANCE.getRequest(url, HTTPMethod.POST);
 
     request.addHeader(new HTTPHeader(OAuth2.HeaderType.AUTHORIZATION,
-        "key=" + System.getProperty("gcm.api.key")));
+        "key=" + System.getProperty("fcm.api.key")));
     request.addHeader(new HTTPHeader(OAuth2.HeaderType.CONTENT_TYPE, OAuth2.ContentType.JSON));
     request.setPayload(bytes);
 

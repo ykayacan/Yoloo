@@ -12,10 +12,6 @@
       android:id="@+id/action_nav_bookmarks"
       android:icon="@drawable/ic_bookmark_black_24dp"
       android:title="@string/label_nav_bookmarks" />
-    <!--<item
-      android:id="@+id/action_nav_change_view"
-      android:icon="@drawable/ic_reorder_black_24dp"
-      android:title="@string/label_nav_change_view" />-->
     <item
       android:id="@+id/action_nav_invite_friends"
       android:icon="@drawable/ic_group_add_black_24dp"

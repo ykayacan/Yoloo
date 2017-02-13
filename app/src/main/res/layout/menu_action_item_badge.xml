@@ -20,7 +20,7 @@
     android:tint="@android:color/white"
     app:srcCompat="@drawable/ic_email_outline_24dp" />
 
-  <com.yoloo.android.feature.ui.widget.materialbadge.MaterialBadgeTextView
+  <com.yoloo.android.ui.widget.materialbadge.MaterialBadgeTextView
     android:id="@+id/tv_menu_badge_count"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"

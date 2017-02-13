@@ -15,7 +15,7 @@ import com.googlecode.objectify.annotation.Load;
 import com.googlecode.objectify.annotation.Parent;
 import com.googlecode.objectify.condition.IfNotDefault;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.question.Question;
+import com.yoloo.backend.post.Post;
 import com.yoloo.backend.util.Deref;
 import com.yoloo.backend.vote.Votable;
 import com.yoloo.backend.vote.Vote;
@@ -61,12 +61,12 @@ public class Comment implements Votable {
 
   @Load(ShardGroup.class)
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-  private List<Ref<CommentCounterShard>> shardRefs;
+  private List<Ref<CommentShard>> shardRefs;
 
   @Index
   @NonFinal
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-  private Key<Question> questionKey;
+  private Key<Post> questionKey;
 
   @Wither
   @NonFinal
@@ -105,7 +105,7 @@ public class Comment implements Votable {
   }
 
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-  public List<CommentCounterShard> getShards() {
+  public List<CommentShard> getShards() {
     return Deref.deref(this.shardRefs);
   }
 

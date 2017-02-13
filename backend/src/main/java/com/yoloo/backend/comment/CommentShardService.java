@@ -9,10 +9,10 @@ import java.util.Random;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(staticName = "create")
-public class CommentShardService implements ShardService<Comment, CommentCounterShard> {
+public class CommentShardService implements ShardService<Comment, CommentShard> {
 
   @Override
-  public List<Key<CommentCounterShard>> createShardKeys(Iterable<Key<Comment>> keys) {
+  public List<Key<CommentShard>> createShardKeys(Iterable<Key<Comment>> keys) {
     return Observable
         .fromIterable(keys)
         .concatMapIterable(this::createShardKeys)
@@ -21,16 +21,16 @@ public class CommentShardService implements ShardService<Comment, CommentCounter
   }
 
   @Override
-  public List<Key<CommentCounterShard>> createShardKeys(Key<Comment> entityKey) {
+  public List<Key<CommentShard>> createShardKeys(Key<Comment> entityKey) {
     return Observable
-        .range(1, CommentCounterShard.SHARD_COUNT)
-        .map(id -> CommentCounterShard.createKey(entityKey, id))
+        .range(1, CommentShard.SHARD_COUNT)
+        .map(id -> CommentShard.createKey(entityKey, id))
         .toList()
         .blockingGet();
   }
 
   @Override
-  public List<CommentCounterShard> createShards(Iterable<Key<Comment>> keys) {
+  public List<CommentShard> createShards(Iterable<Key<Comment>> keys) {
     return Observable
         .fromIterable(keys)
         .concatMapIterable(this::createShards)
@@ -39,25 +39,25 @@ public class CommentShardService implements ShardService<Comment, CommentCounter
   }
 
   @Override
-  public List<CommentCounterShard> createShards(Key<Comment> entityKey) {
+  public List<CommentShard> createShards(Key<Comment> entityKey) {
     return Observable
-        .range(1, CommentCounterShard.SHARD_COUNT)
+        .range(1, CommentShard.SHARD_COUNT)
         .map(shardId -> createShard(entityKey, shardId))
         .toList()
         .blockingGet();
   }
 
   @Override
-  public CommentCounterShard createShard(Key<Comment> entityKey, int shardNum) {
-    return CommentCounterShard.builder()
+  public CommentShard createShard(Key<Comment> entityKey, int shardNum) {
+    return CommentShard.builder()
         .id(ShardUtil.generateShardId(entityKey, shardNum))
         .votes(0)
         .build();
   }
 
   @Override
-  public Key<CommentCounterShard> getRandomShardKey(Key<Comment> entityKey) {
-    final int shardNum = new Random().nextInt(CommentCounterShard.SHARD_COUNT - 1 + 1) + 1;
-    return CommentCounterShard.createKey(entityKey, shardNum);
+  public Key<CommentShard> getRandomShardKey(Key<Comment> entityKey) {
+    final int shardNum = new Random().nextInt(CommentShard.SHARD_COUNT - 1 + 1) + 1;
+    return CommentShard.createKey(entityKey, shardNum);
   }
 }

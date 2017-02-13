@@ -11,7 +11,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,9 +21,10 @@ import butterknife.BindView;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.ControllerChangeType;
+import com.bluelinelabs.conductor.Router;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
-import com.bluelinelabs.conductor.support.ControllerPagerAdapter;
+import com.bluelinelabs.conductor.support.RouterPagerAdapter;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CategoryRealm;
 import com.yoloo.android.data.model.PostRealm;
@@ -40,6 +40,7 @@ import com.yoloo.android.feature.write.EditorType;
 import com.yoloo.android.feature.write.editor.EditorController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
+import com.yoloo.android.util.ControllerUtil;
 import io.reactivex.Observable;
 import java.util.HashMap;
 import java.util.List;
@@ -84,19 +85,16 @@ public class CatalogController extends MvpController<CatalogView, CatalogPresent
 
     editorType = getArgs().getInt(KEY_EDITOR_TYPE);
 
-    final ControllerPagerAdapter pagerAdapter =
-        new CatalogPagerAdapter(this, true, getResources());
+    final RouterPagerAdapter pagerAdapter =
+        new CatalogPagerAdapter(this, getResources());
 
     viewPager.setAdapter(pagerAdapter);
     tabLayout.setupWithViewPager(viewPager);
 
     setupToolbar();
     setHasOptionsMenu(true);
-  }
 
-  @Override protected void onAttach(@NonNull View view) {
-    super.onAttach(view);
-    setKeyListenerOnView(view);
+    ControllerUtil.preventDefaultBackPressAction(view, this::showDiscardDraftDialog);
   }
 
   @Override protected void onDestroyView(@NonNull View view) {
@@ -124,13 +122,7 @@ public class CatalogController extends MvpController<CatalogView, CatalogPresent
         showDiscardDraftDialog();
         return false;
       case R.id.action_next:
-        if (selectedCategories.isEmpty()) {
-          Snackbar.make(getView(), R.string.error_catalog_select_category, Snackbar.LENGTH_SHORT)
-              .show();
-        } else {
-          draft.setCategoriesAsString(getCategoryIdsAsString());
-          getPresenter().updateDraft(draft);
-        }
+        saveDraftOnNext();
         return false;
       default:
         return super.onOptionsItemSelected(item);
@@ -168,7 +160,7 @@ public class CatalogController extends MvpController<CatalogView, CatalogPresent
 
   public void updateSelectedCategories(@CategoryType String categoryType,
       List<CategoryRealm> categories) {
-    if (categories.size() == 0) {
+    if (categories.isEmpty()) {
       selectedCategories.remove(categoryType);
     } else if (categoryType.equals(CategoryType.TYPE_DESTINATION)) {
       selectedCategories.put(CategoryType.TYPE_DESTINATION, categories);
@@ -180,7 +172,7 @@ public class CatalogController extends MvpController<CatalogView, CatalogPresent
   private void setupToolbar() {
     setSupportActionBar(toolbar);
 
-    // add back arrow to toolbar
+    // addPost back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
     if (ab != null) {
       ab.setTitle(R.string.label_catalog_toolbar_title);
@@ -203,41 +195,23 @@ public class CatalogController extends MvpController<CatalogView, CatalogPresent
         .show();
   }
 
-  // Listens for onBackPressed event from activity.
-  private void setKeyListenerOnView(View v) {
-    v.setFocusableInTouchMode(true);
-    v.requestFocus();
-    v.setOnKeyListener((view, keyCode, event) -> {
-      if (event.getAction() != KeyEvent.ACTION_DOWN) {
-        return true;
-      }
-
-      if (keyCode == KeyEvent.KEYCODE_BACK) {
-        showDiscardDraftDialog();
-      }
-
-      return true;
-    });
+  private void saveDraftOnNext() {
+    if (selectedCategories.isEmpty()) {
+      Snackbar.make(getView(), R.string.error_catalog_select_category, Snackbar.LENGTH_SHORT)
+          .show();
+    } else {
+      draft.setCategoriesAsString(getCategoryIdsAsString());
+      getPresenter().updateDraft(draft);
+    }
   }
 
-  private static class CatalogPagerAdapter extends ControllerPagerAdapter {
+  private static class CatalogPagerAdapter extends RouterPagerAdapter {
 
     private final Resources resources;
 
-    CatalogPagerAdapter(Controller host, boolean saveControllerState, Resources resources) {
-      super(host, saveControllerState);
+    CatalogPagerAdapter(@NonNull Controller host, Resources resources) {
+      super(host);
       this.resources = resources;
-    }
-
-    @Override public Controller getItem(int position) {
-      switch (position) {
-        case 0:
-          return CategoryController.create(CategoryType.TYPE_DESTINATION, true);
-        case 1:
-          return CategoryController.create(CategoryType.TYPE_THEME, true);
-        default:
-          return null;
-      }
     }
 
     @Override public int getCount() {
@@ -252,6 +226,16 @@ public class CatalogController extends MvpController<CatalogView, CatalogPresent
           return resources.getString(R.string.label_catalog_tab_theme);
         default:
           return null;
+      }
+    }
+
+    @Override public void configureRouter(@NonNull Router router, int position) {
+      @CategoryType final String categoryType =
+          position == 0 ? CategoryType.TYPE_DESTINATION : CategoryType.TYPE_THEME;
+
+      if (!router.hasRootController()) {
+        CategoryController page = CategoryController.create(categoryType, true);
+        router.setRoot(RouterTransaction.with(page));
       }
     }
   }

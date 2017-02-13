@@ -50,7 +50,7 @@ public final class IterHelper<K, V> {
   }
 
   /**
-   * Calls eval for each entry found, or just once if the "x" isn't iterable/collection/list/etc.
+   * Calls eval for each entry found, or just once if the "x" isn't iterable/collection/listFeed/etc.
    * with "x"
    *
    * @param x the object process

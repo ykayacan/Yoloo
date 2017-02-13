@@ -1,12 +1,11 @@
 package com.yoloo.backend.comment;
 
 import com.google.appengine.api.datastore.QueryResultIterable;
-import com.google.appengine.repackaged.com.google.common.base.Pair;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.vote.Vote;
-import com.yoloo.backend.vote.VoteHelper;
+import com.yoloo.backend.vote.VoteUtil;
 import io.reactivex.Observable;
 import java.util.Collection;
 import java.util.List;
@@ -65,11 +64,7 @@ public final class CommentUtil {
       return Observable.empty();
     }
 
-    final VoteHelper helper = VoteHelper.create();
-
-    Pair<Comment, Comment> pair = helper.sort(comments, true);
-
-    QueryResultIterable<Vote> votes = helper.getVotes(pair.first, pair.second, parentKey);
+    QueryResultIterable<Vote> votes = VoteUtil.mergeVotes(comments, parentKey, false);
 
     return Observable.fromIterable(comments).flatMap(comment -> mergeVoteDir(comment, votes));
   }
@@ -88,7 +83,7 @@ public final class CommentUtil {
 
   private static Observable<Comment> mergeShards(Comment comment) {
     return Observable.fromIterable(comment.getShards())
-        .map(CommentCounterShard::getVotes)
+        .map(CommentShard::getVotes)
         .reduce((val1, val2) -> val1 + val2)
         .map(comment::withVotes)
         .toObservable();

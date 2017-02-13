@@ -6,14 +6,15 @@ import android.os.StrictMode;
 import android.support.multidex.MultiDex;
 import android.support.v7.app.AppCompatDelegate;
 import android.util.Log;
-import com.facebook.FacebookSdk;
-import com.facebook.appevents.AppEventsLogger;
 import com.facebook.stetho.Stetho;
+import com.google.firebase.database.FirebaseDatabase;
 import com.uphyca.stetho_realm.RealmInspectorModulesProvider;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import java.io.File;
+import net.danlew.android.joda.JodaTimeAndroid;
 import timber.log.Timber;
+import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 public class YolooApp extends Application {
 
@@ -41,17 +42,27 @@ public class YolooApp extends Application {
   @Override
   public void onCreate() {
     super.onCreate();
-
-    initializeTimber();
-    //initializeLeakCanary();
-    initializeRealm();
-    //enabledStrictMode();
-    initializeStetho();
-
-    /*TinyDancer.create()
-        .show(this);*/
-
     currentApplication = this;
+
+    initTimber();
+    initRealm();
+    initStetho();
+    FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+    JodaTimeAndroid.init(this);
+    initCalligraphy();
+
+    //initializeLeakCanary();
+    //enabledStrictMode();
+    //TinyDancer.create().show(this);
+
+
+  }
+
+  private void initCalligraphy() {
+    CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
+        .setDefaultFontPath("fonts/OpenSans-Regular.ttf")
+        .setFontAttrId(R.attr.fontPath)
+        .build());
   }
 
   @Override
@@ -60,7 +71,7 @@ public class YolooApp extends Application {
     MultiDex.install(this);
   }
 
-  public void initializeStetho() {
+  public void initStetho() {
     Stetho.initialize(
         Stetho.newInitializerBuilder(this)
             .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
@@ -68,12 +79,7 @@ public class YolooApp extends Application {
             .build());
   }
 
-  private void initializeFacebook() {
-    FacebookSdk.sdkInitialize(this);
-    AppEventsLogger.activateApp(this);
-  }
-
-  private void initializeRealm() {
+  private void initRealm() {
     Realm.init(this);
     RealmConfiguration realmConfiguration = new RealmConfiguration.Builder()
         .deleteRealmIfMigrationNeeded()
@@ -90,7 +96,7 @@ public class YolooApp extends Application {
     refWatcher = LeakCanary.install(this);
   }*/
 
-  private void initializeTimber() {
+  private void initTimber() {
     if (BuildConfig.DEBUG) {
       Timber.plant(new Timber.DebugTree() {
         // Add the line number to the tag

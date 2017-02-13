@@ -20,7 +20,7 @@
     app:layout_constraintTop_toTopOf="parent"
     app:srcCompat="@drawable/ic_local_offer_black_24dp" />
 
-  <com.yoloo.android.feature.ui.widget.CompatTextView
+  <com.yoloo.android.ui.widget.CompatTextView
     android:id="@+id/tv_item_search_tag"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
@@ -33,7 +33,7 @@
     app:layout_constraintTop_toTopOf="parent"
     tools:text="Test" />
 
-  <com.yoloo.android.feature.ui.widget.CompatTextView
+  <com.yoloo.android.ui.widget.CompatTextView
     android:id="@+id/tv_item_search_post_count"
     android:layout_width="0dp"
     android:layout_height="wrap_content"

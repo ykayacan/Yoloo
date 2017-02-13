@@ -15,12 +15,12 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import timber.log.Timber;
 
-public class ProviderPresenter extends MvpPresenter<ProviderView> {
+class ProviderPresenter extends MvpPresenter<ProviderView> {
 
   private UserRepository userRepository;
   private CategoryRepository categoryRepository;
 
-  public ProviderPresenter(UserRepository userRepository, CategoryRepository categoryRepository) {
+  ProviderPresenter(UserRepository userRepository, CategoryRepository categoryRepository) {
     this.userRepository = userRepository;
     this.categoryRepository = categoryRepository;
   }
@@ -36,7 +36,7 @@ public class ProviderPresenter extends MvpPresenter<ProviderView> {
   }
 
   private void loadCategories() {
-    Disposable d = categoryRepository.list(30, CategorySorter.DEFAULT)
+    Disposable d = categoryRepository.listCategories(30, CategorySorter.DEFAULT)
         .observeOn(AndroidSchedulers.mainThread(), true)
         .subscribe(realms -> getView().onCategoriesLoaded(realms));
 
@@ -74,7 +74,7 @@ public class ProviderPresenter extends MvpPresenter<ProviderView> {
     AccountRealm newAccount =
         new AccountRealm().setMe(true).setLocale(locale).setCategoryIds(categoryIds);
 
-    Disposable d = userRepository.add(newAccount)
+    Disposable d = userRepository.addUser(newAccount)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(account -> {
           getView().onHideLoading();

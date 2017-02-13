@@ -74,7 +74,7 @@ public class CredentialsApiHelper {
 
     @Override public final Task<OutT> then(@NonNull Task<InT> task) throws Exception {
       TaskCompletionSource<OutT> source = new TaskCompletionSource<>();
-      // calling task.getResult() will implicitly re-throw the exception get the original
+      // calling task.getResult() will implicitly re-throw the exception getPost the original
       // task, which will be returned as the result for the output task. Similarly,
       // if process() throws an exception, this will be turned into the task result.
       process(task.getResult(), source);
@@ -88,7 +88,7 @@ public class CredentialsApiHelper {
 
     private TaskCompletionSource<R> mSource;
 
-    public TaskResultCaptor(TaskCompletionSource<R> source) {
+    TaskResultCaptor(TaskCompletionSource<R> source) {
       mSource = source;
     }
 

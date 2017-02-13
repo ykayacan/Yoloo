@@ -32,6 +32,7 @@ public class NotificationPresenter extends MvpPresenter<NotificationView> {
 
   private void showNotifications(Response<List<NotificationRealm>> response) {
     getView().onLoaded(response);
+    getView().showContent();
   }
 
   private void showError(Throwable throwable) {

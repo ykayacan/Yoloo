@@ -4,7 +4,7 @@
   <!-- Begin Listeners -->
 
   <listener>
-    <listener-class>com.yoloo.backend.FirebaseHelper</listener-class>
+    <listener-class>com.yoloo.backend.FirebaseInitializer</listener-class>
   </listener>
 
   <listener>
@@ -23,12 +23,13 @@
       <param-value>
         com.yoloo.backend.account.AccountEndpoint,
         com.yoloo.backend.follow.FollowEndpoint,
-        com.yoloo.backend.question.QuestionEndpoint,
+        com.yoloo.backend.post.QuestionEndpoint,
+        com.yoloo.backend.post.BlogEndpoint,
         com.yoloo.backend.comment.CommentEndpoint,
         com.yoloo.backend.vote.VoteEndpoint,
         com.yoloo.backend.bookmark.BookmarkEndpoint,
         com.yoloo.backend.tag.TagEndpoint,
-        com.yoloo.backend.topic.TopicEndpoint,
+        com.yoloo.backend.category.CategoryEndpoint,
         com.yoloo.backend.media.MediaEndpoint,
         com.yoloo.backend.device.DeviceEndpoint,
         com.yoloo.backend.feed.FeedEndpoint,
@@ -57,28 +58,28 @@
   </servlet-mapping>
 
   <servlet>
-    <servlet-name>TopicRankUpdateServlet</servlet-name>
-    <servlet-class>com.yoloo.backend.topic.TopicRankUpdateServlet</servlet-class>
+    <servlet-name>UpdateCategoryRankServlet</servlet-name>
+    <servlet-class>com.yoloo.backend.category.UpdateCategoryRankServlet</servlet-class>
   </servlet>
 
   <servlet-mapping>
-    <servlet-name>TopicRankUpdateServlet</servlet-name>
-    <url-pattern>/tasks/update/topic/rank</url-pattern>
+    <servlet-name>UpdateCategoryRankServlet</servlet-name>
+    <url-pattern>/tasks/update/category/rank</url-pattern>
   </servlet-mapping>
 
   <servlet>
-    <servlet-name>TagCounterUpdateServlet</servlet-name>
-    <servlet-class>com.yoloo.backend.tag.TagCounterUpdateServlet</servlet-class>
+    <servlet-name>UpdateTagCounterServlet</servlet-name>
+    <servlet-class>com.yoloo.backend.tag.UpdateTagCounterServlet</servlet-class>
   </servlet>
 
   <servlet-mapping>
-    <servlet-name>TagCounterUpdateServlet</servlet-name>
+    <servlet-name>UpdateTagCounterServlet</servlet-name>
     <url-pattern>/tasks/update/tag/counter</url-pattern>
   </servlet-mapping>
 
   <servlet>
     <servlet-name>FeedUpdateServlet</servlet-name>
-    <servlet-class>com.yoloo.backend.question.FeedUpdateServlet</servlet-class>
+    <servlet-class>com.yoloo.backend.post.FeedUpdateServlet</servlet-class>
   </servlet>
 
   <servlet-mapping>
@@ -168,8 +169,8 @@
 
   <security-constraint>
     <web-resource-collection>
-      <web-resource-name>TopicRankUpdateServlet</web-resource-name>
-      <url-pattern>/tasks/update/categories/rank</url-pattern>
+      <web-resource-name>UpdateCategoryRankServlet</web-resource-name>
+      <url-pattern>/tasks/update/category/rank</url-pattern>
     </web-resource-collection>
     <auth-constraint>
       <role-name>admin</role-name>
@@ -178,13 +179,13 @@
 
   <security-constraint>
     <web-resource-collection>
-      <web-resource-name>TagCounterUpdateServlet</web-resource-name>
+      <web-resource-name>UpdateTagCounterServlet</web-resource-name>
       <url-pattern>/tasks/update/tag/counter</url-pattern>
     </web-resource-collection>
     <auth-constraint>
       <role-name>admin</role-name>
     </auth-constraint>
-   </security-constraint>
+  </security-constraint>
 
   <security-constraint>
     <web-resource-collection>

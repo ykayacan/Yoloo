@@ -16,29 +16,28 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
 import com.bluelinelabs.conductor.RouterTransaction;
-import com.google.android.gms.common.Scopes;
 import com.yoloo.android.R;
 import com.yoloo.android.data.faker.AccountFaker;
-import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.feature.feed.userfeed.UserFeedController;
 import com.yoloo.android.feature.login.AuthUI;
 import com.yoloo.android.feature.login.FacebookProvider;
 import com.yoloo.android.feature.login.GoogleProvider;
 import com.yoloo.android.feature.login.IdpProvider;
 import com.yoloo.android.feature.login.IdpResponse;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.FormUtil;
 import com.yoloo.android.util.KeyboardUtil;
 import java.net.SocketTimeoutException;
+import timber.log.Timber;
 
 public class SignInController extends MvpController<SignInView, SignInPresenter>
     implements SignInView, IdpProvider.IdpCallback {
 
   static {
-    AccountFaker.generate();
+    AccountFaker.generateAll();
   }
 
   @BindView(R.id.et_login_email) EditText etEmail;
@@ -54,8 +53,7 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
 
   private ProgressDialog progressDialog;
 
-  private IdpProvider googleProvider;
-  private IdpProvider facebookProvider;
+  private IdpProvider idpProvider;
 
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
@@ -66,25 +64,24 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
     super.onViewCreated(view);
 
     getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-
-    googleProvider = getIdpProvider(AuthUI.GOOGLE_PROVIDER);
-    facebookProvider = getIdpProvider(AuthUI.FACEBOOK_PROVIDER);
-
-    googleProvider.setAuthenticationCallback(this);
-    facebookProvider.setAuthenticationCallback(this);
   }
 
   @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-    ((GoogleProvider) googleProvider).connect();
+    if (idpProvider instanceof GoogleProvider) {
+      ((GoogleProvider) idpProvider).connect();
+    }
   }
 
   @Override protected void onDetach(@NonNull View view) {
     super.onDetach(view);
-    ((GoogleProvider) googleProvider).disconnect();
+    if (idpProvider instanceof GoogleProvider) {
+      ((GoogleProvider) idpProvider).disconnect();
+    }
 
-    googleProvider.setAuthenticationCallback(null);
-    facebookProvider.setAuthenticationCallback(null);
+    if (idpProvider != null) {
+      idpProvider.setAuthenticationCallback(null);
+    }
   }
 
   @NonNull @Override public SignInPresenter createPresenter() {
@@ -95,16 +92,21 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
   }
 
   @Override public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-    googleProvider.onActivityResult(requestCode, resultCode, data);
-    facebookProvider.onActivityResult(requestCode, resultCode, data);
+    idpProvider.onActivityResult(requestCode, resultCode, data);
   }
 
   @OnClick(R.id.btn_google_sign_in) void signInWithGoogle() {
-    googleProvider.startLogin(this);
+    idpProvider = getIdpProvider(AuthUI.GOOGLE_PROVIDER);
+    idpProvider.setAuthenticationCallback(this);
+
+    idpProvider.startLogin(this);
   }
 
   @OnClick(R.id.btn_facebook_sign_in) void signInWithFacebook() {
-    facebookProvider.startLogin(this);
+    idpProvider = getIdpProvider(AuthUI.FACEBOOK_PROVIDER);
+    idpProvider.setAuthenticationCallback(this);
+
+    idpProvider.startLogin(this);
   }
 
   @OnClick(R.id.btn_login_ready) void signInWithEmail() {
@@ -150,11 +152,12 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
     }
   }
 
-  @Override public void onSignedIn(AccountRealm account) {
+  @Override public void onSignedIn() {
     getParentController().getRouter().setRoot(RouterTransaction.with(new UserFeedController()));
   }
 
   @Override public void onError(Throwable t) {
+    Timber.e(t);
     Snackbar.make(getView(), errorAuthFailedString, Snackbar.LENGTH_SHORT).show();
 
     if (t instanceof SocketTimeoutException) {
@@ -186,7 +189,7 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
   }
 
   @Override public void onFailure(Bundle extra) {
-    Snackbar.make(getView(), extra.getString("error", null), Snackbar.LENGTH_SHORT).show();
+    //Snackbar.make(getView(), extra.getString("error", null), Snackbar.LENGTH_SHORT).show();
   }
 
   private IdpProvider getIdpProvider(String providerId) {
@@ -194,12 +197,12 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
 
     switch (providerId) {
       case AuthUI.GOOGLE_PROVIDER:
-        config.addScope(Scopes.PLUS_LOGIN);
+        //config.addScope(Scopes.PLUS_LOGIN);
         return new GoogleProvider(this, config);
       case AuthUI.FACEBOOK_PROVIDER:
         return new FacebookProvider(getApplicationContext(), config);
       default:
-        return null;
+        throw new UnsupportedOperationException("Given providerId is not valid!");
     }
   }
 }

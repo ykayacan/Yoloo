@@ -32,7 +32,7 @@ import com.yoloo.android.feature.login.GoogleProvider;
 import com.yoloo.android.feature.login.IdpProvider;
 import com.yoloo.android.feature.login.IdpResponse;
 import com.yoloo.android.feature.login.signup.SignUpController;
-import com.yoloo.android.feature.ui.widget.tagview.TagView;
+import com.yoloo.android.ui.widget.tagview.TagView;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.LocaleUtil;
 import io.reactivex.Observable;
@@ -64,8 +64,7 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
 
   private ProgressDialog progressDialog;
 
-  private IdpProvider googleProvider;
-  private IdpProvider facebookProvider;
+  private IdpProvider idpProvider;
 
   public ProviderController() {
     setRetainViewMode(RetainViewMode.RETAIN_DETACH);
@@ -78,29 +77,29 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
 
   @Override protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
-    googleProvider = getIdpProvider(AuthUI.GOOGLE_PROVIDER);
-    facebookProvider = getIdpProvider(AuthUI.FACEBOOK_PROVIDER);
-
-    googleProvider.setAuthenticationCallback(this);
-    facebookProvider.setAuthenticationCallback(this);
-
     ButterKnife.apply(views, DEFAULT_VISIBILITY, false);
-
-    tagView.addOnTagSelectListener(this);
   }
 
   @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-    ((GoogleProvider) googleProvider).connect();
+    if (idpProvider instanceof GoogleProvider) {
+      ((GoogleProvider) idpProvider).connect();
+    }
+
+    tagView.addOnTagSelectListener(this);
   }
 
   @Override protected void onDetach(@NonNull View view) {
     super.onDetach(view);
-    ((GoogleProvider) googleProvider).disconnect();
+    if (idpProvider instanceof GoogleProvider) {
+      ((GoogleProvider) idpProvider).disconnect();
+    }
+
+    if (idpProvider != null) {
+      idpProvider.setAuthenticationCallback(null);
+    }
 
     tagView.removeOnTagSelectListener(this);
-    googleProvider.setAuthenticationCallback(null);
-    facebookProvider.setAuthenticationCallback(null);
   }
 
   @NonNull @Override public ProviderPresenter createPresenter() {
@@ -114,16 +113,21 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
   }
 
   @Override public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-    googleProvider.onActivityResult(requestCode, resultCode, data);
-    facebookProvider.onActivityResult(requestCode, resultCode, data);
+    idpProvider.onActivityResult(requestCode, resultCode, data);
   }
 
   @OnClick(R.id.btn_google_sign_in) void signUpWithGoogle() {
-    googleProvider.startLogin(this);
+    idpProvider = getIdpProvider(AuthUI.GOOGLE_PROVIDER);
+    idpProvider.setAuthenticationCallback(this);
+
+    idpProvider.startLogin(this);
   }
 
   @OnClick(R.id.btn_facebook_sign_in) void signUpWithFacebook() {
-    facebookProvider.startLogin(this);
+    idpProvider = getIdpProvider(AuthUI.FACEBOOK_PROVIDER);
+    idpProvider.setAuthenticationCallback(this);
+
+    idpProvider.startLogin(this);
   }
 
   @OnClick(R.id.btn_login_sign_up) void signUp() {
@@ -200,7 +204,7 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
   }
 
   @Override public void onFailure(Bundle extra) {
-    Snackbar.make(getView(), extra.getString("error", null), Snackbar.LENGTH_SHORT).show();
+    //Snackbar.make(getView(), extra.getString("error", null), Snackbar.LENGTH_SHORT).show();
   }
 
   private IdpProvider getIdpProvider(String providerId) {
@@ -213,7 +217,7 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
       case AuthUI.FACEBOOK_PROVIDER:
         return new FacebookProvider(getApplicationContext(), config);
       default:
-        return null;
+        throw new UnsupportedOperationException("Given providerId is not valid!");
     }
   }
 }

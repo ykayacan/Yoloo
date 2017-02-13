@@ -8,6 +8,7 @@ import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Load;
 import com.googlecode.objectify.annotation.Parent;
 import com.yoloo.backend.account.Account;
+import com.yoloo.backend.post.Post;
 import lombok.Builder;
 import lombok.Value;
 
@@ -21,12 +22,12 @@ public class Feed {
   private Long id;
 
   @Parent
-  private Key<Account> parentUserKey;
+  private Key<Account> parent;
 
   @Load
-  private Ref<FeedItem> feedItemRef;
+  private Ref<Post> postRef;
 
-  public FeedItem getFeedItem() {
-    return this.feedItemRef.getValue();
+  public Post getFeedItem() {
+    return postRef.getValue();
   }
 }

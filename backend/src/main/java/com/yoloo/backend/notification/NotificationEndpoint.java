@@ -43,14 +43,18 @@ public class NotificationEndpoint {
       name = "accounts.notifications.list",
       path = "accounts/notifications",
       httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Notification> list(@Nullable @Named("cursor") String cursor,
-      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
+  public CollectionResponse<Notification> list(
+      @Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit,
+      User user) throws ServiceException {
 
     Validator.builder()
         .addRule(new AuthValidator(user))
         .validate();
 
-    return notificationController.list(Optional.fromNullable(cursor), Optional.fromNullable(limit),
+    return notificationController.listNotifications(
+        Optional.fromNullable(cursor),
+        Optional.fromNullable(limit),
         user);
   }
 }

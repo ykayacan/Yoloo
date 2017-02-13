@@ -12,7 +12,7 @@ import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
-import com.yoloo.backend.topic.Topic;
+import com.yoloo.backend.category.Category;
 import com.yoloo.backend.util.Deref;
 import java.util.Date;
 import java.util.List;
@@ -71,7 +71,7 @@ public class Account {
 
   @Load(ShardGroup.class)
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-  private List<Ref<AccountCounterShard>> shardRefs;
+  private List<Ref<AccountShard>> shardRefs;
 
   @Index
   @NonFinal
@@ -86,7 +86,7 @@ public class Account {
   private DateTime birthDate;
 
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-  private List<Key<Topic>> topicKeys;
+  private List<Key<Category>> categoryKeys;
 
   // Extra fields
 
@@ -100,7 +100,7 @@ public class Account {
 
   @Ignore
   @Wither
-  private Achievements achievements;
+  private Detail detail;
 
   @ApiResourceProperty(name = "id")
   public String getWebsafeId() {
@@ -113,7 +113,7 @@ public class Account {
   }
 
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-  public List<AccountCounterShard> getShards() {
+  public List<AccountShard> getShards() {
     return Deref.deref(getShardRefs());
   }
 
@@ -176,7 +176,7 @@ public class Account {
   @Builder
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   @AllArgsConstructor(access = AccessLevel.PRIVATE)
-  public static final class Achievements {
+  public static final class Detail {
     private int level;
     private int points;
     private int bounties;

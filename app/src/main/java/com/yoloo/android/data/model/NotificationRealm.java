@@ -1,7 +1,5 @@
 package com.yoloo.android.data.model;
 
-import com.yoloo.android.backend.modal.yolooApi.model.JsonMap;
-import com.yoloo.android.backend.modal.yolooApi.model.Notification;
 import io.realm.RealmObject;
 import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
@@ -29,7 +27,7 @@ public class NotificationRealm extends RealmObject {
   public NotificationRealm() {
   }
 
-  public NotificationRealm(Notification notification) {
+  /*public NotificationRealm(Notification notification) {
     this.id = notification.getId();
     this.senderId = notification.getSenderId();
     this.senderUsername = notification.getSenderUsername();
@@ -45,7 +43,7 @@ public class NotificationRealm extends RealmObject {
     if (map.containsKey("message")) {
       this.message = (String) map.get("message");
     }
-  }
+  }*/
 
   public String getId() {
     return id;

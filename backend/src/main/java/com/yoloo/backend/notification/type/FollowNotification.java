@@ -2,10 +2,10 @@ package com.yoloo.backend.notification.type;
 
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.device.DeviceRecord;
-import com.yoloo.backend.notification.MessageConstants;
+import com.yoloo.backend.notification.PushConstants;
 import com.yoloo.backend.notification.Notification;
 import com.yoloo.backend.notification.PushMessage;
-import com.yoloo.backend.notification.action.Action;
+import com.yoloo.backend.notification.Action;
 import java.util.Collections;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -22,7 +22,6 @@ public class FollowNotification implements NotificationBundle {
     Notification notification = Notification.builder()
         .senderKey(sender.getKey())
         .receiverKey(record.getParentUserKey())
-        .senderId(sender.getWebsafeId())
         .senderUsername(sender.getUsername())
         .senderAvatarUrl(sender.getAvatarUrl())
         .action(Action.FOLLOW)
@@ -35,9 +34,9 @@ public class FollowNotification implements NotificationBundle {
   @Override
   public PushMessage getPushMessage() {
     PushMessage.DataBody dataBody = PushMessage.DataBody.builder()
-        .value(MessageConstants.ACTION, Action.FOLLOW.getValueString())
-        .value(MessageConstants.SENDER_USERNAME, sender.getWebsafeId())
-        .value(MessageConstants.SENDER_AVATAR_URL, sender.getAvatarUrl().getValue())
+        .value(PushConstants.ACTION, Action.FOLLOW.getValueString())
+        .value(PushConstants.SENDER_USERNAME, sender.getWebsafeId())
+        .value(PushConstants.SENDER_AVATAR_URL, sender.getAvatarUrl().getValue())
         .build();
 
     return PushMessage.builder()

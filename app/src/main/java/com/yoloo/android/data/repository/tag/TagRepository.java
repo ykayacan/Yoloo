@@ -29,7 +29,7 @@ public class TagRepository {
     return INSTANCE;
   }
 
-  public Observable<List<TagRealm>> list(TagSorter sorter) {
+  public Observable<List<TagRealm>> listTags(TagSorter sorter) {
     return Observable.mergeDelayError(
         diskDataStore.list(sorter).subscribeOn(Schedulers.io()),
         remoteDataStore.list(sorter)
@@ -37,7 +37,7 @@ public class TagRepository {
             .subscribeOn(Schedulers.io()));
   }
 
-  public Observable<Response<List<TagRealm>>> list(String name, String cursor, int limit) {
+  public Observable<Response<List<TagRealm>>> listTags(String name, String cursor, int limit) {
     return remoteDataStore.list(name, cursor, limit)
         .doOnNext(response -> Observable.fromIterable(response.getData())
             .map(tag -> tag.setRecent(true))
@@ -47,7 +47,7 @@ public class TagRepository {
         .subscribeOn(Schedulers.io());
   }
 
-  public Observable<List<TagRealm>> listRecent() {
+  public Observable<List<TagRealm>> listRecentTags() {
     return diskDataStore.listRecent().subscribeOn(Schedulers.io());
   }
 }
