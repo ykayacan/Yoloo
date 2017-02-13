@@ -42,7 +42,7 @@ public class FollowEndpoint {
   private static final Logger logger =
       Logger.getLogger(FollowEndpoint.class.getSimpleName());
 
-  private final FollowController followController = FollowContollerFactory.of().create();
+  private final FollowController followController = FollowControllerFactory.of().create();
 
   /**
    * Follows a new {@code Account}.
@@ -70,7 +70,7 @@ public class FollowEndpoint {
   /**
    * Unfollows the specified {@code Account}.
    *
-   * @param accountId the ID of the entity to delete
+   * @param accountId the ID of the entity to deletePost
    * @param user the user
    * @throws ServiceException the service exception
    */

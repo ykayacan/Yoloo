@@ -1,6 +1,5 @@
 package com.yoloo.android.data.model;
 
-import com.yoloo.android.backend.modal.yolooApi.model.FeedItem;
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.Index;
@@ -35,8 +34,8 @@ public class PostRealm extends RealmObject {
   @Index private boolean pending;
   @Index private boolean bookmarked;
 
-  public PostRealm(FeedItem feedItem) {
-  }
+  /*public PostRealm(FeedItem feedItem) {
+  }*/
 
   public PostRealm() {
   }

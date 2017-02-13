@@ -122,20 +122,6 @@
     <attr name="enabledIp_addressUnderline" format="boolean" />
   </declare-styleable>
 
-  <declare-styleable name="TagsEditText">
-    <attr name="allowSpaceInTag" format="boolean"/>
-    <attr name="tagsTextColor" format="color"/>
-    <attr name="tagsTextSize" format="dimension"/>
-    <attr name="tagsBackground" format="integer"/>
-    <attr name="tagsCloseImageLeft" format="integer"/>
-    <attr name="tagsCloseImageRight" format="integer"/>
-    <attr name="tagsCloseImagePadding" format="dimension" />
-    <attr name="tagsPaddingLeft" format="dimension"/>
-    <attr name="tagsPaddingRight" format="dimension"/>
-    <attr name="tagsPaddingTop" format="dimension"/>
-    <attr name="tagsPaddingBottom" format="dimension"/>
-  </declare-styleable>
-
   <declare-styleable name="chipLayout">
     <attr name="android:gravity" />
   </declare-styleable>

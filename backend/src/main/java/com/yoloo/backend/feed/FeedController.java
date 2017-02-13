@@ -10,19 +10,19 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
-import com.yoloo.backend.blog.Blog;
-import com.yoloo.backend.question.Question;
+import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostShardService;
+import com.yoloo.backend.vote.VoteService;
 import java.util.List;
 import java.util.logging.Logger;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import static com.yoloo.backend.OfyService.ofy;
 
-@RequiredArgsConstructor(staticName = "create")
+@AllArgsConstructor(staticName = "create")
 public class FeedController extends Controller {
 
-  private static final Logger logger =
+  private static final Logger LOG =
       Logger.getLogger(FeedController.class.getName());
 
   /**
@@ -30,10 +30,19 @@ public class FeedController extends Controller {
    */
   private static final int DEFAULT_LIST_LIMIT = 20;
 
-  @NonNull
-  private FeedService feedService;
+  private PostShardService postShardService;
 
-  public CollectionResponse<FeedItem> list(Optional<Integer> limit, Optional<String> cursor,
+  private VoteService voteService;
+
+  /**
+   * List feed collection response.
+   *
+   * @param limit the limit
+   * @param cursor the cursor
+   * @param user the user
+   * @return the collection response
+   */
+  public CollectionResponse<Post> listFeed(Optional<Integer> limit, Optional<String> cursor,
       User user) {
 
     // Create account key from websafe id.
@@ -43,30 +52,28 @@ public class FeedController extends Controller {
 
     final QueryResultIterator<Feed> qi = query.iterator();
 
-    List<FeedItem> feedItems = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
+    List<Post> feed = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
 
     while (qi.hasNext()) {
-      // Add fetched objects to map. Because cursor iteration needs to be iterated.
-      feedItems.add(qi.next().getFeedItem());
+      feed.add(qi.next().getFeedItem());
     }
 
-    feedItems = feedService.mergeCounters(feedItems)
-        .toList(DEFAULT_LIST_LIMIT)
-        .flatMap(feedItems1 ->
-            feedService.mergeVoteDirection(feedItems1, accountKey, false).toList())
-        .blockingGet();
+    feed = postShardService.mergeShards(feed)
+        .flatMap(posts -> voteService.checkPostVote(posts, accountKey, false))
+        .blockingSingle();
 
-    return CollectionResponse.<FeedItem>builder()
-        .setItems(feedItems)
+    return CollectionResponse.<Post>builder()
+        .setItems(feed)
         .setNextPageToken(qi.getCursor().toWebSafeString())
         .build();
   }
 
   private Query<Feed> getFeedQuery(Optional<Integer> limit, Optional<String> cursor,
       Key<Account> accountKey) {
+
     Query<Feed> query = ofy()
         .load()
-        .group(Question.ShardGroup.class, Blog.ShardGroup.class)
+        .group(Post.ShardGroup.class)
         .type(Feed.class)
         .ancestor(accountKey);
 
@@ -76,6 +83,7 @@ public class FeedController extends Controller {
         : query;
 
     query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
+
     return query;
   }
 }

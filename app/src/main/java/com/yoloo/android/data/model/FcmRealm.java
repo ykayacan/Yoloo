@@ -7,7 +7,7 @@ public class FcmRealm extends RealmObject {
 
   @PrimaryKey
   private String token;
-  private boolean pendingChanges;
+  private boolean pending;
 
   public FcmRealm() {
   }
@@ -24,11 +24,11 @@ public class FcmRealm extends RealmObject {
     this.token = token;
   }
 
-  public boolean isPendingChanges() {
-    return pendingChanges;
+  public boolean isPending() {
+    return pending;
   }
 
-  public void setPendingChanges(boolean pendingChanges) {
-    this.pendingChanges = pendingChanges;
+  public void setPending(boolean pending) {
+    this.pending = pending;
   }
 }

@@ -13,7 +13,7 @@ import java.util.List;
 
 public class CategoryDiskDataStore {
 
-  private static CategoryDiskDataStore INSTANCE;
+  private static CategoryDiskDataStore instance;
 
   private CategoryDiskDataStore() {
   }
@@ -24,10 +24,10 @@ public class CategoryDiskDataStore {
    * @return the instance
    */
   public static CategoryDiskDataStore getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new CategoryDiskDataStore();
+    if (instance == null) {
+      instance = new CategoryDiskDataStore();
     }
-    return INSTANCE;
+    return instance;
   }
 
   /**

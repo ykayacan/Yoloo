@@ -17,7 +17,9 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.OnTextChanged;
 import com.bluelinelabs.conductor.Controller;
-import com.bluelinelabs.conductor.support.ControllerPagerAdapter;
+import com.bluelinelabs.conductor.Router;
+import com.bluelinelabs.conductor.RouterTransaction;
+import com.bluelinelabs.conductor.support.RouterPagerAdapter;
 import com.yoloo.android.R;
 import com.yoloo.android.feature.base.BaseController;
 import com.yoloo.android.util.KeyboardUtil;
@@ -25,14 +27,14 @@ import com.yoloo.android.util.KeyboardUtil;
 public class SearchController extends BaseController {
 
   @BindView(R.id.tablayout_search) TabLayout tabLayout;
-
   @BindView(R.id.viewpager_search) ViewPager viewPager;
-
   @BindView(R.id.toolbar_search) Toolbar toolbar;
-
   @BindView(R.id.ib_search_clear) ImageButton ibSearchClear;
-
   @BindView(R.id.et_search) EditText etSearch;
+
+  public SearchController() {
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
+  }
 
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
@@ -42,7 +44,8 @@ public class SearchController extends BaseController {
   @Override protected void onViewCreated(@NonNull View view) {
     super.onViewCreated(view);
 
-    final SearchPagerAdapter pagerAdapter = new SearchPagerAdapter(this, true, getResources());
+    final RouterPagerAdapter pagerAdapter =
+        new SearchPagerAdapter(this, getResources());
 
     viewPager.setAdapter(pagerAdapter);
     tabLayout.setupWithViewPager(viewPager);
@@ -61,8 +64,7 @@ public class SearchController extends BaseController {
     final int itemId = item.getItemId();
     switch (itemId) {
       case android.R.id.home:
-        KeyboardUtil.hideKeyboard(etSearch);
-        getRouter().popCurrentController();
+        getRouter().handleBack();
         return true;
       default:
         return super.onOptionsItemSelected(item);
@@ -93,24 +95,13 @@ public class SearchController extends BaseController {
     }
   }
 
-  private static class SearchPagerAdapter extends ControllerPagerAdapter {
+  private static class SearchPagerAdapter extends RouterPagerAdapter {
 
     private final Resources resources;
 
-    SearchPagerAdapter(Controller host, boolean saveControllerState, Resources resources) {
-      super(host, saveControllerState);
+    SearchPagerAdapter(@NonNull Controller host, Resources resources) {
+      super(host);
       this.resources = resources;
-    }
-
-    @Override public Controller getItem(int position) {
-      switch (position) {
-        case 0:
-          return ChildSearchController.create(SearchType.TAG);
-        case 1:
-          return ChildSearchController.create(SearchType.USER);
-        default:
-          return null;
-      }
     }
 
     @Override public int getCount() {
@@ -125,6 +116,15 @@ public class SearchController extends BaseController {
           return resources.getString(R.string.label_search_users);
         default:
           return null;
+      }
+    }
+
+    @Override public void configureRouter(@NonNull Router router, int position) {
+      @SearchType final int searchType = position == 0 ? SearchType.TAG : SearchType.USER;
+
+      if (!router.hasRootController()) {
+        ChildSearchController page = ChildSearchController.create(searchType);
+        router.setRoot(RouterTransaction.with(page));
       }
     }
   }

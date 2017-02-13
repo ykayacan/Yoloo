@@ -13,11 +13,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import timber.log.Timber;
 
-public class SignInPresenter extends MvpPresenter<SignInView> {
+class SignInPresenter extends MvpPresenter<SignInView> {
 
   private final UserRepository userRepository;
 
-  public SignInPresenter(UserRepository userRepository) {
+  SignInPresenter(UserRepository userRepository) {
     this.userRepository = userRepository;
   }
 
@@ -52,17 +52,17 @@ public class SignInPresenter extends MvpPresenter<SignInView> {
         getView().onHideLoading();
         getView().onError(task.getException());
       } else {
-        loadUserProfile();
+        loadUser();
       }
     });
   }
 
-  private void loadUserProfile() {
+  private void loadUser() {
     Disposable d = userRepository.getMe()
         .observeOn(AndroidSchedulers.mainThread(), true)
         .subscribe(account -> {
           getView().onHideLoading();
-          getView().onSignedIn(account);
+          getView().onSignedIn();
         }, throwable -> {
           getView().onHideLoading();
           getView().onError(throwable);

@@ -8,12 +8,12 @@ import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.IgnoreSave;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
-import com.googlecode.objectify.condition.IfNotNull;
 import com.googlecode.objectify.condition.IfNotZero;
+import com.googlecode.objectify.condition.IfNull;
 import com.yoloo.backend.util.Deref;
-import io.reactivex.Observable;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -42,7 +42,7 @@ public class Tag {
 
   @Load
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-  private List<Ref<TagCounterShard>> shardRefs;
+  private List<Ref<TagShard>> shardRefs;
 
   @Index
   @NonFinal
@@ -53,23 +53,26 @@ public class Tag {
   private Type type;
 
   @Index
+  @IgnoreSave(IfNull.class)
   @NonFinal
   private String language;
 
-  @Index
+  @Index(IfNotZero.class)
   @NonFinal
-  private long questions;
+  private long posts;
 
   /**
    * Total number of Tags in the group.
    *
    * Updated in a given interval.
    */
-  @Index(IfNotZero.class)
+  @Index
+  @IgnoreSave(IfNull.class)
   @NonFinal
   private long totalTagCount;
 
-  @Index(IfNotNull.class)
+  @Index
+  @IgnoreSave(IfNull.class)
   @NonFinal
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private List<Key<Tag>> groupKeys;
@@ -84,14 +87,7 @@ public class Tag {
     return getKey().toWebSafeString();
   }
 
-  public List<String> getGroupIds() {
-    return Observable.fromIterable(groupKeys)
-        .map(Key::toWebSafeString)
-        .toList()
-        .blockingGet();
-  }
-
-  public List<TagCounterShard> getShards() {
+  public List<TagShard> getShards() {
     return Deref.deref(shardRefs);
   }
 

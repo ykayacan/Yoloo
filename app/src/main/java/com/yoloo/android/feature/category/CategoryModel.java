@@ -6,25 +6,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyAttribute;
+import com.airbnb.epoxy.EpoxyModelClass;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CategoryRealm;
-import com.yoloo.android.feature.ui.recyclerview.BaseEpoxyHolder;
+import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
+import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 
-public class CategoryModel extends EpoxyModelWithHolder<CategoryModel.CategoryHolder> {
+@EpoxyModelClass(layout = R.layout.item_category)
+public abstract class CategoryModel extends EpoxyModelWithHolder<CategoryModel.CategoryHolder> {
 
   @EpoxyAttribute CategoryRealm category;
-  @EpoxyAttribute(hash = false) CategoryAdapter.OnCategoryClickListener onCategoryClickListener;
+  @EpoxyAttribute(hash = false) OnItemClickListener<CategoryRealm> onItemClickListener;
   @EpoxyAttribute(hash = false) CategoryAdapter adapter;
-
-  @Override protected CategoryHolder createNewHolder() {
-    return new CategoryHolder();
-  }
-
-  @Override protected int getDefaultLayout() {
-    return R.layout.item_category;
-  }
 
   @Override public void bind(CategoryHolder holder) {
     Glide.with(holder.ivCategoryBackground.getContext().getApplicationContext())
@@ -39,12 +34,8 @@ public class CategoryModel extends EpoxyModelWithHolder<CategoryModel.CategoryHo
     holder.checkmarkView.setVisibility(isSelected ? View.VISIBLE : View.GONE);
 
     holder.rootView.setOnClickListener(v -> {
-      if (adapter.isMultiSelection() && adapter.canSelectItem(this)) {
-        adapter.toggleSelection(this);
-      }
-
-      onCategoryClickListener.onCategoryClick(v, category.getId(), category.getName(),
-          adapter.isMultiSelection());
+      adapter.toggleSelection(this);
+      onItemClickListener.onItemClick(v, this, category);
     });
   }
 

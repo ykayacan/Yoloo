@@ -9,10 +9,10 @@ import java.util.Random;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(staticName = "create")
-public class AccountShardService implements ShardService<Account, AccountCounterShard> {
+public class AccountShardService implements ShardService<Account, AccountShard> {
 
   @Override
-  public List<Key<AccountCounterShard>> createShardKeys(Iterable<Key<Account>> keys) {
+  public List<Key<AccountShard>> createShardKeys(Iterable<Key<Account>> keys) {
     return Observable
         .fromIterable(keys)
         .concatMapIterable(this::createShardKeys)
@@ -21,16 +21,16 @@ public class AccountShardService implements ShardService<Account, AccountCounter
   }
 
   @Override
-  public List<Key<AccountCounterShard>> createShardKeys(final Key<Account> entityKey) {
+  public List<Key<AccountShard>> createShardKeys(final Key<Account> entityKey) {
     return Observable
-        .range(1, AccountCounterShard.SHARD_COUNT)
-        .map(id -> AccountCounterShard.createKey(entityKey, id))
+        .range(1, AccountShard.SHARD_COUNT)
+        .map(id -> AccountShard.createKey(entityKey, id))
         .toList()
         .blockingGet();
   }
 
   @Override
-  public List<AccountCounterShard> createShards(Iterable<Key<Account>> keys) {
+  public List<AccountShard> createShards(Iterable<Key<Account>> keys) {
     return Observable
         .fromIterable(keys)
         .concatMapIterable(this::createShards)
@@ -39,17 +39,17 @@ public class AccountShardService implements ShardService<Account, AccountCounter
   }
 
   @Override
-  public List<AccountCounterShard> createShards(final Key<Account> entityKey) {
+  public List<AccountShard> createShards(final Key<Account> entityKey) {
     return Observable
-        .range(1, AccountCounterShard.SHARD_COUNT)
+        .range(1, AccountShard.SHARD_COUNT)
         .map(shardId -> createShard(entityKey, shardId))
         .toList()
         .blockingGet();
   }
 
   @Override
-  public AccountCounterShard createShard(Key<Account> entityKey, int shardNum) {
-    return AccountCounterShard.builder()
+  public AccountShard createShard(Key<Account> entityKey, int shardNum) {
+    return AccountShard.builder()
         .id(ShardUtil.generateShardId(entityKey, shardNum))
         .followers(0)
         .followings(0)
@@ -58,12 +58,12 @@ public class AccountShardService implements ShardService<Account, AccountCounter
   }
 
   @Override
-  public Key<AccountCounterShard> getRandomShardKey(Key<Account> entityKey) {
-    final int shardNum = new Random().nextInt(AccountCounterShard.SHARD_COUNT - 1 + 1) + 1;
-    return AccountCounterShard.createKey(entityKey, shardNum);
+  public Key<AccountShard> getRandomShardKey(Key<Account> entityKey) {
+    final int shardNum = new Random().nextInt(AccountShard.SHARD_COUNT - 1 + 1) + 1;
+    return AccountShard.createKey(entityKey, shardNum);
   }
 
-  public AccountCounterShard updateCounter(AccountCounterShard shard, Update type) {
+  public AccountShard updateCounter(AccountShard shard, Update type) {
     switch (type) {
       case FOLLOWING_UP:
         shard.increaseFollowings();
@@ -87,15 +87,15 @@ public class AccountShardService implements ShardService<Account, AccountCounter
     return shard;
   }
 
-  public Observable<AccountCounterShard> merge(Account account) {
+  public Observable<AccountShard> merge(Account account) {
     return Observable.fromIterable(account.getShards())
         .reduce(this::reduceCounters)
         .toObservable();
   }
 
-  private AccountCounterShard reduceCounters(AccountCounterShard s1,
-      AccountCounterShard s2) {
-    return AccountCounterShard.builder()
+  private AccountShard reduceCounters(AccountShard s1,
+      AccountShard s2) {
+    return AccountShard.builder()
         .followers(s1.getFollowers() + s2.getFollowers())
         .followings(s1.getFollowings() + s2.getFollowings())
         .questions(s1.getQuestions() + s2.getQuestions())

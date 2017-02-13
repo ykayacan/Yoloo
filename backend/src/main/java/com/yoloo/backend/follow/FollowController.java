@@ -10,7 +10,7 @@ import com.google.common.collect.ImmutableSet;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.account.AccountCounterShard;
+import com.yoloo.backend.account.AccountShard;
 import com.yoloo.backend.account.AccountShardService;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.device.DeviceRecord;
@@ -20,14 +20,13 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Logger;
 import lombok.AllArgsConstructor;
-import lombok.NonNull;
 
 import static com.yoloo.backend.OfyService.ofy;
 
 @AllArgsConstructor(staticName = "create")
 public class FollowController extends Controller {
 
-  private static final Logger logger =
+  private static final Logger LOG =
       Logger.getLogger(FollowController.class.getName());
 
   /**
@@ -35,13 +34,8 @@ public class FollowController extends Controller {
    */
   private static final int DEFAULT_LIST_LIMIT = 20;
 
-  @NonNull
-  private FollowService followService;
-
-  @NonNull
   private AccountShardService accountShardService;
 
-  @NonNull
   private NotificationService notificationService;
 
   public void follow(String followingId, User user) {
@@ -54,11 +48,11 @@ public class FollowController extends Controller {
     // Create record key for following account.
     final Key<DeviceRecord> recordKey = DeviceRecord.createKey(followingKey);
 
-    Follow follow = followService.create(followerKey, followingKey);
+    Follow follow = followAccount(followerKey, followingKey);
 
-    Key<AccountCounterShard> followerShardKey =
+    Key<AccountShard> followerShardKey =
         accountShardService.getRandomShardKey(followerKey);
-    Key<AccountCounterShard> followingShardKey =
+    Key<AccountShard> followingShardKey =
         accountShardService.getRandomShardKey(followingKey);
 
     Map<Key<Object>, Object> fetched = ofy().load()
@@ -69,9 +63,9 @@ public class FollowController extends Controller {
     //noinspection SuspiciousMethodCalls
     DeviceRecord record = (DeviceRecord) fetched.get(recordKey);
     //noinspection SuspiciousMethodCalls
-    AccountCounterShard followerShard = (AccountCounterShard) fetched.get(followerShardKey);
+    AccountShard followerShard = (AccountShard) fetched.get(followerShardKey);
     //noinspection SuspiciousMethodCalls
-    AccountCounterShard followingShard = (AccountCounterShard) fetched.get(followingShardKey);
+    AccountShard followingShard = (AccountShard) fetched.get(followingShardKey);
 
     followerShard = accountShardService
         .updateCounter(followerShard, AccountShardService.Update.FOLLOWING_UP);
@@ -103,18 +97,18 @@ public class FollowController extends Controller {
         .ancestor(followerKey).filter(Follow.FIELD_FOLLOWING_KEY + " =", followingKey)
         .keys().first().now();
 
-    Key<AccountCounterShard> followerShardKey =
+    Key<AccountShard> followerShardKey =
         accountShardService.getRandomShardKey(followerKey);
-    Key<AccountCounterShard> followingShardKey =
+    Key<AccountShard> followingShardKey =
         accountShardService.getRandomShardKey(followingKey);
 
     Map<Key<Object>, Object> fetched = ofy().load()
         .keys(followerKey, followerShardKey, followingShardKey);
 
     //noinspection SuspiciousMethodCalls
-    AccountCounterShard followerShard = (AccountCounterShard) fetched.get(followerShardKey);
+    AccountShard followerShard = (AccountShard) fetched.get(followerShardKey);
     //noinspection SuspiciousMethodCalls
-    AccountCounterShard followingShard = (AccountCounterShard) fetched.get(followingShardKey);
+    AccountShard followingShard = (AccountShard) fetched.get(followingShardKey);
 
     followerShard = accountShardService
         .updateCounter(followerShard, AccountShardService.Update.FOLLOWING_DOWN);
@@ -171,6 +165,13 @@ public class FollowController extends Controller {
     return CollectionResponse.<Account>builder()
         .setItems(accounts)
         .setNextPageToken(qi.getCursor().toWebSafeString())
+        .build();
+  }
+
+  private Follow followAccount(Key<Account> fromKey, Key<Account> toKey) {
+    return Follow.builder()
+        .parentUserKey(fromKey)
+        .followingKey(toKey)
         .build();
   }
 }

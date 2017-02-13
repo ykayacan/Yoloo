@@ -26,8 +26,9 @@ import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
+import com.yoloo.android.ui.recyclerview.GridInsetItemDecoration;
 import com.yoloo.android.framework.MvpController;
-import com.yoloo.android.feature.ui.recyclerview.GridInsetItemDecoration;
+import com.yoloo.android.util.ControllerUtil;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.ViewUtil;
 import java.util.ArrayList;
@@ -77,16 +78,13 @@ public class BountyController extends MvpController<BountyView, BountyPresenter>
     drawables.add(AppCompatResources.getDrawable(getActivity(), R.drawable.ic_bounty_5));
 
     adapter.addAll(bountyValues, drawables);
+
+    ControllerUtil.preventDefaultBackPressAction(view, () -> getPresenter().updateDraft(draft));
   }
 
   @Override protected void onDestroy() {
     super.onDestroy();
     ViewUtil.setStatusBarColor(getActivity(), primaryDarkColor);
-  }
-
-  @Override public boolean handleBack() {
-    getPresenter().updateDraft(draft);
-    return super.handleBack();
   }
 
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -95,7 +93,7 @@ public class BountyController extends MvpController<BountyView, BountyPresenter>
     switch (itemId) {
       case android.R.id.home:
         getRouter().handleBack();
-        return false;
+        return true;
       default:
         return super.onOptionsItemSelected(item);
     }
@@ -120,7 +118,7 @@ public class BountyController extends MvpController<BountyView, BountyPresenter>
   }
 
   @Override public void onDraftSaved() {
-    getRouter().popCurrentController();
+    getRouter().handleBack();
   }
 
   @Override public void onBountyClick(int value) {
@@ -164,7 +162,7 @@ public class BountyController extends MvpController<BountyView, BountyPresenter>
   private void setupToolbar() {
     setSupportActionBar(toolbar);
 
-    // add back arrow to toolbar
+    // addPost back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
     if (ab != null) {
       ab.setTitle(R.string.label_editor_select_bounty_value);

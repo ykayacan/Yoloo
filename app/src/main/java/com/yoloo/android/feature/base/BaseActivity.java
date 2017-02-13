@@ -1,5 +1,6 @@
 package com.yoloo.android.feature.base;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -21,6 +22,7 @@ import com.yoloo.android.feature.login.AuthController;
 import com.yoloo.android.util.NotificationHelper;
 import com.yoloo.android.util.Preconditions;
 import java.util.HashMap;
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class BaseActivity extends AppCompatActivity {
 
@@ -31,7 +33,9 @@ public class BaseActivity extends AppCompatActivity {
 
   private Router router;
 
-  private FirebaseAuth.AuthStateListener authStateListener;
+  @Override protected void attachBaseContext(Context newBase) {
+    super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
+  }
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -40,10 +44,17 @@ public class BaseActivity extends AppCompatActivity {
     ButterKnife.bind(this);
 
     router = Conductor.attachRouter(this, container, savedInstanceState);
-    authStateListener = BaseActivity.this::setRootController;
+    if (!router.hasRootController()) {
+      FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+      if (user == null) {
+        router.setRoot(RouterTransaction.with(new AuthController()));
+      } else {
+        router.setRoot(RouterTransaction.with(new UserFeedController()));
+      }
+    }
 
     setOptionsMenuVisibility();
-
   }
 
   @Override protected void onNewIntent(Intent intent) {
@@ -51,23 +62,11 @@ public class BaseActivity extends AppCompatActivity {
     setIntent(intent);
   }
 
-  @Override protected void onStart() {
-    super.onStart();
-    FirebaseAuth.getInstance().addAuthStateListener(authStateListener);
-  }
-
   @Override protected void onResume() {
     super.onResume();
     final Bundle bundle = getIntent().getExtras();
     if (bundle != null) {
       routeToController(bundle);
-    }
-  }
-
-  @Override public void onStop() {
-    super.onStop();
-    if (authStateListener != null) {
-      FirebaseAuth.getInstance().removeAuthStateListener(authStateListener);
     }
   }
 
@@ -79,18 +78,6 @@ public class BaseActivity extends AppCompatActivity {
 
   @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     router.onActivityResult(requestCode, resultCode, data);
-  }
-
-  private void setRootController(FirebaseAuth auth) {
-    FirebaseUser user = auth.getCurrentUser();
-
-    if (!router.hasRootController()) {
-      if (user == null) {
-        router.setRoot(RouterTransaction.with(new AuthController()));
-      } else {
-        router.setRoot(RouterTransaction.with(new UserFeedController()));
-      }
-    }
   }
 
   @SuppressWarnings("unchecked") private void routeToController(Bundle bundle) {
@@ -105,7 +92,7 @@ public class BaseActivity extends AppCompatActivity {
           break;
         case NotificationHelper.COMMENT:
           // TODO: 21.01.2017 Implement transaction
-          //startTransaction(CommentController.ofCategory(data.get("qId"), ));
+          //startTransaction(CommentController.ofCategory(data.getPost("qId"), ));
       }
     }
   }
@@ -120,13 +107,17 @@ public class BaseActivity extends AppCompatActivity {
       @Override
       public void onChangeStarted(@Nullable Controller to, @Nullable Controller from,
           boolean isPush, @NonNull ViewGroup container, @NonNull ControllerChangeHandler handler) {
-        if (from != null) from.setOptionsMenuHidden(true);
+        if (from != null) {
+          from.setOptionsMenuHidden(true);
+        }
       }
 
       @Override
       public void onChangeCompleted(@Nullable Controller to, @Nullable Controller from,
           boolean isPush, @NonNull ViewGroup container, @NonNull ControllerChangeHandler handler) {
-        if (from != null) from.setOptionsMenuHidden(false);
+        if (from != null) {
+          from.setOptionsMenuHidden(false);
+        }
       }
     });
   }

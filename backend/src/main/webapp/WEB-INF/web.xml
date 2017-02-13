@@ -4,7 +4,7 @@
   <!-- Begin Listeners -->
 
   <listener>
-    <listener-class>com.yoloo.backend.FirebaseHelper</listener-class>
+    <listener-class>com.yoloo.backend.FirebaseInitializer</listener-class>
   </listener>
 
   <listener>
@@ -12,6 +12,92 @@
   </listener>
 
   <!-- End Listeners -->
+
+  <!-- Begin Servlets -->
+
+  <servlet>
+    <servlet-name>EndpointsServlet</servlet-name>
+    <servlet-class>com.google.api.server.spi.EndpointsServlet</servlet-class>
+    <init-param>
+      <param-name>services</param-name>
+      <param-value>
+        com.yoloo.backend.account.AccountEndpoint,
+        com.yoloo.backend.follow.FollowEndpoint,
+        com.yoloo.backend.post.QuestionEndpoint,
+        com.yoloo.backend.post.BlogEndpoint,
+        com.yoloo.backend.comment.CommentEndpoint,
+        com.yoloo.backend.vote.VoteEndpoint,
+        com.yoloo.backend.bookmark.BookmarkEndpoint,
+        com.yoloo.backend.tag.TagEndpoint,
+        com.yoloo.backend.category.CategoryEndpoint,
+        com.yoloo.backend.media.MediaEndpoint,
+        com.yoloo.backend.device.DeviceEndpoint,
+        com.yoloo.backend.feed.FeedEndpoint,
+        com.yoloo.backend.notification.NotificationEndpoint
+      </param-value>
+    </init-param>
+    <init-param>
+      <param-name>restricted</param-name>
+      <param-value>false</param-value>
+    </init-param>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>EndpointsServlet</servlet-name>
+    <url-pattern>/_ah/api/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>appstats</servlet-name>
+    <servlet-class>com.google.appengine.tools.appstats.AppstatsServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>appstats</servlet-name>
+    <url-pattern>/appstats/*</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>UpdateCategoryRankServlet</servlet-name>
+    <servlet-class>com.yoloo.backend.category.UpdateCategoryRankServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>UpdateCategoryRankServlet</servlet-name>
+    <url-pattern>/tasks/update/category/rank</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>UpdateTagCounterServlet</servlet-name>
+    <servlet-class>com.yoloo.backend.tag.UpdateTagCounterServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>UpdateTagCounterServlet</servlet-name>
+    <url-pattern>/tasks/update/tag/counter</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>FeedUpdateServlet</servlet-name>
+    <servlet-class>com.yoloo.backend.post.FeedUpdateServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>FeedUpdateServlet</servlet-name>
+    <url-pattern>/tasks/update/feed</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>UploadServlet</servlet-name>
+    <servlet-class>com.yoloo.backend.media.UploadServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>UploadServlet</servlet-name>
+    <url-pattern>/upload</url-pattern>
+  </servlet-mapping>
+
+  <!-- End Servlets -->
 
   <!-- Begin Filters -->
 
@@ -39,88 +125,37 @@
     <url-pattern>/*</url-pattern>
   </filter-mapping>
 
-  <!-- End Filters -->
+  <!-- Add a filter that fetches the service config from service management. -->
+  <!--<filter>
+    <filter-name>endpoints-api-configuration</filter-name>
+    <filter-class>com.google.api.control.ServiceManagementConfigFilter</filter-class>
+  </filter>
 
-  <!-- Begin Servlets -->
-
-  <servlet>
-    <servlet-name>SystemServiceServlet</servlet-name>
-    <servlet-class>com.google.api.server.spi.SystemServiceServlet</servlet-class>
+  &lt;!&ndash; Add a filter that performs Endpoints logging and monitoring. &ndash;&gt;
+  <filter>
+    <filter-name>endpoints-api-controller</filter-name>
+    <filter-class>com.google.api.control.extensions.appengine.GoogleAppEngineControlFilter</filter-class>
     <init-param>
-      <param-name>services</param-name>
-      <param-value>
-        com.yoloo.backend.account.AccountEndpoint,
-        com.yoloo.backend.follow.FollowEndpoint,
-        com.yoloo.backend.question.QuestionEndpoint,
-        com.yoloo.backend.comment.CommentEndpoint,
-        com.yoloo.backend.vote.VoteEndpoint,
-        com.yoloo.backend.bookmark.BookmarkEndpoint,
-        com.yoloo.backend.tag.TagEndpoint,
-        com.yoloo.backend.topic.TopicEndpoint,
-        com.yoloo.backend.media.MediaEndpoint,
-        com.yoloo.backend.device.DeviceEndpoint,
-        com.yoloo.backend.feed.FeedEndpoint,
-        com.yoloo.backend.notification.NotificationEndpoint
-      </param-value>
+      <param-name>endpoints.projectId</param-name>
+      <param-value>${endpoints.project.id}</param-value>
     </init-param>
-  </servlet>
+    <init-param>
+      <param-name>endpoints.serviceName</param-name>
+      <param-value>echo-api.endpoints.${endpoints.project.id}.cloud.goog</param-value>
+    </init-param>
+  </filter>
 
-  <servlet-mapping>
-    <servlet-name>SystemServiceServlet</servlet-name>
-    <url-pattern>/_ah/spi/*</url-pattern>
-  </servlet-mapping>
+  <filter-mapping>
+    <filter-name>endpoints-api-configuration</filter-name>
+    <servlet-name>EndpointsServlet</servlet-name>
+  </filter-mapping>
 
-  <servlet>
-    <servlet-name>appstats</servlet-name>
-    <servlet-class>com.google.appengine.tools.appstats.AppstatsServlet</servlet-class>
-  </servlet>
+  <filter-mapping>
+    <filter-name>endpoints-api-controller</filter-name>
+    <servlet-name>EndpointsServlet</servlet-name>
+  </filter-mapping>-->
 
-  <servlet-mapping>
-    <servlet-name>appstats</servlet-name>
-    <url-pattern>/appstats/*</url-pattern>
-  </servlet-mapping>
-
-  <servlet>
-    <servlet-name>TopicRankUpdateServlet</servlet-name>
-    <servlet-class>com.yoloo.backend.topic.TopicRankUpdateServlet</servlet-class>
-  </servlet>
-
-  <servlet-mapping>
-    <servlet-name>TopicRankUpdateServlet</servlet-name>
-    <url-pattern>/tasks/update/topic/rank</url-pattern>
-  </servlet-mapping>
-
-  <servlet>
-    <servlet-name>TagCounterUpdateServlet</servlet-name>
-    <servlet-class>com.yoloo.backend.tag.TagCounterUpdateServlet</servlet-class>
-  </servlet>
-
-  <servlet-mapping>
-    <servlet-name>TagCounterUpdateServlet</servlet-name>
-    <url-pattern>/tasks/update/tag/counter</url-pattern>
-  </servlet-mapping>
-
-  <servlet>
-    <servlet-name>FeedUpdateServlet</servlet-name>
-    <servlet-class>com.yoloo.backend.question.FeedUpdateServlet</servlet-class>
-  </servlet>
-
-  <servlet-mapping>
-    <servlet-name>FeedUpdateServlet</servlet-name>
-    <url-pattern>/tasks/update/feed</url-pattern>
-  </servlet-mapping>
-
-  <servlet>
-    <servlet-name>UploadServlet</servlet-name>
-    <servlet-class>com.yoloo.backend.media.UploadServlet</servlet-class>
-  </servlet>
-
-  <servlet-mapping>
-    <servlet-name>UploadServlet</servlet-name>
-    <url-pattern>/upload</url-pattern>
-  </servlet-mapping>
-
-  <!-- End Servlets -->
+  <!-- End Filters -->
 
   <security-constraint>
     <web-resource-collection>
@@ -134,8 +169,8 @@
 
   <security-constraint>
     <web-resource-collection>
-      <web-resource-name>TopicRankUpdateServlet</web-resource-name>
-      <url-pattern>/tasks/update/categories/rank</url-pattern>
+      <web-resource-name>UpdateCategoryRankServlet</web-resource-name>
+      <url-pattern>/tasks/update/category/rank</url-pattern>
     </web-resource-collection>
     <auth-constraint>
       <role-name>admin</role-name>
@@ -144,13 +179,13 @@
 
   <security-constraint>
     <web-resource-collection>
-      <web-resource-name>TagCounterUpdateServlet</web-resource-name>
+      <web-resource-name>UpdateTagCounterServlet</web-resource-name>
       <url-pattern>/tasks/update/tag/counter</url-pattern>
     </web-resource-collection>
     <auth-constraint>
       <role-name>admin</role-name>
     </auth-constraint>
-   </security-constraint>
+  </security-constraint>
 
   <security-constraint>
     <web-resource-collection>

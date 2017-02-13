@@ -30,14 +30,14 @@ import com.yoloo.android.util.Preconditions;
 public class ViewGroupMvpDelegateImpl<V extends MvpView, P extends MvpPresenter<V>>
     implements ViewGroupMvpDelegate<V, P> {
 
-  protected final ViewGroupDelegateCallback<V, P> delegateCallback;
+  private final ViewGroupDelegateCallback<V, P> delegateCallback;
 
   public ViewGroupMvpDelegateImpl(ViewGroupDelegateCallback<V, P> delegateCallback) {
     this.delegateCallback =
         Preconditions.checkNotNull(delegateCallback, "MvpDelegateCallback is null!");
   }
 
-  protected ViewGroupDelegateCallback<V, P> getDelegateCallback() {
+  private ViewGroupDelegateCallback<V, P> getDelegateCallback() {
     return delegateCallback;
   }
 

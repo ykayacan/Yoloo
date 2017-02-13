@@ -31,7 +31,7 @@ public class FirebaseAuthenticator implements Authenticator {
     final String idToken = authHeader.split(" ")[1];
 
     /*return Single
-        .create((SingleOnSubscribe<FirebaseToken>) e -> {
+        .createTracker((SingleOnSubscribe<FirebaseToken>) e -> {
           Task<FirebaseToken> authTask = FirebaseAuth.getInstance().verifyIdToken(idToken);
 
           authTask.addOnSuccessListener(e::onSuccess);

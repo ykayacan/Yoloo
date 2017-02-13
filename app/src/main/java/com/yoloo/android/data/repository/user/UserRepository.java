@@ -31,50 +31,26 @@ public class UserRepository {
     return INSTANCE;
   }
 
-  /**
-   * Get single.
-   *
-   * @param userId the user id
-   * @return the single
-   */
-  public Observable<AccountRealm> get(String userId) {
+  public Observable<AccountRealm> getUser(String userId) {
     Preconditions.checkNotNull(userId, "userId can not be null.");
 
     // TODO: 24.01.2017 Convert it to remote.
     return diskDataStore.get(userId).subscribeOn(Schedulers.io());
-    /*return remoteDataStore.get(userId)
+    /*return remoteDataStore.getPost(userId)
         .subscribeOn(Schedulers.io());*/
   }
 
-  /**
-   * Gets me.
-   *
-   * @return the me
-   */
   public Observable<AccountRealm> getMe() {
     return Observable.mergeDelayError(
         diskDataStore.getMe().subscribeOn(Schedulers.io()),
-        remoteDataStore.getMe()
-            .doOnNext(diskDataStore::add)
-            .subscribeOn(Schedulers.io()));
+        remoteDataStore.getMe().doOnNext(diskDataStore::add).subscribeOn(Schedulers.io()));
   }
 
-  /**
-   * Gets local me.
-   *
-   * @return the local me
-   */
   public Observable<AccountRealm> getLocalMe() {
     return diskDataStore.getMe().subscribeOn(Schedulers.io()).cache();
   }
 
-  /**
-   * Add single.
-   *
-   * @param account the account
-   * @return the single
-   */
-  public Single<AccountRealm> add(AccountRealm account) {
+  public Single<AccountRealm> addUser(AccountRealm account) {
     Preconditions.checkNotNull(account, "account can not be null.");
 
     return remoteDataStore.add(account)
@@ -82,38 +58,17 @@ public class UserRepository {
         .subscribeOn(Schedulers.io());
   }
 
-  /**
-   * List by name observable.
-   *
-   * @param query the name
-   * @param cursor the cursor
-   * @param limit the limit
-   * @return the observable
-   */
-  public Observable<Response<List<AccountRealm>>> search(String query, String cursor, int limit) {
+  public Observable<Response<List<AccountRealm>>> searchUser(String query, String cursor,
+      int limit) {
     Preconditions.checkNotNull(query, "query can not be null.");
 
     return remoteDataStore.list(query, cursor, limit).subscribeOn(Schedulers.io());
   }
 
-  /**
-   * List recent searches observable.
-   *
-   * @return the observable
-   */
-  public Observable<List<AccountRealm>> listRecentSearches() {
+  public Observable<List<AccountRealm>> listRecentSearchedUsers() {
     return diskDataStore.listRecentSearches().subscribeOn(Schedulers.io());
   }
 
-  /**
-   * List followers observable.
-   *
-   * @param userId the user id
-   * @param cursor the cursor
-   * @param eTag the e tag
-   * @param limit the limit
-   * @return the observable
-   */
   public Observable<Response<List<AccountRealm>>> listFollowers(String userId, String cursor,
       String eTag, int limit) {
     Preconditions.checkNotNull(userId, "userId can not be null.");
@@ -121,15 +76,6 @@ public class UserRepository {
     return remoteDataStore.listFollowers(userId, cursor, eTag, limit).subscribeOn(Schedulers.io());
   }
 
-  /**
-   * List followings observable.
-   *
-   * @param userId the user id
-   * @param cursor the cursor
-   * @param eTag the e tag
-   * @param limit the limit
-   * @return the observable
-   */
   public Observable<Response<List<AccountRealm>>> listFollowings(String userId, String cursor,
       String eTag, int limit) {
     Preconditions.checkNotNull(userId, "userId can not be null.");
@@ -137,13 +83,6 @@ public class UserRepository {
     return remoteDataStore.listFollowings(userId, cursor, eTag, limit).subscribeOn(Schedulers.io());
   }
 
-  /**
-   * Follow completable.
-   *
-   * @param userId the user id
-   * @param direction the direction
-   * @return the completable
-   */
   public Completable follow(String userId, int direction) {
     Preconditions.checkNotNull(userId, "userId can not be null.");
 

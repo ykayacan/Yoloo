@@ -81,7 +81,7 @@
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent">
 
-    <com.yoloo.android.feature.ui.widget.CompatTextView
+    <com.yoloo.android.ui.widget.CompatTextView
       android:id="@+id/tv_ask_bounty"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"

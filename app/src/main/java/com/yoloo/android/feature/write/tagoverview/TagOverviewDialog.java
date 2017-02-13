@@ -13,8 +13,8 @@ import com.hootsuite.nachos.terminator.ChipTerminatorHandler;
 import com.hootsuite.nachos.validator.ChipifyingNachoValidator;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.TagRealm;
-import com.yoloo.android.feature.ui.widget.AutoCompleteTagAdapter;
-import com.yoloo.android.feature.ui.widget.tagview.TagView;
+import com.yoloo.android.ui.widget.AutoCompleteTagAdapter;
+import com.yoloo.android.ui.widget.tagview.TagView;
 import com.yoloo.android.framework.MvpAlertDialog;
 import com.yoloo.android.util.WeakHandler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -87,7 +87,6 @@ public class TagOverviewDialog extends MvpAlertDialog<TagOverviewView, TagOvervi
         tvTagAutoComplete.setText(name);
         tvTagAutoComplete.chipifyAllUnterminatedTokens();
       }
-      Timber.d("Name: %s", name);
     });
   }
 

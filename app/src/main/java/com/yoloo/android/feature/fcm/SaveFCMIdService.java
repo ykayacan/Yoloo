@@ -23,7 +23,7 @@ public class SaveFCMIdService extends IntentService {
   }
 
   /**
-   * This Intent is responsible for get token from FCM server and send broadcast. After we get
+   * This Intent is responsible for getPost token from FCM server and send broadcast. After we getPost
    * token, we save this token to shared preferences.
    */
   @Override protected void onHandleIntent(Intent intent) {

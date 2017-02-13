@@ -25,7 +25,7 @@
     app:layout_constraintTop_toTopOf="parent"
     tools:text="hello" />
 
-  <com.yoloo.android.feature.ui.widget.tagview.TagView
+  <com.yoloo.android.ui.widget.tagview.TagView
     android:id="@+id/view_item_question_normal_category"
     style="@style/Yoloo.TagView"
     android:layout_width="0dp"

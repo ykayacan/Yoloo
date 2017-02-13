@@ -9,15 +9,17 @@ import android.support.v7.widget.SnapHelper;
 import android.widget.TextView;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyAttribute;
+import com.airbnb.epoxy.EpoxyModelClass;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CategoryRealm;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
 import com.yoloo.android.feature.feed.common.adapter.TrendingCategoryAdapter;
-import com.yoloo.android.feature.ui.recyclerview.BaseEpoxyHolder;
+import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 import java.util.List;
 
-public class TrendingCategoryModel
+@EpoxyModelClass(layout = R.layout.item_feed_trending_categories)
+public abstract class TrendingCategoryModel
     extends EpoxyModelWithHolder<TrendingCategoryModel.TrendingCategoriesHolder> {
 
   @EpoxyAttribute(hash = false) FeedAdapter.OnCategoryClickListener onCategoryClickListener;
@@ -25,14 +27,6 @@ public class TrendingCategoryModel
       onExploreCategoriesClickListener;
 
   private TrendingCategoryAdapter adapter = new TrendingCategoryAdapter();
-
-  @Override protected TrendingCategoriesHolder createNewHolder() {
-    return new TrendingCategoriesHolder();
-  }
-
-  @Override protected int getDefaultLayout() {
-    return R.layout.item_feed_trending_categories;
-  }
 
   @Override public void bind(TrendingCategoriesHolder holder) {
     holder.tvTrendingNow.setText(R.string.label_feed_trending_now);

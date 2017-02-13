@@ -4,21 +4,16 @@ import android.graphics.drawable.Drawable;
 import android.widget.TextView;
 import com.airbnb.epoxy.EpoxyAttribute;
 import com.airbnb.epoxy.EpoxyModel;
+import com.airbnb.epoxy.EpoxyModelClass;
 import com.yoloo.android.R;
 
-public class BountyModel extends EpoxyModel<TextView> {
+@EpoxyModelClass(layout = R.layout.item_bounty)
+abstract class BountyModel extends EpoxyModel<TextView> {
 
   @EpoxyAttribute(hash = false) BountyAdapter adapter;
-
   @EpoxyAttribute String value;
-
   @EpoxyAttribute Drawable drawable;
-
   @EpoxyAttribute OnBountyClickListener onBountyClickListener;
-
-  @Override protected int getDefaultLayout() {
-    return R.layout.item_bounty;
-  }
 
   @Override public void bind(TextView view) {
     view.setText(value);
@@ -28,14 +23,10 @@ public class BountyModel extends EpoxyModel<TextView> {
     view.setSelected(isSelected);
 
     view.setOnClickListener(v -> {
-      if (adapter.canSelectItem(this)) {
+      if (adapter.canSelect(this)) {
         adapter.toggleSelection(this);
         onBountyClickListener.onBountyClick(Integer.parseInt(value));
       }
     });
-  }
-
-  @Override public void unbind(TextView view) {
-    view.setOnClickListener(null);
   }
 }

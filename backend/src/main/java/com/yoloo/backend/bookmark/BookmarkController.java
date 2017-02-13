@@ -10,21 +10,20 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
-import com.yoloo.backend.question.Question;
-import com.yoloo.backend.question.QuestionShardService;
-import com.yoloo.backend.question.QuestionUtil;
+import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostShardService;
+import com.yoloo.backend.vote.VoteService;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import static com.yoloo.backend.OfyService.ofy;
 
-@RequiredArgsConstructor(staticName = "create")
+@AllArgsConstructor(staticName = "create")
 public class BookmarkController extends Controller {
 
-  private static final Logger logger =
+  private static final Logger LOG =
       Logger.getLogger(BookmarkController.class.getName());
 
   /**
@@ -32,8 +31,11 @@ public class BookmarkController extends Controller {
    */
   private static final int DEFAULT_LIST_LIMIT = 20;
 
-  @NonNull
   private BookmarkService bookmarkService;
+
+  private PostShardService postShardService;
+
+  private VoteService voteService;
 
   /**
    * Save question.
@@ -41,11 +43,11 @@ public class BookmarkController extends Controller {
    * @param questionId the websafe question id
    * @param user the user
    */
-  public void add(String questionId, User user) {
+  public void insertBookmark(String questionId, User user) {
     // Create user key from user id.
     final Key<Account> authKey = Key.create(user.getUserId());
 
-    final Key<Question> questionKey = Key.create(questionId);
+    final Key<Post> questionKey = Key.create(questionId);
 
     Bookmark saved = bookmarkService.create(questionKey, authKey);
 
@@ -58,7 +60,7 @@ public class BookmarkController extends Controller {
    * @param questionId the websafe question id
    * @param user the user
    */
-  public void delete(String questionId, User user) {
+  public void deleteBookmark(String questionId, User user) {
     // Create user key from user id.
     final Key<Account> authKey = Key.create(user.getUserId());
 
@@ -75,7 +77,7 @@ public class BookmarkController extends Controller {
    * @param user the user
    * @return the collection response
    */
-  public CollectionResponse<Question> list(Optional<Integer> limit, Optional<String> cursor,
+  public CollectionResponse<Post> listBookmarks(Optional<Integer> limit, Optional<String> cursor,
       User user) {
     // Create account key from websafe id.
     final Key<Account> authKey = Key.create(user.getUserId());
@@ -97,22 +99,21 @@ public class BookmarkController extends Controller {
 
     final QueryResultIterator<Bookmark> qi = query.iterator();
 
-    List<Key<Question>> questionKeys = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
+    List<Key<Post>> questionKeys = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
 
     while (qi.hasNext()) {
       // Add fetched objects to map. Because cursor iteration needs to be iterated.
       questionKeys.add(qi.next().getSavedQuestionKey());
     }
 
-    Collection<Question> questions = ofy().load().keys(questionKeys).values();
+    Collection<Post> posts = ofy().load().keys(questionKeys).values();
 
-    questions = QuestionUtil.mergeCounts(questions)
-        .toList(DEFAULT_LIST_LIMIT)
-        .flatMap(questions1 -> QuestionUtil.mergeVoteDirection(questions1, authKey, true).toList())
-        .blockingGet();
+    posts = postShardService.mergeShards(posts)
+        .flatMap(posts1 -> voteService.checkPostVote(posts1, authKey, false))
+        .blockingSingle();
 
-    return CollectionResponse.<Question>builder()
-        .setItems(questions)
+    return CollectionResponse.<Post>builder()
+        .setItems(posts)
         .setNextPageToken(qi.getCursor().toWebSafeString())
         .build();
   }

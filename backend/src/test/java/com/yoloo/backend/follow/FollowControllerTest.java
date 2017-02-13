@@ -5,17 +5,17 @@ import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.NotFoundException;
 import com.googlecode.objectify.Ref;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.account.AccountCounterShard;
-import com.yoloo.backend.account.AccountModel;
+import com.yoloo.backend.account.AccountShard;
+import com.yoloo.backend.account.AccountEntity;
 import com.yoloo.backend.account.AccountShardService;
 import com.yoloo.backend.device.DeviceRecord;
-import com.yoloo.backend.shard.ShardUtil;
 import com.yoloo.backend.util.TestBase;
-import java.util.List;
+import io.reactivex.Observable;
 import java.util.UUID;
 import org.joda.time.DateTime;
 import org.junit.Test;
@@ -48,10 +48,10 @@ public class FollowControllerTest extends TestBase {
   public void setUp() {
     super.setUp();
 
-    followController = FollowContollerFactory.of().create();
+    followController = FollowControllerFactory.of().create();
 
-    AccountModel model1 = createAccount();
-    AccountModel model2 = createAccount();
+    AccountEntity model1 = createAccount();
+    AccountEntity model2 = createAccount();
 
     follower = model1.getAccount();
     following = model2.getAccount();
@@ -62,8 +62,8 @@ public class FollowControllerTest extends TestBase {
     ImmutableList<Object> saveList = ImmutableList.builder()
         .add(follower)
         .add(following)
-        .addAll(model1.getShards())
-        .addAll(model2.getShards())
+        .addAll(model1.getShards().values())
+        .addAll(model2.getShards().values())
         .add(record1)
         .add(record2)
         .build();
@@ -103,28 +103,30 @@ public class FollowControllerTest extends TestBase {
     ofy().load().type(Follow.class).ancestor(follower.getKey()).first().safe();
   }
 
-  private AccountModel createAccount() {
+  private AccountEntity createAccount() {
     final Key<Account> ownerKey = fact().allocateId(Account.class);
 
     AccountShardService ass = AccountShardService.create();
 
-    List<AccountCounterShard> shards = ass.createShards(ownerKey);
+    return Observable.range(1, AccountShard.SHARD_COUNT)
+        .map(shardNum -> ass.createShard(ownerKey, shardNum))
+        .toMap(Ref::create)
+        .map(shardMap -> {
+          Account account = Account.builder()
+              .id(ownerKey.getId())
+              .avatarUrl(new Link("Test avatar"))
+              .email(new Email(USER_EMAIL))
+              .username("Test user")
+              .shardRefs(Lists.newArrayList(shardMap.keySet()))
+              .created(DateTime.now())
+              .build();
 
-    List<Ref<AccountCounterShard>> refs = ShardUtil.createRefs(shards).toList().blockingGet();
-
-    Account account = Account.builder()
-        .id(ownerKey.getId())
-        .avatarUrl(new Link("Test avatar"))
-        .email(new Email(USER_EMAIL))
-        .username("Test user")
-        .shardRefs(refs)
-        .created(DateTime.now())
-        .build();
-
-    return AccountModel.builder()
-        .account(account)
-        .shards(shards)
-        .build();
+          return AccountEntity.builder()
+              .account(account)
+              .shards(shardMap)
+              .build();
+        })
+        .blockingGet();
   }
 
   private DeviceRecord createRecord(Account owner) {

@@ -35,10 +35,8 @@ public class UserRemoteDataStore {
   }
 
   public Observable<AccountRealm> getMe() {
-    return ApiManager.getIdToken()
-        .doOnSuccess(s -> Timber.d("Token: %s", s))
-        .toObservable()
-        .flatMap(s -> Observable.just(AccountFaker.generateOne()));
+    Timber.d("getMe()");
+    return Observable.just(AccountFaker.generateMe());
   }
 
   public Single<AccountRealm> add(AccountRealm account) {

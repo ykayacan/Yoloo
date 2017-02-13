@@ -16,10 +16,10 @@ import lombok.AllArgsConstructor;
 import static com.yoloo.backend.OfyService.ofy;
 
 @AllArgsConstructor(staticName = "create")
-public class TagShardService implements ShardService<Tag, TagCounterShard> {
+public class TagShardService implements ShardService<Tag, TagShard> {
 
   @Override
-  public List<Key<TagCounterShard>> createShardKeys(Iterable<Key<Tag>> keys) {
+  public List<Key<TagShard>> createShardKeys(Iterable<Key<Tag>> keys) {
     return Observable
         .fromIterable(keys)
         .concatMapIterable(this::createShardKeys)
@@ -29,17 +29,17 @@ public class TagShardService implements ShardService<Tag, TagCounterShard> {
   }
 
   @Override
-  public List<Key<TagCounterShard>> createShardKeys(final Key<Tag> entityKey) {
+  public List<Key<TagShard>> createShardKeys(final Key<Tag> entityKey) {
     return Observable
         .range(1, ShardConfig.TAG_SHARD_COUNTER)
-        .map(id -> TagCounterShard.createKey(entityKey, id))
+        .map(id -> TagShard.createKey(entityKey, id))
         .toList()
         .cache()
         .blockingGet();
   }
 
   @Override
-  public List<TagCounterShard> createShards(Iterable<Key<Tag>> keys) {
+  public List<TagShard> createShards(Iterable<Key<Tag>> keys) {
     return Observable
         .fromIterable(keys)
         .concatMapIterable(this::createShards)
@@ -49,7 +49,7 @@ public class TagShardService implements ShardService<Tag, TagCounterShard> {
   }
 
   @Override
-  public List<TagCounterShard> createShards(final Key<Tag> entityKey) {
+  public List<TagShard> createShards(final Key<Tag> entityKey) {
     return Observable
         .range(1, ShardConfig.TAG_SHARD_COUNTER)
         .map(shardId -> createShard(entityKey, shardId))
@@ -59,20 +59,20 @@ public class TagShardService implements ShardService<Tag, TagCounterShard> {
   }
 
   @Override
-  public TagCounterShard createShard(Key<Tag> entityKey, int shardNum) {
-    return TagCounterShard.builder()
+  public TagShard createShard(Key<Tag> entityKey, int shardNum) {
+    return TagShard.builder()
         .id(ShardUtil.generateShardId(entityKey, shardNum))
-        .questions(0)
+        .posts(0)
         .build();
   }
 
   @Override
-  public Key<TagCounterShard> getRandomShardKey(Key<Tag> entityKey) {
-    final int shardNum = new Random().nextInt(TagCounterShard.SHARD_COUNT - 1 + 1) + 1;
-    return TagCounterShard.createKey(entityKey, shardNum);
+  public Key<TagShard> getRandomShardKey(Key<Tag> entityKey) {
+    final int shardNum = new Random().nextInt(TagShard.SHARD_COUNT - 1 + 1) + 1;
+    return TagShard.createKey(entityKey, shardNum);
   }
 
-  public Collection<TagCounterShard> updateShards(Iterable<String> tagNames) {
+  public Collection<TagShard> updateShards(Iterable<String> tagNames) {
     Query<Tag> query = ofy().load().type(Tag.class);
 
     for (String name : tagNames) {
@@ -81,16 +81,16 @@ public class TagShardService implements ShardService<Tag, TagCounterShard> {
 
     List<Key<Tag>> tagKeys = query.keys().list();
 
-    List<Key<TagCounterShard>> tagShardKeys = new ArrayList<>(tagKeys.size());
+    List<Key<TagShard>> tagShardKeys = new ArrayList<>(tagKeys.size());
     for (Key<Tag> key : tagKeys) {
       tagShardKeys.add(getRandomShardKey(key));
     }
 
-    Map<Key<TagCounterShard>, TagCounterShard> tagShardMap = ofy().load().keys(tagShardKeys);
+    Map<Key<TagShard>, TagShard> tagShardMap = ofy().load().keys(tagShardKeys);
 
-    for (Map.Entry<Key<TagCounterShard>, TagCounterShard> entry : tagShardMap.entrySet()) {
-      TagCounterShard shard = entry.getValue();
-      shard.increaseQuestions();
+    for (Map.Entry<Key<TagShard>, TagShard> entry : tagShardMap.entrySet()) {
+      TagShard shard = entry.getValue();
+      shard.increasePosts();
 
       tagShardMap.put(entry.getKey(), shard);
     }

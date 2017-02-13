@@ -11,7 +11,7 @@ import java.util.List;
 
 public class CategoryRepository {
 
-  private static CategoryRepository INSTANCE;
+  private static CategoryRepository instance;
 
   private final CategoryRemoteDataStore remoteDataStore;
   private final CategoryDiskDataStore diskDataStore;
@@ -24,21 +24,21 @@ public class CategoryRepository {
 
   public static CategoryRepository getInstance(CategoryRemoteDataStore remoteDataStore,
       CategoryDiskDataStore diskDataStore) {
-    if (INSTANCE == null) {
-      INSTANCE = new CategoryRepository(remoteDataStore, diskDataStore);
+    if (instance == null) {
+      instance = new CategoryRepository(remoteDataStore, diskDataStore);
     }
-    return INSTANCE;
+    return instance;
   }
 
-  public void add(CategoryRealm category) {
-    add(Collections.singletonList(category));
+  public void addCategory(CategoryRealm category) {
+    addCategory(Collections.singletonList(category));
   }
 
-  public void add(List<CategoryRealm> categories) {
+  public void addCategory(List<CategoryRealm> categories) {
     diskDataStore.addAll(categories);
   }
 
-  public Observable<List<CategoryRealm>> list(int limit, CategorySorter sorter) {
+  public Observable<List<CategoryRealm>> listCategories(int limit, CategorySorter sorter) {
     return Observable.mergeDelayError(
         diskDataStore.list(sorter).subscribeOn(Schedulers.io()),
         remoteDataStore.list(sorter, limit)

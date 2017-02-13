@@ -42,7 +42,7 @@ import javax.inject.Named;
 )
 public class CommentEndpoint {
 
-  private static final Logger logger =
+  private static final Logger LOGGER =
       Logger.getLogger(CommentEndpoint.class.getSimpleName());
 
   private final CommentController commentController = CommentControllerFactory.of().create();
@@ -50,57 +50,61 @@ public class CommentEndpoint {
   /**
    * Get comment.
    *
-   * @param questionId the question id
+   * @param postId the post id
    * @param commentId the comment id
    * @param user the user
    * @return the comment
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "questions.comments.get",
-      path = "questions/{questionId}/comments/{commentId}",
+      name = "posts.comments.get",
+      path = "posts/{postId}/comments/{commentId}",
       httpMethod = ApiMethod.HttpMethod.GET)
-  public Comment get(@Named("questionId") String questionId, @Named("commentId") String commentId,
+  public Comment get(
+      @Named("postId") String postId,
+      @Named("commentId") String commentId,
       User user) throws ServiceException {
 
     Validator.builder()
-        .addRule(new BadRequestValidator(questionId, commentId))
+        .addRule(new BadRequestValidator(postId, commentId))
         .addRule(new AuthValidator(user))
         .validate();
 
-    return commentController.get(commentId, user);
+    return commentController.getComment(commentId, user);
   }
 
   /**
    * Inserts a new {@code Comment}.
    *
-   * @param questionId the websafe question id
+   * @param postId the websafe question id
    * @param content the content
    * @param user the user
    * @return the comment
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "questions.comments.add",
-      path = "questions/{questionId}/comments",
+      name = "posts.comments.insert",
+      path = "posts/{postId}/comments",
       httpMethod = ApiMethod.HttpMethod.POST)
-  public Comment add(@Named("questionId") String questionId, @Named("content") String content,
+  public Comment insert(
+      @Named("postId") String postId,
+      @Named("content") String content,
       User user) throws ServiceException {
 
     Validator.builder()
-        .addRule(new IdValidationRule(questionId))
+        .addRule(new IdValidationRule(postId))
         .addRule(new AuthValidator(user))
         .addRule(new CommentCreateRule(content))
-        .addRule(new NotFoundRule(questionId))
+        .addRule(new NotFoundRule(postId))
         .validate();
 
-    return commentController.add(questionId, content, user);
+    return commentController.insertComment(postId, content, user);
   }
 
   /**
    * Updates an existing {@code Comment}.
    *
-   * @param questionId the ID from the entity to be updated
+   * @param postId the ID from the entity to be updated
    * @param commentId the websafe comment id
    * @param content the content
    * @param accepted the accepted
@@ -109,20 +113,23 @@ public class CommentEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "questions.comments.update",
-      path = "questions/{questionId}/comments/{commentId}",
+      name = "posts.comments.update",
+      path = "posts/{postId}/comments/{commentId}",
       httpMethod = ApiMethod.HttpMethod.PUT)
-  public Comment update(@Named("questionId") String questionId,
-      @Named("commentId") String commentId, @Nullable @Named("content") String content,
-      @Nullable @Named("accepted") Boolean accepted, User user) throws ServiceException {
+  public Comment update(
+      @Named("postId") String postId,
+      @Named("commentId") String commentId,
+      @Nullable @Named("content") String content,
+      @Nullable @Named("accepted") Boolean accepted,
+      User user) throws ServiceException {
 
     Validator.builder()
-        .addRule(new IdValidationRule(questionId))
+        .addRule(new IdValidationRule(postId))
         .addRule(new AuthValidator(user))
-        .addRule(new NotFoundRule(questionId))
+        .addRule(new NotFoundRule(postId))
         .validate();
 
-    return commentController.update(questionId, commentId, Optional.fromNullable(content),
+    return commentController.updateComment(postId, commentId, Optional.fromNullable(content),
         Optional.fromNullable(accepted), user);
   }
 
@@ -136,10 +143,12 @@ public class CommentEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "questions.comments.delete",
-      path = "questions/{questionId}/comments/{commentId}",
+      name = "posts.comments.delete",
+      path = "posts/{postId}/comments/{commentId}",
       httpMethod = ApiMethod.HttpMethod.DELETE)
-  public void delete(@Named("questionId") String questionId, @Named("commentId") String commentId,
+  public void delete(
+      @Named("postId") String questionId,
+      @Named("commentId") String commentId,
       User user) throws ServiceException {
 
     Validator.builder()
@@ -148,34 +157,37 @@ public class CommentEndpoint {
         .addRule(new NotFoundRule(questionId))
         .validate();
 
-    commentController.delete(questionId, commentId, user);
+    commentController.deleteComment(questionId, commentId, user);
   }
 
   /**
    * List all {@code Comment} entities.
    *
-   * @param questionId the websafe question id
+   * @param postId the websafe question id
    * @param cursor used for pagination to determine which page to return
    * @param limit the maximum number of entries to return
    * @param user the user
-   * @return a response that encapsulates the result list and the next page token/cursor
+   * @return a response that encapsulates the result listFeed and the next page token/cursor
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "questions.comments.list",
-      path = "questions/{questionId}/comments",
+      name = "posts.comments.list",
+      path = "posts/{postId}/comments",
       httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Comment> list(@Named("questionId") String questionId,
-      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
+  public CollectionResponse<Comment> list(
+      @Named("postId") String postId,
+      @Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit,
+      User user)
       throws ServiceException {
 
     Validator.builder()
-        .addRule(new BadRequestValidator(questionId))
+        .addRule(new BadRequestValidator(postId))
         .addRule(new AuthValidator(user))
-        .addRule(new NotFoundRule(questionId))
+        .addRule(new NotFoundRule(postId))
         .validate();
 
-    return commentController.list(questionId, Optional.fromNullable(cursor),
+    return commentController.listComments(postId, Optional.fromNullable(cursor),
         Optional.fromNullable(limit), user);
   }
 }

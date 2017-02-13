@@ -20,11 +20,11 @@ import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnReadMoreClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
-import com.yoloo.android.feature.ui.recyclerview.BaseEpoxyHolder;
-import com.yoloo.android.feature.ui.widget.CompatTextView;
-import com.yoloo.android.feature.ui.widget.VoteView;
-import com.yoloo.android.feature.ui.widget.tagview.TagView;
-import com.yoloo.android.feature.ui.widget.zamanview.TimeTextView;
+import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
+import com.yoloo.android.ui.widget.CompatTextView;
+import com.yoloo.android.ui.widget.VoteView;
+import com.yoloo.android.ui.widget.tagview.TagView;
+import com.yoloo.android.ui.widget.timeview.TimeTextView;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.ReadMoreUtil;
@@ -90,8 +90,7 @@ public class BlogModel extends EpoxyModelWithHolder<BlogModel.BlogHolder> {
 
     if (onReadMoreClickListener != null && post.hasReadMore()) {
       holder.root.setOnClickListener(
-          v -> onReadMoreClickListener.onReadMoreClickListener(v, post.getId()
-          ));
+          v -> onReadMoreClickListener.onReadMoreClickListener(v, post));
     }
 
     holder.tvShare.setOnClickListener(v -> onShareClickListener.onShareClick(v, post));

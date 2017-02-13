@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyAttribute;
+import com.airbnb.epoxy.EpoxyModelClass;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
@@ -15,33 +16,27 @@ import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
-import com.yoloo.android.feature.ui.recyclerview.BaseEpoxyHolder;
-import com.yoloo.android.feature.ui.widget.VoteView;
-import com.yoloo.android.feature.ui.widget.linkabletextview.LinkableTextView;
-import com.yoloo.android.feature.ui.widget.zamanview.TimeTextView;
+import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
+import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
+import com.yoloo.android.ui.widget.VoteView;
+import com.yoloo.android.ui.widget.linkabletextview.LinkableTextView;
+import com.yoloo.android.ui.widget.timeview.TimeTextView;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.glide.CropCircleTransformation;
 
-public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolder> {
+@EpoxyModelClass(layout = R.layout.item_comment)
+public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolder> {
 
   @EpoxyAttribute CommentRealm comment;
   @EpoxyAttribute boolean isPostOwner;
   @EpoxyAttribute boolean isCommentOwner;
   @EpoxyAttribute boolean postAccepted;
   @EpoxyAttribute int postType;
-  @EpoxyAttribute(hash = false) OnCommentLongClickListener onCommentLongClickListener;
+  @EpoxyAttribute(hash = false) OnItemLongClickListener<CommentRealm> onCommentLongClickListener;
   @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
   @EpoxyAttribute(hash = false) OnVoteClickListener onVoteClickListener;
   @EpoxyAttribute(hash = false) OnMentionClickListener onMentionClickListener;
   @EpoxyAttribute(hash = false) OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener;
-
-  @Override protected CommentHolder createNewHolder() {
-    return new CommentHolder();
-  }
-
-  @Override protected int getDefaultLayout() {
-    return R.layout.item_comment;
-  }
 
   @Override public void bind(CommentHolder holder) {
     final Context context = holder.ivUserAvatar.getContext().getApplicationContext();
@@ -80,11 +75,11 @@ public class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolde
   private void setupClickListeners(CommentHolder holder) {
     if (isCommentOwner) {
       holder.root.setOnLongClickListener(v -> {
-        onCommentLongClickListener.onCommentLongClick(v, this, comment);
+        onCommentLongClickListener.onItemLongClick(v, this, comment);
         return true;
       });
       holder.tvContent.setOnLongClickListener(v -> {
-        onCommentLongClickListener.onCommentLongClick(v, this, comment);
+        onCommentLongClickListener.onItemLongClick(v, this, comment);
         return true;
       });
     }

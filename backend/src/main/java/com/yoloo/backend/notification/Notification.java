@@ -10,7 +10,6 @@ import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Parent;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.notification.action.Action;
 import java.util.Map;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -38,8 +37,6 @@ public class Notification {
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private Key<Account> senderKey;
 
-  private String senderId;
-
   @Parent
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private Key<Account> receiverKey;
@@ -51,7 +48,7 @@ public class Notification {
   private Action action;
 
   @Singular
-  private Map<String, ?> objects;
+  private Map<String, Object> payloads;
 
   @Index
   @NonFinal
@@ -65,5 +62,9 @@ public class Notification {
   @ApiResourceProperty(name = "id")
   public String getWebsafeId() {
     return getKey().toWebSafeString();
+  }
+
+  public String getSenderId() {
+    return senderKey.toWebSafeString();
   }
 }

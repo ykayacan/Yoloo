@@ -88,7 +88,7 @@ public class AuthController extends BaseController {
   private void setupToolbar() {
     setSupportActionBar(toolbar);
 
-    // add back arrow to toolbar
+    // addPost back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
     if (ab != null) {
       ab.setDisplayShowTitleEnabled(false);

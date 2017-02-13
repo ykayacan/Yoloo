@@ -93,6 +93,10 @@ public class LceAnimator {
       errorView.setVisibility(View.GONE);
       loadingView.setVisibility(View.GONE);
     } else {
+      contentView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+      errorView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+      loadingView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+
       errorView.setVisibility(View.GONE);
 
       final Resources resources = loadingView.getResources();
@@ -124,6 +128,10 @@ public class LceAnimator {
           loadingView.setAlpha(1f); // For future showLoading calls
           contentView.setTranslationY(0);
           loadingView.setTranslationY(0);
+
+          contentView.setLayerType(View.LAYER_TYPE_NONE, null);
+          errorView.setLayerType(View.LAYER_TYPE_NONE, null);
+          loadingView.setLayerType(View.LAYER_TYPE_NONE, null);
         }
       });
 

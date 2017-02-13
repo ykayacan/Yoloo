@@ -98,7 +98,7 @@ public final class KeyboardUtil implements ViewTreeObserver.OnGlobalLayoutListen
 
   @Override
   public void onGlobalLayout() {
-    //r will be populated with the coordinates get your view that area still visible.
+    //r will be populated with the coordinates getPost your view that area still visible.
     mRootView.getWindowVisibleDisplayFrame(r);
 
     int heightDiff = mRootView.getRootView().getHeight() - (r.bottom - r.top);

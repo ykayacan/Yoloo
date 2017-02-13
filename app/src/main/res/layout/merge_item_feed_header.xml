@@ -16,47 +16,38 @@
     app:layout_constraintTop_toTopOf="parent"
     tools:src="@drawable/login_bg" />
 
-  <TextView
+  <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_item_feed_username"
+    style="@style/TextAppearance.Username"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginLeft="8dp"
     android:layout_marginStart="8dp"
-    android:ellipsize="end"
-    android:maxEms="7"
-    android:maxLines="1"
-    android:textAppearance="@style/TextAppearance.AppCompat.Body2"
     app:layout_constraintBottom_toBottomOf="@+id/iv_item_feed_user_avatar"
     app:layout_constraintLeft_toRightOf="@+id/iv_item_feed_user_avatar"
     app:layout_constraintTop_toTopOf="@+id/iv_item_feed_user_avatar"
     tools:text="usernameusernameusername" />
 
-  <com.yoloo.android.feature.ui.widget.zamanview.TimeTextView
+  <com.yoloo.android.ui.widget.timeview.TimeTextView
     android:id="@+id/tv_item_feed_time"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:gravity="center"
     android:textAppearance="@style/TextAppearance.AppCompat.Caption"
     app:drawableStart="@drawable/ic_point_black_24dp"
-    app:layout_constraintBottom_toBottomOf="@+id/iv_item_feed_user_avatar"
+    app:layout_constraintBaseline_toBaselineOf="@+id/tv_item_feed_username"
     app:layout_constraintLeft_toRightOf="@+id/tv_item_feed_username"
-    app:layout_constraintTop_toTopOf="@+id/iv_item_feed_user_avatar"
     tools:text="1m" />
 
-  <com.yoloo.android.feature.ui.widget.CompatTextView
+  <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_item_feed_bounty"
+    style="@style/TextAppearance.Bounty"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_gravity="center_vertical"
     android:layout_marginLeft="8dp"
     android:layout_marginStart="8dp"
-    android:drawablePadding="4dp"
-    android:gravity="center"
-    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-    app:drawableStart="@drawable/ic_coin_stack_18dp"
-    app:layout_constraintBottom_toBottomOf="@+id/tv_item_feed_time"
+    app:layout_constraintBaseline_toBaselineOf="@+id/tv_item_feed_username"
     app:layout_constraintLeft_toRightOf="@+id/tv_item_feed_time"
-    app:layout_constraintTop_toTopOf="@+id/tv_item_feed_time"
     tools:text="15" />
 
   <ImageButton

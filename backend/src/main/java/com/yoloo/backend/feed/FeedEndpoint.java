@@ -10,6 +10,7 @@ import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
+import com.yoloo.backend.post.Post;
 import com.yoloo.backend.validator.Validator;
 import com.yoloo.backend.validator.rule.common.AuthValidator;
 import java.util.logging.Logger;
@@ -26,7 +27,7 @@ import javax.inject.Named;
     )
 )
 @ApiClass(
-    resource = "accounts",
+    resource = "posts",
     clientIds = {
         Constants.ANDROID_CLIENT_ID,
         Constants.IOS_CLIENT_ID,
@@ -38,7 +39,7 @@ import javax.inject.Named;
 )
 public class FeedEndpoint {
 
-  private static final Logger logger =
+  private static final Logger LOG =
       Logger.getLogger(FeedEndpoint.class.getSimpleName());
 
   private final FeedController feedController = FeedControllerFactory.of().create();
@@ -56,14 +57,18 @@ public class FeedEndpoint {
       name = "accounts.feed",
       path = "accounts/feed",
       httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<FeedItem> list(@Nullable @Named("cursor") String cursor,
-      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
+  public CollectionResponse<Post> list(
+      @Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit,
+      User user) throws ServiceException {
 
     Validator.builder()
         .addRule(new AuthValidator(user))
         .validate();
 
-    return feedController
-        .list(Optional.fromNullable(limit), Optional.fromNullable(cursor), user);
+    return feedController.listFeed(
+        Optional.fromNullable(limit),
+        Optional.fromNullable(cursor),
+        user);
   }
 }

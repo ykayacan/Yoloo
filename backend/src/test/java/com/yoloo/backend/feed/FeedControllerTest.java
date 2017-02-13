@@ -7,27 +7,27 @@ import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Ref;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.account.AccountCounterShard;
-import com.yoloo.backend.account.AccountModel;
+import com.yoloo.backend.account.AccountShard;
+import com.yoloo.backend.account.AccountEntity;
 import com.yoloo.backend.account.AccountShardService;
+import com.yoloo.backend.category.Category;
+import com.yoloo.backend.category.CategoryController;
+import com.yoloo.backend.category.CategoryControllerFactory;
 import com.yoloo.backend.device.DeviceRecord;
-import com.yoloo.backend.gamification.GamificationService;
-import com.yoloo.backend.gamification.Tracker;
-import com.yoloo.backend.question.Question;
-import com.yoloo.backend.question.QuestionController;
-import com.yoloo.backend.question.QuestionControllerFactory;
-import com.yoloo.backend.shard.ShardUtil;
+import com.yoloo.backend.game.GamificationService;
+import com.yoloo.backend.game.Tracker;
+import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostController;
+import com.yoloo.backend.post.PostControllerFactory;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagController;
 import com.yoloo.backend.tag.TagControllerFactory;
-import com.yoloo.backend.topic.Topic;
-import com.yoloo.backend.topic.TopicController;
-import com.yoloo.backend.topic.TopicControllerFactory;
 import com.yoloo.backend.util.TestBase;
-import java.util.List;
+import io.reactivex.Observable;
 import java.util.UUID;
 import org.joda.time.DateTime;
 import org.junit.Test;
@@ -42,17 +42,17 @@ public class FeedControllerTest extends TestBase {
 
   private Account owner;
 
-  private Topic budgetTravel;
-  private Topic europe;
+  private Category budgetTravel;
+  private Category europe;
 
   private Tag passport;
 
   private Tag visa;
   private Tag visa2;
 
-  private QuestionController questionController;
+  private PostController postController;
   private TagController tagController;
-  private TopicController topicController;
+  private CategoryController categoryController;
   private FeedController feedController;
 
   @Override
@@ -69,21 +69,21 @@ public class FeedControllerTest extends TestBase {
   public void setUp() {
     super.setUp();
 
-    questionController = QuestionControllerFactory.of().create();
+    postController = PostControllerFactory.of().create();
     tagController = TagControllerFactory.of().create();
-    topicController = TopicControllerFactory.of().create();
+    categoryController = CategoryControllerFactory.of().create();
     feedController = FeedControllerFactory.of().create();
 
-    AccountModel model = createAccount();
+    AccountEntity model = createAccount();
 
     owner = model.getAccount();
     DeviceRecord record = createRecord(owner);
-    Tracker tracker = GamificationService.create().create(owner.getKey());
+    Tracker tracker = GamificationService.create().createTracker(owner.getKey());
 
     ImmutableSet<Object> saveList = ImmutableSet.builder()
         .add(owner)
         .add(record)
-        .addAll(model.getShards())
+        .addAll(model.getShards().values())
         .add(tracker)
         .build();
 
@@ -92,20 +92,20 @@ public class FeedControllerTest extends TestBase {
     User user = new User(USER_EMAIL, USER_AUTH_DOMAIN, owner.getWebsafeId());
 
     try {
-      budgetTravel = topicController.add("budget travel", Topic.Type.THEME, user);
+      budgetTravel = categoryController.insertCategory("budget travel", Category.Type.THEME);
     } catch (ConflictException e) {
       e.printStackTrace();
     }
     try {
-      europe = topicController.add("europe", Topic.Type.THEME, user);
+      europe = categoryController.insertCategory("europe", Category.Type.THEME);
     } catch (ConflictException e) {
       e.printStackTrace();
     }
 
-    passport = tagController.addGroup("passport", user);
+    passport = tagController.insertGroup("passport");
 
-    visa = tagController.addTag("visa", "en", passport.getWebsafeId(), user);
-    visa2 = tagController.addTag("visa2", "en", passport.getWebsafeId(), user);
+    visa = tagController.insertTag("visa", "en", passport.getWebsafeId());
+    visa2 = tagController.insertTag("visa2", "en", passport.getWebsafeId());
   }
 
   @Test
@@ -115,39 +115,41 @@ public class FeedControllerTest extends TestBase {
     String tags = visa.getName() + "," + visa2.getName();
     String categories = europe.getName() + "," + budgetTravel.getName();
 
-    Question question = questionController.add("Test content", tags, categories, Optional.absent(),
+    Post post = postController.insertQuestion("Test content", tags, categories, Optional.absent(),
         Optional.absent(), user);
 
     Feed feed = Feed.builder()
-        .parentUserKey(question.getParent())
-        .feedItemRef(Ref.create(question))
+        .parent(post.getParent())
+        .feedItemRef(Ref.create(post))
         .build();
 
     ofy().save().entity(feed).now();
   }
 
-  private AccountModel createAccount() {
+  private AccountEntity createAccount() {
     final Key<Account> ownerKey = fact().allocateId(Account.class);
 
     AccountShardService ass = AccountShardService.create();
 
-    List<AccountCounterShard> shards = ass.createShards(ownerKey);
+    return Observable.range(1, AccountShard.SHARD_COUNT)
+        .map(shardNum -> ass.createShard(ownerKey, shardNum))
+        .toMap(Ref::create)
+        .map(shardMap -> {
+          Account account = Account.builder()
+              .id(ownerKey.getId())
+              .avatarUrl(new Link("Test avatar"))
+              .email(new Email(USER_EMAIL))
+              .username("Test user")
+              .shardRefs(Lists.newArrayList(shardMap.keySet()))
+              .created(DateTime.now())
+              .build();
 
-    List<Ref<AccountCounterShard>> refs = ShardUtil.createRefs(shards).toList().blockingGet();
-
-    Account account = Account.builder()
-        .id(ownerKey.getId())
-        .avatarUrl(new Link("Test avatar"))
-        .email(new Email(USER_EMAIL))
-        .username("Test user")
-        .shardRefs(refs)
-        .created(DateTime.now())
-        .build();
-
-    return AccountModel.builder()
-        .account(account)
-        .shards(shards)
-        .build();
+          return AccountEntity.builder()
+              .account(account)
+              .shards(shardMap)
+              .build();
+        })
+        .blockingGet();
   }
 
   private DeviceRecord createRecord(Account owner) {

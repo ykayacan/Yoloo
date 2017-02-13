@@ -21,7 +21,7 @@
     app:layout_constraintTop_toTopOf="parent"
     app:srcCompat="@drawable/login_bg" />
 
-  <com.yoloo.android.feature.ui.widget.linkabletextview.LinkableTextView
+  <com.yoloo.android.ui.widget.linkabletextview.LinkableTextView
     android:id="@+id/tv_not_item_content"
     android:layout_width="0dp"
     android:layout_height="wrap_content"

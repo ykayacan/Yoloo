@@ -34,17 +34,16 @@ public class CommentRepository {
     return INSTANCE;
   }
 
-  public Observable<CommentRealm> get(String commentId) {
+  public Observable<CommentRealm> getComment(String commentId) {
     Preconditions.checkNotNull(commentId, "commentId can not be null.");
 
     return Observable.mergeDelayError(
-        diskDataStore.get(commentId).subscribeOn(Schedulers.io()),
-        remoteDataStore.get(commentId)
-            .doOnNext(diskDataStore::add)
-            .subscribeOn(Schedulers.io()));
+        diskDataStore.get(commentId).subscribeOn(Schedulers.io())
+            .onErrorReturnItem(new CommentRealm()),
+        remoteDataStore.get(commentId).doOnNext(diskDataStore::add).subscribeOn(Schedulers.io()));
   }
 
-  public Observable<CommentRealm> add(CommentRealm comment) {
+  public Observable<CommentRealm> addComment(CommentRealm comment) {
     Preconditions.checkNotNull(comment, "comment can not be null.");
 
     Realm realm = Realm.getDefaultInstance();
@@ -56,12 +55,10 @@ public class CommentRepository {
         .setUsername(account.getUsername())
         .setAvatarUrl(account.getAvatarUrl());
 
-    return remoteDataStore.add(comment)
-        .doOnNext(diskDataStore::add)
-        .subscribeOn(Schedulers.io());
+    return remoteDataStore.add(comment).doOnNext(diskDataStore::add).subscribeOn(Schedulers.io());
   }
 
-  public Completable delete(CommentRealm comment) {
+  public Completable deleteComment(CommentRealm comment) {
     Preconditions.checkNotNull(comment, "comment can not be null.");
 
     return remoteDataStore.delete(comment)
@@ -69,8 +66,8 @@ public class CommentRepository {
         .subscribeOn(Schedulers.io());
   }
 
-  public Observable<Response<List<CommentRealm>>> list(String postId, String cursor, String eTag,
-      int limit) {
+  public Observable<Response<List<CommentRealm>>> listComments(String postId, String cursor,
+      String eTag, int limit) {
     Preconditions.checkNotNull(postId, "postId can not be null.");
 
     return Observable.mergeDelayError(
@@ -80,11 +77,11 @@ public class CommentRepository {
             .subscribeOn(Schedulers.io()));
   }
 
-  public Completable vote(String commentId, int direction) {
+  public Completable voteComment(String commentId, int direction) {
     return diskDataStore.vote(commentId, direction).subscribeOn(Schedulers.io());
   }
 
-  public Observable<CommentRealm> accept(CommentRealm comment) {
+  public Observable<CommentRealm> acceptComment(CommentRealm comment) {
     return remoteDataStore.accept(comment)
         .doOnNext(diskDataStore::accept)
         .subscribeOn(Schedulers.io());

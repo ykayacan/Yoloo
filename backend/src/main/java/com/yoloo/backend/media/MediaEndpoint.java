@@ -11,7 +11,7 @@ import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
-import com.yoloo.backend.question.Question;
+import com.yoloo.backend.post.Post;
 import com.yoloo.backend.validator.Validator;
 import com.yoloo.backend.validator.rule.common.AuthValidator;
 import com.yoloo.backend.validator.rule.common.IdValidationRule;
@@ -42,7 +42,7 @@ import javax.inject.Named;
 public class MediaEndpoint {
 
   /**
-   * Returns the {@link Question} with the corresponding ID.
+   * Returns the {@link Post} with the corresponding ID.
    *
    * @param accountId the ID from the entity to be retrieved
    * @return the entity with the corresponding ID
@@ -52,8 +52,10 @@ public class MediaEndpoint {
       name = "medias.list",
       path = "medias/{accountId}",
       httpMethod = ApiMethod.HttpMethod.POST)
-  public CollectionResponse<Media> list(@Named("accountId") String accountId,
-      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit,
+  public CollectionResponse<Media> list(
+      @Named("accountId") String accountId,
+      @Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit,
       User user) throws ServiceException {
 
     Validator.builder()
@@ -62,7 +64,7 @@ public class MediaEndpoint {
         .addRule(new NotFoundRule(accountId))
         .validate();
 
-    return getMediaController().list(
+    return getMediaController().listMedias(
         accountId,
         Optional.fromNullable(limit),
         Optional.fromNullable(cursor),
@@ -71,7 +73,6 @@ public class MediaEndpoint {
 
   private MediaController getMediaController() {
     return MediaController.create(
-        MediaService.create()
-    );
+        MediaService.create());
   }
 }

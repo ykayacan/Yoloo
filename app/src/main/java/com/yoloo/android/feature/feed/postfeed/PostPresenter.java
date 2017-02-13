@@ -25,13 +25,14 @@ public class PostPresenter extends MvpPresenter<PostView> {
 
   public void loadPostsByCategory(boolean pullToRefresh, String categoryName, PostSorter sorter,
       String cursor, String eTag, int limit) {
+    getView().onLoading(pullToRefresh);
+
     Disposable d = Observable
         .zip(
             postRepository.listByCategory(categoryName, sorter, cursor, eTag, limit),
             userRepository.getLocalMe(),
             Pair::create)
         .observeOn(AndroidSchedulers.mainThread(), true)
-        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .subscribe(this::showData, this::showError);
 
     getDisposable().add(d);
@@ -39,13 +40,14 @@ public class PostPresenter extends MvpPresenter<PostView> {
 
   public void loadPostsByTag(boolean pullToRefresh, String tagName, PostSorter sorter,
       String cursor, String eTag, int limit) {
+    getView().onLoading(pullToRefresh);
+
     Disposable d = Observable
         .zip(
             postRepository.listByTags(tagName, sorter, cursor, eTag, limit),
             userRepository.getLocalMe(),
             Pair::create)
         .observeOn(AndroidSchedulers.mainThread(), true)
-        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .subscribe(this::showData, this::showError);
 
     getDisposable().add(d);
@@ -53,46 +55,49 @@ public class PostPresenter extends MvpPresenter<PostView> {
 
   public void loadPostsByUser(boolean pullToRefresh, String userId, boolean commented,
       String cursor, String eTag, int limit) {
+    getView().onLoading(pullToRefresh);
+
     Disposable d = Observable
         .zip(
             postRepository.listByUser(userId, commented, cursor, eTag, limit),
             userRepository.getLocalMe(),
             Pair::create)
         .observeOn(AndroidSchedulers.mainThread(), true)
-        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .subscribe(this::showData, this::showError);
 
     getDisposable().add(d);
   }
 
   public void loadPostsByBounty(boolean pullToRefresh, String cursor, String eTag, int limit) {
+    getView().onLoading(pullToRefresh);
+
     Disposable d = Observable
         .zip(
             postRepository.listByBounty(cursor, eTag, limit),
             userRepository.getLocalMe(),
             Pair::create)
         .observeOn(AndroidSchedulers.mainThread(), true)
-        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .subscribe(this::showData, this::showError);
 
     getDisposable().add(d);
   }
 
   public void loadPostsByBookmarked(boolean pullToRefresh, String cursor, String eTag, int limit) {
+    getView().onLoading(pullToRefresh);
+
     Disposable d = Observable
         .zip(
             postRepository.listByBookmarked(cursor, eTag, limit),
             userRepository.getLocalMe(),
             Pair::create)
         .observeOn(AndroidSchedulers.mainThread(), true)
-        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .subscribe(this::showData, this::showError);
 
     getDisposable().add(d);
   }
 
   public void deletePost(String postId) {
-    Disposable d = postRepository.delete(postId)
+    Disposable d = postRepository.deletePost(postId)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe();
 
@@ -102,7 +107,7 @@ public class PostPresenter extends MvpPresenter<PostView> {
   public void votePost(String postId, int direction) {
     Disposable d = postRepository.votePost(postId, direction)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(() -> postRepository.get(postId)
+        .subscribe(() -> postRepository.getPost(postId)
             .observeOn(AndroidSchedulers.mainThread(), true)
             .subscribe(post -> getView().onPostUpdated(post)), this::showError);
 

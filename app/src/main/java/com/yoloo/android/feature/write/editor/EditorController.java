@@ -44,16 +44,14 @@ import com.yalantis.ucrop.UCrop;
 import com.yoloo.android.R;
 import com.yoloo.android.YolooApp;
 import com.yoloo.android.data.model.PostRealm;
-import com.yoloo.android.data.model.TagRealm;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.post.datasource.PostDiskDataStore;
 import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.tag.TagRepository;
 import com.yoloo.android.data.repository.tag.datasource.TagDiskDataStore;
 import com.yoloo.android.data.repository.tag.datasource.TagRemoteDataStore;
-import com.yoloo.android.feature.ui.widget.PhotoThumbnail;
-import com.yoloo.android.feature.ui.widget.ThumbView;
-import com.yoloo.android.feature.ui.widget.tagview.TagView;
+import com.yoloo.android.ui.widget.PhotoThumbnail;
+import com.yoloo.android.ui.widget.ThumbView;
 import com.yoloo.android.feature.write.CreatePostService;
 import com.yoloo.android.feature.write.EditorType;
 import com.yoloo.android.feature.write.bountyoverview.BountyController;
@@ -71,8 +69,6 @@ import timber.log.Timber;
 
 public class EditorController extends MvpController<EditorView, EditorPresenter>
     implements EditorView {
-
-  private static final TagView.DataTransform<TagRealm> TRANSFORMER = TagRealm::getName;
 
   private static final String KEY_EDITOR_TYPE = "EDITOR_TYPE";
 
@@ -112,8 +108,7 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
     editorType = getArgs().getInt(KEY_EDITOR_TYPE);
 
-    final int layoutRes =
-        editorType == EditorType.ASK_QUESTION
+    final int layoutRes = editorType == EditorType.ASK_QUESTION
             ? R.layout.controller_questioneditor
             : R.layout.controller_blogeditor;
 
@@ -274,7 +269,7 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
   private void setupToolbar() {
     setSupportActionBar(toolbar);
 
-    // add back arrow to toolbar
+    // addPost back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
     if (ab != null) {
       ab.setDisplayShowTitleEnabled(false);
@@ -453,7 +448,7 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
         .subscribe();*/
   }
 
-  public void setEditorContentFromDraft(PostRealm draft) {
+  private void setEditorContentFromDraft(PostRealm draft) {
     if (editorType == EditorType.ASK_QUESTION) {
       tvAskBounty.setText(draft.getBounty() == 0
           ? getResources().getString(R.string.action_editor_ask_bounty)

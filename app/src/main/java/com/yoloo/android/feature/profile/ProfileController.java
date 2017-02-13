@@ -42,12 +42,12 @@ import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.feature.feed.postfeed.PostController;
 import com.yoloo.android.feature.follow.FollowController;
 import com.yoloo.android.feature.notification.NotificationController;
 import com.yoloo.android.feature.search.SearchController;
-import com.yoloo.android.feature.ui.widget.materialbadge.MenuItemBadge;
+import com.yoloo.android.framework.MvpController;
+import com.yoloo.android.ui.widget.materialbadge.MenuItemBadge;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.DrawableHelper;
@@ -145,7 +145,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
     switch (itemId) {
       case android.R.id.home:
-        getRouter().popCurrentController();
+        getRouter().handleBack();
         return true;
       case R.id.action_feed_search:
         startTransaction(new SearchController(), new VerticalChangeHandler());
@@ -223,7 +223,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   private void setupToolbar() {
     setSupportActionBar(toolbar);
 
-    // add back arrow to toolbar
+    // addPost back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
     if (ab != null) {
       ab.setDisplayShowTitleEnabled(false);
@@ -249,7 +249,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
         .withColor(R.color.primary_yellow)
         .tint();
 
-    formatCounterText(tvPosts, account.getQuestions(), R.string.label_profile_posts);
+    formatCounterText(tvPosts, account.getPosts(), R.string.label_profile_posts);
     formatCounterText(tvFollowers, account.getFollowers(), R.string.label_profile_followers);
     formatCounterText(tvFollowing, account.getFollowings(), R.string.label_profile_following);
 

@@ -7,16 +7,16 @@ import java.util.List;
 
 public class CategoryRemoteDataStore {
 
-  private static CategoryRemoteDataStore INSTANCE;
+  private static CategoryRemoteDataStore instance;
 
   private CategoryRemoteDataStore() {
   }
 
   public static CategoryRemoteDataStore getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new CategoryRemoteDataStore();
+    if (instance == null) {
+      instance = new CategoryRemoteDataStore();
     }
-    return INSTANCE;
+    return instance;
   }
 
   public Observable<List<CategoryRealm>> list(CategorySorter sorter, int limit) {

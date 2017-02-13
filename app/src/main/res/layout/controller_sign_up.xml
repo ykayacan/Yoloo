@@ -4,73 +4,71 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent">
 
-  <android.support.constraint.ConstraintLayout
-    android:layout_width="match_parent"
+  <LinearLayout
+    android:id="@+id/layout_login_input_container"
+    android:layout_width="280dp"
     android:layout_height="wrap_content"
-    android:layout_marginTop="104dp">
+    android:layout_gravity="center_horizontal"
+    android:layout_marginTop="@dimen/_104sdp"
+    android:background="@drawable/login_input_container_bg"
+    android:focusableInTouchMode="true"
+    android:orientation="vertical"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
 
-    <LinearLayout
-      android:id="@+id/layout_login_input_container"
-      android:layout_width="280dp"
+    <EditText
+      android:id="@+id/et_login_fullname"
+      android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:background="@drawable/linearlayout_login_input_container_bg"
-      android:orientation="vertical"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toTopOf="parent">
+      android:layout_marginEnd="16dp"
+      android:layout_marginLeft="16dp"
+      android:layout_marginRight="16dp"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="16dp"
+      android:background="@drawable/edittext_login_bg"
+      android:hint="@string/hint_full_name"
+      android:inputType="text" />
 
-      <EditText
-        android:id="@+id/et_login_fullname"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/edittext_login_bg"
-        android:hint="@string/hint_full_name"
-        android:inputType="text" />
+    <EditText
+      android:id="@+id/et_login_email"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginEnd="16dp"
+      android:layout_marginLeft="16dp"
+      android:layout_marginRight="16dp"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="16dp"
+      android:background="@drawable/edittext_login_bg"
+      android:hint="@string/hint_email"
+      android:inputType="textEmailAddress" />
 
-      <EditText
-        android:id="@+id/et_login_email"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:background="@drawable/edittext_login_bg"
-        android:hint="@string/hint_email"
-        android:inputType="textEmailAddress" />
+    <EditText
+      android:id="@+id/et_login_password"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_margin="16dp"
+      android:background="@drawable/edittext_login_bg"
+      android:hint="@string/hint_password"
+      android:inputType="textPassword" />
 
-      <EditText
-        android:id="@+id/et_login_password"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:background="@drawable/edittext_login_bg"
-        android:hint="@string/hint_password"
-        android:inputType="textPassword" />
+    <View
+      android:layout_width="match_parent"
+      android:layout_height="1dp"
+      android:background="@color/background_lightish" />
 
-      <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="8dp"
-        android:background="@color/background_lightish" />
+    <Button
+      android:id="@+id/btn_login_ready"
+      style="@style/Widget.AppCompat.Button.Borderless"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:text="@string/action_login_ready"
+      android:textAllCaps="false"
+      android:textAppearance="@style/TextAppearance.AppCompat.Title"
+      android:textColor="@color/accent" />
 
-      <Button
-        android:id="@+id/btn_login_ready"
-        style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/action_login_ready"
-        android:textAllCaps="false"
-        android:textAppearance="@style/TextAppearance.AppCompat.Title"
-        android:textColor="@color/accent" />
-
-    </LinearLayout>
-
-  </android.support.constraint.ConstraintLayout>
+  </LinearLayout>
 
 </ScrollView>

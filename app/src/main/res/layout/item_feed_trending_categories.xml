@@ -8,6 +8,7 @@
 
   <TextView
     android:id="@+id/tv_category_trending_now"
+    style="@style/TextAppearance.CategoryTrending"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:paddingBottom="8dp"
@@ -16,26 +17,21 @@
     android:paddingRight="16dp"
     android:paddingStart="16dp"
     android:paddingTop="8dp"
-    android:text="@string/label_feed_trending_now"
-    android:textAllCaps="true"
-    android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-    android:textColor="@color/inactive_icon_dark" />
+    android:text="@string/label_feed_trending_now" />
 
   <TextView
     android:id="@+id/tv_category_explore"
+    style="@style/TextAppearance.CategoryExplore"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="end"
-    android:background="?android:attr/selectableItemBackground"
     android:paddingBottom="8dp"
     android:paddingEnd="16dp"
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
     android:paddingStart="16dp"
     android:paddingTop="8dp"
-    android:text="@string/label_feed_explore"
-    android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-    android:textColor="@color/primary_blue" />
+    android:text="@string/label_feed_explore" />
 
   <android.support.v7.widget.RecyclerView
     android:id="@+id/rv_category_trending"

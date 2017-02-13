@@ -43,26 +43,54 @@ public class VoteEndpoint {
   private final VoteController voteController = VoteControllerFactory.of().create();
 
   /**
-   * Vote.
+   * Vote {@code Post} with given ID.
    *
-   * @param votableId the websafe votable id
+   * @param postId the websafe votable id
    * @param direction the direction
    * @param user the user
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "questions.vote",
-      path = "questions/{votableId}/votes",
+      name = "posts.vote",
+      path = "posts/{postId}/votes",
       httpMethod = ApiMethod.HttpMethod.POST)
-  public void vote(@Named("votableId") String votableId, @Named("dir") Vote.Direction direction,
-      final User user) throws ServiceException {
+  public void votePost(
+      @Named("postId") String postId,
+      @Named("dir") Vote.Direction direction,
+      User user) throws ServiceException {
 
     Validator.builder()
-        .addRule(new IdValidationRule(votableId))
+        .addRule(new IdValidationRule(postId))
         .addRule(new AuthValidator(user))
-        .addRule(new NotFoundRule(votableId))
+        .addRule(new NotFoundRule(postId))
         .validate();
 
-    voteController.vote(votableId, direction, user);
+    voteController.votePost(postId, direction, user);
+  }
+
+  /**
+   * Vote {@code Comment} with given ID.
+   *
+   * @param commentId the websafe votable id
+   * @param direction the direction
+   * @param user the user
+   * @throws ServiceException the service exception
+   */
+  @ApiMethod(
+      name = "comments.vote",
+      path = "comments/{commentId}/votes",
+      httpMethod = ApiMethod.HttpMethod.POST)
+  public void voteComment(
+      @Named("commentId") String commentId,
+      @Named("dir") Vote.Direction direction,
+      User user) throws ServiceException {
+
+    Validator.builder()
+        .addRule(new IdValidationRule(commentId))
+        .addRule(new AuthValidator(user))
+        .addRule(new NotFoundRule(commentId))
+        .validate();
+
+    voteController.voteComment(commentId, direction, user);
   }
 }

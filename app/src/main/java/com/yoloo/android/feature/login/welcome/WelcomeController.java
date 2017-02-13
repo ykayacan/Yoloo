@@ -4,6 +4,8 @@ import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+import butterknife.BindView;
 import butterknife.OnClick;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
@@ -12,6 +14,7 @@ import com.yoloo.android.data.faker.CategoryFaker;
 import com.yoloo.android.feature.base.BaseController;
 import com.yoloo.android.feature.login.provider.ProviderController;
 import com.yoloo.android.feature.login.signin.SignInController;
+import com.yoloo.android.util.HtmlUtil;
 
 public class WelcomeController extends BaseController {
 
@@ -19,9 +22,18 @@ public class WelcomeController extends BaseController {
     CategoryFaker.generate();
   }
 
+  @BindView(R.id.tv_login_action_login) TextView tvActionLogin;
+
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
     return inflater.inflate(R.layout.controller_welcome, container, false);
+  }
+
+  @Override protected void onViewCreated(@NonNull View view) {
+    super.onViewCreated(view);
+
+    tvActionLogin.setText(
+        HtmlUtil.fromHtml(getActivity(), R.string.action_login_already_have_account));
   }
 
   @OnClick(R.id.btn_login_start_using) void startUsing() {

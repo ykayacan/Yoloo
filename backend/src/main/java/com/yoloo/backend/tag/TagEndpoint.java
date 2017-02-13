@@ -42,7 +42,7 @@ import javax.inject.Named;
 )
 public class TagEndpoint {
 
-  private static final Logger logger =
+  private static final Logger LOG =
       Logger.getLogger(TagEndpoint.class.getSimpleName());
 
   private final TagController tagController = TagControllerFactory.of().create();
@@ -51,24 +51,27 @@ public class TagEndpoint {
    * Inserts a new {@code Tag}.
    *
    * @param name the name
-   * @param languageCode the language code
+   * @param langCode the language code
    * @param groupIds the group ids
    * @param user the user
    * @return the comment
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "tags.add",
+      name = "tags.insert",
       path = "tags",
       httpMethod = ApiMethod.HttpMethod.POST)
-  public Tag addTag(@Named("name") String name, @Named("languageCode") String languageCode,
-      @Named("groupIds") String groupIds, User user) throws ServiceException {
+  public Tag insertTag(
+      @Named("name") String name,
+      @Named("langCode") String langCode,
+      @Named("groupIds") String groupIds,
+      User user) throws ServiceException {
 
     Validator.builder()
         .addRule(new AuthValidator(user))
         .validate();
 
-    return tagController.addTag(name, languageCode, groupIds, user);
+    return tagController.insertTag(name, langCode, groupIds);
   }
 
   /**
@@ -84,14 +87,16 @@ public class TagEndpoint {
       name = "tags.update",
       path = "tags/{tagId}",
       httpMethod = ApiMethod.HttpMethod.PUT)
-  public Tag updateTag(@Named("tagId") String tagId, @Nullable @Named("name") String name,
+  public Tag updateTag(
+      @Named("tagId") String tagId,
+      @Nullable @Named("name") String name,
       User user) throws ServiceException {
 
     Validator.builder()
         .addRule(new AuthValidator(user))
         .validate();
 
-    return tagController.updateTag(tagId, Optional.fromNullable(name), user);
+    return tagController.updateTag(tagId, Optional.fromNullable(name));
   }
 
   /**
@@ -114,7 +119,7 @@ public class TagEndpoint {
         .addRule(new ForbiddenValidator(user, tagId, ForbiddenValidator.Operation.DELETE))
         .validate();
 
-    tagController.deleteTag(tagId, user);
+    tagController.deleteTag(tagId);
   }
 
   /**
@@ -124,30 +129,32 @@ public class TagEndpoint {
    * @param cursor the cursor
    * @param limit the maximum number of entries to return
    * @param user the user
-   * @return a response that encapsulates the result list and the next page token/cursor
+   * @return a response that encapsulates the result listFeed and the next page token/cursor
    * @throws ServiceException the service exception
    */
   @ApiMethod(
       name = "tags.list",
       path = "tags",
       httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Tag> list(@Named("name") String name,
-      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
-      throws ServiceException {
+  public CollectionResponse<Tag> listTags(
+      @Named("name") String name,
+      @Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit,
+      User user) throws ServiceException {
 
     Validator.builder()
         .addRule(new AuthValidator(user))
         .validate();
 
-    return tagController.list(name, Optional.fromNullable(cursor), Optional.fromNullable(limit),
-        user);
+    return tagController.list(name, Optional.fromNullable(cursor), Optional.fromNullable(limit)
+    );
   }
 
   /**
    * Recommended list.
    *
    * @param user the user
-   * @return the list
+   * @return the listFeed
    * @throws ServiceException the service exception
    */
   @ApiMethod(
@@ -160,7 +167,7 @@ public class TagEndpoint {
         .addRule(new AuthValidator(user))
         .validate();
 
-    return tagController.recommendedTags(user);
+    return tagController.recommendedTags();
   }
 
   /**
@@ -172,16 +179,16 @@ public class TagEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "tagGroups.add",
+      name = "tagGroups.insert",
       path = "tagGroups",
       httpMethod = ApiMethod.HttpMethod.POST)
-  public Tag addGroup(@Named("name") String name, User user) throws ServiceException {
+  public Tag insertGroup(@Named("name") String name, User user) throws ServiceException {
 
     Validator.builder()
         .addRule(new AuthValidator(user))
         .validate();
 
-    return tagController.addGroup(name, user);
+    return tagController.insertGroup(name);
   }
 
   /**
@@ -197,14 +204,16 @@ public class TagEndpoint {
       name = "tagGroups.update",
       path = "tagGroups/{groupId}",
       httpMethod = ApiMethod.HttpMethod.PUT)
-  public Tag updateGroup(@Named("groupId") String groupId, @Nullable @Named("name") String name,
+  public Tag updateGroup(
+      @Named("groupId") String groupId,
+      @Nullable @Named("name") String name,
       User user) throws ServiceException {
 
     Validator.builder()
         .addRule(new AuthValidator(user))
         .validate();
 
-    return tagController.updateGroup(groupId, Optional.fromNullable(name), user);
+    return tagController.updateGroup(groupId, Optional.fromNullable(name));
   }
 
   /**
@@ -227,6 +236,6 @@ public class TagEndpoint {
         .addRule(new ForbiddenValidator(user, groupId, ForbiddenValidator.Operation.DELETE))
         .validate();
 
-    tagController.deleteGroup(groupId, user);
+    tagController.deleteGroup(groupId);
   }
 }

@@ -9,27 +9,27 @@
     <exclude-pattern>.*/R.java</exclude-pattern>
     <exclude-pattern>.*/gen/.*</exclude-pattern>
 
-    <rule ref="rulesets/java/android.xml" />
-    <rule ref="rulesets/java/clone.xml" />
-    <rule ref="rulesets/java/finalizers.xml" />
-    <rule ref="rulesets/java/imports.xml">
+    <rule root="rulesets/java/android.xml" />
+    <rule root="rulesets/java/clone.xml" />
+    <rule root="rulesets/java/finalizers.xml" />
+    <rule root="rulesets/java/imports.xml">
         <!-- Espresso is designed this way !-->
         <exclude name="TooManyStaticImports" />
     </rule>
-    <rule ref="rulesets/java/logging-java.xml">
+    <rule root="rulesets/java/logging-java.xml">
         <!-- This rule wasn't working properly and given errors in every var call info -->
         <exclude name="GuardLogStatementJavaUtil" />
     </rule>
-    <rule ref="rulesets/java/braces.xml">
+    <rule root="rulesets/java/braces.xml">
         <!-- We allow single line if's without braces -->
         <exclude name="IfStmtsMustUseBraces" />
     </rule>
-    <rule ref="rulesets/java/strings.xml" >
+    <rule root="rulesets/java/strings.xml" >
         <!-- Exclude because causes problems with SQL Strings that usually require duplication -->
         <exclude name="AvoidDuplicateLiterals"/>
     </rule>
-    <rule ref="rulesets/java/basic.xml" />
-    <rule ref="rulesets/java/naming.xml">
+    <rule root="rulesets/java/basic.xml" />
+    <rule root="rulesets/java/naming.xml">
         <exclude name="AbstractNaming" />
         <exclude name="LongVariable" />
         <exclude name="ShortMethodName" />

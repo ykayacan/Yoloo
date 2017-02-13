@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class ShardConfig {
 
-  public static final int QUESTION_SHARD_COUNTER = 5;
+  public static final int POST_SHARD_COUNTER = 5;
 
   public static final int BLOG_SHARD_COUNTER = 2;
 

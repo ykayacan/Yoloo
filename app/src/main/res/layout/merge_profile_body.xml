@@ -29,7 +29,7 @@
 
     <TextView
       android:id="@+id/tv_profile_points"
-      style="@style/TextAppearance.ProfileCardText"
+      style="@style/TextAppearance.ProfileCard"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_gravity="bottom"
@@ -61,7 +61,7 @@
 
     <TextView
       android:id="@+id/tv_profile_bounties"
-      style="@style/TextAppearance.ProfileCardText"
+      style="@style/TextAppearance.ProfileCard"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_gravity="bottom"
@@ -92,7 +92,7 @@
 
     <TextView
       android:id="@+id/tv_profile_achievements"
-      style="@style/TextAppearance.ProfileCardText"
+      style="@style/TextAppearance.ProfileCard"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_gravity="bottom"

@@ -5,7 +5,7 @@
     <item name="colorPrimaryDark">@color/primary_dark</item>
     <item name="colorAccent">@color/accent</item>
 
-    <item name="android:windowBackground">@android:color/transparent</item>
+    <item name="android:windowBackground">@color/background_lightish_2</item>
     <item name="colorControlHighlight">@color/ripple_light</item>
   </style>
 
@@ -16,20 +16,24 @@
   <style name="Yoloo.Button" parent="@style/Widget.AppCompat.Button">
     <item name="android:layout_width">wrap_content</item>
     <item name="android:layout_height">wrap_content</item>
-    <item name="android:layout_gravity">right</item>
     <item name="android:textColor">?attr/android:textColorPrimary</item>
+    <item name="fontPath">fonts/OpenSans-Bold.ttf</item>
+  </style>
+
+  <style name="Yoloo.Button.Colored" parent="@style/Widget.AppCompat.Button.Colored">
+    <item name="android:layout_width">wrap_content</item>
+    <item name="android:layout_height">wrap_content</item>
+    <item name="android:textColor">@android:color/white</item>
+    <item name="fontPath">fonts/OpenSans-Bold.ttf</item>
   </style>
 
   <style name="Yoloo.Button.AccountChooser">
     <item name="android:textAllCaps">false</item>
     <item name="android:drawablePadding">20dp</item>
-    <item name="android:textStyle">bold</item>
+    <item name="fontPath">fonts/OpenSans-Bold.ttf</item>
     <item name="android:paddingLeft">12dp</item>
     <item name="android:paddingRight">12dp</item>
-    <item name="android:layout_marginBottom">24dp</item>
-    <item name="android:layout_gravity">left</item>
     <item name="android:gravity">left|center_vertical</item>
-    <item name="android:typeface">normal</item>
   </style>
 
   <style name="Yoloo.Button.AccountChooser.GoogleButton">
@@ -44,13 +48,27 @@
     <item name="android:textColor">@color/com_facebook_button_text_color</item>
   </style>
 
-  <style name="Yoloo.FollowButton" parent="@style/Widget.AppCompat.Button.Colored">
+  <style name="Yoloo.Button.StartUsing" parent="@style/Yoloo.Button.Colored" />
+
+  <style name="Yoloo.Button.Follow" parent="@style/Yoloo.Button.Colored">
     <item name="android:layout_width">wrap_content</item>
     <item name="android:layout_height">40dp</item>
   </style>
 
+  <style name="Yoloo.Button.Bounty" parent="@style/Yoloo.Button.Colored">
+    <item name="colorButtonNormal">@color/primary_blue</item>
+    <item name="android:paddingTop">12dp</item>
+    <item name="android:paddingBottom">12dp</item>
+    <item name="android:paddingRight">72dp</item>
+    <item name="android:paddingEnd">72dp</item>
+    <item name="android:paddingLeft">72dp</item>
+    <item name="android:paddingStart">72dp</item>
+    <item name="android:drawableLeft">@drawable/ic_bounty_coin</item>
+    <item name="android:drawableStart">@drawable/ic_bounty_coin</item>
+  </style>
 
   <style name="Yoloo.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
   <style name="Yoloo.AppBarOverlay.Light" parent="ThemeOverlay.AppCompat.ActionBar" />
 
   <style name="Yoloo.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
@@ -61,24 +79,64 @@
 
   <style name="Widget.Yoloo" parent="@android:style/Widget" />
 
-  <style name="Widget.Yoloo.BountyButton" parent="Widget.AppCompat.Button.Colored">
-    <item name="colorButtonNormal">@color/primary_blue</item>
-    <item name="android:textColor">@android:color/white</item>
-  </style>
-
   <style name="Widget.Yoloo.ThumbOverFlow" parent="Widget.AppCompat.ActionButton.Overflow">
     <item name="android:src">@drawable/layer_remove</item>
+  </style>
+
+  <style name="TextAppearance.Username" parent="@style/TextAppearance.AppCompat.Body2">
+    <item name="android:maxEms">6</item>
+    <item name="android:maxLines">1</item>
+    <item name="android:ellipsize">end</item>
+    <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
+  </style>
+
+  <style name="TextAppearance.Bounty" parent="TextAppearance.AppCompat.Body1">
+    <item name="android:gravity">center</item>
+    <item name="drawableStart">@drawable/ic_coin_stack_18dp</item>
+    <item name="android:drawablePadding">4dp</item>
+  </style>
+
+  <style name="TextAppearance.CommentHeader" parent="Base.TextAppearance.AppCompat.Medium">
+    <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
+    <item name="android:background">@color/background_lightish_2</item>
   </style>
 
   <style name="TextAppearance.ProfileCounter" parent="TextAppearance.AppCompat.Body1">
     <item name="android:textAlignment">center</item>
   </style>
 
-  <style name="TextAppearance.ProfileCardText" parent="TextAppearance.AppCompat.Caption">
+  <style name="TextAppearance.ProfileCard" parent="TextAppearance.AppCompat.Caption">
     <item name="android:textColor">@color/profile_card_text</item>
-    <item name="android:textStyle">bold</item>
     <item name="android:padding">4dp</item>
     <item name="android:textAlignment">center</item>
+    <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
+  </style>
+
+  <style name="TextAppearance.UnreadCount" parent="android:TextAppearance">
+    <item name="android:textSize">10sp</item>
+    <item name="android:textColor">@android:color/white</item>
+    <item name="android:gravity">center</item>
+    <item name="android:background">@drawable/shape_message_count_bg</item>
+  </style>
+
+  <style name="TextAppearance.CategoryTrending" parent="android:TextAppearance">
+    <item name="android:textSize">16sp</item>
+    <item name="android:textColor">@color/inactive_icon_dark</item>
+    <item name="android:textAllCaps">true</item>
+    <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
+  </style>
+
+  <style name="TextAppearance.CategoryExplore" parent="@style/TextAppearance.AppCompat.Subhead">
+    <item name="android:textColor">@color/primary_blue</item>
+    <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
+    <item name="android:foreground">?attr/selectableItemBackground</item>
+  </style>
+
+  <style name="TextAppearance.ConversationTitle" parent="android:TextAppearance">
+    <item name="android:textSize">18sp</item>
+    <item name="android:ellipsize">end</item>
+    <item name="android:maxLines">1</item>
+    <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
   </style>
 
   <style name="Yoloo.LightLabel">
@@ -103,7 +161,6 @@
     <item name="tagDrawablePadding">4dp</item>
   </style>
 
-  <style name="VideoThumbnail">
-  </style>
+  <style name="VideoThumbnail" />
 
 </resources>

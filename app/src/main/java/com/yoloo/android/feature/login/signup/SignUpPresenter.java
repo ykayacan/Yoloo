@@ -10,11 +10,11 @@ import io.reactivex.disposables.Disposable;
 import java.util.List;
 import timber.log.Timber;
 
-public class SignUpPresenter extends MvpPresenter<SignUpView> {
+class SignUpPresenter extends MvpPresenter<SignUpView> {
 
   private final UserRepository userRepository;
 
-  public SignUpPresenter(UserRepository userRepository) {
+  SignUpPresenter(UserRepository userRepository) {
     this.userRepository = userRepository;
   }
 
@@ -23,7 +23,7 @@ public class SignUpPresenter extends MvpPresenter<SignUpView> {
     super.onDetachView();
   }
 
-  public void signUp(String email, String password, List<String> categoryIds, String locale) {
+  void signUp(String email, String password, List<String> categoryIds, String locale) {
     getView().onShowLoading();
 
     processFirebase(email, password, convertTopicIdsToString(categoryIds), locale);
@@ -55,7 +55,7 @@ public class SignUpPresenter extends MvpPresenter<SignUpView> {
         .setLocale(locale)
         .setCategoryIds(categoryIds);
 
-    Disposable d = userRepository.add(newAccount)
+    Disposable d = userRepository.addUser(newAccount)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(account -> {
           getView().onHideLoading();

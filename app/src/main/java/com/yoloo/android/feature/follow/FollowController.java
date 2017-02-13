@@ -27,9 +27,9 @@ import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.search.OnFollowClickListener;
-import com.yoloo.android.feature.ui.recyclerview.EndlessRecyclerViewScrollListener;
-import com.yoloo.android.feature.ui.recyclerview.SlideInItemAnimator;
-import com.yoloo.android.feature.ui.recyclerview.SpaceItemDecoration;
+import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
+import com.yoloo.android.ui.recyclerview.SlideInItemAnimator;
+import com.yoloo.android.ui.recyclerview.SpaceItemDecoration;
 import com.yoloo.android.util.BundleBuilder;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -169,7 +169,7 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
 
     final int viewType = getArgs().getInt(KEY_VIEW_TYPE);
 
-    // add back arrow to toolbar
+    // addPost back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
     if (ab != null) {
       ab.setTitle(viewType == TYPE_FOLLOWERS ? R.string.label_follow_followers_title

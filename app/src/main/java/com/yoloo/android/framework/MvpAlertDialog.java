@@ -12,8 +12,8 @@ import com.yoloo.android.framework.delegate.ViewGroupMvpDelegateImpl;
 public abstract class MvpAlertDialog<V extends MvpView, P extends MvpPresenter<V>>
     extends AlertDialog implements ViewGroupDelegateCallback<V, P>, MvpView {
 
-  protected P presenter;
-  protected ViewGroupMvpDelegate<V, P> mvpDelegate;
+  private P presenter;
+  private ViewGroupMvpDelegate<V, P> mvpDelegate;
 
   protected MvpAlertDialog(@NonNull Context context) {
     super(context);
@@ -36,13 +36,9 @@ public abstract class MvpAlertDialog<V extends MvpView, P extends MvpPresenter<V
    * instance</b>.
    * </p>
    *
-   * <p>
-   * Only override this method if you really know what you are doing.
-   * </p>
-   *
    * @return {@link ViewGroupMvpDelegate}
    */
-  @NonNull protected ViewGroupMvpDelegate<V, P> getMvpDelegate() {
+  @NonNull private ViewGroupMvpDelegate<V, P> getMvpDelegate() {
     if (mvpDelegate == null) {
       mvpDelegate = new ViewGroupMvpDelegateImpl<>(this);
     }
@@ -59,13 +55,6 @@ public abstract class MvpAlertDialog<V extends MvpView, P extends MvpPresenter<V
     super.onDetachedFromWindow();
     getMvpDelegate().onDetachedFromWindow();
   }
-
-  /**
-   * Instantiate a presenter instance
-   *
-   * @return The {@link MvpPresenter} for this view
-   */
-  @NonNull public abstract P createPresenter();
 
   @Override public P getPresenter() {
     return presenter;

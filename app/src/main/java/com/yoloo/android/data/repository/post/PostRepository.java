@@ -13,7 +13,7 @@ import java.util.List;
 
 public class PostRepository {
 
-  private static PostRepository INSTANCE;
+  private static PostRepository instance;
 
   private final PostRemoteDataStore remoteDataStore;
   private final PostDiskDataStore diskDataStore;
@@ -25,23 +25,24 @@ public class PostRepository {
 
   public static PostRepository getInstance(PostRemoteDataStore remoteDataStore,
       PostDiskDataStore diskDataStore) {
-    if (INSTANCE == null) {
-      INSTANCE = new PostRepository(remoteDataStore, diskDataStore);
+    if (instance == null) {
+      instance = new PostRepository(remoteDataStore, diskDataStore);
     }
-    return INSTANCE;
+    return instance;
   }
 
-  public Observable<PostRealm> get(String postId) {
+  public Observable<PostRealm> getPost(String postId) {
     Preconditions.checkNotNull(postId, "postId can not be null.");
 
     return Observable.mergeDelayError(
         diskDataStore.get(postId).subscribeOn(Schedulers.io()),
         remoteDataStore.get(postId)
-            .doOnNext(diskDataStore::add)
-            .subscribeOn(Schedulers.io()));
+            .subscribeOn(Schedulers.io())
+            .observeOn(Schedulers.computation())
+            .doOnNext(diskDataStore::add));
   }
 
-  public Observable<PostRealm> add(PostRealm post) {
+  public Observable<PostRealm> addPost(PostRealm post) {
     Preconditions.checkNotNull(post, "post can not be null.");
 
     return remoteDataStore.add(post)
@@ -49,7 +50,7 @@ public class PostRepository {
         .subscribeOn(Schedulers.io());
   }
 
-  public Completable delete(String postId) {
+  public Completable deletePost(String postId) {
     Preconditions.checkNotNull(postId, "postId can not be null.");
 
     return remoteDataStore.delete(postId)
@@ -69,13 +70,15 @@ public class PostRepository {
     return diskDataStore.delete("draft").subscribeOn(Schedulers.io());
   }
 
-  public Observable<Response<List<PostRealm>>> listByUserFeed(String cursor, String eTag,
-      int limit) {
+  public Observable<Response<List<PostRealm>>> listByFeed(String cursor, String eTag, int limit) {
     return Observable.mergeDelayError(
-        diskDataStore.listByUserFeed().subscribeOn(Schedulers.io()),
-        remoteDataStore.listByUserFeed(cursor, eTag, limit)
+        diskDataStore.listByFeed().subscribeOn(Schedulers.io()),
+        remoteDataStore.listByFeed(cursor, eTag, limit)
+            .filter(response -> !response.getData().isEmpty())
             .doOnNext(response -> diskDataStore.addAll(response.getData()))
-            .subscribeOn(Schedulers.io()));
+            .subscribeOn(Schedulers.io()))
+        .filter(response -> !response.getData().isEmpty())
+        .filter(Response::isUpToDate);
   }
 
   public Observable<Response<List<PostRealm>>> listByBounty(String cursor, String eTag, int limit) {

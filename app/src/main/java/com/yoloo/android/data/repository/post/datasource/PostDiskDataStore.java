@@ -29,12 +29,6 @@ public class PostDiskDataStore {
     return INSTANCE;
   }
 
-  /**
-   * Get observable.
-   *
-   * @param postId the post id
-   * @return the observable
-   */
   public Observable<PostRealm> get(String postId) {
     return Observable.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
@@ -49,34 +43,16 @@ public class PostDiskDataStore {
     });
   }
 
-  /**
-   * Add.
-   *
-   * @param post the post realm
-   * @return the completable
-   */
   public void add(PostRealm post) {
     addAll(Collections.singletonList(post));
   }
 
-  /**
-   * Add all completable.
-   *
-   * @param posts the posts
-   * @return the completable
-   */
   public void addAll(List<PostRealm> posts) {
     Realm realm = Realm.getDefaultInstance();
     realm.executeTransaction(tx -> tx.insertOrUpdate(posts));
     realm.close();
   }
 
-  /**
-   * Delete.
-   *
-   * @param postId the post id
-   * @return the completable
-   */
   public Completable delete(String postId) {
     return Completable.fromAction(() -> {
       Realm realm = Realm.getDefaultInstance();
@@ -95,12 +71,7 @@ public class PostDiskDataStore {
     });
   }
 
-  /**
-   * List feed observable.
-   *
-   * @return the observable
-   */
-  public Observable<Response<List<PostRealm>>> listByUserFeed() {
+  public Observable<Response<List<PostRealm>>> listByFeed() {
     return Observable.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 
@@ -115,13 +86,6 @@ public class PostDiskDataStore {
     });
   }
 
-  /**
-   * List observable.
-   *
-   * @param categoryName the category name
-   * @param sorter the sorter
-   * @return the observable
-   */
   public Observable<Response<List<PostRealm>>> listByCategory(String categoryName,
       PostSorter sorter) {
     return Observable.fromCallable(() -> {
@@ -188,12 +152,6 @@ public class PostDiskDataStore {
     });
   }
 
-  /**
-   * Vote.
-   *
-   * @param postId the post id
-   * @param direction the direction
-   */
   public Completable vote(String postId, int direction) {
     return Completable.fromAction(() -> {
       Realm realm = Realm.getDefaultInstance();

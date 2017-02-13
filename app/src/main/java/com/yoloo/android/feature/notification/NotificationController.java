@@ -12,6 +12,8 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import butterknife.BindColor;
 import butterknife.BindView;
 import com.bluelinelabs.conductor.RouterTransaction;
@@ -22,12 +24,13 @@ import com.yoloo.android.data.model.NotificationRealm;
 import com.yoloo.android.data.repository.notification.NotificationRepository;
 import com.yoloo.android.data.repository.notification.datasource.NotificationDiskDataSource;
 import com.yoloo.android.data.repository.notification.datasource.NotificationRemoteDataSource;
-import com.yoloo.android.framework.MvpController;
+import com.yoloo.android.feature.base.LceAnimator;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.profile.ProfileController;
-import com.yoloo.android.feature.ui.recyclerview.EndlessRecyclerViewScrollListener;
-import com.yoloo.android.feature.ui.recyclerview.SlideInItemAnimator;
-import com.yoloo.android.feature.ui.recyclerview.SpaceItemDecoration;
+import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
+import com.yoloo.android.ui.recyclerview.SlideInItemAnimator;
+import com.yoloo.android.ui.recyclerview.SpaceItemDecoration;
+import com.yoloo.android.framework.MvpController;
 import java.util.List;
 import timber.log.Timber;
 
@@ -38,6 +41,8 @@ public class NotificationController extends MvpController<NotificationView, Noti
   @BindView(R.id.rv_notification) RecyclerView rvNotification;
   @BindView(R.id.swipe_notification) SwipeRefreshLayout swipeRefreshLayout;
   @BindView(R.id.toolbar_notification) Toolbar toolbar;
+  @BindView(R.id.loading_view) ProgressBar loadingView;
+  @BindView(R.id.error_view) TextView errorView;
 
   @BindColor(R.color.primary) int primaryColor;
 
@@ -80,7 +85,7 @@ public class NotificationController extends MvpController<NotificationView, Noti
     final int itemId = item.getItemId();
     switch (itemId) {
       case android.R.id.home:
-        getRouter().popCurrentController();
+        getRouter().handleBack();
         return true;
       default:
         return super.onOptionsItemSelected(item);
@@ -88,16 +93,20 @@ public class NotificationController extends MvpController<NotificationView, Noti
   }
 
   @Override public void onLoading(boolean pullToRefresh) {
-
+    if (!pullToRefresh) {
+      LceAnimator.showLoading(loadingView, swipeRefreshLayout, errorView);
+    }
   }
 
   @Override public void onLoaded(Response<List<NotificationRealm>> value) {
-    swipeRefreshLayout.setRefreshing(false);
-
     cursor = value.getCursor();
     eTag = value.geteTag();
 
     adapter.addAll(value.getData());
+  }
+
+  @Override public void showContent() {
+    LceAnimator.showContent(loadingView, swipeRefreshLayout, errorView);
     swipeRefreshLayout.setRefreshing(false);
   }
 
@@ -160,7 +169,7 @@ public class NotificationController extends MvpController<NotificationView, Noti
   private void setupToolbar() {
     setSupportActionBar(toolbar);
 
-    // add back arrow to toolbar
+    // addPost back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
     if (ab != null) {
       ab.setTitle(R.string.label_notification_title);
