@@ -111,20 +111,6 @@ public class FeedAdapter extends EpoxyAdapter {
     notifyModelsChanged();
   }
 
-  public void update(List<PostRealm> posts) {
-    for (PostRealm post : posts) {
-      final int postType = post.getType();
-
-      if (postType == 0) {
-        models.add(createNormalQuestion(post));
-      } else if (postType == 1) {
-        models.add(createRichQuestion(post));
-      } else if (postType == 2) {
-        models.add(createBlog(post));
-      }
-    }
-  }
-
   public void clear() {
     if (isMainFeed) {
       //removeAllAfterModel(bountyButtonModel);

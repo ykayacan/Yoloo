@@ -541,9 +541,10 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
 
     final SlideInItemAnimator animator = new SlideInItemAnimator();
     animator.setSupportsChangeAnimations(false);
+    animator.setAddDuration(0L);
     rvFeed.setItemAnimator(animator);
 
-    rvFeed.setHasFixedSize(false);
+    rvFeed.setHasFixedSize(true);
     rvFeed.setAdapter(adapter);
 
     endlessRecyclerViewScrollListener = new EndlessRecyclerViewScrollListener(layoutManager, this);
