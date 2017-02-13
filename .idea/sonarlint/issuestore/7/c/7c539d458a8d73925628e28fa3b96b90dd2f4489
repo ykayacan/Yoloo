@@ -1,12 +1,0 @@
-
-Ysquid:UnusedPrivateMethod"6Remove this unused private "enabledStrictMode" method.( ‘¢¾
-b
-squid:S134"NRefactor this code to not nest more than 3 if/for/while/switch/try statements.(€¾òÐ
-Rsquid:S2696"6Make the enclosing method "static" or remove this set.(ÝÉé®8É±™ê¢+
-lsquid:CommentedOutCodeLine"<This block of commented-out lines of code should be removed.(á¸®òøÿÿÿÿ8ÍÆüñ¢+
-gsquid:S3776"RRefactor this method to reduce its Cognitive Complexity from 20 to the 15 allowed.(îáÏü
-`squid:CommentedOutCodeLine"<This block of commented-out lines of code should be removed.(×õ¾Ã
-`squid:CommentedOutCodeLine"<This block of commented-out lines of code should be removed.(‰ªñ
-‡ squid:ForLoopCounterChangedCheck"XRefactor the code in order to not assign to this loop counter from within the loop body.(ûÕãÿýÿÿÿÿ
-lsquid:CommentedOutCodeLine"<This block of commented-out lines of code should be removed.(¢à¥½ÿÿÿÿÿ8²Ššê¢+
-esquid:CommentedOutCodeLine"<This block of commented-out lines of code should be removed.(¾œšÉùÿÿÿÿ
