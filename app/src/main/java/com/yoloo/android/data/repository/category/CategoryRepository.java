@@ -31,10 +31,10 @@ public class CategoryRepository {
   }
 
   public void addCategory(CategoryRealm category) {
-    addCategory(Collections.singletonList(category));
+    addCategories(Collections.singletonList(category));
   }
 
-  public void addCategory(List<CategoryRealm> categories) {
+  public void addCategories(List<CategoryRealm> categories) {
     diskDataStore.addAll(categories);
   }
 
