@@ -23,13 +23,15 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.PaintDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RectShape;
-import android.support.annotation.ColorInt;
+import android.support.v4.util.LruCache;
 import android.view.Gravity;
 
 /**
- * * Borrowed from github.com/romannurik/muzei
+ * Utility methods for creating prettier gradient scrims.
  */
 public class ScrimUtil {
+
+  private static final LruCache<Integer, Drawable> cubicGradientScrimCache = new LruCache<>(10);
 
   private ScrimUtil() {
   }
@@ -39,9 +41,18 @@ public class ScrimUtil {
    * <a href="https://plus.google.com/+RomanNurik/posts/2QvHVFWrHZf">this post</a> for more
    * details.
    */
-  public static Drawable makeCubicGradientScrimDrawable(@ColorInt int baseColor,
-      int numStops,
-      int gravity) {
+  public static Drawable makeCubicGradientScrimDrawable(int baseColor, int numStops, int gravity) {
+
+    // Generate a cache key by hashing together the inputs, based on the method described in the Effective Java book
+    int cacheKeyHash = baseColor;
+    cacheKeyHash = 31 * cacheKeyHash + numStops;
+    cacheKeyHash = 31 * cacheKeyHash + gravity;
+
+    Drawable cachedGradient = cubicGradientScrimCache.get(cacheKeyHash);
+    if (cachedGradient != null) {
+      return cachedGradient;
+    }
+
     numStops = Math.max(numStops, 2);
 
     PaintDrawable paintDrawable = new PaintDrawable();
@@ -49,12 +60,15 @@ public class ScrimUtil {
 
     final int[] stopColors = new int[numStops];
 
-    int alpha = Color.alpha(baseColor);
+    final int red = Color.red(baseColor);
+    final int green = Color.green(baseColor);
+    final int blue = Color.blue(baseColor);
+    final int alpha = Color.alpha(baseColor);
 
     for (int i = 0; i < numStops; i++) {
       float x = i * 1f / (numStops - 1);
       float opacity = MathUtils.constrain(0, 1, (float) Math.pow(x, 3));
-      stopColors[i] = ColorUtils.modifyAlpha(baseColor, (int) (alpha * opacity));
+      stopColors[i] = Color.argb((int) (alpha * opacity), red, green, blue);
     }
 
     final float x0, x1, y0, y1;
@@ -100,6 +114,7 @@ public class ScrimUtil {
       }
     });
 
+    cubicGradientScrimCache.put(cacheKeyHash, paintDrawable);
     return paintDrawable;
   }
 }
