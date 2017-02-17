@@ -145,7 +145,7 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
   }
 
   @Override public void onSignedUp() {
-    getParentController().getRouter().setRoot(RouterTransaction.with(new UserFeedController()));
+    getParentController().getRouter().setRoot(RouterTransaction.with(UserFeedController.create()));
   }
 
   @Override public void onError(Throwable t) {

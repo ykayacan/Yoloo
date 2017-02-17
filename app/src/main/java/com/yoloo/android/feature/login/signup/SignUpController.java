@@ -55,8 +55,9 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
   }
 
   public static SignUpController create(ArrayList<String> topicIds) {
-    final Bundle bundle =
-        new BundleBuilder().putStringArrayList(KEY_CATEGORY_IDS, topicIds).build();
+    final Bundle bundle = new BundleBuilder()
+        .putStringArrayList(KEY_CATEGORY_IDS, topicIds)
+        .build();
 
     return new SignUpController(bundle);
   }
@@ -138,7 +139,7 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
   }
 
   @Override public void onSignedUp() {
-    getParentController().getRouter().setRoot(RouterTransaction.with(new UserFeedController()));
+    getParentController().getRouter().setRoot(RouterTransaction.with(UserFeedController.create()));
   }
 
   @Override public void onError(Throwable t) {

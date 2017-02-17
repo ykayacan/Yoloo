@@ -146,6 +146,10 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     setRetainViewMode(RetainViewMode.RETAIN_DETACH);
   }
 
+  public static UserFeedController create() {
+    return new UserFeedController();
+  }
+
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
     return inflater.inflate(R.layout.controller_feed_user, container, false);
@@ -198,7 +202,7 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
 
     switch (itemId) {
       case R.id.action_feed_search:
-        startTransaction(new SearchController(), new VerticalChangeHandler());
+        startTransaction(SearchController.create(), new VerticalChangeHandler());
         return true;
       case R.id.action_feed_message:
         /*if (hasNotification) {
@@ -320,8 +324,9 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
         return false;
       case R.id.action_nav_settings:
         AuthUI.getInstance().signOut(getActivity());
-        handler.postDelayed(() -> getRouter().setRoot(RouterTransaction.with(new AuthController())
-            .pushChangeHandler(new FadeChangeHandler())), 400);
+        handler.postDelayed(
+            () -> getRouter().setRoot(RouterTransaction.with(AuthController.create())
+                .pushChangeHandler(new FadeChangeHandler())), 400);
         return false;
       default:
         return false;
@@ -492,9 +497,9 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
         .onCommentClickListener(this)
         .onContentImageClickListener(this)
         .onTrendingCategoryHeaderClickListener(
-            v -> startTransaction(new MainCatalogController(), new FadeChangeHandler()))
+            v -> startTransaction(MainCatalogController.create(), new FadeChangeHandler()))
         .onTravelNewsHeaderClickListener(
-            v -> startTransaction(new MainCatalogController(), new VerticalChangeHandler()))
+            v -> startTransaction(MainCatalogController.create(), new VerticalChangeHandler()))
         .onOptionsClickListener(this)
         .onReadMoreClickListener(this)
         .onVoteClickListener(this)
@@ -502,7 +507,6 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
         .build();
 
     final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
-    lm.setInitialPrefetchItemCount(5);
 
     rvFeed.setLayoutManager(lm);
     rvFeed.addItemDecoration(new SpaceItemDecoration(8, SpaceItemDecoration.VERTICAL));

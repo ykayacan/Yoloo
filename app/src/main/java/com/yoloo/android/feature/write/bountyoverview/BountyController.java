@@ -50,6 +50,10 @@ public class BountyController extends MvpController<BountyView, BountyPresenter>
   private PostRealm draft;
   private AccountRealm account;
 
+  public static BountyController create() {
+    return new BountyController();
+  }
+
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
     return inflater.inflate(R.layout.controller_bounty, container, false);

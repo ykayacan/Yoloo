@@ -148,7 +148,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
         getRouter().handleBack();
         return true;
       case R.id.action_feed_search:
-        startTransaction(new SearchController(), new VerticalChangeHandler());
+        startTransaction(SearchController.create(), new VerticalChangeHandler());
         return true;
       case R.id.action_feed_message:
         MenuItemBadge.update(getActivity(), item, new MenuItemBadge.Builder()

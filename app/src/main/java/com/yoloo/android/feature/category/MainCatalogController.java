@@ -7,26 +7,29 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindView;
 import com.bluelinelabs.conductor.Controller;
-import com.bluelinelabs.conductor.support.ControllerPagerAdapter;
+import com.bluelinelabs.conductor.Router;
+import com.bluelinelabs.conductor.RouterTransaction;
+import com.bluelinelabs.conductor.support.RouterPagerAdapter;
 import com.yoloo.android.R;
 import com.yoloo.android.feature.base.BaseController;
 
 public class MainCatalogController extends BaseController {
 
   @BindView(R.id.tablayout_catalog) TabLayout tabLayout;
-
   @BindView(R.id.viewpager_catalog) ViewPager viewPager;
-
   @BindView(R.id.toolbar_catalog) Toolbar toolbar;
 
   public MainCatalogController() {
     setRetainViewMode(RetainViewMode.RETAIN_DETACH);
+  }
+
+  public static MainCatalogController create() {
+    return new MainCatalogController();
   }
 
   @Override
@@ -35,7 +38,8 @@ public class MainCatalogController extends BaseController {
   }
 
   @Override protected void onViewCreated(@NonNull View view) {
-    final ControllerPagerAdapter pagerAdapter = new CatalogPagerAdapter(this, true, getResources());
+    final RouterPagerAdapter pagerAdapter =
+        new CatalogPagerAdapter(this, getResources());
 
     viewPager.setAdapter(pagerAdapter);
     tabLayout.setupWithViewPager(viewPager);
@@ -49,17 +53,12 @@ public class MainCatalogController extends BaseController {
     super.onDestroyView(view);
   }
 
-  @Override public void onPrepareOptionsMenu(@NonNull Menu menu) {
-    super.onPrepareOptionsMenu(menu);
-    menu.clear();
-  }
-
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     // handle arrow click here
     final int itemId = item.getItemId();
     switch (itemId) {
       case android.R.id.home:
-        getRouter().popCurrentController();
+        getRouter().handleBack();
         return true;
       default:
         return super.onOptionsItemSelected(item);
@@ -78,24 +77,13 @@ public class MainCatalogController extends BaseController {
     }
   }
 
-  private static class CatalogPagerAdapter extends ControllerPagerAdapter {
+  private static class CatalogPagerAdapter extends RouterPagerAdapter {
 
     private final Resources resources;
 
-    CatalogPagerAdapter(Controller host, boolean saveControllerState, Resources resources) {
-      super(host, saveControllerState);
+    CatalogPagerAdapter(@NonNull Controller host, Resources resources) {
+      super(host);
       this.resources = resources;
-    }
-
-    @Override public Controller getItem(int position) {
-      switch (position) {
-        case 0:
-          return CategoryController.create(CategoryType.TYPE_DESTINATION, false);
-        case 1:
-          return CategoryController.create(CategoryType.TYPE_THEME, false);
-        default:
-          return null;
-      }
     }
 
     @Override public int getCount() {
@@ -110,6 +98,16 @@ public class MainCatalogController extends BaseController {
           return resources.getString(R.string.label_catalog_tab_theme);
         default:
           return null;
+      }
+    }
+
+    @Override public void configureRouter(@NonNull Router router, int position) {
+      @CategoryType final String categoryType =
+          position == 0 ? CategoryType.TYPE_DESTINATION : CategoryType.TYPE_THEME;
+
+      if (!router.hasRootController()) {
+        CategoryController page = CategoryController.create(categoryType, true);
+        router.setRoot(RouterTransaction.with(page));
       }
     }
   }

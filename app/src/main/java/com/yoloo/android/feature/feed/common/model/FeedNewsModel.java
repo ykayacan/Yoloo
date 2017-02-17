@@ -35,6 +35,7 @@ public abstract class FeedNewsModel extends EpoxyModelWithHolder<FeedNewsModel.F
 
     lm = new GridLayoutManager(context, SPAN_COUNT);
     lm.setSpanSizeLookup(adapter.getSpanSizeLookup());
+    lm.setInitialPrefetchItemCount(4);
   }
 
   @Override public void bind(FeedNewsHolder holder) {

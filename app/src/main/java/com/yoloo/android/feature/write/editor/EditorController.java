@@ -185,7 +185,7 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
     if (navigation == EditorPresenter.NAV_BACK) {
       getRouter().handleBack();
     } else if (navigation == EditorPresenter.NAV_BOUNTY) {
-      getRouter().pushController(RouterTransaction.with(new BountyController())
+      getRouter().pushController(RouterTransaction.with(BountyController.create())
           .pushChangeHandler(new VerticalChangeHandler())
           .popChangeHandler(new VerticalChangeHandler()));
     } else if (navigation == EditorPresenter.NAV_POST) {

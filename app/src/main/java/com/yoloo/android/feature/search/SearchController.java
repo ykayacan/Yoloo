@@ -36,6 +36,10 @@ public class SearchController extends BaseController {
     setRetainViewMode(RetainViewMode.RETAIN_DETACH);
   }
 
+  public static SearchController create() {
+    return new SearchController();
+  }
+
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
     return inflater.inflate(R.layout.controller_search, container, false);

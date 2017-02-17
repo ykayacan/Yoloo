@@ -229,7 +229,7 @@ public class PostController extends MvpController<PostView, PostPresenter>
         getRouter().handleBack();
         return true;
       case R.id.action_feed_search:
-        startTransaction(new SearchController(), new VerticalChangeHandler());
+        startTransaction(SearchController.create(), new VerticalChangeHandler());
       case R.id.action_feed_sort_newest:
         reloadQuestions(item, PostSorter.NEWEST);
         return true;

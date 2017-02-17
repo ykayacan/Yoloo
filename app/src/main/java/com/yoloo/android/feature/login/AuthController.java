@@ -27,6 +27,10 @@ public class AuthController extends BaseController {
 
   @BindColor(R.color.primary_dark) int primaryDarkColor;
 
+  public static AuthController create() {
+    return new AuthController();
+  }
+
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
     return inflater.inflate(R.layout.controller_auth, container, false);
@@ -64,7 +68,7 @@ public class AuthController extends BaseController {
     final Router childRouter = getChildRouter(childContainer).setPopsLastView(true);
 
     if (!childRouter.hasRootController()) {
-      childRouter.setRoot(RouterTransaction.with(new WelcomeController()));
+      childRouter.setRoot(RouterTransaction.with(WelcomeController.create()));
 
       childRouter.addChangeListener(new ControllerChangeHandler.ControllerChangeListener() {
         @Override

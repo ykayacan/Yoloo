@@ -24,6 +24,10 @@ public class WelcomeController extends BaseController {
 
   @BindView(R.id.tv_login_action_login) TextView tvActionLogin;
 
+  public static WelcomeController create() {
+    return new WelcomeController();
+  }
+
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
     return inflater.inflate(R.layout.controller_welcome, container, false);
@@ -43,7 +47,7 @@ public class WelcomeController extends BaseController {
   }
 
   @OnClick(R.id.tv_login_action_login) void login() {
-    getRouter().pushController(RouterTransaction.with(new SignInController())
+    getRouter().pushController(RouterTransaction.with(SignInController.create())
         .pushChangeHandler(new HorizontalChangeHandler())
         .popChangeHandler(new HorizontalChangeHandler()));
   }

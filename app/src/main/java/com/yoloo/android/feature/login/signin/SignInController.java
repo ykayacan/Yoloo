@@ -60,6 +60,10 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
 
   private IdpProvider idpProvider;
 
+  public static SignInController create() {
+    return new SignInController();
+  }
+
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
     return inflater.inflate(R.layout.controller_sign_in, container, false);
@@ -158,7 +162,7 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
   }
 
   @Override public void onSignedIn() {
-    getParentController().getRouter().setRoot(RouterTransaction.with(new UserFeedController()));
+    getParentController().getRouter().setRoot(RouterTransaction.with(UserFeedController.create()));
   }
 
   @Override public void onError(Throwable t) {

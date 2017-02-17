@@ -67,9 +67,9 @@ public class BaseActivity extends AppCompatActivity implements FCMListener {
       FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
       if (user == null) {
-        router.setRoot(RouterTransaction.with(new AuthController()));
+        router.setRoot(RouterTransaction.with(AuthController.create()));
       } else {
-        router.setRoot(RouterTransaction.with(new UserFeedController()));
+        router.setRoot(RouterTransaction.with(UserFeedController.create()));
       }
     }
 
