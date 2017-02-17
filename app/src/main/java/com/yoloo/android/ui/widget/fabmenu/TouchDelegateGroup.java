@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 class TouchDelegateGroup extends TouchDelegate {
   private static final Rect USELESS_HACKY_RECT = new Rect();
-  private final ArrayList<TouchDelegate> mTouchDelegates = new ArrayList<TouchDelegate>();
+  private final ArrayList<TouchDelegate> mTouchDelegates = new ArrayList<>();
   private TouchDelegate mCurrentTouchDelegate;
   private boolean mEnabled;
 

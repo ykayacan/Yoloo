@@ -1,8 +1,9 @@
 package com.yoloo.android.feature.comment;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.support.annotation.ColorInt;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindView;
@@ -22,28 +23,36 @@ import com.yoloo.android.ui.widget.VoteView;
 import com.yoloo.android.ui.widget.linkabletextview.LinkableTextView;
 import com.yoloo.android.ui.widget.timeview.TimeTextView;
 import com.yoloo.android.util.DrawableHelper;
-import com.yoloo.android.util.glide.CropCircleTransformation;
+import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 
 @EpoxyModelClass(layout = R.layout.item_comment)
 public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolder> {
+
+  private static final int DEFAULT_BACKGROUND_COLOR = Color.WHITE;
 
   @EpoxyAttribute CommentRealm comment;
   @EpoxyAttribute boolean isPostOwner;
   @EpoxyAttribute boolean isCommentOwner;
   @EpoxyAttribute boolean postAccepted;
   @EpoxyAttribute int postType;
+  @EpoxyAttribute @ColorInt int backgroundColor;
   @EpoxyAttribute(hash = false) OnItemLongClickListener<CommentRealm> onCommentLongClickListener;
   @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
   @EpoxyAttribute(hash = false) OnVoteClickListener onVoteClickListener;
   @EpoxyAttribute(hash = false) OnMentionClickListener onMentionClickListener;
   @EpoxyAttribute(hash = false) OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener;
+  @EpoxyAttribute(hash = false) CropCircleTransformation circleTransformation;
 
   @Override public void bind(CommentHolder holder) {
-    final Context context = holder.ivUserAvatar.getContext().getApplicationContext();
+    final Context context = holder.itemView.getContext();
+
+    backgroundColor = backgroundColor == 0 ? DEFAULT_BACKGROUND_COLOR : backgroundColor;
+    holder.itemView.setBackgroundColor(backgroundColor);
 
     Glide.with(context)
         .load(comment.getAvatarUrl())
-        .bitmapTransform(CropCircleTransformation.getInstance(context))
+        .bitmapTransform(circleTransformation)
+        .placeholder(R.drawable.ic_player)
         .into(holder.ivUserAvatar);
 
     holder.tvUsername.setText(comment.getUsername());
@@ -74,11 +83,7 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
 
   private void setupClickListeners(CommentHolder holder) {
     if (isCommentOwner) {
-      holder.root.setOnLongClickListener(v -> {
-        onCommentLongClickListener.onItemLongClick(v, this, comment);
-        return true;
-      });
-      holder.tvContent.setOnLongClickListener(v -> {
+      holder.itemView.setOnLongClickListener(v -> {
         onCommentLongClickListener.onItemLongClick(v, this, comment);
         return true;
       });
@@ -110,8 +115,7 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
     });
   }
 
-  static class CommentHolder extends BaseEpoxyHolder {
-    @BindView(R.id.root_view) ViewGroup root;
+  public static class CommentHolder extends BaseEpoxyHolder {
     @BindView(R.id.iv_comment_user_avatar) ImageView ivUserAvatar;
     @BindView(R.id.tv_comment_username) TextView tvUsername;
     @BindView(R.id.tv_comment_time) TimeTextView tvTime;

@@ -74,7 +74,7 @@ public class PhotoController extends BaseController {
   private void setupToolbar() {
     setSupportActionBar(toolbar);
 
-    // addPost back arrow to toolbar
+    // addPostToBeginning back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
     if (ab != null) {
       ab.setDisplayShowTitleEnabled(false);

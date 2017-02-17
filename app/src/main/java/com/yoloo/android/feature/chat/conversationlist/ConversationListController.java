@@ -22,7 +22,7 @@ import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
-import com.yoloo.android.ui.recyclerview.SlideInItemAnimator;
+import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.framework.MvpController;
 import timber.log.Timber;
 
@@ -106,7 +106,7 @@ public class ConversationListController extends MvpController<ConversationListVi
   }
 
   private void setupRecyclerView() {
-    adapter = new ConversationListAdapter(this, this);
+    adapter = new ConversationListAdapter(getActivity(), this, this);
 
     final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
 

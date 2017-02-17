@@ -1,9 +1,8 @@
 package com.yoloo.android.feature.feed.common.listener;
 
 import android.view.View;
-import com.yoloo.android.feature.feed.common.annotation.PostType;
+import com.yoloo.android.data.model.PostRealm;
 
 public interface OnCommentClickListener {
-  void onCommentClick(View v, String postId, String postOwnerId, String acceptedCommentId,
-      @PostType int postType);
+  void onCommentClick(View v, PostRealm post);
 }

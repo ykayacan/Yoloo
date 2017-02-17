@@ -2,9 +2,7 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
   <item android:drawable="@color/primary" />
 
-  <item>
-    <bitmap
-      android:gravity="center"
-      android:src="@mipmap/ic_launcher"/>
-  </item>
+  <item
+    android:drawable="@drawable/ic_yoloo_logo_white"
+    android:gravity="center" />
 </layer-list>

@@ -1,4 +1,4 @@
-package com.yoloo.android.ui.recyclerview;
+package com.yoloo.android.ui.recyclerview.decoration;
 
 import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;

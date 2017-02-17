@@ -138,4 +138,11 @@ public class LceAnimator {
       set.start();
     }
   }
+
+  public static void showContent2(@NonNull final View loadingView, @NonNull final View contentView,
+      @NonNull final View errorView) {
+    loadingView.setVisibility(View.GONE);
+    errorView.setVisibility(View.GONE);
+    contentView.setVisibility(View.VISIBLE);
+  }
 }

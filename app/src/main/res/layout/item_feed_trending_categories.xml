@@ -1,45 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
   android:clipChildren="false"
-  android:clipToPadding="false">
+  android:clipToPadding="false"
+  android:orientation="vertical">
 
-  <TextView
-    android:id="@+id/tv_category_trending_now"
-    style="@style/TextAppearance.CategoryTrending"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:paddingBottom="8dp"
-    android:paddingEnd="16dp"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:paddingStart="16dp"
-    android:paddingTop="8dp"
-    android:text="@string/label_feed_trending_now" />
-
-  <TextView
-    android:id="@+id/tv_category_explore"
-    style="@style/TextAppearance.CategoryExplore"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="end"
-    android:paddingBottom="8dp"
-    android:paddingEnd="16dp"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
-    android:paddingStart="16dp"
-    android:paddingTop="8dp"
-    android:text="@string/label_feed_explore" />
-
-  <android.support.v7.widget.RecyclerView
-    android:id="@+id/rv_category_trending"
+  <FrameLayout
+    android:id="@+id/layout_feed_category_trending_header"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="40dp"
+    android:foreground="?attr/selectableItemBackground"
+    android:paddingBottom="@dimen/padding_micro"
+    android:paddingEnd="@dimen/padding_large"
+    android:paddingLeft="@dimen/padding_normal"
+    android:paddingRight="@dimen/padding_large"
+    android:paddingStart="@dimen/padding_normal"
+    android:paddingTop="@dimen/padding_micro">
+
+    <com.yoloo.android.ui.widget.BaselineGridTextView
+      style="@style/TextAppearance.GroupTitle"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/label_feed_trending_now" />
+
+    <com.yoloo.android.ui.widget.BaselineGridTextView
+      style="@style/TextAppearance.GroupMore"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="end"
+      android:text="@string/label_feed_explore" />
+
+  </FrameLayout>
+
+  <android.support.v7.widget.RecyclerView
+    android:id="@+id/rv_feed_category_trending"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:clipToPadding="false"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
+    android:paddingLeft="@dimen/padding_normal"
+    android:paddingRight="@dimen/padding_normal"
     tools:listitem="@layout/item_feed_category" />
-</FrameLayout>
+</LinearLayout>

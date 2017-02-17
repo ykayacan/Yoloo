@@ -172,7 +172,7 @@ public class CatalogController extends MvpController<CatalogView, CatalogPresent
   private void setupToolbar() {
     setSupportActionBar(toolbar);
 
-    // addPost back arrow to toolbar
+    // addPostToBeginning back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
     if (ab != null) {
       ab.setTitle(R.string.label_catalog_toolbar_title);

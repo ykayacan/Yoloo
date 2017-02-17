@@ -3,6 +3,7 @@ package com.yoloo.android.data;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GetTokenResult;
 import io.reactivex.Single;
 
@@ -40,8 +41,11 @@ public enum ApiManager {
         }
       };
 
-      FirebaseAuth.getInstance().getCurrentUser().getToken(true)
-          .addOnCompleteListener(onCompleteListener);
+      FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+      if (user != null) {
+        user.getToken(true)
+            .addOnCompleteListener(onCompleteListener);
+      }
     });
   }
 }

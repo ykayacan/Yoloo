@@ -6,7 +6,7 @@ import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.framework.MvpDataView;
 import java.util.List;
 
-public interface PostView extends MvpDataView<Response<List<PostRealm>>> {
+interface PostView extends MvpDataView<Response<List<PostRealm>>> {
 
   void onAccountLoaded(AccountRealm account);
 

@@ -44,7 +44,6 @@ import com.yoloo.android.feature.base.LceAnimator;
 import com.yoloo.android.feature.comment.CommentController;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
-import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.feature.feed.common.event.PostDeleteEvent;
 import com.yoloo.android.feature.feed.common.event.UpdateEvent;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
@@ -58,11 +57,11 @@ import com.yoloo.android.feature.photo.PhotoController;
 import com.yoloo.android.feature.postdetail.PostDetailController;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.search.SearchController;
-import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
-import com.yoloo.android.ui.recyclerview.SlideInItemAnimator;
-import com.yoloo.android.ui.recyclerview.SpaceItemDecoration;
-import com.yoloo.android.ui.widget.SpinnerTitleArrayAdapter;
 import com.yoloo.android.framework.MvpController;
+import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
+import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
+import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
+import com.yoloo.android.ui.widget.SpinnerTitleArrayAdapter;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.ControllerUtil;
 import com.yoloo.android.util.DrawableHelper;
@@ -72,13 +71,13 @@ import com.yoloo.android.util.ShareUtil;
 import com.yoloo.android.util.WeakHandler;
 import io.reactivex.disposables.Disposable;
 import java.util.List;
+import timber.log.Timber;
 
 public class PostController extends MvpController<PostView, PostPresenter>
     implements PostView, SwipeRefreshLayout.OnRefreshListener,
-    EndlessRecyclerViewScrollListener.OnLoadMoreListener, OnProfileClickListener,
-    OnPostOptionsClickListener, OnReadMoreClickListener, OnShareClickListener,
-    OnCommentClickListener,
-    OnVoteClickListener, OnContentImageClickListener {
+    OnProfileClickListener, OnPostOptionsClickListener, OnReadMoreClickListener,
+    OnShareClickListener, OnCommentClickListener, OnVoteClickListener,
+    OnContentImageClickListener {
 
   private static final int VIEW_TYPE_CATEGORY = 0;
   private static final int VIEW_TYPE_TAGS = 1;
@@ -94,7 +93,7 @@ public class PostController extends MvpController<PostView, PostPresenter>
   private static final String KEY_BOOKMARKED = "BOOKMARKED";
 
   @BindView(R.id.toolbar_feed_global) Toolbar toolbar;
-  @BindView(R.id.rv_feed_global) RecyclerView rvGlobalFeed;
+  @BindView(R.id.rv_feed_global) RecyclerView rvPostFeed;
   @BindView(R.id.spinner_feed_global) Spinner spinner;
   @BindView(R.id.swipe_feed_global) SwipeRefreshLayout swipeRefreshLayout;
   @BindView(R.id.view_feed_sub_action) View actionView;
@@ -104,8 +103,6 @@ public class PostController extends MvpController<PostView, PostPresenter>
   @BindColor(R.color.primary) int primaryColor;
 
   private FeedAdapter adapter;
-
-  private EndlessRecyclerViewScrollListener endlessRecyclerViewScrollListener;
 
   private WeakHandler handler;
 
@@ -210,20 +207,15 @@ public class PostController extends MvpController<PostView, PostPresenter>
             adapter.updatePost(FeedAction.DELETE, ((PostDeleteEvent) e).getPost());
           }
         });
-
-    rvGlobalFeed.addOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
   @Override protected void onDetach(@NonNull View view) {
     super.onDetach(view);
-    rvGlobalFeed.removeOnScrollListener(endlessRecyclerViewScrollListener);
-
     disposable.dispose();
   }
 
   @Override public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-    // Show toolbar only if category name exists.
-    if (!TextUtils.isEmpty(categoryName)) {
+    if (viewType == VIEW_TYPE_CATEGORY) {
       inflater.inflate(R.menu.menu_feed_global, menu);
 
       DrawableHelper.withContext(getActivity()).withColor(android.R.color.white).applyTo(menu);
@@ -262,8 +254,7 @@ public class PostController extends MvpController<PostView, PostPresenter>
     cursor = value.getCursor();
     eTag = value.geteTag();
 
-    adapter.showLoadMoreIndicator(false);
-    endlessRecyclerViewScrollListener.setProgressBarVisible(false);
+    adapter.showFooter(rvPostFeed, false);
     adapter.addPosts(value.getData());
   }
 
@@ -274,6 +265,7 @@ public class PostController extends MvpController<PostView, PostPresenter>
 
   @Override public void onError(Throwable e) {
     swipeRefreshLayout.setRefreshing(false);
+    Timber.e(e);
   }
 
   @Override public void onEmpty() {
@@ -281,15 +273,9 @@ public class PostController extends MvpController<PostView, PostPresenter>
   }
 
   @Override public void onRefresh() {
-    endlessRecyclerViewScrollListener.resetState();
     adapter.clear();
+    adapter.showFooter(rvPostFeed, true);
 
-    chooseLoadMethod(true);
-  }
-
-  @Override public void onLoadMore() {
-    adapter.showLoadMoreIndicator(true);
-    endlessRecyclerViewScrollListener.setProgressBarVisible(true);
     handler.postDelayed(() -> chooseLoadMethod(true), 700);
   }
 
@@ -308,9 +294,9 @@ public class PostController extends MvpController<PostView, PostPresenter>
   }
 
   @Override
-  public void onPostOptionsClick(View v, EpoxyModel<?> model, String postId, String postOwnerId) {
+  public void onPostOptionsClick(View v, EpoxyModel<?> model, PostRealm post) {
     final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
-    final boolean self = currentUserId.equals(postOwnerId);
+    final boolean self = currentUserId.equals(post.getOwnerId());
     menu.getMenu().getItem(0).setVisible(viewType != VIEW_TYPE_BOOKMARKED);
     menu.getMenu().getItem(1).setVisible(viewType == VIEW_TYPE_BOOKMARKED);
     menu.getMenu().getItem(2).setVisible(self);
@@ -320,29 +306,23 @@ public class PostController extends MvpController<PostView, PostPresenter>
       final int itemId = item.getItemId();
       switch (itemId) {
         case R.id.action_feed_popup_bookmark:
-          getPresenter().bookmarkPost(postId);
-          Snackbar.make(getView(), R.string.label_feed_bookmarked, Snackbar.LENGTH_SHORT).show();
+          bookmarkPost(post);
           return true;
         case R.id.action_feed_popup_unbookmark:
-          getPresenter().unBookmarkPost(postId);
-          adapter.delete(model);
-          Snackbar.make(getView(), R.string.label_feed_unbookmarked, Snackbar.LENGTH_SHORT).show();
+          unbookmarkPost(model, post);
           return true;
         case R.id.action_feed_popup_edit:
           return true;
         case R.id.action_feed_popup_delete:
-          getPresenter().deletePost(postId);
-          adapter.delete(model);
+          deletePost(model, post);
           return true;
       }
       return false;
     });
   }
 
-  @Override public void onCommentClick(View v, String postId, String postOwnerId,
-      String acceptedCommentId, @PostType int postType) {
-    startTransaction(CommentController.create(postId, postOwnerId, acceptedCommentId, postType),
-        new VerticalChangeHandler());
+  @Override public void onCommentClick(View v, PostRealm post) {
+    startTransaction(CommentController.create(post), new VerticalChangeHandler());
   }
 
   @Override public void onContentImageClick(View v, String url) {
@@ -370,7 +350,7 @@ public class PostController extends MvpController<PostView, PostPresenter>
   }
 
   private void setupRecyclerView() {
-    adapter = FeedAdapter.builder()
+    adapter = FeedAdapter.builder(getActivity())
         .isMainFeed(false)
         .onProfileClickListener(this)
         .onReadMoreClickListener(this)
@@ -381,24 +361,29 @@ public class PostController extends MvpController<PostView, PostPresenter>
         .onVoteClickListener(this)
         .build();
 
-    final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+    final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
+    lm.setInitialPrefetchItemCount(5);
 
-    rvGlobalFeed.setLayoutManager(layoutManager);
-    rvGlobalFeed.addItemDecoration(new SpaceItemDecoration(8, SpaceItemDecoration.VERTICAL));
+    rvPostFeed.setLayoutManager(lm);
+    rvPostFeed.addItemDecoration(new SpaceItemDecoration(8, SpaceItemDecoration.VERTICAL));
 
     final SlideInItemAnimator animator = new SlideInItemAnimator();
     animator.setSupportsChangeAnimations(false);
-    rvGlobalFeed.setItemAnimator(animator);
+    animator.setAddDuration(0L);
+    rvPostFeed.setItemAnimator(animator);
 
-    rvGlobalFeed.setHasFixedSize(true);
-    rvGlobalFeed.setAdapter(adapter);
+    rvPostFeed.setHasFixedSize(true);
+    rvPostFeed.setAdapter(adapter);
 
-    endlessRecyclerViewScrollListener = new EndlessRecyclerViewScrollListener(layoutManager, this);
+    rvPostFeed.addOnScrollListener(new EndlessRecyclerOnScrollListener() {
+      @Override public void onLoadMore() {
+        handler.postDelayed(() -> chooseLoadMethod(true), 700);
+      }
+    });
   }
 
   private void setupPullToRefresh() {
-    swipeRefreshLayout.setEnabled(tagName == null);
-
+    swipeRefreshLayout.setEnabled(viewType != VIEW_TYPE_TAGS);
     swipeRefreshLayout.setOnRefreshListener(this);
     swipeRefreshLayout.setColorSchemeColors(primaryColor);
   }
@@ -427,7 +412,6 @@ public class PostController extends MvpController<PostView, PostPresenter>
 
   private void reloadQuestions(@NonNull MenuItem item, PostSorter sorter) {
     item.setChecked(true);
-    endlessRecyclerViewScrollListener.resetState();
     adapter.clear();
     getPresenter().loadPostsByCategory(false, categoryName, sorter, cursor, eTag, 20);
   }
@@ -497,5 +481,21 @@ public class PostController extends MvpController<PostView, PostPresenter>
     } else if (isBookmarked) {
       viewType = VIEW_TYPE_BOOKMARKED;
     }
+  }
+
+  private void deletePost(EpoxyModel<?> model, PostRealm post) {
+    getPresenter().deletePost(post.getId());
+    adapter.delete(model);
+  }
+
+  private void unbookmarkPost(EpoxyModel<?> model, PostRealm post) {
+    getPresenter().unBookmarkPost(post.getId());
+    adapter.delete(model);
+    Snackbar.make(getView(), R.string.label_feed_unbookmarked, Snackbar.LENGTH_SHORT).show();
+  }
+
+  private void bookmarkPost(PostRealm post) {
+    getPresenter().bookmarkPost(post.getId());
+    Snackbar.make(getView(), R.string.label_feed_bookmarked, Snackbar.LENGTH_SHORT).show();
   }
 }

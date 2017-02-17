@@ -5,6 +5,7 @@
   android:id="@+id/drawer_layout_feed"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
+  android:background="@color/background_lightish_2"
   tools:openDrawer="start">
 
   <include layout="@layout/content_feed" />

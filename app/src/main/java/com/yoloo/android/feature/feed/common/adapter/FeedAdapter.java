@@ -1,10 +1,14 @@
 package com.yoloo.android.feature.feed.common.adapter;
 
+import android.content.Context;
+import android.support.constraint.ConstraintSet;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import com.airbnb.epoxy.EpoxyAdapter;
 import com.airbnb.epoxy.EpoxyModel;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CategoryRealm;
+import com.yoloo.android.data.model.NewsRealm;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
@@ -17,20 +21,21 @@ import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.feature.feed.common.model.BlogModel;
 import com.yoloo.android.feature.feed.common.model.BlogModel_;
 import com.yoloo.android.feature.feed.common.model.BountyButtonModel_;
+import com.yoloo.android.feature.feed.common.model.FeedNewsModel_;
+import com.yoloo.android.feature.feed.common.model.FeedTrendingCategoryModel_;
 import com.yoloo.android.feature.feed.common.model.LoadingModel;
 import com.yoloo.android.feature.feed.common.model.NormalQuestionModel;
 import com.yoloo.android.feature.feed.common.model.NormalQuestionModel_;
 import com.yoloo.android.feature.feed.common.model.RichQuestionModel;
 import com.yoloo.android.feature.feed.common.model.RichQuestionModel_;
-import com.yoloo.android.feature.feed.common.model.TrendingCategoryModel_;
-import com.yoloo.android.util.WeakHandler;
+import com.yoloo.android.ui.recyclerview.OnItemClickListener;
+import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.List;
+import timber.log.Timber;
 
 public class FeedAdapter extends EpoxyAdapter {
 
-  private final BountyButtonModel_ bountyButtonModel = new BountyButtonModel_();
-  private final TrendingCategoryModel_ trendingCategoriesModel = new TrendingCategoryModel_();
-  private final LoadingModel loadingModel = new LoadingModel();
+  private final LoadingModel loadingModel;
 
   private final OnProfileClickListener onProfileClickListener;
   private final OnPostOptionsClickListener onPostOptionsClickListener;
@@ -39,9 +44,15 @@ public class FeedAdapter extends EpoxyAdapter {
   private final OnCommentClickListener onCommentClickListener;
   private final OnVoteClickListener onVoteClickListener;
   private final OnContentImageClickListener onContentImageClickListener;
-
   private final boolean isMainFeed;
-  private final WeakHandler handler = new WeakHandler();
+
+  private final ConstraintSet set = new ConstraintSet();
+
+  private final CropCircleTransformation circleTransformation;
+
+  private FeedNewsModel_ newsModel;
+  private BountyButtonModel_ bountyButtonModel;
+  private FeedTrendingCategoryModel_ trendingCategoryModel;
 
   private FeedAdapter(
       OnProfileClickListener onProfileClickListener,
@@ -49,11 +60,12 @@ public class FeedAdapter extends EpoxyAdapter {
       OnReadMoreClickListener onReadMoreClickListener,
       OnShareClickListener onShareClickListener,
       OnCommentClickListener onCommentClickListener,
-      OnExploreCategoriesClickListener onExploreCategoriesClickListener,
+      View.OnClickListener trendingCategoryHeaderClickListener,
+      View.OnClickListener travelNewsHeaderClickListener,
       OnVoteClickListener onVoteClickListener,
       OnBountyClickListener onBountyClickListener,
       OnContentImageClickListener onContentImageClickListener,
-      boolean isMainFeed) {
+      boolean isMainFeed, Context context) {
     this.onProfileClickListener = onProfileClickListener;
     this.onPostOptionsClickListener = onPostOptionsClickListener;
     this.onReadMoreClickListener = onReadMoreClickListener;
@@ -65,45 +77,61 @@ public class FeedAdapter extends EpoxyAdapter {
 
     enableDiffing();
 
+    loadingModel = new LoadingModel();
+
     if (isMainFeed) {
-      trendingCategoriesModel.onExploreCategoriesClickListener(onExploreCategoriesClickListener);
-      addModel(trendingCategoriesModel);
+      bountyButtonModel = new BountyButtonModel_();
+      trendingCategoryModel = new FeedTrendingCategoryModel_(context);
+      newsModel = new FeedNewsModel_(context);
 
       bountyButtonModel.onBountyClickListener(onBountyClickListener);
-      addModel(bountyButtonModel);
+      trendingCategoryModel.headerClickListener(trendingCategoryHeaderClickListener);
+      newsModel.headerClickListener(travelNewsHeaderClickListener);
     }
+
+    circleTransformation = new CropCircleTransformation(context);
   }
 
-  public static FeedAdapterBuilder builder() {
-    return new FeedAdapterBuilder();
+  public static FeedAdapterBuilder builder(Context context) {
+    return new FeedAdapterBuilder(context);
   }
 
   public void addTrendingCategories(List<CategoryRealm> items,
-      OnCategoryClickListener onCategoryClickListener) {
-    trendingCategoriesModel.addTrendingCategories(items, onCategoryClickListener);
+      OnItemClickListener<CategoryRealm> onItemClickListener) {
+    trendingCategoryModel.addTrendingCategories(items, onItemClickListener);
+    addModel(trendingCategoryModel);
   }
 
-  public void addPostAfterBountyButton(PostRealm post) {
+  public void addNews(List<NewsRealm> newsList,
+      OnItemClickListener<NewsRealm> onItemClickListener) {
+    Timber.d("addNews()");
+    newsModel.addNews(newsList, onItemClickListener);
+    insertModelAfter(newsModel, trendingCategoryModel);
+    insertModelAfter(bountyButtonModel, newsModel);
+  }
+
+  public void addPostToBeginning(PostRealm post) {
     final int postType = post.getType();
 
-    if (postType == 0) {
+    if (postType == PostRealm.POST_NORMAL) {
       insertModelAfter(createNormalQuestion(post), bountyButtonModel);
-    } else if (postType == 1) {
+    } else if (postType == PostRealm.POST_RICH) {
       insertModelAfter(createRichQuestion(post), bountyButtonModel);
-    } else if (postType == 2) {
+    } else if (postType == PostRealm.POST_BLOG) {
       insertModelAfter(createBlog(post), bountyButtonModel);
     }
   }
 
   public void addPosts(List<PostRealm> posts) {
+    Timber.d("addPosts(): %s", posts.size());
     for (PostRealm post : posts) {
       final int postType = post.getType();
 
-      if (postType == 0) {
+      if (postType == PostRealm.POST_NORMAL) {
         models.add(createNormalQuestion(post));
-      } else if (postType == 1) {
+      } else if (postType == PostRealm.POST_RICH) {
         models.add(createRichQuestion(post));
-      } else if (postType == 2) {
+      } else if (postType == PostRealm.POST_BLOG) {
         models.add(createBlog(post));
       }
     }
@@ -113,16 +141,24 @@ public class FeedAdapter extends EpoxyAdapter {
 
   public void clear() {
     if (isMainFeed) {
-      //removeAllAfterModel(bountyButtonModel);
-      models.subList(2, models.size()).clear();
+      models.subList(3, models.size() - 1).clear();
     } else {
       models.clear();
-      //removeAllModels();
     }
   }
 
   public void delete(EpoxyModel<?> model) {
     removeModel(model);
+  }
+
+  public void showFooter(RecyclerView recyclerView, boolean show) {
+    /*if (show) {
+      Timber.d("showFooter(%s)", true);
+      recyclerView.post(() -> addModel(loadingModel));
+    } else {
+      Timber.d("showFooter(%s)", false);
+      recyclerView.post(() -> removeModel(loadingModel));
+    }*/
   }
 
   public void updatePost(@FeedAction int action, PostRealm payload) {
@@ -145,18 +181,6 @@ public class FeedAdapter extends EpoxyAdapter {
     }
   }
 
-  public void showLoadMoreIndicator(boolean show) {
-    handler.post(() -> {
-      if (show) {
-        if (!(models.get(models.size() - 1) instanceof LoadingModel)) {
-          addModel(loadingModel);
-        }
-      } else {
-        removeModel(loadingModel);
-      }
-    });
-  }
-
   private void setAction(@FeedAction int action, Object payload, EpoxyModel<?> model) {
     if (action == FeedAction.DELETE) {
       removeModel(model);
@@ -175,6 +199,8 @@ public class FeedAdapter extends EpoxyAdapter {
         .onVoteClickListener(onVoteClickListener)
         .onContentImageClickListener(onContentImageClickListener)
         .layout(R.layout.item_feed_question_rich)
+        .circleTransformation(circleTransformation)
+        .set(set)
         .post(post);
   }
 
@@ -187,6 +213,7 @@ public class FeedAdapter extends EpoxyAdapter {
         .onCommentClickListener(onCommentClickListener)
         .onVoteClickListener(onVoteClickListener)
         .layout(R.layout.item_feed_question_normal)
+        .circleTransformation(circleTransformation)
         .post(post);
   }
 
@@ -199,6 +226,7 @@ public class FeedAdapter extends EpoxyAdapter {
         .onCommentClickListener(onCommentClickListener)
         .onVoteClickListener(onVoteClickListener)
         .layout(R.layout.item_feed_blog)
+        .circleTransformation(circleTransformation)
         .post(post);
   }
 
@@ -206,27 +234,22 @@ public class FeedAdapter extends EpoxyAdapter {
     void onBountyClick(View v);
   }
 
-  public interface OnCategoryClickListener {
-    void onCategoryClick(View v, String categoryId, String name);
-  }
-
-  public interface OnExploreCategoriesClickListener {
-    void onExploreCategoriesClick(View v);
-  }
-
   public static class FeedAdapterBuilder {
+    private final Context context;
     private OnProfileClickListener onProfileClickListener;
     private OnPostOptionsClickListener onPostOptionsClickListener;
     private OnReadMoreClickListener onReadMoreClickListener;
     private OnShareClickListener onShareClickListener;
     private OnCommentClickListener onCommentClickListener;
-    private OnExploreCategoriesClickListener onExploreCategoriesClickListener;
+    private View.OnClickListener trendingCategoryHeaderClickListener;
+    private View.OnClickListener travelNewsHeaderClickListener;
     private OnVoteClickListener onVoteClickListener;
     private OnContentImageClickListener onContentImageClickListener;
     private OnBountyClickListener onBountyClickListener;
     private boolean isMainFeed;
 
-    FeedAdapterBuilder() {
+    FeedAdapterBuilder(Context context) {
+      this.context = context;
     }
 
     public FeedAdapter.FeedAdapterBuilder onProfileClickListener(
@@ -259,9 +282,15 @@ public class FeedAdapter extends EpoxyAdapter {
       return this;
     }
 
-    public FeedAdapter.FeedAdapterBuilder onExploreCategoriesClickListener(
-        OnExploreCategoriesClickListener onExploreCategoriesClickListener) {
-      this.onExploreCategoriesClickListener = onExploreCategoriesClickListener;
+    public FeedAdapter.FeedAdapterBuilder onTrendingCategoryHeaderClickListener(
+        View.OnClickListener trendingCategoryHeaderClickListener) {
+      this.trendingCategoryHeaderClickListener = trendingCategoryHeaderClickListener;
+      return this;
+    }
+
+    public FeedAdapter.FeedAdapterBuilder onTravelNewsHeaderClickListener(
+        View.OnClickListener travelNewsHeaderClickListener) {
+      this.travelNewsHeaderClickListener = travelNewsHeaderClickListener;
       return this;
     }
 
@@ -291,8 +320,8 @@ public class FeedAdapter extends EpoxyAdapter {
     public FeedAdapter build() {
       return new FeedAdapter(onProfileClickListener, onPostOptionsClickListener,
           onReadMoreClickListener, onShareClickListener, onCommentClickListener,
-          onExploreCategoriesClickListener, onVoteClickListener,
-          onBountyClickListener, onContentImageClickListener, isMainFeed);
+          trendingCategoryHeaderClickListener, travelNewsHeaderClickListener, onVoteClickListener,
+          onBountyClickListener, onContentImageClickListener, isMainFeed, context);
     }
   }
 }

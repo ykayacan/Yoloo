@@ -18,7 +18,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 public class YolooApp extends Application {
 
-  private static YolooApp currentApplication = null;
+  private static Context appContext;
 
   static {
     AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
@@ -26,12 +26,8 @@ public class YolooApp extends Application {
 
   //private RefWatcher refWatcher;
 
-  public static YolooApp getInstance() {
-    return currentApplication;
-  }
-
   public static File getCacheDirectory() {
-    return currentApplication.getCacheDir();
+    return appContext.getCacheDir();
   }
 
   /*public static RefWatcher getRefWatcher(Context context) {
@@ -42,7 +38,7 @@ public class YolooApp extends Application {
   @Override
   public void onCreate() {
     super.onCreate();
-    currentApplication = this;
+    appContext = this;
 
     initTimber();
     initRealm();
@@ -58,6 +54,16 @@ public class YolooApp extends Application {
 
   }
 
+  @Override
+  protected void attachBaseContext(Context base) {
+    super.attachBaseContext(base);
+    MultiDex.install(this);
+  }
+
+  public static Context getAppContext() {
+    return appContext;
+  }
+
   private void initCalligraphy() {
     CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
         .setDefaultFontPath("fonts/OpenSans-Regular.ttf")
@@ -65,13 +71,7 @@ public class YolooApp extends Application {
         .build());
   }
 
-  @Override
-  protected void attachBaseContext(Context base) {
-    super.attachBaseContext(base);
-    MultiDex.install(this);
-  }
-
-  public void initStetho() {
+  private void initStetho() {
     Stetho.initialize(
         Stetho.newInitializerBuilder(this)
             .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
@@ -85,6 +85,16 @@ public class YolooApp extends Application {
         .deleteRealmIfMigrationNeeded()
         .build();
     Realm.setDefaultConfiguration(realmConfiguration);
+  }
+
+  private void enabledStrictMode() {
+    if (BuildConfig.DEBUG) {
+      StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+          .detectAll()
+          .penaltyLog()
+          .penaltyDeath()
+          .build());
+    }
   }
 
   /*private void initializeLeakCanary() {
@@ -107,16 +117,6 @@ public class YolooApp extends Application {
       });
     } else {
       Timber.plant(new ReleaseTree());
-    }
-  }
-
-  private void enabledStrictMode() {
-    if (BuildConfig.DEBUG) {
-      StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-          .detectAll()
-          .penaltyLog()
-          .penaltyDeath()
-          .build());
     }
   }
 

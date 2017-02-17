@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
@@ -27,10 +28,11 @@ import com.yoloo.android.data.repository.tag.datasource.TagRemoteDataStore;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.postfeed.PostController;
 import com.yoloo.android.feature.profile.ProfileController;
+import com.yoloo.android.framework.MvpController;
+import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.KeyboardUtil;
 import io.reactivex.subjects.PublishSubject;
@@ -38,21 +40,20 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class ChildSearchController extends MvpController<ChildSearchView, ChildSearchPresenter>
-    implements ChildSearchView, OnTagClickListener, OnProfileClickListener, OnFollowClickListener {
+    implements ChildSearchView, OnItemClickListener<TagRealm>, OnProfileClickListener,
+    OnFollowClickListener {
 
   private static final String KEY_SEARCH_TYPE = "SEARCH_TYPE";
 
-  @BindView(R.id.rv_child_search) RecyclerView rvChildSearch;
+  private final PublishSubject<String> searchSubject = PublishSubject.create();
 
-  private PublishSubject<String> SEARCH_SUBJECT = PublishSubject.create();
-
-  private TextWatcher watcher = new TextWatcher() {
+  private final TextWatcher watcher = new TextWatcher() {
     @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
     }
 
     @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-      SEARCH_SUBJECT.onNext(s.toString());
+      searchSubject.onNext(s.toString());
     }
 
     @Override public void afterTextChanged(Editable s) {
@@ -60,6 +61,7 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
     }
   };
 
+  @BindView(R.id.rv_child_search) RecyclerView rvChildSearch;
   private SearchAdapter adapter;
 
   private int searchType;
@@ -71,18 +73,9 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
   private ViewPager viewPager;
 
   private ViewPager.OnPageChangeListener onPageChangeListener =
-      new ViewPager.OnPageChangeListener() {
-        @Override
-        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-        }
-
+      new ViewPager.SimpleOnPageChangeListener() {
         @Override public void onPageSelected(int position) {
           etSearch.setText("");
-        }
-
-        @Override public void onPageScrollStateChanged(int state) {
-
         }
       };
 
@@ -126,13 +119,8 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
 
     etSearch.addTextChangedListener(watcher);
 
-    SEARCH_SUBJECT.filter(s -> !s.isEmpty()).debounce(350, TimeUnit.MILLISECONDS).subscribe(s -> {
-      if (searchType == SearchType.TAG) {
-        getPresenter().loadTags(s, tagCursor);
-      } else if (searchType == SearchType.USER) {
-        getPresenter().loadUsers(s, userCursor);
-      }
-    });
+    searchSubject.filter(s -> !s.isEmpty()).debounce(350, TimeUnit.MILLISECONDS)
+        .subscribe(this::loadBySearchType);
   }
 
   @Override protected void onDetach(@NonNull View view) {
@@ -168,11 +156,11 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
     adapter.replaceUsers(response.getData());
   }
 
-  @Override public void onTagClick(String name) {
+  @Override public void onItemClick(View v, EpoxyModel<?> model, TagRealm item) {
     KeyboardUtil.hideKeyboard(etSearch);
 
     getParentController().getRouter()
-        .pushController(RouterTransaction.with(PostController.ofTag(name))
+        .pushController(RouterTransaction.with(PostController.ofTag(item.getName()))
             .pushChangeHandler(new VerticalChangeHandler())
             .popChangeHandler(new VerticalChangeHandler()));
   }
@@ -191,11 +179,19 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
   }
 
   private void setupRecyclerView() {
-    adapter = new SearchAdapter(this, this, this);
+    adapter = new SearchAdapter(getActivity(), this, this, this);
 
     rvChildSearch.setLayoutManager(new LinearLayoutManager(getActivity()));
     rvChildSearch.setItemAnimator(new DefaultItemAnimator());
     rvChildSearch.setHasFixedSize(true);
     rvChildSearch.setAdapter(adapter);
+  }
+
+  private void loadBySearchType(String s) {
+    if (searchType == SearchType.TAG) {
+      getPresenter().loadTags(s, tagCursor);
+    } else if (searchType == SearchType.USER) {
+      getPresenter().loadUsers(s, userCursor);
+    }
   }
 }

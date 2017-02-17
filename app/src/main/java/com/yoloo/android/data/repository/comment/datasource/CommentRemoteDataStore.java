@@ -30,9 +30,7 @@ public class CommentRemoteDataStore {
   }
 
   public Observable<CommentRealm> add(CommentRealm comment) {
-    return ApiManager.getIdToken()
-        .toObservable()
-        .flatMap(s -> Observable.just(comment));
+    return Observable.just(comment);
   }
 
   public Completable delete(CommentRealm comment) {

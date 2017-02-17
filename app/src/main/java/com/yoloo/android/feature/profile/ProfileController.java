@@ -52,7 +52,7 @@ import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.ViewUtil;
-import com.yoloo.android.util.glide.CropCircleTransformation;
+import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.List;
 
 public class ProfileController extends MvpController<ProfileView, ProfilePresenter>
@@ -223,7 +223,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   private void setupToolbar() {
     setSupportActionBar(toolbar);
 
-    // addPost back arrow to toolbar
+    // addPostToBeginning back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
     if (ab != null) {
       ab.setDisplayShowTitleEnabled(false);
@@ -239,7 +239,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
     Glide.with(getActivity())
         .load(account.getAvatarUrl())
-        .bitmapTransform(CropCircleTransformation.getInstance(getActivity()))
+        .bitmapTransform(new CropCircleTransformation(getActivity()))
         .into(ivProfileAvatar);
 
     tvRealname.setText(account.getRealname());

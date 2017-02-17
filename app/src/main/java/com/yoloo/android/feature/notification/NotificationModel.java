@@ -5,9 +5,7 @@ import android.content.res.Resources;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
-import android.text.Html;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import butterknife.BindView;
@@ -21,7 +19,8 @@ import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.ui.widget.linkabletextview.LinkableTextView;
 import com.yoloo.android.ui.widget.timeview.TimeManager;
-import com.yoloo.android.util.glide.CropCircleTransformation;
+import com.yoloo.android.util.HtmlUtil;
+import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 
 @EpoxyModelClass(layout = R.layout.item_notification)
 abstract class NotificationModel
@@ -29,13 +28,14 @@ abstract class NotificationModel
 
   @EpoxyAttribute NotificationRealm notification;
   @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
+  @EpoxyAttribute(hash = false) CropCircleTransformation cropCircleTransformation;
 
   @Override public void bind(NotificationHolder holder) {
-    final Context context = holder.ivUserAvatar.getContext();
+    final Context context = holder.itemView.getContext();
 
     Glide.with(context)
         .load(notification.getSenderAvatarUrl())
-        .bitmapTransform(CropCircleTransformation.getInstance(context))
+        .bitmapTransform(cropCircleTransformation)
         .into(holder.ivUserAvatar);
 
     holder.ibFollow.setVisibility(
@@ -46,8 +46,7 @@ abstract class NotificationModel
     final String time =
         TimeManager.getInstance().calculateTime(notification.getCreated().getTime() / 1000);
 
-    String text = getActionString(res);
-    holder.tvContent.setText(Html.fromHtml(text
+    holder.tvContent.setText(HtmlUtil.fromHtml(getActionString(res)
         + " <font color='"
         + ContextCompat.getColor(context, R.color.editor_icon)
         + "'>"
@@ -55,6 +54,14 @@ abstract class NotificationModel
         + "</font>"));
 
     setupClickListeners(holder);
+  }
+
+  @Override public void unbind(NotificationHolder holder) {
+    Glide.clear(holder.ivUserAvatar);
+    Glide.clear(holder.ivPhoto);
+
+    holder.ivUserAvatar.setImageDrawable(null);
+    holder.ivPhoto.setImageDrawable(null);
   }
 
   @NonNull private String getActionString(Resources res) {
@@ -95,7 +102,6 @@ abstract class NotificationModel
   }
 
   static class NotificationHolder extends BaseEpoxyHolder {
-    @BindView(R.id.layout_notification) ViewGroup viewGroup;
     @BindView(R.id.iv_not_item_avatar) ImageView ivUserAvatar;
     @BindView(R.id.tv_not_item_content) LinkableTextView tvContent;
     @BindView(R.id.ib_not_follow) ImageButton ibFollow;

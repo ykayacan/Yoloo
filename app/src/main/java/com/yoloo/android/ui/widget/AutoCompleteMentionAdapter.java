@@ -12,10 +12,9 @@ import android.widget.Filter;
 import android.widget.ImageView;
 import android.widget.TextView;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.util.glide.CropCircleTransformation;
+import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import java.util.ArrayList;
@@ -27,12 +26,15 @@ public class AutoCompleteMentionAdapter extends ArrayAdapter<AccountRealm> {
 
   private final List<AccountRealm> items;
 
+  private final CropCircleTransformation circleTransformation;
+
   private LayoutInflater inflater;
 
   public AutoCompleteMentionAdapter(Context context) {
     super(context, 0);
     this.items = new ArrayList<>(5);
     this.inflater = LayoutInflater.from(context);
+    circleTransformation = new CropCircleTransformation(context);
   }
 
   @Nullable
@@ -73,8 +75,8 @@ public class AutoCompleteMentionAdapter extends ArrayAdapter<AccountRealm> {
 
     Glide.with(getContext())
         .load(item.getAvatarUrl())
-        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-        .bitmapTransform(CropCircleTransformation.getInstance(getContext()))
+        .bitmapTransform(circleTransformation)
+        .placeholder(R.drawable.ic_player)
         .into(holder.ivAvatar);
 
     holder.tvUsername.setText(item.getUsername());

@@ -1,7 +1,6 @@
 package com.yoloo.android.feature.category;
 
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindView;
@@ -33,7 +32,7 @@ public abstract class CategoryModel extends EpoxyModelWithHolder<CategoryModel.C
     holder.tvCategoryText.setSelected(isSelected);
     holder.checkmarkView.setVisibility(isSelected ? View.VISIBLE : View.GONE);
 
-    holder.rootView.setOnClickListener(v -> {
+    holder.itemView.setOnClickListener(v -> {
       adapter.toggleSelection(this);
       onItemClickListener.onItemClick(v, this, category);
     });
@@ -44,7 +43,6 @@ public abstract class CategoryModel extends EpoxyModelWithHolder<CategoryModel.C
   }
 
   static class CategoryHolder extends BaseEpoxyHolder {
-    @BindView(R.id.root_view) ViewGroup rootView;
     @BindView(R.id.iv_category_bg) ImageView ivCategoryBackground;
     @BindView(R.id.tv_category_text) TextView tvCategoryText;
     @BindView(R.id.view_category_checkmark) View checkmarkView;

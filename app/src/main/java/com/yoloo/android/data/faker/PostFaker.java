@@ -20,7 +20,7 @@ public class PostFaker {
 
     List<PostRealm> posts = new ArrayList<>();
 
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 20; i++) {
       Pair<String, String> pair =
           AccountFaker.NAME_PAIRS.get(random.nextInt(AccountFaker.NAME_PAIRS.size()));
 
@@ -37,9 +37,10 @@ public class PostFaker {
           .setComments(FakerUtil.generateNumber())
           .setVotes(FakerUtil.generateNumber())
           .setType(type)
-          .setAcceptedCommentId("c1")
           .setBounty(random.nextInt(5))
-          .setMediaUrl(type == 1 ? FakerUtil.getMediaUrl() : null)
+          .setMediaUrl(type == 1
+              ? "https://s-media-cache-ak0.pinimg.com/564x/41/94/11/419411f12cf09442a6e4f4797127209a.jpg"
+              : null)
           .setPending(false)
           .setFeedItem(true);
 

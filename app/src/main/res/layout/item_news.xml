@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="136dp">
+
+  <ImageView
+    android:id="@+id/iv_item_news_bg"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scaleType="centerCrop"
+    tools:src="@drawable/login_bg" />
+
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_item_news_title"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:layout_margin="16dp"
+    android:ellipsize="end"
+    android:maxLines="2"
+    android:textAppearance="@style/TextAppearance.AppCompat.Title.Inverse"
+    app:layout_constraintBottom_toBottomOf="@+id/iv_item_news_bg"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toLeftOf="@+id/guideline"
+    tools:text="The Most Daring Looks" />
+
+</FrameLayout>

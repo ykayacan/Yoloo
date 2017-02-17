@@ -9,11 +9,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyAttribute;
+import com.airbnb.epoxy.EpoxyModelClass;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.PostRealm;
-import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
@@ -28,10 +28,12 @@ import com.yoloo.android.ui.widget.timeview.TimeTextView;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.ReadMoreUtil;
-import com.yoloo.android.util.glide.CropCircleTransformation;
+import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.List;
 
-public class NormalQuestionModel extends EpoxyModelWithHolder<NormalQuestionModel.QuestionHolder> {
+@EpoxyModelClass(layout = R.layout.item_feed_question_normal)
+public abstract class NormalQuestionModel
+    extends EpoxyModelWithHolder<NormalQuestionModel.QuestionHolder> {
 
   @EpoxyAttribute PostRealm post;
   @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
@@ -40,14 +42,7 @@ public class NormalQuestionModel extends EpoxyModelWithHolder<NormalQuestionMode
   @EpoxyAttribute(hash = false) OnReadMoreClickListener onReadMoreClickListener;
   @EpoxyAttribute(hash = false) OnPostOptionsClickListener onPostOptionsClickListener;
   @EpoxyAttribute(hash = false) OnVoteClickListener onVoteClickListener;
-
-  @Override protected QuestionHolder createNewHolder() {
-    return new QuestionHolder();
-  }
-
-  @Override protected int getDefaultLayout() {
-    return getLayout();
-  }
+  @EpoxyAttribute(hash = false) CropCircleTransformation circleTransformation;
 
   @Override public void bind(QuestionHolder holder, List<Object> payloads) {
     if (!payloads.isEmpty()) {
@@ -70,16 +65,54 @@ public class NormalQuestionModel extends EpoxyModelWithHolder<NormalQuestionMode
   }
 
   @Override public void bind(QuestionHolder holder) {
-    holder.bindDataWithViewHolder(post, isNormal());
+    final Context context = holder.itemView.getContext();
+
+    Glide.with(context)
+        .load(post.getAvatarUrl())
+        .bitmapTransform(circleTransformation)
+        .placeholder(R.drawable.ic_player)
+        .into(holder.ivUserAvatar);
+
+    holder.tvUsername.setText(post.getUsername());
+    holder.tvTime.setTimeStamp(post.getCreated().getTime() / 1000);
+    holder.tvBounty.setVisibility(post.getBounty() == 0 ? View.GONE : View.VISIBLE);
+    holder.tvBounty.setText(String.valueOf(post.getBounty()));
+    holder.tvContent.setText(isNormal()
+        ? ReadMoreUtil.readMoreContent(post.getContent(), 200)
+        : post.getContent());
+    holder.tvComment.setText(CountUtil.format(post.getComments()));
+    holder.voteView.setVotes(post.getVotes());
+    holder.voteView.setCurrentStatus(post.getDir());
+
+    if (holder.tagView != null) {
+      holder.tagView.setData(post.getCategoryNames());
+    }
+
+    tintDrawables(holder);
+
     setupClickListeners(holder);
   }
 
   @Override public void unbind(QuestionHolder holder) {
+    Glide.clear(holder.ivUserAvatar);
+    holder.ivUserAvatar.setImageDrawable(null);
     clearClickListeners(holder);
   }
 
   @Override public boolean shouldSaveViewState() {
     return true;
+  }
+
+  private void tintDrawables(QuestionHolder holder) {
+    DrawableHelper.withContext(holder.tvShare.getContext())
+        .withDrawable(holder.tvShare.getCompoundDrawables()[0])
+        .withColor(android.R.color.secondary_text_dark)
+        .tint();
+
+    DrawableHelper.withContext(holder.tvComment.getContext())
+        .withDrawable(holder.tvComment.getCompoundDrawables()[0])
+        .withColor(android.R.color.secondary_text_dark)
+        .tint();
   }
 
   private void setupClickListeners(QuestionHolder holder) {
@@ -96,13 +129,10 @@ public class NormalQuestionModel extends EpoxyModelWithHolder<NormalQuestionMode
 
     holder.tvShare.setOnClickListener(v -> onShareClickListener.onShareClick(v, post));
 
-    holder.tvComment.setOnClickListener(
-        v -> onCommentClickListener.onCommentClick(v, post.getId(), post.getOwnerId(),
-            post.getAcceptedCommentId(), PostType.TYPE_NORMAL));
+    holder.tvComment.setOnClickListener(v -> onCommentClickListener.onCommentClick(v, post));
 
     holder.ibOptions.setOnClickListener(
-        v -> onPostOptionsClickListener.onPostOptionsClick(v, this, post.getId(),
-            post.getOwnerId()));
+        v -> onPostOptionsClickListener.onPostOptionsClick(v, this, post));
 
     holder.voteView.setOnVoteEventListener(direction -> {
       post.setDir(direction);
@@ -138,44 +168,6 @@ public class NormalQuestionModel extends EpoxyModelWithHolder<NormalQuestionMode
     @BindView(R.id.tv_item_feed_share) CompatTextView tvShare;
     @BindView(R.id.tv_item_feed_comment) CompatTextView tvComment;
     @BindView(R.id.tv_item_feed_vote) VoteView voteView;
-    @Nullable @BindView(R.id.view_item_question_normal_category) TagView tagView;
-
-    void bindDataWithViewHolder(PostRealm post, boolean isNormal) {
-      final Context context = ivUserAvatar.getContext().getApplicationContext();
-
-      Glide.with(context)
-          .load(post.getAvatarUrl())
-          .bitmapTransform(CropCircleTransformation.getInstance(context))
-          .into(ivUserAvatar);
-
-      tvUsername.setText(post.getUsername());
-      tvTime.setTimeStamp(post.getCreated().getTime() / 1000);
-      tvBounty.setVisibility(post.getBounty() == 0 ? View.GONE : View.VISIBLE);
-      tvBounty.setText(String.valueOf(post.getBounty()));
-      tvContent.setText(isNormal
-          ? ReadMoreUtil.readMoreContent(post.getContent(), 200)
-          : post.getContent());
-      tvComment.setText(CountUtil.format(post.getComments()));
-      voteView.setVotes(post.getVotes());
-      voteView.setCurrentStatus(post.getDir());
-
-      if (tagView != null) {
-        tagView.setData(post.getCategoryNames());
-      }
-
-      tintDrawables();
-    }
-
-    private void tintDrawables() {
-      DrawableHelper.withContext(tvShare.getContext())
-          .withDrawable(tvShare.getCompoundDrawables()[0])
-          .withColor(android.R.color.secondary_text_dark)
-          .tint();
-
-      DrawableHelper.withContext(tvComment.getContext())
-          .withDrawable(tvComment.getCompoundDrawables()[0])
-          .withColor(android.R.color.secondary_text_dark)
-          .tint();
-    }
+    @Nullable @BindView(R.id.tagview_item_question_normal_category) TagView tagView;
   }
 }

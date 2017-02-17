@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.yoloo.android.ui.recyclerview;
+package com.yoloo.android.ui.recyclerview.animator;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -47,16 +47,17 @@ public class SlideInItemAnimator extends DefaultItemAnimator {
     setAddDuration(160L);
   }
 
-  @Override public boolean animateAdd(RecyclerView.ViewHolder holder) {
+  @Override
+  public boolean animateAdd(RecyclerView.ViewHolder holder) {
     holder.itemView.setAlpha(0f);
     switch (slideFromEdge) {
-      case Gravity.START:
+      case Gravity.LEFT:
         holder.itemView.setTranslationX(-holder.itemView.getWidth() / 3);
         break;
       case Gravity.TOP:
         holder.itemView.setTranslationY(-holder.itemView.getHeight() / 3);
         break;
-      case Gravity.END:
+      case Gravity.RIGHT:
         holder.itemView.setTranslationX(holder.itemView.getWidth() / 3);
         break;
       default: // Gravity.BOTTOM
@@ -66,11 +67,11 @@ public class SlideInItemAnimator extends DefaultItemAnimator {
     return true;
   }
 
-  @Override public void runPendingAnimations() {
+  @Override
+  public void runPendingAnimations() {
     super.runPendingAnimations();
     if (!pendingAdds.isEmpty()) {
-      int size = pendingAdds.size();
-      for (int i = size - 1; i >= 0; i--) {
+      for (int i = pendingAdds.size() - 1; i >= 0; i--) {
         final RecyclerView.ViewHolder holder = pendingAdds.get(i);
         holder.itemView.animate()
             .alpha(1f)
@@ -78,17 +79,20 @@ public class SlideInItemAnimator extends DefaultItemAnimator {
             .translationY(0f)
             .setDuration(getAddDuration())
             .setListener(new AnimatorListenerAdapter() {
-              @Override public void onAnimationStart(Animator animation) {
+              @Override
+              public void onAnimationStart(Animator animation) {
                 dispatchAddStarting(holder);
               }
 
-              @Override public void onAnimationEnd(Animator animation) {
+              @Override
+              public void onAnimationEnd(Animator animation) {
                 animation.getListeners().remove(this);
                 dispatchAddFinished(holder);
                 dispatchFinishedWhenDone();
               }
 
-              @Override public void onAnimationCancel(Animator animation) {
+              @Override
+              public void onAnimationCancel(Animator animation) {
                 clearAnimatedValues(holder.itemView);
               }
             })
@@ -98,7 +102,8 @@ public class SlideInItemAnimator extends DefaultItemAnimator {
     }
   }
 
-  @Override public void endAnimation(RecyclerView.ViewHolder holder) {
+  @Override
+  public void endAnimation(RecyclerView.ViewHolder holder) {
     holder.itemView.animate().cancel();
     if (pendingAdds.remove(holder)) {
       dispatchAddFinished(holder);
@@ -107,9 +112,9 @@ public class SlideInItemAnimator extends DefaultItemAnimator {
     super.endAnimation(holder);
   }
 
-  @Override public void endAnimations() {
-    int size = pendingAdds.size();
-    for (int i = size - 1; i >= 0; i--) {
+  @Override
+  public void endAnimations() {
+    for (int i = pendingAdds.size() - 1; i >= 0; i--) {
       final RecyclerView.ViewHolder holder = pendingAdds.get(i);
       clearAnimatedValues(holder.itemView);
       dispatchAddFinished(holder);
@@ -118,7 +123,8 @@ public class SlideInItemAnimator extends DefaultItemAnimator {
     super.endAnimations();
   }
 
-  @Override public boolean isRunning() {
+  @Override
+  public boolean isRunning() {
     return !pendingAdds.isEmpty() || super.isRunning();
   }
 

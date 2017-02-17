@@ -1,10 +1,15 @@
 package com.yoloo.android.feature.base;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
 import butterknife.BindView;
@@ -16,15 +21,25 @@ import com.bluelinelabs.conductor.Router;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.messaging.RemoteMessage;
 import com.yoloo.android.R;
+import com.yoloo.android.data.model.FcmRealm;
+import com.yoloo.android.data.repository.notification.NotificationRepository;
+import com.yoloo.android.data.repository.notification.datasource.NotificationDiskDataSource;
+import com.yoloo.android.data.repository.notification.datasource.NotificationRemoteDataSource;
+import com.yoloo.android.feature.fcm.FCMListener;
+import com.yoloo.android.feature.fcm.FCMManager;
 import com.yoloo.android.feature.feed.userfeed.UserFeedController;
 import com.yoloo.android.feature.login.AuthController;
 import com.yoloo.android.util.NotificationHelper;
 import com.yoloo.android.util.Preconditions;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import java.util.HashMap;
+import java.util.Map;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-public class BaseActivity extends AppCompatActivity {
+public class BaseActivity extends AppCompatActivity implements FCMListener {
 
   public static final String KEY_ACTION = "action";
   public static final String KEY_DATA = "data";
@@ -32,6 +47,10 @@ public class BaseActivity extends AppCompatActivity {
   @BindView(R.id.controller_container) ViewGroup container;
 
   private Router router;
+
+  private NotificationRepository notificationRepository;
+
+  private Disposable disposable;
 
   @Override protected void attachBaseContext(Context newBase) {
     super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
@@ -54,6 +73,11 @@ public class BaseActivity extends AppCompatActivity {
       }
     }
 
+    notificationRepository =
+        NotificationRepository.getInstance(
+            NotificationRemoteDataSource.getInstance(),
+            NotificationDiskDataSource.getInstance());
+
     setOptionsMenuVisibility();
   }
 
@@ -62,12 +86,27 @@ public class BaseActivity extends AppCompatActivity {
     setIntent(intent);
   }
 
+  @Override protected void onStart() {
+    super.onStart();
+    FCMManager.getInstance(this).register(this);
+  }
+
   @Override protected void onResume() {
     super.onResume();
     final Bundle bundle = getIntent().getExtras();
     if (bundle != null) {
       routeToController(bundle);
     }
+  }
+
+  @Override protected void onStop() {
+    super.onStop();
+    FCMManager.getInstance(this).unRegister();
+  }
+
+  @Override protected void onDestroy() {
+    super.onDestroy();
+    disposable.dispose();
   }
 
   @Override public void onBackPressed() {
@@ -120,5 +159,50 @@ public class BaseActivity extends AppCompatActivity {
         }
       }
     });
+  }
+
+  @Override public void onDeviceRegistered(String deviceToken) {
+    disposable = notificationRepository.registerFcmToken(new FcmRealm(deviceToken))
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe();
+  }
+
+  @Override public void onMessage(RemoteMessage remoteMessage) {
+    sendNotification(remoteMessage.getData());
+  }
+
+  @Override public void onPlayServiceError() {
+
+  }
+
+  /**
+   * Create and show a simple notification containing the received FCM message.
+   *
+   * @param data FCM message body received.
+   */
+  private void sendNotification(Map<String, String> data) {
+    final String contentText = NotificationHelper.getRelatedNotificationString(this, data);
+
+    Intent intent = new Intent(this, BaseActivity.class);
+    intent.putExtra(BaseActivity.KEY_ACTION, data.get("action"));
+    intent.putExtra(BaseActivity.KEY_DATA, new HashMap<>(data));
+
+    PendingIntent pendingIntent =
+        PendingIntent.getActivity(this, 0 /* Request code */, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT);
+
+    Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+    NotificationCompat.Builder notificationBuilder =
+        new NotificationCompat.Builder(this).setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle("Yoloo")
+            .setContentText(contentText)
+            .setAutoCancel(true)
+            .setSound(defaultSoundUri)
+            .setContentIntent(pendingIntent);
+
+    NotificationManager notificationManager =
+        (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+
+    notificationManager.notify(0 /* ID getPost notification */, notificationBuilder.build());
   }
 }

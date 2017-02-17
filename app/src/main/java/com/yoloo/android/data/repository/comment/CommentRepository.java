@@ -70,11 +70,14 @@ public class CommentRepository {
       String eTag, int limit) {
     Preconditions.checkNotNull(postId, "postId can not be null.");
 
-    return Observable.mergeDelayError(
+    // FIXME: 16.02.2017 Comment
+    return diskDataStore.list(postId).subscribeOn(Schedulers.io());
+
+    /*return Observable.mergeDelayError(
         diskDataStore.list(postId).subscribeOn(Schedulers.io()),
         remoteDataStore.list(postId, cursor, eTag, limit)
             .doOnNext(response -> diskDataStore.addAll(response.getData()))
-            .subscribeOn(Schedulers.io()));
+            .subscribeOn(Schedulers.io()));*/
   }
 
   public Completable voteComment(String commentId, int direction) {

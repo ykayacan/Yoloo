@@ -7,7 +7,10 @@ import com.airbnb.epoxy.EpoxyHolder;
 
 public class BaseEpoxyHolder extends EpoxyHolder {
 
+  public View itemView;
+
   @CallSuper @Override protected void bindView(View itemView) {
+    this.itemView = itemView;
     ButterKnife.bind(this, itemView);
   }
 }

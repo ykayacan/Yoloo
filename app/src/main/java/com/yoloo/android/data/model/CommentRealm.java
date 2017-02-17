@@ -119,4 +119,19 @@ public class CommentRealm extends RealmObject {
   public void decreaseVotes() {
     --this.votes;
   }
+
+  @Override public String toString() {
+    return "CommentRealm{" +
+        "id='" + id + '\'' +
+        ", ownerId='" + ownerId + '\'' +
+        ", username='" + username + '\'' +
+        ", avatarUrl='" + avatarUrl + '\'' +
+        ", postId='" + postId + '\'' +
+        ", content='" + content + '\'' +
+        ", created=" + created +
+        ", dir=" + dir +
+        ", accepted=" + accepted +
+        ", votes=" + votes +
+        '}';
+  }
 }

@@ -6,24 +6,23 @@
 
   <ImageView
     android:id="@+id/iv_item_feed_user_avatar"
-    android:layout_width="36dp"
-    android:layout_height="36dp"
-    android:layout_marginLeft="16dp"
-    android:layout_marginStart="16dp"
-    android:layout_marginTop="16dp"
+    android:layout_width="@dimen/avatar_size"
+    android:layout_height="@dimen/avatar_size"
+    android:layout_marginLeft="@dimen/avatar_margin"
+    android:layout_marginStart="@dimen/avatar_margin"
     android:scaleType="centerCrop"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintTop_toTopOf="parent"
     tools:src="@drawable/login_bg" />
 
-  <com.yoloo.android.ui.widget.BaselineGridTextView
+  <TextView
     android:id="@+id/tv_item_feed_username"
     style="@style/TextAppearance.Username"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginLeft="8dp"
-    android:layout_marginStart="8dp"
-    app:layout_constraintBottom_toBottomOf="@+id/iv_item_feed_user_avatar"
+    android:layout_marginLeft="@dimen/avatar_margin"
+    android:layout_marginStart="@dimen/avatar_margin"
+    app:layout_constraintBottom_toTopOf="@+id/tv_item_feed_time"
     app:layout_constraintLeft_toRightOf="@+id/iv_item_feed_user_avatar"
     app:layout_constraintTop_toTopOf="@+id/iv_item_feed_user_avatar"
     tools:text="usernameusernameusername" />
@@ -32,30 +31,29 @@
     android:id="@+id/tv_item_feed_time"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:gravity="center"
     android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-    app:drawableStart="@drawable/ic_point_black_24dp"
-    app:layout_constraintBaseline_toBaselineOf="@+id/tv_item_feed_username"
-    app:layout_constraintLeft_toRightOf="@+id/tv_item_feed_username"
-    tools:text="1m" />
+    app:layout_constraintBottom_toBottomOf="@+id/iv_item_feed_user_avatar"
+    app:layout_constraintLeft_toLeftOf="@+id/tv_item_feed_username"
+    app:layout_constraintTop_toBottomOf="@+id/tv_item_feed_username"
+    tools:text="1 m" />
 
   <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_item_feed_bounty"
     style="@style/TextAppearance.Bounty"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginLeft="8dp"
-    android:layout_marginStart="8dp"
-    app:layout_constraintBaseline_toBaselineOf="@+id/tv_item_feed_username"
-    app:layout_constraintLeft_toRightOf="@+id/tv_item_feed_time"
+    android:layout_marginEnd="@dimen/padding_normal"
+    android:layout_marginRight="@dimen/padding_normal"
+    app:layout_constraintBottom_toBottomOf="@+id/iv_item_feed_user_avatar"
+    app:layout_constraintRight_toLeftOf="@+id/ib_item_feed_options"
+    app:layout_constraintTop_toTopOf="@+id/iv_item_feed_user_avatar"
     tools:text="15" />
 
   <ImageButton
     android:id="@+id/ib_item_feed_options"
     style="@style/Widget.AppCompat.ActionButton.Overflow"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="8dp"
+    android:layout_width="@dimen/avatar_size"
+    android:layout_height="@dimen/avatar_size"
     android:tint="@android:color/secondary_text_dark"
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toTopOf="parent"

@@ -13,90 +13,90 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import java.util.List;
 
-public class PostPresenter extends MvpPresenter<PostView> {
+class PostPresenter extends MvpPresenter<PostView> {
 
   private final PostRepository postRepository;
   private final UserRepository userRepository;
 
-  public PostPresenter(PostRepository postRepository, UserRepository userRepository) {
+  PostPresenter(PostRepository postRepository, UserRepository userRepository) {
     this.postRepository = postRepository;
     this.userRepository = userRepository;
   }
 
-  public void loadPostsByCategory(boolean pullToRefresh, String categoryName, PostSorter sorter,
+  void loadPostsByCategory(boolean pullToRefresh, String categoryName, PostSorter sorter,
       String cursor, String eTag, int limit) {
     getView().onLoading(pullToRefresh);
 
     Disposable d = Observable
         .zip(
+            userRepository.getLocalMe(),
             postRepository.listByCategory(categoryName, sorter, cursor, eTag, limit),
-            userRepository.getLocalMe(),
             Pair::create)
-        .observeOn(AndroidSchedulers.mainThread(), true)
+        .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showData, this::showError);
 
     getDisposable().add(d);
   }
 
-  public void loadPostsByTag(boolean pullToRefresh, String tagName, PostSorter sorter,
+  void loadPostsByTag(boolean pullToRefresh, String tagName, PostSorter sorter,
       String cursor, String eTag, int limit) {
     getView().onLoading(pullToRefresh);
 
     Disposable d = Observable
         .zip(
+            userRepository.getLocalMe(),
             postRepository.listByTags(tagName, sorter, cursor, eTag, limit),
-            userRepository.getLocalMe(),
             Pair::create)
-        .observeOn(AndroidSchedulers.mainThread(), true)
+        .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showData, this::showError);
 
     getDisposable().add(d);
   }
 
-  public void loadPostsByUser(boolean pullToRefresh, String userId, boolean commented,
+  void loadPostsByUser(boolean pullToRefresh, String userId, boolean commented,
       String cursor, String eTag, int limit) {
     getView().onLoading(pullToRefresh);
 
     Disposable d = Observable
         .zip(
+            userRepository.getLocalMe(),
             postRepository.listByUser(userId, commented, cursor, eTag, limit),
-            userRepository.getLocalMe(),
             Pair::create)
-        .observeOn(AndroidSchedulers.mainThread(), true)
+        .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showData, this::showError);
 
     getDisposable().add(d);
   }
 
-  public void loadPostsByBounty(boolean pullToRefresh, String cursor, String eTag, int limit) {
+  void loadPostsByBounty(boolean pullToRefresh, String cursor, String eTag, int limit) {
     getView().onLoading(pullToRefresh);
 
     Disposable d = Observable
         .zip(
+            userRepository.getLocalMe(),
             postRepository.listByBounty(cursor, eTag, limit),
-            userRepository.getLocalMe(),
             Pair::create)
-        .observeOn(AndroidSchedulers.mainThread(), true)
+        .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showData, this::showError);
 
     getDisposable().add(d);
   }
 
-  public void loadPostsByBookmarked(boolean pullToRefresh, String cursor, String eTag, int limit) {
+  void loadPostsByBookmarked(boolean pullToRefresh, String cursor, String eTag, int limit) {
     getView().onLoading(pullToRefresh);
 
     Disposable d = Observable
         .zip(
-            postRepository.listByBookmarked(cursor, eTag, limit),
             userRepository.getLocalMe(),
+            postRepository.listByBookmarked(cursor, eTag, limit),
             Pair::create)
-        .observeOn(AndroidSchedulers.mainThread(), true)
+        .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showData, this::showError);
 
     getDisposable().add(d);
   }
 
-  public void deletePost(String postId) {
+  void deletePost(String postId) {
     Disposable d = postRepository.deletePost(postId)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe();
@@ -104,7 +104,7 @@ public class PostPresenter extends MvpPresenter<PostView> {
     getDisposable().add(d);
   }
 
-  public void votePost(String postId, int direction) {
+  void votePost(String postId, int direction) {
     Disposable d = postRepository.votePost(postId, direction)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(() -> postRepository.getPost(postId)
@@ -114,7 +114,7 @@ public class PostPresenter extends MvpPresenter<PostView> {
     getDisposable().add(d);
   }
 
-  public void bookmarkPost(String postId) {
+  void bookmarkPost(String postId) {
     Disposable d = postRepository.bookmarkPost(postId)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe();
@@ -122,7 +122,7 @@ public class PostPresenter extends MvpPresenter<PostView> {
     getDisposable().add(d);
   }
 
-  public void unBookmarkPost(String postId) {
+  void unBookmarkPost(String postId) {
     Disposable d = postRepository.unBookmarkPost(postId)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe();
@@ -130,13 +130,13 @@ public class PostPresenter extends MvpPresenter<PostView> {
     getDisposable().add(d);
   }
 
-  private void showData(Pair<Response<List<PostRealm>>, AccountRealm> pair) {
-    getView().onAccountLoaded(pair.second);
+  private void showData(Pair<AccountRealm, Response<List<PostRealm>>> pair) {
+    getView().onAccountLoaded(pair.first);
 
-    if (pair.first.getData() == null) {
+    if (pair.second.getData().isEmpty()) {
       getView().onEmpty();
     } else {
-      getView().onLoaded(pair.first);
+      getView().onLoaded(pair.second);
     }
 
     getView().showContent();

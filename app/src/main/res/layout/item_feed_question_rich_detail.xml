@@ -5,7 +5,9 @@
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
   android:background="@android:color/white"
-  android:paddingBottom="8dp">
+  android:elevation="@dimen/cardview_default_elevation"
+  android:paddingBottom="@dimen/padding_micro"
+  android:paddingTop="@dimen/padding_normal">
 
   <include layout="@layout/merge_item_feed_header" />
 
@@ -13,24 +15,25 @@
     android:id="@+id/iv_item_question_rich_cover"
     android:layout_width="0dp"
     android:layout_height="0dp"
-    android:layout_marginTop="64dp"
+    android:layout_marginTop="@dimen/padding_normal"
     android:scaleType="centerCrop"
     app:layout_constraintDimensionRatio="16:9"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
-    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/iv_item_feed_user_avatar"
     tools:src="@drawable/profile_bg_1x" />
 
   <TextView
     android:id="@+id/tv_item_question_rich_content"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
-    android:layout_marginEnd="16dp"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
-    android:layout_marginStart="16dp"
-    android:layout_marginTop="16dp"
     android:lineSpacingMultiplier="1.1"
+    android:paddingBottom="@dimen/padding_micro"
+    android:paddingEnd="@dimen/padding_normal"
+    android:paddingLeft="@dimen/padding_normal"
+    android:paddingRight="@dimen/padding_normal"
+    android:paddingStart="@dimen/padding_normal"
+    android:paddingTop="@dimen/padding_normal"
     android:textAppearance="@style/TextAppearance.AppCompat.Body1"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
@@ -38,15 +41,16 @@
     tools:text="@string/lorem_ipsum" />
 
   <com.yoloo.android.ui.widget.tagview.TagView
-    android:id="@+id/view_item_question_rich_category"
+    android:id="@+id/tagview_item_question_rich_category"
     style="@style/Yoloo.TagView"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
-    android:layout_marginEnd="16dp"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
-    android:layout_marginStart="16dp"
-    android:layout_marginTop="8dp"
+    android:paddingBottom="@dimen/padding_micro"
+    android:paddingEnd="@dimen/padding_normal"
+    android:paddingLeft="@dimen/padding_normal"
+    android:paddingRight="@dimen/padding_normal"
+    android:paddingStart="@dimen/padding_normal"
+    android:paddingTop="@dimen/padding_micro"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toBottomOf="@+id/tv_item_question_rich_content"
@@ -55,14 +59,38 @@
     app:tagTextColor="@color/category_text"
     app:tagTextGravity="center" />
 
-  <Space
-    android:id="@+id/spacer"
-    android:layout_width="0dp"
-    android:layout_height="0dp"
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_item_feed_share"
+    style="@style/Widget.Yoloo.FeedAction"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/action_feed_share"
+    app:drawableStart="@drawable/ic_share_black_18dp"
     app:layout_constraintLeft_toLeftOf="parent"
-    app:layout_constraintRight_toRightOf="parent"
-    app:layout_constraintTop_toBottomOf="@+id/view_item_question_rich_category" />
+    app:layout_constraintRight_toLeftOf="@+id/tv_item_feed_comment"
+    app:layout_constraintTop_toBottomOf="@+id/tagview_item_question_rich_category" />
 
-  <include layout="@layout/merge_item_feed_footer" />
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_item_feed_comment"
+    style="@style/Widget.Yoloo.FeedAction"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:drawableStart="@drawable/ic_mode_comment_black_18dp"
+    app:layout_constraintBaseline_toBaselineOf="@+id/tv_item_feed_share"
+    app:layout_constraintLeft_toRightOf="@+id/tv_item_feed_share"
+    app:layout_constraintRight_toLeftOf="@+id/tv_item_feed_vote"
+    tools:text="500" />
+
+  <com.yoloo.android.ui.widget.VoteView
+    android:id="@+id/tv_item_feed_vote"
+    style="@style/Widget.Yoloo.FeedAction"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:drawableEnd="@drawable/ic_vote_down_18dp"
+    app:drawableStart="@drawable/ic_vote_up_18dp"
+    app:layout_constraintBaseline_toBaselineOf="@+id/tv_item_feed_comment"
+    app:layout_constraintLeft_toRightOf="@+id/tv_item_feed_comment"
+    app:layout_constraintRight_toRightOf="parent"
+    tools:text="500" />
 
 </android.support.constraint.ConstraintLayout>

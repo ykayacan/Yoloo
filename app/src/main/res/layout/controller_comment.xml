@@ -4,7 +4,7 @@
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  tools:background="@android:color/white">
+  android:background="@android:color/white">
 
   <android.support.design.widget.AppBarLayout
     android:id="@+id/appbar_comment"
@@ -31,6 +31,17 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:listitem="@layout/item_comment" />
 
-  <include layout="@layout/merge_layout_send_message" />
+  <com.yoloo.android.feature.commentcompose.ComposeLayout
+    android:id="@+id/layout_compose"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom" />
+
+  <View
+    android:layout_width="match_parent"
+    android:layout_height="1dp"
+    android:layout_gravity="bottom"
+    android:layout_marginBottom="48dp"
+    android:background="@color/divider" />
 
 </android.support.design.widget.CoordinatorLayout>

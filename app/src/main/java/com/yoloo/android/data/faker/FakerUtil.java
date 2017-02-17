@@ -71,7 +71,7 @@ public class FakerUtil {
 
   @NonNull
   public static String getMediaUrl() {
-    return "http://lorempixel.com/600/600/city";
+    return "https://unsplash.it/400/300/?random";
   }
 
   @NonNull

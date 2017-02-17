@@ -34,12 +34,14 @@ public class PostRepository {
   public Observable<PostRealm> getPost(String postId) {
     Preconditions.checkNotNull(postId, "postId can not be null.");
 
+    // FIXME: 16.02.2017 Fix data.
+    //return diskDataStore.get(postId).subscribeOn(Schedulers.io());
+
     return Observable.mergeDelayError(
         diskDataStore.get(postId).subscribeOn(Schedulers.io()),
         remoteDataStore.get(postId)
-            .subscribeOn(Schedulers.io())
-            .observeOn(Schedulers.computation())
-            .doOnNext(diskDataStore::add));
+            .doOnNext(diskDataStore::add)
+            .subscribeOn(Schedulers.io()));
   }
 
   public Observable<PostRealm> addPost(PostRealm post) {
@@ -71,6 +73,8 @@ public class PostRepository {
   }
 
   public Observable<Response<List<PostRealm>>> listByFeed(String cursor, String eTag, int limit) {
+    // TODO: 15.02.2017 Fix data
+    //return diskDataStore.listByFeed().subscribeOn(Schedulers.io());
     return Observable.mergeDelayError(
         diskDataStore.listByFeed().subscribeOn(Schedulers.io()),
         remoteDataStore.listByFeed(cursor, eTag, limit)

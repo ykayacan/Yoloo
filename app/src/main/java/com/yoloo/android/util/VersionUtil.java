@@ -4,8 +4,7 @@ import android.os.Build;
 
 public final class VersionUtil {
 
-  public static boolean hasJellyBean() {
-    return Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
+  private VersionUtil() {
   }
 
   public static boolean hasL() {

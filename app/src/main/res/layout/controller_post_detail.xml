@@ -3,7 +3,7 @@
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="@android:color/white">
+  android:background="@color/background_lightish_2">
 
   <android.support.design.widget.AppBarLayout
     android:id="@+id/appbar_post_detail"
@@ -34,6 +34,17 @@
 
   </android.support.v4.widget.SwipeRefreshLayout>
 
-  <include layout="@layout/merge_layout_send_message" />
+  <com.yoloo.android.feature.commentcompose.ComposeLayout
+    android:id="@+id/layout_compose"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom" />
+
+  <View
+    android:layout_width="match_parent"
+    android:layout_height="1dp"
+    android:layout_gravity="bottom"
+    android:layout_marginBottom="48dp"
+    android:background="@color/divider" />
 
 </android.support.design.widget.CoordinatorLayout>

@@ -25,7 +25,7 @@ import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
-import com.yoloo.android.ui.recyclerview.SlideInItemAnimator;
+import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import java.util.List;
@@ -145,7 +145,7 @@ public class ComposeController
   }
 
   private void setupRecyclerView() {
-    adapter = new ComposeAdapter(this);
+    adapter = new ComposeAdapter(getActivity(), this);
 
     final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
 

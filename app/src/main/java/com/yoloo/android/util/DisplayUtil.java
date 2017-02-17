@@ -1,10 +1,8 @@
 package com.yoloo.android.util;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.graphics.Point;
 
 public final class DisplayUtil {
 
@@ -13,10 +11,8 @@ public final class DisplayUtil {
     return Math.round(dp * density);
   }
 
-  public static int getScreenWidth(Context context) {
-    Point size = new Point();
-    ((Activity) context).getWindowManager().getDefaultDisplay().getSize(size);
-    return size.x;
+  public static int getScreenWidth() {
+    return Resources.getSystem().getDisplayMetrics().widthPixels;
   }
 
   public static boolean isInLandscapeMode(Context context) {

@@ -1,19 +1,28 @@
 package com.yoloo.android.feature.feed.common.model;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
+import android.support.constraint.ConstraintSet;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyAttribute;
+import com.airbnb.epoxy.EpoxyModelClass;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.PostRealm;
-import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
@@ -29,11 +38,12 @@ import com.yoloo.android.ui.widget.timeview.TimeTextView;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.ReadMoreUtil;
-import com.yoloo.android.util.glide.CropCircleTransformation;
-import com.yoloo.android.util.glide.RoundedCornersTransformation;
+import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.List;
 
-public class RichQuestionModel extends EpoxyModelWithHolder<RichQuestionModel.RichQuestionHolder> {
+@EpoxyModelClass(layout = R.layout.item_feed_question_rich)
+public abstract class RichQuestionModel
+    extends EpoxyModelWithHolder<RichQuestionModel.RichQuestionHolder> {
 
   @EpoxyAttribute PostRealm post;
   @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
@@ -43,14 +53,8 @@ public class RichQuestionModel extends EpoxyModelWithHolder<RichQuestionModel.Ri
   @EpoxyAttribute(hash = false) OnPostOptionsClickListener onPostOptionsClickListener;
   @EpoxyAttribute(hash = false) OnVoteClickListener onVoteClickListener;
   @EpoxyAttribute(hash = false) OnContentImageClickListener onContentImageClickListener;
-
-  @Override protected RichQuestionHolder createNewHolder() {
-    return new RichQuestionHolder();
-  }
-
-  @Override protected int getDefaultLayout() {
-    return getLayout();
-  }
+  @EpoxyAttribute(hash = false) CropCircleTransformation circleTransformation;
+  @EpoxyAttribute(hash = false) ConstraintSet set;
 
   @Override public void bind(RichQuestionHolder holder, List<Object> payloads) {
     if (!payloads.isEmpty()) {
@@ -73,11 +77,103 @@ public class RichQuestionModel extends EpoxyModelWithHolder<RichQuestionModel.Ri
   }
 
   @Override public void bind(RichQuestionHolder holder) {
-    holder.bindDataWithViewHolder(post, isNormal());
+    final Context context = holder.itemView.getContext();
+
+    Glide.with(context)
+        .load(post.getAvatarUrl())
+        .bitmapTransform(circleTransformation)
+        .placeholder(R.drawable.ic_player)
+        .into(holder.ivUserAvatar);
+
+    holder.tvUsername.setText(post.getUsername());
+    holder.tvTime.setTimeStamp(post.getCreated().getTime() / 1000);
+    holder.tvBounty.setVisibility(post.getBounty() == 0 ? View.GONE : View.VISIBLE);
+    holder.tvBounty.setText(String.valueOf(post.getBounty()));
+    holder.tvContent.setText(isNormal()
+        ? ReadMoreUtil.readMoreContent(post.getContent(), 190)
+        : post.getContent());
+
+    final int w = isNormal() ? 80 : 320;
+    final int h = isNormal() ? 80 : 180;
+
+    if (isNormal()) {
+      Glide.with(context)
+          .load(post.getMediaUrl())
+          .asBitmap()
+          .override(w, h)
+          .diskCacheStrategy(DiskCacheStrategy.ALL)
+          .centerCrop()
+          .into(new SimpleTarget<Bitmap>() {
+            @Override
+            public void onResourceReady(Bitmap resource,
+                GlideAnimation<? super Bitmap> glideAnimation) {
+              RoundedBitmapDrawable circularBitmapDrawable =
+                  RoundedBitmapDrawableFactory.create(context.getResources(), resource);
+              circularBitmapDrawable.setCornerRadius(10f);
+              holder.ivContentImage.setImageDrawable(circularBitmapDrawable);
+            }
+          });
+    } else {
+      Glide.with(context)
+          .load(post.getMediaUrl())
+          .override(w, h)
+          .into(holder.ivContentImage);
+    }
+
+    holder.tvComment.setText(CountUtil.format(post.getComments()));
+
+    if (isNormal()) {
+      ConstraintLayout cl = (ConstraintLayout) holder.itemView;
+
+      holder.itemView.getViewTreeObserver().addOnPreDrawListener(
+          new ViewTreeObserver.OnPreDrawListener() {
+            @Override public boolean onPreDraw() {
+              if (holder.tvContent.getMeasuredHeight()
+                  > holder.ivContentImage.getMeasuredHeight()) {
+                set.clone(cl);
+                set.connect(R.id.tv_item_feed_share, ConstraintSet.TOP,
+                    R.id.tv_item_question_rich_content, ConstraintSet.BOTTOM, 0);
+                set.applyTo(cl);
+              } else {
+                set.clone(cl);
+                set.connect(R.id.tv_item_feed_share, ConstraintSet.TOP,
+                    R.id.iv_item_question_rich_cover, ConstraintSet.BOTTOM, 0);
+                set.applyTo(cl);
+              }
+              holder.itemView.getViewTreeObserver().removeOnPreDrawListener(this);
+              return true;
+            }
+          });
+    }
+
+    holder.voteView.setVotes(post.getVotes());
+    holder.voteView.setCurrentStatus(post.getDir());
+
+    if (holder.tagView != null) {
+      holder.tagView.setData(post.getCategoryNames());
+    }
+
+    tintDrawables(holder);
     setupClickListeners(holder);
   }
 
+  private void tintDrawables(RichQuestionHolder holder) {
+    DrawableHelper.withContext(holder.tvShare.getContext())
+        .withDrawable(holder.tvShare.getCompoundDrawables()[0])
+        .withColor(android.R.color.secondary_text_dark)
+        .tint();
+
+    DrawableHelper.withContext(holder.tvComment.getContext())
+        .withDrawable(holder.tvComment.getCompoundDrawables()[0])
+        .withColor(android.R.color.secondary_text_dark)
+        .tint();
+  }
+
   @Override public void unbind(RichQuestionHolder holder) {
+    Glide.clear(holder.ivUserAvatar);
+    Glide.clear(holder.ivContentImage);
+    holder.ivUserAvatar.setImageDrawable(null);
+    holder.ivContentImage.setImageDrawable(null);
     clearClickListeners(holder);
   }
 
@@ -99,13 +195,10 @@ public class RichQuestionModel extends EpoxyModelWithHolder<RichQuestionModel.Ri
 
     holder.tvShare.setOnClickListener(v -> onShareClickListener.onShareClick(v, post));
 
-    holder.tvComment.setOnClickListener(
-        v -> onCommentClickListener.onCommentClick(v, post.getId(), post.getOwnerId(),
-            post.getAcceptedCommentId(), PostType.TYPE_RICH));
+    holder.tvComment.setOnClickListener(v -> onCommentClickListener.onCommentClick(v, post));
 
     holder.ibOptions.setOnClickListener(
-        v -> onPostOptionsClickListener.onPostOptionsClick(v, this, post.getId(),
-            post.getOwnerId()));
+        v -> onPostOptionsClickListener.onPostOptionsClick(v, this, post));
 
     holder.voteView.setOnVoteEventListener(direction -> {
       post.setDir(direction);
@@ -146,54 +239,6 @@ public class RichQuestionModel extends EpoxyModelWithHolder<RichQuestionModel.Ri
     @BindView(R.id.tv_item_feed_share) CompatTextView tvShare;
     @BindView(R.id.tv_item_feed_comment) CompatTextView tvComment;
     @BindView(R.id.tv_item_feed_vote) VoteView voteView;
-    @Nullable @BindView(R.id.view_item_question_rich_category) TagView tagView;
-
-    void bindDataWithViewHolder(PostRealm post, boolean isNormal) {
-      final Context context = ivUserAvatar.getContext().getApplicationContext();
-
-      Glide.with(context)
-          .load(post.getAvatarUrl())
-          .bitmapTransform(CropCircleTransformation.getInstance(context))
-          .into(ivUserAvatar);
-
-      tvUsername.setText(post.getUsername());
-      tvTime.setTimeStamp(post.getCreated().getTime() / 1000);
-      tvBounty.setVisibility(post.getBounty() == 0 ? View.GONE : View.VISIBLE);
-      tvBounty.setText(String.valueOf(post.getBounty()));
-      tvContent.setText(isNormal
-          ? ReadMoreUtil.readMoreContent(post.getContent(), 135)
-          : post.getContent());
-
-      final int w = isNormal ? 80 : 320;
-      final int h = isNormal ? 80 : 180;
-
-      Glide.with(context)
-          .load(post.getMediaUrl())
-          .override(w, h)
-          .bitmapTransform(RoundedCornersTransformation.getInstance(context, 16, 0))
-          .into(ivContentImage);
-
-      tvComment.setText(CountUtil.format(post.getComments()));
-      voteView.setVotes(post.getVotes());
-      voteView.setCurrentStatus(post.getDir());
-
-      if (tagView != null) {
-        tagView.setData(post.getCategoryNames());
-      }
-
-      tintDrawables();
-    }
-
-    private void tintDrawables() {
-      DrawableHelper.withContext(tvShare.getContext())
-          .withDrawable(tvShare.getCompoundDrawables()[0])
-          .withColor(android.R.color.secondary_text_dark)
-          .tint();
-
-      DrawableHelper.withContext(tvComment.getContext())
-          .withDrawable(tvComment.getCompoundDrawables()[0])
-          .withColor(android.R.color.secondary_text_dark)
-          .tint();
-    }
+    @Nullable @BindView(R.id.tagview_item_question_rich_category) TagView tagView;
   }
 }

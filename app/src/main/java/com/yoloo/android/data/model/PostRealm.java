@@ -10,6 +10,10 @@ import java.util.List;
 
 public class PostRealm extends RealmObject {
 
+  public static final int POST_NORMAL = 0;
+  public static final int POST_RICH = 1;
+  public static final int POST_BLOG = 2;
+
   @PrimaryKey private String id;
   @Index private String ownerId;
   private String avatarUrl;

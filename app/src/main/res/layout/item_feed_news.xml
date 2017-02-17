@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:orientation="vertical">
+
+  <FrameLayout
+    android:id="@+id/layout_feed_travel_news_header"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:foreground="?attr/selectableItemBackground"
+    android:paddingBottom="@dimen/padding_micro"
+    android:paddingEnd="@dimen/padding_large"
+    android:paddingLeft="@dimen/padding_normal"
+    android:paddingRight="@dimen/padding_large"
+    android:paddingStart="@dimen/padding_normal"
+    android:paddingTop="@dimen/padding_micro">
+
+    <com.yoloo.android.ui.widget.BaselineGridTextView
+      style="@style/TextAppearance.GroupTitle"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/label_feed_news" />
+
+    <com.yoloo.android.ui.widget.BaselineGridTextView
+      style="@style/TextAppearance.GroupMore"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="end"
+      android:text="@string/label_feed_read_more_news" />
+
+  </FrameLayout>
+
+  <android.support.v7.widget.RecyclerView
+    android:id="@+id/rv_feed_news"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content" />
+</LinearLayout>

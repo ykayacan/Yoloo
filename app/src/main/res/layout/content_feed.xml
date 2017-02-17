@@ -20,9 +20,6 @@
 
   </android.support.design.widget.AppBarLayout>
 
-  <include layout="@layout/merge_loading_view" />
-  <include layout="@layout/merge_error_view" />
-
   <android.support.v4.widget.SwipeRefreshLayout
     android:id="@+id/swipe_feed"
     android:layout_width="match_parent"
@@ -35,6 +32,18 @@
       android:layout_height="match_parent" />
 
   </android.support.v4.widget.SwipeRefreshLayout>
+
+  <com.airbnb.lottie.LottieAnimationView
+    android:id="@+id/animation_view"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:visibility="gone"
+    app:lottie_autoPlay="true"
+    app:lottie_fileName="PinJump.json"
+    app:lottie_loop="true" />
+
+  <include layout="@layout/merge_error_view" />
 
   <View
     android:id="@+id/view_feed_action"
@@ -50,7 +59,33 @@
     android:fitsSystemWindows="true"
     app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-  <com.yoloo.android.ui.widget.floatingactionmenu.widget.FloatingActionMenu
+  <com.yoloo.android.ui.widget.fabmenu.FloatingActionsMenu
+    android:id="@+id/fab_menu_feed"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="end|bottom"
+    android:layout_margin="@dimen/fab_margin"
+    app:fab_labelStyle="@style/Yoloo.LightLabel">
+
+    <android.support.design.widget.FloatingActionButton
+      android:id="@+id/fab_ask_question"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:contentDescription="@string/action_feed_fab_ask_question"
+      app:fabSize="mini"
+      app:srcCompat="@drawable/ic_edit_white_18dp" />
+
+    <android.support.design.widget.FloatingActionButton
+      android:id="@+id/fab_share_trip"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:contentDescription="@string/action_feed_fab_share_trip"
+      app:fabSize="mini"
+      app:srcCompat="@drawable/ic_edit_white_18dp" />
+
+  </com.yoloo.android.ui.widget.fabmenu.FloatingActionsMenu>
+
+  <!--<com.yoloo.android.ui.widget.floatingactionmenu.widget.FloatingActionMenu
     android:id="@+id/fab_menu_feed"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -82,6 +117,6 @@
       app:fabSize="mini"
       app:srcCompat="@drawable/ic_edit_white_18dp" />
 
-  </com.yoloo.android.ui.widget.floatingactionmenu.widget.FloatingActionMenu>
+  </com.yoloo.android.ui.widget.floatingactionmenu.widget.FloatingActionMenu>-->
 
 </android.support.design.widget.CoordinatorLayout>

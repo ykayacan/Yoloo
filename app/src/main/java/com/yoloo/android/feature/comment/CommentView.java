@@ -6,18 +6,13 @@ import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.framework.MvpDataView;
 import java.util.List;
 
-public interface CommentView extends MvpDataView<Response<List<CommentRealm>>> {
+interface CommentView extends MvpDataView<Response<List<CommentRealm>>> {
 
-  void onCommentsLoaded(Response<List<CommentRealm>> value, String currentUserId, boolean postOwner,
-      boolean accepted);
+  void onAccountLoaded(AccountRealm account);
 
-  void onAcceptedCommentLoaded(CommentRealm comment, boolean postOwner);
-
-  void onNewCommentLoaded(CommentRealm comment, boolean postOwner);
+  void onAcceptedCommentLoaded(CommentRealm comment);
 
   void onNewAccept(String commentId);
-
-  void onMentionSuggestionsLoaded(List<AccountRealm> suggestions);
 
   void onCommentDeleted();
 }

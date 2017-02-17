@@ -2,7 +2,6 @@ package com.yoloo.android.feature.chat.conversationlist;
 
 import android.content.Context;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindView;
@@ -16,16 +15,18 @@ import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
 import com.yoloo.android.ui.widget.timeview.TimeTextView;
-import com.yoloo.android.util.glide.CropCircleTransformation;
+import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.List;
 
 @EpoxyModelClass(layout = R.layout.item_conversationlist)
-abstract class ConversationListModel extends EpoxyModelWithHolder<ConversationListModel.ConversationHolder> {
+abstract class ConversationListModel
+    extends EpoxyModelWithHolder<ConversationListModel.ConversationHolder> {
 
   @EpoxyAttribute Chat chat;
   @EpoxyAttribute(hash = false) ConversationListAdapter adapter;
   @EpoxyAttribute(hash = false) OnItemClickListener<Chat> itemClickListener;
   @EpoxyAttribute(hash = false) OnItemLongClickListener<Chat> onItemLongClickListener;
+  @EpoxyAttribute(hash = false) CropCircleTransformation cropCircleTransformation;
 
   @Override public void bind(ConversationHolder holder, List<Object> payloads) {
     if (payloads.isEmpty()) {
@@ -39,7 +40,7 @@ abstract class ConversationListModel extends EpoxyModelWithHolder<ConversationLi
 
           Glide.with(context)
               .load(payload.getCoverImageUrl())
-              .bitmapTransform(CropCircleTransformation.getInstance(context))
+              .bitmapTransform(cropCircleTransformation)
               .into(holder.ivAvatar);
         }
 
@@ -73,12 +74,12 @@ abstract class ConversationListModel extends EpoxyModelWithHolder<ConversationLi
 
     Glide.with(context)
         .load(chat.getCoverImageUrl())
-        .bitmapTransform(CropCircleTransformation.getInstance(context))
+        .bitmapTransform(cropCircleTransformation)
         .into(holder.ivAvatar);
 
-    holder.root.setOnClickListener(v -> itemClickListener.onItemClick(v, this, chat));
+    holder.itemView.setOnClickListener(v -> itemClickListener.onItemClick(v, this, chat));
 
-    holder.root.setOnLongClickListener(v -> {
+    holder.itemView.setOnLongClickListener(v -> {
       if (adapter.toggleSelection(this)) {
         onItemLongClickListener.onItemLongClick(v, this, chat);
         return true;
@@ -97,7 +98,6 @@ abstract class ConversationListModel extends EpoxyModelWithHolder<ConversationLi
   }
 
   static class ConversationHolder extends BaseEpoxyHolder {
-    @BindView(R.id.root_view) ViewGroup root;
     @BindView(R.id.tv_chat_title) TextView tvTitle;
     @BindView(R.id.tv_chat_last_message) TextView tvLastMessage;
     @BindView(R.id.tv_chat_time) TimeTextView tvTime;

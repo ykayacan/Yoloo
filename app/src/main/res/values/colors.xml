@@ -9,6 +9,8 @@
   <color name="primary_yellow">#ffc107</color>
   <color name="ripple_light">#99FF5722</color>
 
+  <color name="content_placeholder">#ffe0e0e0</color>
+
   <color name="accepted">#5CB85C</color>
 
   <color name="profile_card_text">#5C5C5C</color>
@@ -20,13 +22,13 @@
   <color name="tag_text_unselected">@android:color/primary_text_light</color>
 
   <color name="fab_dim">#F2EEEEEE</color>
-  <color name="divider">#1FFFFFFF</color>
+  <color name="divider">#1f000000</color>
 
   <color name="login_edittext_bg">#EBEBEB</color>
 
   <color name="background_light">#fafafa</color> <!-- grey 50 -->
   <color name="background_lightish">#e0e0e0</color> <!-- grey 300 -->
-  <color name="background_lightish_2">#eeeeee</color>
+  <color name="background_lightish_2">#EEEEEE</color>
 
   <color name="editor_icon">#7C7C7C</color>
 

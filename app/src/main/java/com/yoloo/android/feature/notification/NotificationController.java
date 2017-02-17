@@ -28,8 +28,8 @@ import com.yoloo.android.feature.base.LceAnimator;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
-import com.yoloo.android.ui.recyclerview.SlideInItemAnimator;
-import com.yoloo.android.ui.recyclerview.SpaceItemDecoration;
+import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
+import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
 import com.yoloo.android.framework.MvpController;
 import java.util.List;
 import timber.log.Timber;
@@ -144,7 +144,7 @@ public class NotificationController extends MvpController<NotificationView, Noti
   }
 
   private void setupRecyclerView() {
-    adapter = new NotificationAdapter(this);
+    adapter = new NotificationAdapter(getActivity(), this);
 
     final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
 
@@ -169,7 +169,7 @@ public class NotificationController extends MvpController<NotificationView, Noti
   private void setupToolbar() {
     setSupportActionBar(toolbar);
 
-    // addPost back arrow to toolbar
+    // addPostToBeginning back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
     if (ab != null) {
       ab.setTitle(R.string.label_notification_title);

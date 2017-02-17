@@ -202,11 +202,11 @@ public class AuthUI {
       // Convert to Credentials API account type
       String accountType = providerIdToAccountType(providerId);
 
-      // Build and addPost credential
+      // Build and addPostToBeginning credential
       Credential.Builder builder =
           new Credential.Builder(user.getEmail()).setAccountType(accountType);
 
-      // Null account type means password, we need to addPost a random password
+      // Null account type means password, we need to addPostToBeginning a random password
       // to make deletion succeed.
       if (accountType == null) {
         builder.setPassword("some_password");

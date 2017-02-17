@@ -6,33 +6,33 @@ class TimeConstants {
   static final String NOW = "now";
   static final String IN_FEW_SECONDS = NOW;
 
-  static final String MINUTE = "m";
-  static final String MINUTES = "m";
+  static final String MINUTE = " m";
+  static final String MINUTES = " m";
   static final String ONE_MINUTE_AGO = "1" + MINUTE;
   static final String IN_ONE_MINUTE = ONE_MINUTE_AGO;
 
-  static final String HOUR = "h";
-  static final String HOURS = "h";
+  static final String HOUR = " h";
+  static final String HOURS = " h";
   static final String ONE_HOUR_AGO = "1" + HOUR;
   static final String IN_ONE_HOUR = ONE_HOUR_AGO;
 
-  static final String DAY = "d";
-  static final String DAYS = "d";
-  static final String ONE_DAY_AGO = "1d";
+  static final String DAY = " d";
+  static final String DAYS = " d";
+  static final String ONE_DAY_AGO = "1" + DAY;
   static final String IN_ONE_DAY = "Tomorrow";
 
-  static final String WEEK = "w";
-  static final String WEEKS = "w";
+  static final String WEEK = " w";
+  static final String WEEKS = " w";
   static final String ONE_WEEK_AGO = "1" + WEEK;
   static final String IN_ONE_WEEK = "1" + WEEK;
 
-  static final String MONTH = "m";
-  static final String MONTHS = "m";
+  static final String MONTH = " mo";
+  static final String MONTHS = " mo";
   static final String ONE_MONTH_AGO = "1" + MONTH;
   static final String IN_ONE_MONTH = "1" + MONTH;
 
-  static final String YEAR = "y";
-  static final String YEARS = "y";
+  static final String YEAR = " y";
+  static final String YEARS = " y";
   static final String ONE_YEAR_AGO = "1" + YEAR;
   static final String IN_ONE_YEAR = "1" + YEAR;
 

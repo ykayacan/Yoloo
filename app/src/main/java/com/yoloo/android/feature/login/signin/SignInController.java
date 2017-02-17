@@ -30,6 +30,7 @@ import com.yoloo.android.feature.login.IdpResponse;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.FormUtil;
 import com.yoloo.android.util.KeyboardUtil;
+import io.realm.Realm;
 import java.net.SocketTimeoutException;
 import timber.log.Timber;
 
@@ -38,6 +39,10 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
 
   static {
     AccountFaker.generateAll();
+
+    Realm realm = Realm.getDefaultInstance();
+    realm.executeTransaction(tx -> tx.insertOrUpdate(AccountFaker.generateMe()));
+    realm.close();
   }
 
   @BindView(R.id.et_login_email) EditText etEmail;

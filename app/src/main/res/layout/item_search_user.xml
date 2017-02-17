@@ -1,40 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:tools="http://schemas.android.com/tools"
-  android:id="@+id/layout_item_search"
   android:layout_width="match_parent"
-  android:layout_height="64dp"
-  android:background="@android:color/white"
-  android:foreground="?android:attr/selectableItemBackgroundBorderless"
+  android:layout_height="?attr/listPreferredItemHeight"
+  android:foreground="?attr/selectableItemBackground"
   android:orientation="horizontal"
-  android:padding="16dp">
+  android:paddingEnd="@dimen/padding_normal"
+  android:paddingLeft="@dimen/spacing_large"
+  android:paddingRight="@dimen/padding_large"
+  android:paddingStart="@dimen/padding_large"
+  tools:background="@android:color/white">
 
   <ImageView
     android:id="@+id/iv_item_search_avatar"
-    android:layout_width="32dp"
-    android:layout_height="32dp"
+    android:layout_width="@dimen/avatar_size"
+    android:layout_height="@dimen/avatar_size"
     android:layout_gravity="center_vertical"
-    android:layout_marginLeft="16dp"
-    android:layout_marginStart="16dp"
-    android:scaleType="center"
     tools:src="@drawable/login_bg" />
 
-  <TextView
+  <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_item_search_username"
+    style="@style/TextAppearance.Username"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center_vertical"
     android:layout_marginLeft="64dp"
     android:layout_marginStart="64dp"
-    android:maxLines="1"
-    android:textAppearance="@style/TextAppearance.AppCompat.Body2"
     tools:text="Yoloo" />
 
   <Button
     android:id="@+id/btn_item_search_follow"
     style="@style/Widget.AppCompat.Button.Colored"
     android:layout_width="wrap_content"
-    android:layout_height="40dp"
+    android:layout_height="@dimen/avatar_size"
     android:layout_gravity="center|end"
     android:gravity="center"
     android:text="@string/action_profile_follow"

@@ -29,11 +29,12 @@
 
   <!-- USER FEED -->
   <string name="label_feed_toolbar_title">YOLOO</string>
-
   <string name="label_feed_trending_now">Trending now</string>
   <string name="label_feed_explore">Explore</string>
+  <string name="label_feed_news">Travel News</string>
   <string name="label_feed_bookmarked">Post saved.</string>
   <string name="label_feed_unbookmarked">Post unsaved.</string>
+  <string name="label_feed_read_more_news">More</string>
 
   <string name="action_feed_popup_bookmark">Bookmark</string>
   <string name="action_feed_popup_unbookmark">Unbookmark</string>

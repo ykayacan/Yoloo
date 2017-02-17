@@ -1,19 +1,24 @@
 package com.yoloo.android.feature.chat.conversationlist;
 
+import android.content.Context;
 import com.airbnb.epoxy.EpoxyModel;
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.model.firebase.Chat;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
 import com.yoloo.android.ui.recyclerview.SelectableAdapter;
+import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 
 class ConversationListAdapter extends SelectableAdapter {
+
+  private final Context context;
 
   private final OnItemClickListener<Chat> onItemClickListener;
   private final OnItemLongClickListener<Chat> onItemLongClickListener;
 
-  ConversationListAdapter(OnItemClickListener<Chat> onItemClickListener,
+  ConversationListAdapter(Context context, OnItemClickListener<Chat> onItemClickListener,
       OnItemLongClickListener<Chat> onItemLongClickListener) {
+    this.context = context;
     this.onItemClickListener = onItemClickListener;
     this.onItemLongClickListener = onItemLongClickListener;
   }
@@ -22,6 +27,7 @@ class ConversationListAdapter extends SelectableAdapter {
     addModel(new ConversationListModel_()
         .chat(chat)
         .adapter(this)
+        .cropCircleTransformation(new CropCircleTransformation(context))
         .onItemLongClickListener(onItemLongClickListener)
         .itemClickListener(onItemClickListener));
   }

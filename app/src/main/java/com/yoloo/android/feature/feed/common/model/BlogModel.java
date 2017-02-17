@@ -3,17 +3,16 @@ package com.yoloo.android.feature.feed.common.model;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyAttribute;
+import com.airbnb.epoxy.EpoxyModelClass;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.PostRealm;
-import com.yoloo.android.feature.feed.common.annotation.PostType;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
@@ -28,10 +27,11 @@ import com.yoloo.android.ui.widget.timeview.TimeTextView;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.ReadMoreUtil;
-import com.yoloo.android.util.glide.CropCircleTransformation;
+import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.List;
 
-public class BlogModel extends EpoxyModelWithHolder<BlogModel.BlogHolder> {
+@EpoxyModelClass(layout = R.layout.item_feed_blog)
+public abstract class BlogModel extends EpoxyModelWithHolder<BlogModel.BlogHolder> {
 
   @EpoxyAttribute PostRealm post;
   @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
@@ -40,14 +40,7 @@ public class BlogModel extends EpoxyModelWithHolder<BlogModel.BlogHolder> {
   @EpoxyAttribute(hash = false) OnReadMoreClickListener onReadMoreClickListener;
   @EpoxyAttribute(hash = false) OnPostOptionsClickListener onPostOptionsClickListener;
   @EpoxyAttribute(hash = false) OnVoteClickListener onVoteClickListener;
-
-  @Override protected BlogHolder createNewHolder() {
-    return new BlogHolder();
-  }
-
-  @Override protected int getDefaultLayout() {
-    return getLayout();
-  }
+  @EpoxyAttribute(hash = false) CropCircleTransformation circleTransformation;
 
   @Override public void bind(BlogHolder holder, List<Object> payloads) {
     if (!payloads.isEmpty()) {
@@ -66,19 +59,61 @@ public class BlogModel extends EpoxyModelWithHolder<BlogModel.BlogHolder> {
   }
 
   @Override public void bind(BlogHolder holder) {
-    holder.bindDataWithViewHolder(post, isNormal());
+    final Context context = holder.itemView.getContext();
+
+    Glide.with(context)
+        .load(post.getAvatarUrl())
+        .bitmapTransform(circleTransformation)
+        .placeholder(R.drawable.ic_player)
+        .into(holder.ivUserAvatar);
+
+    holder.tvUsername.setText(post.getUsername());
+    holder.tvTime.setTimeStamp(post.getCreated().getTime() / 1000);
+    holder.tvBounty.setVisibility(View.GONE);
+    holder.tvTitle.setText(post.getTitle());
+    holder.tvContent.setText(isNormal()
+        ? ReadMoreUtil.readMoreContent(post.getContent(), 135)
+        : post.getContent());
+
+    Glide.with(context)
+        .load(post.getMediaUrl())
+        .override(320, 180)
+        .into(holder.ivBlogCover);
+
+    holder.tvComment.setText(CountUtil.format(post.getComments()));
+    holder.voteView.setVotes(post.getVotes());
+    holder.voteView.setCurrentStatus(post.getDir());
+
+    if (holder.tagView != null) {
+      holder.tagView.setData(post.getCategoryNames());
+    }
+
+    tintDrawables(holder);
     setupClickListeners(holder);
   }
 
   @Override public void unbind(BlogHolder holder) {
-    super.unbind(holder);
-    clearClickListeners(holder);
     Glide.clear(holder.ivBlogCover);
+    Glide.clear(holder.ivUserAvatar);
     holder.ivBlogCover.setImageDrawable(null);
+    holder.ivUserAvatar.setImageDrawable(null);
+    clearClickListeners(holder);
   }
 
   @Override public boolean shouldSaveViewState() {
     return true;
+  }
+
+  private void tintDrawables(BlogHolder holder) {
+    DrawableHelper.withContext(holder.tvShare.getContext())
+        .withDrawable(holder.tvShare.getCompoundDrawables()[0])
+        .withColor(android.R.color.secondary_text_dark)
+        .tint();
+
+    DrawableHelper.withContext(holder.tvComment.getContext())
+        .withDrawable(holder.tvComment.getCompoundDrawables()[0])
+        .withColor(android.R.color.secondary_text_dark)
+        .tint();
   }
 
   private void setupClickListeners(BlogHolder holder) {
@@ -89,19 +124,16 @@ public class BlogModel extends EpoxyModelWithHolder<BlogModel.BlogHolder> {
         v -> onProfileClickListener.onProfileClick(v, post.getOwnerId()));
 
     if (onReadMoreClickListener != null && post.hasReadMore()) {
-      holder.root.setOnClickListener(
+      holder.itemView.setOnClickListener(
           v -> onReadMoreClickListener.onReadMoreClickListener(v, post));
     }
 
     holder.tvShare.setOnClickListener(v -> onShareClickListener.onShareClick(v, post));
 
-    holder.tvComment.setOnClickListener(
-        v -> onCommentClickListener.onCommentClick(v, post.getId(), post.getOwnerId(),
-            post.getAcceptedCommentId(), PostType.TYPE_BLOG));
+    holder.tvComment.setOnClickListener(v -> onCommentClickListener.onCommentClick(v, post));
 
     holder.ibOptions.setOnClickListener(
-        v -> onPostOptionsClickListener.onPostOptionsClick(v, this, post.getId(),
-            post.getOwnerId()));
+        v -> onPostOptionsClickListener.onPostOptionsClick(v, this, post));
 
     holder.voteView.setOnVoteEventListener(direction -> {
       post.setDir(direction);
@@ -128,7 +160,6 @@ public class BlogModel extends EpoxyModelWithHolder<BlogModel.BlogHolder> {
   }
 
   static class BlogHolder extends BaseEpoxyHolder {
-    @BindView(R.id.layout_root) ViewGroup root;
     @BindView(R.id.iv_item_feed_user_avatar) ImageView ivUserAvatar;
     @BindView(R.id.tv_item_feed_username) TextView tvUsername;
     @BindView(R.id.tv_item_feed_time) TimeTextView tvTime;
@@ -140,49 +171,6 @@ public class BlogModel extends EpoxyModelWithHolder<BlogModel.BlogHolder> {
     @BindView(R.id.tv_item_feed_share) CompatTextView tvShare;
     @BindView(R.id.tv_item_feed_comment) CompatTextView tvComment;
     @BindView(R.id.tv_item_feed_vote) VoteView voteView;
-    @Nullable @BindView(R.id.view_item_question_rich_category) TagView tagView;
-
-    void bindDataWithViewHolder(PostRealm post, boolean isNormal) {
-      final Context context = ivUserAvatar.getContext().getApplicationContext();
-
-      Glide.with(context)
-          .load(post.getAvatarUrl())
-          .bitmapTransform(CropCircleTransformation.getInstance(context))
-          .into(ivUserAvatar);
-
-      tvUsername.setText(post.getUsername());
-      tvTime.setTimeStamp(post.getCreated().getTime() / 1000);
-      tvBounty.setVisibility(View.GONE);
-      tvTitle.setText(post.getTitle());
-      tvContent.setText(
-          isNormal ? ReadMoreUtil.readMoreContent(post.getContent(), 135) : post.getContent());
-
-      Glide.with(context)
-          .load(post.getMediaUrl())
-          .override(320, 180)
-          .into(ivBlogCover);
-
-      tvComment.setText(CountUtil.format(post.getComments()));
-      voteView.setVotes(post.getVotes());
-      voteView.setCurrentStatus(post.getDir());
-
-      if (tagView != null) {
-        tagView.setData(post.getCategoryNames());
-      }
-
-      tintDrawables();
-    }
-
-    private void tintDrawables() {
-      DrawableHelper.withContext(tvShare.getContext())
-          .withDrawable(tvShare.getCompoundDrawables()[0])
-          .withColor(android.R.color.secondary_text_dark)
-          .tint();
-
-      DrawableHelper.withContext(tvComment.getContext())
-          .withDrawable(tvComment.getCompoundDrawables()[0])
-          .withColor(android.R.color.secondary_text_dark)
-          .tint();
-    }
+    @Nullable @BindView(R.id.tagview_item_question_rich_category) TagView tagView;
   }
 }

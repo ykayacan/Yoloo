@@ -69,4 +69,15 @@ public class CategoryRealm extends RealmObject {
     this.type = type;
     return this;
   }
+
+  @Override public String toString() {
+    return "CategoryRealm{" +
+        "id='" + id + '\'' +
+        ", name='" + name + '\'' +
+        ", backgroundUrl='" + backgroundUrl + '\'' +
+        ", posts=" + posts +
+        ", rank=" + rank +
+        ", type='" + type + '\'' +
+        '}';
+  }
 }

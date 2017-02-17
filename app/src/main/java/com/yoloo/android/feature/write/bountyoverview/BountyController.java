@@ -26,7 +26,7 @@ import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.ui.recyclerview.GridInsetItemDecoration;
+import com.yoloo.android.ui.recyclerview.decoration.GridInsetItemDecoration;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.ControllerUtil;
 import com.yoloo.android.util.DrawableHelper;
