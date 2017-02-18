@@ -13,16 +13,16 @@ import java.util.List;
 
 public class NotificationDiskDataSource {
 
-  private static NotificationDiskDataSource INSTANCE;
+  private static NotificationDiskDataSource instance;
 
   private NotificationDiskDataSource() {
   }
 
   public static NotificationDiskDataSource getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new NotificationDiskDataSource();
+    if (instance == null) {
+      instance = new NotificationDiskDataSource();
     }
-    return INSTANCE;
+    return instance;
   }
 
   public void registerFcmToken(FcmRealm fcm) {

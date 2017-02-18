@@ -10,16 +10,16 @@ import java.util.List;
 
 public class TagRemoteDataStore {
 
-  private static TagRemoteDataStore INSTANCE;
+  private static TagRemoteDataStore instance;
 
   private TagRemoteDataStore() {
   }
 
   public static TagRemoteDataStore getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new TagRemoteDataStore();
+    if (instance == null) {
+      instance = new TagRemoteDataStore();
     }
-    return INSTANCE;
+    return instance;
   }
 
   public Observable<List<TagRealm>> list(TagSorter sorter) {

@@ -71,8 +71,8 @@
     <attr name="mbtv_border_color" format="color" />
     <attr name="mbtv_border_alpha" format="float" />
     <attr name="mbtv_type" format="enum">
-      <enum name="shadow_gradual" value="1"/>
-      <enum name="shadow_alpha" value="2"/>
+      <enum name="shadow_gradual" value="1" />
+      <enum name="shadow_alpha" value="2" />
     </attr>
   </declare-styleable>
 
@@ -130,17 +130,17 @@
   </declare-styleable>
 
   <declare-styleable name="chip_layout">
-    <attr name="textSize_" format="dimension"/>
-    <attr name="chipPadding_" format="dimension"/>
-    <attr name="chipPaddingLeft_" format="dimension"/>
-    <attr name="chipPaddingRight_" format="dimension"/>
-    <attr name="chipPaddingTop_" format="dimension"/>
-    <attr name="chipPaddingBottom_" format="dimension"/>
-    <attr name="chipTextPadding_" format="dimension"/>
-    <attr name="chipTextPaddingLeft_" format="dimension"/>
-    <attr name="chipTextPaddingRight_" format="dimension"/>
-    <attr name="chipTextPaddingTop_" format="dimension"/>
-    <attr name="chipTextPaddingBottom_" format="dimension"/>
+    <attr name="textSize_" format="dimension" />
+    <attr name="chipPadding_" format="dimension" />
+    <attr name="chipPaddingLeft_" format="dimension" />
+    <attr name="chipPaddingRight_" format="dimension" />
+    <attr name="chipPaddingTop_" format="dimension" />
+    <attr name="chipPaddingBottom_" format="dimension" />
+    <attr name="chipTextPadding_" format="dimension" />
+    <attr name="chipTextPaddingLeft_" format="dimension" />
+    <attr name="chipTextPaddingRight_" format="dimension" />
+    <attr name="chipTextPaddingTop_" format="dimension" />
+    <attr name="chipTextPaddingBottom_" format="dimension" />
     <attr name="textColor_" format="color" />
     <attr name="chipColor_" format="color" />
     <attr name="showText_" format="boolean" />
@@ -149,8 +149,8 @@
     <attr name="chipDrawable_" format="reference" />
     <attr name="chipLayoutDrawable_" format="reference" />
     <attr name="labelPosition_" format="enum">
-      <enum name="left" value="0"/>
-      <enum name="right" value="1"/>
+      <enum name="left" value="0" />
+      <enum name="right" value="1" />
     </attr>
   </declare-styleable>
 
@@ -163,6 +163,19 @@
     <attr name="android:orientation" />
     <attr name="spanCount" />
     <attr name="aspectRatio" format="string" />
+  </declare-styleable>
+
+  <declare-styleable name="MultiStateLayout">
+    <attr name="msv_loadingView" format="reference" />
+    <attr name="msv_emptyView" format="reference" />
+    <attr name="msv_errorView" format="reference" />
+    <attr name="msv_viewState" format="enum">
+      <enum name="content" value="0" />
+      <enum name="error" value="1" />
+      <enum name="empty" value="2" />
+      <enum name="loading" value="3" />
+    </attr>
+    <attr name="msv_animateViewChanges" format="boolean" />
   </declare-styleable>
 
 </resources>

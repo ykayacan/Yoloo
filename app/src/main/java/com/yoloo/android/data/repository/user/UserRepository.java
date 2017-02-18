@@ -13,7 +13,7 @@ import java.util.List;
 
 public class UserRepository {
 
-  private static UserRepository INSTANCE;
+  private static UserRepository instance;
 
   private final UserRemoteDataStore remoteDataStore;
   private final UserDiskDataStore diskDataStore;
@@ -25,10 +25,10 @@ public class UserRepository {
 
   public static UserRepository getInstance(UserRemoteDataStore remoteDataStore,
       UserDiskDataStore diskDataStore) {
-    if (INSTANCE == null) {
-      INSTANCE = new UserRepository(remoteDataStore, diskDataStore);
+    if (instance == null) {
+      instance = new UserRepository(remoteDataStore, diskDataStore);
     }
-    return INSTANCE;
+    return instance;
   }
 
   public Observable<AccountRealm> getUser(String userId) {

@@ -17,16 +17,16 @@ import java.util.List;
 
 public class PostDiskDataStore {
 
-  private static PostDiskDataStore INSTANCE;
+  private static PostDiskDataStore instance;
 
   private PostDiskDataStore() {
   }
 
   public static PostDiskDataStore getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new PostDiskDataStore();
+    if (instance == null) {
+      instance = new PostDiskDataStore();
     }
-    return INSTANCE;
+    return instance;
   }
 
   public Observable<PostRealm> get(String postId) {

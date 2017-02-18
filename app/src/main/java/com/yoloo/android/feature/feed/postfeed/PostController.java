@@ -18,9 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ProgressBar;
 import android.widget.Spinner;
-import android.widget.TextView;
 import butterknife.BindColor;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyModel;
@@ -40,7 +38,6 @@ import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.data.sorter.PostSorter;
-import com.yoloo.android.feature.base.LceAnimator;
 import com.yoloo.android.feature.comment.CommentController;
 import com.yoloo.android.feature.feed.common.adapter.FeedAdapter;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
@@ -61,6 +58,7 @@ import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
+import com.yoloo.android.ui.widget.MultiStateLayout;
 import com.yoloo.android.ui.widget.SpinnerTitleArrayAdapter;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.ControllerUtil;
@@ -92,13 +90,11 @@ public class PostController extends MvpController<PostView, PostPresenter>
   private static final String KEY_BOUNTY = "BOUNTY";
   private static final String KEY_BOOKMARKED = "BOOKMARKED";
 
+  @BindView(R.id.root_view) MultiStateLayout rootView;
   @BindView(R.id.toolbar_feed_global) Toolbar toolbar;
   @BindView(R.id.rv_feed_global) RecyclerView rvPostFeed;
   @BindView(R.id.spinner_feed_global) Spinner spinner;
   @BindView(R.id.swipe_feed_global) SwipeRefreshLayout swipeRefreshLayout;
-  @BindView(R.id.view_feed_sub_action) View actionView;
-  @BindView(R.id.loading_view) ProgressBar loadingView;
-  @BindView(R.id.error_view) TextView errorView;
 
   @BindColor(R.color.primary) int primaryColor;
 
@@ -187,6 +183,8 @@ public class PostController extends MvpController<PostView, PostPresenter>
     setHasOptionsMenu(true);
     setupSpinner();
     setupRecyclerView();
+
+    rootView.setViewForState(swipeRefreshLayout, MultiStateLayout.VIEW_STATE_CONTENT);
   }
 
   @Override protected void onAttach(@NonNull View view) {
@@ -230,6 +228,7 @@ public class PostController extends MvpController<PostView, PostPresenter>
         return true;
       case R.id.action_feed_search:
         startTransaction(SearchController.create(), new VerticalChangeHandler());
+        return true;
       case R.id.action_feed_sort_newest:
         reloadQuestions(item, PostSorter.NEWEST);
         return true;
@@ -246,7 +245,8 @@ public class PostController extends MvpController<PostView, PostPresenter>
 
   @Override public void onLoading(boolean pullToRefresh) {
     if (!pullToRefresh) {
-      LceAnimator.showLoading(loadingView, swipeRefreshLayout, errorView);
+      rootView.setViewState(MultiStateLayout.VIEW_STATE_LOADING);
+      //LceAnimator.showLoading(loadingView, swipeRefreshLayout, errorView);
     }
   }
 
@@ -259,17 +259,20 @@ public class PostController extends MvpController<PostView, PostPresenter>
   }
 
   @Override public void showContent() {
-    LceAnimator.showContent(loadingView, swipeRefreshLayout, errorView);
+    rootView.setViewState(MultiStateLayout.VIEW_STATE_CONTENT);
+    //LceAnimator.showContent(loadingView, swipeRefreshLayout, errorView);
     swipeRefreshLayout.setRefreshing(false);
   }
 
   @Override public void onError(Throwable e) {
+    rootView.setViewState(MultiStateLayout.VIEW_STATE_ERROR);
     swipeRefreshLayout.setRefreshing(false);
     Timber.e(e);
   }
 
   @Override public void onEmpty() {
-    actionView.setVisibility(View.VISIBLE);
+    rootView.setViewState(MultiStateLayout.VIEW_STATE_EMPTY);
+    //actionView.setVisibility(View.VISIBLE);
   }
 
   @Override public void onRefresh() {

@@ -15,16 +15,16 @@ import timber.log.Timber;
 
 public class UserRemoteDataStore {
 
-  private static UserRemoteDataStore INSTANCE;
+  private static UserRemoteDataStore instance;
 
   private UserRemoteDataStore() {
   }
 
   public static UserRemoteDataStore getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new UserRemoteDataStore();
+    if (instance == null) {
+      instance = new UserRemoteDataStore();
     }
-    return INSTANCE;
+    return instance;
   }
 
   public Observable<AccountRealm> get(String userId) {
@@ -45,7 +45,7 @@ public class UserRemoteDataStore {
         .flatMap(s -> Single.just(account));
     /*return Single
         .fromCallable(() ->
-            ApiManager.INSTANCE.getApi().accounts()
+            ApiManager.instance.getApi().accounts()
                 .register(account.getGender(), account.getLocale(), account.getCategoryIds())
                 .setRequestHeaders(new HttpHeaders().setAuthorization(getIdToken()))
                 .execute())

@@ -13,9 +13,9 @@ import com.hootsuite.nachos.terminator.ChipTerminatorHandler;
 import com.hootsuite.nachos.validator.ChipifyingNachoValidator;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.TagRealm;
+import com.yoloo.android.framework.MvpAlertDialog;
 import com.yoloo.android.ui.widget.AutoCompleteTagAdapter;
 import com.yoloo.android.ui.widget.tagview.TagView;
-import com.yoloo.android.framework.MvpAlertDialog;
 import com.yoloo.android.util.WeakHandler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import java.util.List;
@@ -82,7 +82,7 @@ public class TagOverviewDialog extends MvpAlertDialog<TagOverviewView, TagOvervi
         .subscribe(s -> getPresenter().recommendTags(s));
 
     tagView.addOnTagSelectListener((item, selected) -> {
-      String name = ((TagRealm)item).getName();
+      String name = ((TagRealm) item).getName();
       if (selected) {
         tvTagAutoComplete.setText(name);
         tvTagAutoComplete.chipifyAllUnterminatedTokens();
@@ -114,6 +114,5 @@ public class TagOverviewDialog extends MvpAlertDialog<TagOverviewView, TagOvervi
     tvTagAutoComplete.enableEditChipOnTouch(true, true);
     tvTagAutoComplete.setOnChipClickListener(
         (chip, motionEvent) -> Timber.d("onChipClick: " + chip.getText()));
-
   }
 }

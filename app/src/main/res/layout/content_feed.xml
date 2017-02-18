@@ -43,7 +43,7 @@
     app:lottie_fileName="PinJump.json"
     app:lottie_loop="true" />
 
-  <include layout="@layout/merge_error_view" />
+  <include layout="@layout/layout_error_view" />
 
   <View
     android:id="@+id/view_feed_action"

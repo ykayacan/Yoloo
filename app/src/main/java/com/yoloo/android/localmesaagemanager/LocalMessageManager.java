@@ -8,10 +8,10 @@ import android.os.Message;
 import android.support.annotation.AnyThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.util.SparseArray;
 import java.util.ArrayList;
 import java.util.List;
+import timber.log.Timber;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 @AnyThread
@@ -19,8 +19,6 @@ public class LocalMessageManager implements Callback {
 
   @NonNull
   private static final String TAG = "LocalMessageManager";
-
-  private static boolean DEBUG = false;
 
   @Nullable
   private static volatile LocalMessageManager sInstance = null;
@@ -47,8 +45,7 @@ public class LocalMessageManager implements Callback {
     mListenersSpecific = new SparseArray<>();
   }
 
-  @NonNull
-  public static LocalMessageManager getInstance() {
+  @NonNull public static LocalMessageManager getInstance() {
     if (sInstance == null) {
       synchronized (LocalMessageManager.class) {
         if (sInstance == null) {
@@ -58,15 +55,6 @@ public class LocalMessageManager implements Callback {
     }
     //noinspection ConstantConditions
     return sInstance;
-  }
-
-  /**
-   * Enable debug logging (such as confirmation of delivery, number of listeners etc.)
-   *
-   * @param debug - false by default
-   */
-  public static void setDebug(final boolean debug) {
-    DEBUG = debug;
   }
 
   /**
@@ -153,9 +141,7 @@ public class LocalMessageManager implements Callback {
       if (!mListenersUniversal.contains(listener)) {
         mListenersUniversal.add(listener);
       } else {
-        if (DEBUG) {
-          Log.w(TAG, "Listener is already added. " + listener.toString());
-        }
+        Timber.w("Listener is already added. %s", listener.toString());
       }
     }
   }
@@ -170,9 +156,7 @@ public class LocalMessageManager implements Callback {
       if (mListenersUniversal.contains(listener)) {
         mListenersUniversal.remove(listener);
       } else {
-        if (DEBUG) {
-          Log.w(TAG, "Trying to remove a listener that is not registered. " + listener.toString());
-        }
+        Timber.w("Trying to remove a listener that is not registered. %s", listener.toString());
       }
     }
   }
@@ -183,11 +167,9 @@ public class LocalMessageManager implements Callback {
    * @param id The id of the message to stop listening to.
    */
   public void removeListeners(final int id) {
-    if (DEBUG) {
-      final List<LocalMessageCallback> callbacks = mListenersSpecific.get(id);
-      if (callbacks == null || callbacks.size() == 0) {
-        Log.w(TAG, "Trying to remove specific listeners that are not registerred. ID " + id);
-      }
+    final List<LocalMessageCallback> callbacks = mListenersSpecific.get(id);
+    if (callbacks == null || callbacks.size() == 0) {
+      Timber.w("Trying to remove specific listeners that are not registered. ID %s", id);
     }
 
     synchronized (mListenersSpecific) {
@@ -209,37 +191,29 @@ public class LocalMessageManager implements Callback {
           callbacks.remove(listener);
         }
       } else {
-        if (DEBUG) {
-          Log.w(TAG, "Trying to remove specific listener that is not registerred. ID "
-              + id
-              + ", "
-              + listener);
-        }
+        Timber.w("Trying to remove specific listener that is not registerred. ID %s", id + ", "
+            + listener);
       }
     }
   }
 
   /*
-   *
    * @see android.os.Handler.Callback#handleMessage(android.os.Message)
    */
-  @Override
-  public boolean handleMessage(@NonNull final Message msg) {
+  @Override public boolean handleMessage(@NonNull final Message msg) {
     mMessage.setMessage(msg);
 
-    if (DEBUG) {
-      logMessageHandling(mMessage);
-    }
+    logMessageHandling(mMessage);
 
-    // proces listeners for specified type of message what
+    // process listeners for specified type of message what
     synchronized (mListenersSpecific) {
-      final List<LocalMessageCallback> whatListofListeners = mListenersSpecific.get(msg.what);
-      if (whatListofListeners != null) {
-        if (whatListofListeners.size() == 0) {
+      final List<LocalMessageCallback> whatListOfListeners = mListenersSpecific.get(msg.what);
+      if (whatListOfListeners != null) {
+        if (whatListOfListeners.size() == 0) {
           mListenersSpecific.remove(msg.what);
         } else {
           mDefensiveCopyList.clear();
-          mDefensiveCopyList.addAll(whatListofListeners);
+          mDefensiveCopyList.addAll(whatListOfListeners);
           for (final LocalMessageCallback callback : mDefensiveCopyList) {
             callback.handleMessage(mMessage);
           }
@@ -263,25 +237,25 @@ public class LocalMessageManager implements Callback {
 
   private void logMessageHandling(@NonNull final LocalMessage msg) {
 
-    final List<LocalMessageCallback> whatListofListeners = mListenersSpecific.get(msg.getId());
+    final List<LocalMessageCallback> whatListOfListeners = mListenersSpecific.get(msg.getId());
 
-    if ((whatListofListeners == null || whatListofListeners.size() == 0)
+    if ((whatListOfListeners == null || whatListOfListeners.size() == 0)
         && mListenersUniversal.size() == 0) {
-      Log.w(TAG,
-          "Delivering FAILED for message ID " + msg.getId() + ". No listeners. " + msg.toString());
+      Timber.w("Delivering FAILED for message ID %s. No listeners. %s", msg.getId(),
+          msg.toString());
     } else {
       final StringBuilder stringBuilder = new StringBuilder();
       stringBuilder.append("Delivering message ID ");
       stringBuilder.append(msg.getId());
       stringBuilder.append(", Specific listeners: ");
-      if (whatListofListeners == null || whatListofListeners.size() == 0) {
+      if (whatListOfListeners == null || whatListOfListeners.size() == 0) {
         stringBuilder.append(0);
       } else {
-        stringBuilder.append(whatListofListeners.size());
+        stringBuilder.append(whatListOfListeners.size());
         stringBuilder.append(" [");
-        for (int i = 0; i < whatListofListeners.size(); i++) {
-          stringBuilder.append(whatListofListeners.get(i).getClass().getSimpleName());
-          if (i < whatListofListeners.size() - 1) {
+        for (int i = 0; i < whatListOfListeners.size(); i++) {
+          stringBuilder.append(whatListOfListeners.get(i).getClass().getSimpleName());
+          if (i < whatListOfListeners.size() - 1) {
             stringBuilder.append(",");
           }
         }
@@ -306,7 +280,7 @@ public class LocalMessageManager implements Callback {
       }
       stringBuilder.append(msg.toString());
 
-      Log.v(TAG, stringBuilder.toString());
+      Timber.v(stringBuilder.toString());
     }
   }
 }

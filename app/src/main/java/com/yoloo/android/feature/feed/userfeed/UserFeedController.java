@@ -244,25 +244,29 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
         .setId(UUID.randomUUID().toString())
         .setTitle("Interrailde Büyük Gelişme")
         .setCover(true)
-        .setBgImageUrl("https://www.uzakrota.com/wp-content/uploads/2017/02/edinburgh-730x548.jpg");
+        .setBgImageUrl("https://www.uzakrota.com/wp-content/uploads/2017/02/"
+            + "edinburgh-730x548.jpg");
 
     NewsRealm n2 = new NewsRealm()
         .setId(UUID.randomUUID().toString())
         .setTitle("Vizeler Kalktı")
         .setBgImageUrl(
-            "https://www.uzakrota.com/wp-content/uploads/2017/02/mercator-Accelya-warburg-pincus-airline-services-730x548.jpg");
+            "https://www.uzakrota.com/wp-content/uploads/2017/02/mercator-"
+                + "Accelya-warburg-pincus-airline-services-730x548.jpg");
 
     NewsRealm n3 = new NewsRealm()
         .setId(UUID.randomUUID().toString())
         .setTitle("Gezginler Evi Burada Açılıyor")
         .setBgImageUrl(
-            "https://www.uzakrota.com/wp-content/uploads/2017/02/Airbnb-helps-combat-winter-blues-with-magical-green-wonderland-in-London-730x492.jpg");
+            "https://www.uzakrota.com/wp-content/uploads/2017/02/Airbnb-helps-combat-"
+                + "winter-blues-with-magical-green-wonderland-in-London-730x492.jpg");
 
     NewsRealm n4 = new NewsRealm()
         .setId(UUID.randomUUID().toString())
         .setTitle("Yeni Yerler Keşfetmenin Tam Zamanı")
         .setBgImageUrl(
-            "http://webneel.com/daily/sites/default/files/images/daily/10-2013/1-travel-photography.preview.jpg");
+            "http://webneel.com/daily/sites/default/files/images/daily/10-2013/1-"
+                + "travel-photography.preview.jpg");
 
     List<NewsRealm> list = new ArrayList<>();
     list.add(n1);

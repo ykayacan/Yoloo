@@ -23,18 +23,18 @@ public class SaveFCMIdService extends IntentService {
   }
 
   /**
-   * This Intent is responsible for getPost token from FCM server and send broadcast. After we getPost
-   * token, we save this token to shared preferences.
+   * This Intent is responsible for getPost token from FCM server and send broadcast.
+   * After we getPost token, we save this token to shared preferences.
    */
   @Override protected void onHandleIntent(Intent intent) {
     try {
       String refreshedToken = FirebaseInstanceId.getInstance().getToken();
       FCMPrefsHelper.saveFCMToken(this, refreshedToken);
 
-      /**
-       * You should store a boolean that indicates whether the generated token has been
-       * sent to your server. If the boolean is false, send the token to your server,
-       * otherwise your server should have already received the token.
+      /*
+        You should store a boolean that indicates whether the generated token has been
+        sent to your server. If the boolean is false, send the token to your server,
+        otherwise your server should have already received the token.
        */
       FCMPrefsHelper.sendFCMTokenToServer(this, true);
     } catch (Exception e) {

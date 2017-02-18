@@ -11,16 +11,16 @@ import java.util.List;
 
 public class CommentRemoteDataStore {
 
-  private static CommentRemoteDataStore INSTANCE;
+  private static CommentRemoteDataStore instance;
 
   private CommentRemoteDataStore() {
   }
 
   public static CommentRemoteDataStore getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new CommentRemoteDataStore();
+    if (instance == null) {
+      instance = new CommentRemoteDataStore();
     }
-    return INSTANCE;
+    return instance;
   }
 
   public Observable<CommentRealm> get(String commentId) {

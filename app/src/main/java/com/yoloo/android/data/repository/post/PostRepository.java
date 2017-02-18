@@ -34,7 +34,7 @@ public class PostRepository {
   public Observable<PostRealm> getPost(String postId) {
     Preconditions.checkNotNull(postId, "postId can not be null.");
 
-    // FIXME: 16.02.2017 Fix data.
+    // TODO: 16.02.2017 Fix data.
     //return diskDataStore.get(postId).subscribeOn(Schedulers.io());
 
     return Observable.mergeDelayError(

@@ -35,6 +35,8 @@
   <string name="label_feed_bookmarked">Post saved.</string>
   <string name="label_feed_unbookmarked">Post unsaved.</string>
   <string name="label_feed_read_more_news">More</string>
+  <string name="label_feed_no_data_1">Oops, we don\'t have posts…</string>
+  <string name="label_feed_no_data_2">Take a deep breath and ask a question.</string>
 
   <string name="action_feed_popup_bookmark">Bookmark</string>
   <string name="action_feed_popup_unbookmark">Unbookmark</string>

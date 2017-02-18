@@ -4,15 +4,25 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 
+import static android.content.res.Resources.getSystem;
+
 public final class DisplayUtil {
 
+  private DisplayUtil() {
+  }
+
   public static int dpToPx(int dp) {
-    float density = Resources.getSystem().getDisplayMetrics().density;
+    float density = getSystem().getDisplayMetrics().density;
     return Math.round(dp * density);
   }
 
+  public static int spToPx(int sp) {
+    float scaledDensity = Resources.getSystem().getDisplayMetrics().scaledDensity;
+    return Math.round(sp * scaledDensity);
+  }
+
   public static int getScreenWidth() {
-    return Resources.getSystem().getDisplayMetrics().widthPixels;
+    return getSystem().getDisplayMetrics().widthPixels;
   }
 
   public static boolean isInLandscapeMode(Context context) {

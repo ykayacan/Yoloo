@@ -43,7 +43,8 @@ public class ScrimUtil {
    */
   public static Drawable makeCubicGradientScrimDrawable(int baseColor, int numStops, int gravity) {
 
-    // Generate a cache key by hashing together the inputs, based on the method described in the Effective Java book
+    // Generate a cache key by hashing together the inputs,
+    // based on the method described in the Effective Java book
     int cacheKeyHash = baseColor;
     cacheKeyHash = 31 * cacheKeyHash + numStops;
     cacheKeyHash = 31 * cacheKeyHash + gravity;

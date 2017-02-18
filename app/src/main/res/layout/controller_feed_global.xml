@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.yoloo.android.ui.widget.MultiStateLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:id="@+id/root_view"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="@color/background_lightish_2">
+  android:background="@color/background_lightish_2"
+  app:msv_emptyView="@layout/layout_empty_view"
+  app:msv_errorView="@layout/layout_error_view"
+  app:msv_loadingView="@layout/layout_loading_view">
 
   <android.support.design.widget.AppBarLayout
     android:layout_width="match_parent"
@@ -27,10 +31,6 @@
 
   </android.support.design.widget.AppBarLayout>
 
-  <include layout="@layout/merge_loading_view" />
-
-  <include layout="@layout/merge_error_view" />
-
   <android.support.v4.widget.SwipeRefreshLayout
     android:id="@+id/swipe_feed_global"
     android:layout_width="match_parent"
@@ -44,11 +44,4 @@
 
   </android.support.v4.widget.SwipeRefreshLayout>
 
-  <View
-    android:id="@+id/view_feed_sub_action"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center"
-    android:visibility="gone" />
-
-</android.support.design.widget.CoordinatorLayout>
+</com.yoloo.android.ui.widget.MultiStateLayout>

@@ -115,7 +115,7 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
     });
   }
 
-  public static class CommentHolder extends BaseEpoxyHolder {
+  static class CommentHolder extends BaseEpoxyHolder {
     @BindView(R.id.iv_comment_user_avatar) ImageView ivUserAvatar;
     @BindView(R.id.tv_comment_username) TextView tvUsername;
     @BindView(R.id.tv_comment_time) TimeTextView tvTime;

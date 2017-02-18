@@ -11,16 +11,16 @@ import java.util.List;
 
 public class NotificationRemoteDataSource {
 
-  private static NotificationRemoteDataSource INSTANCE;
+  private static NotificationRemoteDataSource instance;
 
   private NotificationRemoteDataSource() {
   }
 
   public static NotificationRemoteDataSource getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new NotificationRemoteDataSource();
+    if (instance == null) {
+      instance = new NotificationRemoteDataSource();
     }
-    return INSTANCE;
+    return instance;
   }
 
   public Observable<FcmRealm> registerFcmToken(FcmRealm fcm) {

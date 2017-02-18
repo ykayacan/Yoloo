@@ -21,7 +21,7 @@ final class TimeWatcher {
   public static TimeWatcher getInstance() {
     if (timeWatcher == null) {
       timeWatcher = new TimeWatcher();
-      handler= new WeakHandler();
+      handler = new WeakHandler();
       views = new ArrayList<>();
       final Timer timer = new Timer();
       initializeTimerTask();

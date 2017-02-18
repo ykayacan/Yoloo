@@ -288,9 +288,7 @@ public class LinkableTextView extends BaselineGridTextView {
           }
           break;
         case Link.IP_ADDRESS:
-          if (!enabledIpAddress) {
-            break;
-          }
+          break;
         case Link.WEB_URL:
           if (enabledWebUrl) {
             listener.onWebUrlClick(value);

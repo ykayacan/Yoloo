@@ -33,7 +33,7 @@
   </android.support.v4.widget.SwipeRefreshLayout>
 
   <View
-    android:id="@+id/view_feed_sub_action"
+    android:id="@+id/view_error"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="center"

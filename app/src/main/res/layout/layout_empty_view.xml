@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="@dimen/_216sdp"
+  android:layout_height="wrap_content"
+  android:layout_gravity="center"
+  android:gravity="center"
+  android:orientation="vertical">
+
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:drawablePadding="@dimen/padding_normal"
+    android:gravity="center"
+    android:text="@string/label_feed_no_data_1"
+    android:textAppearance="@style/TextAppearance.EmptyTitle"
+    app:drawableTop="@drawable/ic_empty_feed" />
+
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/padding_micro"
+    android:gravity="center"
+    android:text="@string/label_feed_no_data_2"
+    tools:visibility="visible" />
+
+  <Button
+    style="@style/Yoloo.Button.Colored"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/spacing_large"
+    android:text="@string/action_feed_fab_ask_question"
+    android:theme="@style/Yoloo.Button" />
+
+</LinearLayout>

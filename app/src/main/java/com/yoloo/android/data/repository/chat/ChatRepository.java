@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class ChatRepository {
 
-  private static ChatRepository INSTANCE;
+  private static ChatRepository instance;
 
   private DatabaseReference rootRef;
   private RxFirebaseDatabase rxFirebaseDb;
@@ -28,10 +28,10 @@ public class ChatRepository {
   }
 
   public static ChatRepository getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new ChatRepository();
+    if (instance == null) {
+      instance = new ChatRepository();
     }
-    return INSTANCE;
+    return instance;
   }
 
   public Observable<ChatMessage> getMessagesByChatId(String chatId) {

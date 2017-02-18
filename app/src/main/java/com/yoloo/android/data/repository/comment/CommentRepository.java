@@ -15,7 +15,7 @@ import java.util.List;
 
 public class CommentRepository {
 
-  private static CommentRepository INSTANCE;
+  private static CommentRepository instance;
 
   private final CommentRemoteDataStore remoteDataStore;
   private final CommentDiskDataStore diskDataStore;
@@ -28,10 +28,10 @@ public class CommentRepository {
 
   public static CommentRepository getInstance(CommentRemoteDataStore remoteDataStore,
       CommentDiskDataStore diskDataStore) {
-    if (INSTANCE == null) {
-      INSTANCE = new CommentRepository(remoteDataStore, diskDataStore);
+    if (instance == null) {
+      instance = new CommentRepository(remoteDataStore, diskDataStore);
     }
-    return INSTANCE;
+    return instance;
   }
 
   public Observable<CommentRealm> getComment(String commentId) {
@@ -70,7 +70,7 @@ public class CommentRepository {
       String eTag, int limit) {
     Preconditions.checkNotNull(postId, "postId can not be null.");
 
-    // FIXME: 16.02.2017 Comment
+    // TODO: 18.02.2017 Change structure
     return diskDataStore.list(postId).subscribeOn(Schedulers.io());
 
     /*return Observable.mergeDelayError(

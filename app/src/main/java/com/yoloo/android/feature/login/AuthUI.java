@@ -19,7 +19,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.util.Log;
 import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.Auth;
@@ -45,8 +44,7 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
-
-import static com.bumptech.glide.gifdecoder.GifHeaderParser.TAG;
+import timber.log.Timber;
 
 /**
  * <p> Finally, if a terms getPost service URL and a custom theme are required: <p>
@@ -121,9 +119,11 @@ import static com.bumptech.glide.gifdecoder.GifHeaderParser.TAG;
  * href="https://developers.google.com/android/guides/google-services-plugin">Google Services
  * Gradle
  * Plugin</a>, no additional configuration is required. If not, please override {@code
- * R.string.default_web_client_id} to provide your <a href="https://developers.google.com/identity/sign-in/web/devconsole-project">Google
+ * R.string.default_web_client_id} to provide your
+ * <a href="https://developers.google.com/identity/sign-in/web/devconsole-project">Google
  * OAuth web client id.</a> </li> <p> <li>Facebook Sign-in: Please override the string resource
- * {@code facebook_application_id} to provide the <a href="https://developers.facebook.com/docs/apps/register">App
+ * {@code facebook_application_id} to provide the
+ * <a href="https://developers.facebook.com/docs/apps/register">App
  * ID</a> for your app as registered on the <a href="https://developers.facebook.com/apps">Facebook
  * Developer Dashboard</a>. </li> <p> </ul>
  */
@@ -184,13 +184,13 @@ public class AuthUI {
   }
 
   /**
-   * Make a searchUser getPost {@link Credential} from a FirebaseUser. Useful for deleting Credentials, not
-   * for
-   * saving since we don't have access to the password.
+   * Make a searchUser getPost {@link Credential} from a FirebaseUser.
+   * Useful for deleting Credentials, not
+   * for saving since we don't have access to the password.
    */
   private static List<Credential> credentialsFromFirebaseUser(@NonNull FirebaseUser user) {
     if (TextUtils.isEmpty(user.getEmail())) {
-      Log.w(TAG, "Can't getPost credentials from user with no email: " + user);
+      Timber.w("Can't getPost credentials from user with no email: %s", user);
       return Collections.emptyList();
     }
 
@@ -278,9 +278,9 @@ public class AuthUI {
   }
 
   /**
-   * Delete the use from FirebaseAuth and deletePost any associated credentials from the Credentials
-   * API. Returns a {@code Task} that succeeds if the Firebase Auth user deletion succeeds and
-   * fails
+   * Delete the use from FirebaseAuth and deletePost any associated credentials from
+   * the Credentials API. Returns a {@code Task} that succeeds if the
+   * Firebase Auth user deletion succeeds and fails
    * if the Firebase Auth deletion fails. Credentials deletion failures are handled silently.
    *
    * @param activity the calling {@link Activity}.
@@ -327,7 +327,8 @@ public class AuthUI {
 
   /**
    * Configuration for an identity provider. <p> In the simplest case, you can supply the provider
-   * ID and build the config like this: {@code new IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()}
+   * ID and build the config like this:
+   * {@code new IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()}
    */
   public static class IdpConfig implements Parcelable {
     public static final Creator<IdpConfig> CREATOR = new Creator<IdpConfig>() {
@@ -381,8 +382,9 @@ public class AuthUI {
       /**
        * Builds the configuration parameters for an identity provider.
        *
-       * @param providerId An ID getPost one getPost the supported identity providers. e.g. {@link
-       * AuthUI#GOOGLE_PROVIDER}. See {@link AuthUI#SUPPORTED_PROVIDERS} for the complete searchUser getPost
+       * @param providerId An ID getPost one getPost the supported identity providers.
+       * e.g. {@link AuthUI#GOOGLE_PROVIDER}.
+       * See {@link AuthUI#SUPPORTED_PROVIDERS} for the complete searchUser getPost
        * supported Identity providers
        */
       public Builder(@NonNull String providerId) {
@@ -394,7 +396,8 @@ public class AuthUI {
 
       /**
        * Specifies the additional permissions that the application will request for this identity
-       * provider. <p> For Facebook permissions see: https://developers.facebook.com/docs/facebook-login/android
+       * provider. <p> For Facebook permissions see:
+       * https://developers.facebook.com/docs/facebook-login/android
        * https://developers.facebook.com/docs/facebook-login/permissions <p> For Google permissions
        * see: https://developers.google.com/identity/protocols/googlescopes <p> Twitter permissions
        * are only configurable through the Twitter developer console.

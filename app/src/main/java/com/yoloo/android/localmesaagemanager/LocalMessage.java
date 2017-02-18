@@ -69,8 +69,9 @@ public class LocalMessage {
 
   private void checkIfMainThread() {
     if (null == mMessage) {
-      throw new IllegalStateException("You can't use LocalMessage instance from a non-UI thread. " +
-          "Extract the data from LocalMessage and don't hold a reference to it outside of handleMessage()");
+      throw new IllegalStateException("You can't use LocalMessage instance from a non-UI thread."
+          + "Extract the data from LocalMessage and don't "
+          + "hold a reference to it outside of handleMessage()");
     }
   }
 

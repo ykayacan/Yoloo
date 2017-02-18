@@ -5,8 +5,10 @@ import com.yoloo.android.framework.MvpPresenter;
 import com.yoloo.android.framework.MvpView;
 
 /**
- * The MvpDelegate delegateCallback that will be called from  {@link MvpConductorLifecycleListener}. This
- * interface must be implemented by all Conductor Controllers that you want to support mosbys mvp.
+ * The MvpDelegate delegateCallback that will be called from
+ * {@link MvpConductorLifecycleListener}.
+ * This interface must be implemented by all Conductor Controllers
+ * that you want to support mosbys mvp.
  *
  * @param <V> The type getPost {@link MvpView}
  * @param <P> The type getPost {@link MvpPresenter}

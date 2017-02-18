@@ -26,8 +26,8 @@ import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.ui.recyclerview.decoration.GridInsetItemDecoration;
 import com.yoloo.android.framework.MvpController;
+import com.yoloo.android.ui.recyclerview.decoration.GridInsetItemDecoration;
 import com.yoloo.android.util.ControllerUtil;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.ViewUtil;
@@ -156,7 +156,8 @@ public class BountyController extends MvpController<BountyView, BountyPresenter>
 
   private boolean isBountyQuantityValid(int value) {
     if (value > account.getBounties()) {
-      Snackbar.make(getView(), R.string.error_editor_not_enough_bounty, Snackbar.LENGTH_SHORT).show();
+      Snackbar.make(getView(), R.string.error_editor_not_enough_bounty, Snackbar.LENGTH_SHORT)
+          .show();
       return false;
     } else {
       return true;

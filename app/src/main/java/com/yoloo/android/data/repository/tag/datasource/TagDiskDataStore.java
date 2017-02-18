@@ -12,16 +12,16 @@ import java.util.List;
 
 public class TagDiskDataStore {
 
-  private static TagDiskDataStore INSTANCE;
+  private static TagDiskDataStore instance;
 
   private TagDiskDataStore() {
   }
 
   public static TagDiskDataStore getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new TagDiskDataStore();
+    if (instance == null) {
+      instance = new TagDiskDataStore();
     }
-    return INSTANCE;
+    return instance;
   }
 
   public void addAll(List<TagRealm> tags) {

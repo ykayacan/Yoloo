@@ -11,7 +11,7 @@ import java.util.List;
 
 public class TagRepository {
 
-  private static TagRepository INSTANCE;
+  private static TagRepository instance;
 
   private final TagRemoteDataStore remoteDataStore;
   private final TagDiskDataStore diskDataStore;
@@ -23,10 +23,10 @@ public class TagRepository {
 
   public static TagRepository getInstance(TagRemoteDataStore remoteDataStore,
       TagDiskDataStore diskDataStore) {
-    if (INSTANCE == null) {
-      INSTANCE = new TagRepository(remoteDataStore, diskDataStore);
+    if (instance == null) {
+      instance = new TagRepository(remoteDataStore, diskDataStore);
     }
-    return INSTANCE;
+    return instance;
   }
 
   public Observable<List<TagRealm>> listTags(TagSorter sorter) {

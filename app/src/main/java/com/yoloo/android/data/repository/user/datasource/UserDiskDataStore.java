@@ -10,16 +10,16 @@ import java.util.List;
 
 public class UserDiskDataStore {
 
-  private static UserDiskDataStore INSTANCE;
+  private static UserDiskDataStore instance;
 
   private UserDiskDataStore() {
   }
 
   public static UserDiskDataStore getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new UserDiskDataStore();
+    if (instance == null) {
+      instance = new UserDiskDataStore();
     }
-    return INSTANCE;
+    return instance;
   }
 
   public Observable<AccountRealm> get(String userId) {

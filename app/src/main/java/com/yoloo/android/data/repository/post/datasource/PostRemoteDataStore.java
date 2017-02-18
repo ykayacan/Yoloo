@@ -13,16 +13,16 @@ import java.util.concurrent.TimeUnit;
 
 public class PostRemoteDataStore {
 
-  private static PostRemoteDataStore INSTANCE;
+  private static PostRemoteDataStore instance;
 
   private PostRemoteDataStore() {
   }
 
   public static PostRemoteDataStore getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new PostRemoteDataStore();
+    if (instance == null) {
+      instance = new PostRemoteDataStore();
     }
-    return INSTANCE;
+    return instance;
   }
 
   public Observable<PostRealm> get(String postId) {
@@ -76,7 +76,7 @@ public class PostRemoteDataStore {
 
   public Observable<PostRealm> vote(String postId, int direction) {
     return ApiManager.getIdToken().toObservable().flatMap(s -> Observable.empty());
-        /*ApiManager.INSTANCE.getApi().questions()
+        /*ApiManager.instance.getApi().questions()
             .votePost(postId, String.valueOf(direction))
             .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + idToken))
             .execute()*/
@@ -84,7 +84,7 @@ public class PostRemoteDataStore {
 
   /*private CollectionResponseFeedItem getFeedApi(String idToken, String cursor, int limit,
       String eTag) throws IOException {
-    return ApiManager.INSTANCE.getApi()
+    return ApiManager.instance.getApi()
         .accounts()
         .feed()
         .setCursor(cursor)

@@ -3,10 +3,8 @@ package com.yoloo.android.ui.widget.delegate;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
-import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
-import android.support.v7.widget.AppCompatDrawableManager;
 import android.util.AttributeSet;
 import android.widget.TextView;
 import com.yoloo.android.R;
@@ -26,9 +24,6 @@ public class TextViewVectorSupportDelegate {
     int bottomDrawableRes = a.getResourceId(R.styleable.CompatTextView_drawableBottom, 0);
 
     a.recycle();
-
-    VectorDrawableCompat.create(textView.getResources(), R.drawable.ic_email_black_24dp, null);
-    AppCompatDrawableManager.get().getDrawable(textView.getContext(), R.drawable.ic_email_black_24dp);
 
     // Load the used drawables, falling back to whatever may be set in
     // an "android:" namespace attribute

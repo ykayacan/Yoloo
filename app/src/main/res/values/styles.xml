@@ -67,6 +67,17 @@
     <item name="android:drawableStart">@drawable/ic_bounty_coin_36dp</item>
   </style>
 
+  <style name="Yoloo.Button.Empty" parent="@style/Yoloo.Button.Colored">
+    <item name="android:paddingTop">12dp</item>
+    <item name="android:paddingBottom">12dp</item>
+    <item name="android:paddingRight">72dp</item>
+    <item name="android:paddingEnd">72dp</item>
+    <item name="android:paddingLeft">72dp</item>
+    <item name="android:paddingStart">72dp</item>
+    <item name="android:drawableLeft">@drawable/ic_bounty_coin_36dp</item>
+    <item name="android:drawableStart">@drawable/ic_bounty_coin_36dp</item>
+  </style>
+
   <style name="Yoloo.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
   <style name="Yoloo.AppBarOverlay.Light" parent="ThemeOverlay.AppCompat.ActionBar" />
@@ -171,6 +182,10 @@
     <item name="android:textSize">18sp</item>
     <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
     <item name="android:textColor">@color/catalog_category_text</item>
+  </style>
+
+  <style name="TextAppearance.EmptyTitle" parent="@style/TextAppearance.AppCompat.Subhead">
+    <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
   </style>
 
   <style name="Yoloo.LightLabel">

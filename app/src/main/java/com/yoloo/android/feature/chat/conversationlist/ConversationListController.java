@@ -20,13 +20,14 @@ import com.yoloo.android.data.repository.chat.ChatRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
-import com.yoloo.android.framework.MvpController;
 import timber.log.Timber;
 
-public class ConversationListController extends MvpController<ConversationListView, ConversationListPresenter>
+public class ConversationListController
+    extends MvpController<ConversationListView, ConversationListPresenter>
     implements ConversationListView, OnItemClickListener<Chat>,
     OnItemLongClickListener<Chat> {
 

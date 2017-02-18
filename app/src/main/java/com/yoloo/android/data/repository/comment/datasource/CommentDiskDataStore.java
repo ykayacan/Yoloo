@@ -13,16 +13,16 @@ import java.util.List;
 
 public class CommentDiskDataStore {
 
-  private static CommentDiskDataStore INSTANCE;
+  private static CommentDiskDataStore instance;
 
   private CommentDiskDataStore() {
   }
 
   public static CommentDiskDataStore getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new CommentDiskDataStore();
+    if (instance == null) {
+      instance = new CommentDiskDataStore();
     }
-    return INSTANCE;
+    return instance;
   }
 
   public Observable<CommentRealm> get(String commentId) {

@@ -13,7 +13,7 @@ import java.util.List;
 
 public class NotificationRepository {
 
-  private static NotificationRepository INSTANCE;
+  private static NotificationRepository instance;
 
   private final NotificationRemoteDataSource remoteDataStore;
   private final NotificationDiskDataSource diskDataStore;
@@ -26,10 +26,10 @@ public class NotificationRepository {
 
   public static NotificationRepository getInstance(NotificationRemoteDataSource remoteDataStore,
       NotificationDiskDataSource diskDataStore) {
-    if (INSTANCE == null) {
-      INSTANCE = new NotificationRepository(remoteDataStore, diskDataStore);
+    if (instance == null) {
+      instance = new NotificationRepository(remoteDataStore, diskDataStore);
     }
-    return INSTANCE;
+    return instance;
   }
 
   public Observable<FcmRealm> registerFcmToken(FcmRealm fcm) {
