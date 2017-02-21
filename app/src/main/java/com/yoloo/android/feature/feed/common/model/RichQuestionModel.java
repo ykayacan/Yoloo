@@ -150,7 +150,7 @@ public abstract class RichQuestionModel
     holder.voteView.setCurrentStatus(post.getDir());
 
     if (holder.tagView != null) {
-      holder.tagView.setData(post.getCategoryNames());
+      holder.tagView.setData(post.getTagNames());
     }
 
     tintDrawables(holder);

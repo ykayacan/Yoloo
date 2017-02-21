@@ -30,7 +30,7 @@ public class MentionNotification implements NotificationBundle {
     for (final DeviceRecord record : records) {
       Notification notification = Notification.builder()
           .senderKey(sender.getKey())
-          .receiverKey(record.getParentUserKey())
+          .receiverKey(record.getParent())
           .senderUsername(sender.getUsername())
           .senderAvatarUrl(sender.getAvatarUrl())
           .action(Action.MENTION)

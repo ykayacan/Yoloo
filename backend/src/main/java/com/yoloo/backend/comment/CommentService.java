@@ -32,7 +32,7 @@ public class CommentService {
     // Create new comment.
     Comment comment = Comment.builder()
         .id(commentKey.getId())
-        .parentUserKey(account.getKey())
+        .parent(account.getKey())
         .questionKey(questionKey)
         .shardRefs(shardRefs)
         .content(content)

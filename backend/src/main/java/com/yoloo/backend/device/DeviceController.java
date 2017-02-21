@@ -13,7 +13,7 @@ import static com.yoloo.backend.OfyService.ofy;
 @RequiredArgsConstructor(staticName = "create")
 public class DeviceController extends Controller {
 
-  private static final Logger logger =
+  private static final Logger LOG =
       Logger.getLogger(DeviceController.class.getName());
 
   /**
@@ -35,7 +35,7 @@ public class DeviceController extends Controller {
       } catch (NotFoundException e) {
         DeviceRecord record = DeviceRecord.builder()
             .id(accountKey.toWebSafeString())
-            .parentUserKey(accountKey)
+            .parent(accountKey)
             .regId(regId)
             .build();
 

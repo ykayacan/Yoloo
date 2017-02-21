@@ -12,15 +12,15 @@ import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
+import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
+import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
+import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
+import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
+import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
 import com.yoloo.backend.follow.FollowController;
 import com.yoloo.backend.follow.ListType;
 import com.yoloo.backend.game.GamificationService;
 import com.yoloo.backend.notification.NotificationService;
-import com.yoloo.backend.validator.Validator;
-import com.yoloo.backend.validator.rule.common.AuthValidator;
-import com.yoloo.backend.validator.rule.common.BadRequestValidator;
-import com.yoloo.backend.validator.rule.common.IdValidationRule;
-import com.yoloo.backend.validator.rule.common.NotFoundRule;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.inject.Named;
@@ -48,7 +48,7 @@ import javax.servlet.http.HttpServletRequest;
 )
 public class AccountEndpoint {
 
-  private static final Logger LOGGER =
+  private static final Logger LOG =
       Logger.getLogger(AccountEndpoint.class.getSimpleName());
 
   /**
@@ -64,10 +64,10 @@ public class AccountEndpoint {
       httpMethod = ApiMethod.HttpMethod.GET)
   public Account get(@Named("accountId") String accountId, User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new IdValidationRule(accountId))
-        .addRule(new AuthValidator(user))
-        .addRule(new NotFoundRule(accountId))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(accountId, "accountId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(accountId, "Invalid accountId."))
         .validate();
 
     return getAccountController().getAccount(accountId, user);
@@ -88,16 +88,21 @@ public class AccountEndpoint {
   public Account register(
       @Named("locale") String locale,
       @Named("gender") Account.Gender gender,
-      @Named("topicIds") String topicIds,
+      @Named("categoryIds") String categoryIds,
       HttpServletRequest request) throws ServiceException {
 
-    return getAccountController().insertAccount(locale, gender, topicIds, request);
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(locale, "locale is required."))
+        .on(BadRequestValidator.create(gender, "gender is required."))
+        .on(BadRequestValidator.create(categoryIds, "categoryIds is required."))
+        .validate();
+
+    return getAccountController().insertAccount(locale, gender, categoryIds, request);
   }
 
   /**
    * Register admin account.
    *
-   * @param request the request
    * @return the account
    * @throws ServiceException the service exception
    */
@@ -105,8 +110,8 @@ public class AccountEndpoint {
       name = "accounts.admin",
       path = "accounts/admin",
       httpMethod = ApiMethod.HttpMethod.POST)
-  public Account registerAdmin(HttpServletRequest request) throws ServiceException {
-    return getAccountController().insertAdmin(request);
+  public Account registerAdmin() throws ServiceException {
+    return getAccountController().insertAdmin();
   }
 
   /**
@@ -131,8 +136,11 @@ public class AccountEndpoint {
       @Nullable @Named("badge") String badge,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(accountId, "accountId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(accountId, "Invalid accountId."))
+        .on(ForbiddenValidator.create(accountId, user, ForbiddenValidator.Op.UPDATE))
         .validate();
 
     return getAccountController().updateAccount(
@@ -153,8 +161,8 @@ public class AccountEndpoint {
       httpMethod = ApiMethod.HttpMethod.DELETE)
   public void delete(User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(AuthValidator.create(user))
         .validate();
 
     getAccountController().deleteAccount(user);
@@ -170,9 +178,9 @@ public class AccountEndpoint {
       @Nullable @Named("limit") Integer limit,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new AuthValidator(user))
-        .addRule(new BadRequestValidator(query))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(query, "query is required."))
+        .on(AuthValidator.create(user))
         .validate();
 
     return getAccountController().searchAccounts(
@@ -216,8 +224,10 @@ public class AccountEndpoint {
       @Nullable @Named("limit") Integer limit,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(accountId, "accountId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(accountId, "Invalid accountId."))
         .validate();
 
     return getFollowController().list(
@@ -248,8 +258,10 @@ public class AccountEndpoint {
       @Nullable @Named("limit") Integer limit,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(accountId, "accountId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(accountId, "Invalid accountId."))
         .validate();
 
     return getFollowController().list(

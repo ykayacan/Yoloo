@@ -1,9 +1,7 @@
 package com.yoloo.backend.post;
 
-import com.google.api.server.spi.config.AnnotationBoolean;
-import com.google.api.server.spi.config.ApiResourceProperty;
+import com.google.api.server.spi.config.ApiTransformer;
 import com.google.appengine.api.datastore.Link;
-import com.google.common.collect.ImmutableList;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.annotation.Cache;
@@ -15,21 +13,18 @@ import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
 import com.googlecode.objectify.annotation.Parent;
 import com.googlecode.objectify.condition.IfNotDefault;
+import com.googlecode.objectify.condition.IfNotZero;
 import com.googlecode.objectify.condition.IfNull;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.media.Media;
-import com.yoloo.backend.media.size.LargeSize;
-import com.yoloo.backend.media.size.LowSize;
-import com.yoloo.backend.media.size.MediumSize;
-import com.yoloo.backend.media.size.MiniSize;
-import com.yoloo.backend.media.size.ThumbSize;
+import com.yoloo.backend.post.transformer.PostTransformer;
 import com.yoloo.backend.util.Deref;
 import com.yoloo.backend.vote.Votable;
 import com.yoloo.backend.vote.Vote;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import javax.annotation.Nullable;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,6 +41,7 @@ import org.joda.time.DateTime;
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+@ApiTransformer(PostTransformer.class)
 public class Post implements Votable {
 
   public static final String FIELD_CREATED = "created";
@@ -57,49 +53,53 @@ public class Post implements Votable {
   public static final String FIELD_POST_TYPE = "postType";
 
   @Id
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private long id;
 
   @Parent
   @NonFinal
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private Key<Account> parent;
 
   @Wither
+  @NonFinal
   private Link avatarUrl;
 
   @Wither
+  @NonFinal
   private String username;
 
   @Wither
+  @NonFinal
   private String content;
 
   @Wither
+  @NonFinal
   @IgnoreSave(IfNull.class)
   private String title;
 
   @Load(ShardGroup.class)
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+  @NonFinal
   private List<Ref<PostShard>> shardRefs;
 
   @Singular
+  @NonFinal
   @IgnoreSave(IfNull.class)
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private Set<Key<Account>> reportedByKeys;
 
   @Wither
+  @NonFinal
   @IgnoreSave(IfNull.class)
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private Key<Comment> acceptedCommentKey;
 
   /**
    * The bounty value for the question. Bounty listFeed is given below. 10, 20, 30, 40, 50
    */
-  @Index(IfNotDefault.class)
+  @Index(IfNotZero.class)
   @Wither
+  @NonFinal
   private int bounty;
 
   @Wither
+  @NonFinal
   @IgnoreSave(IfNull.class)
   private Media media;
 
@@ -113,13 +113,13 @@ public class Post implements Votable {
   @NonFinal
   private Set<String> categories;
 
-  /**
-   * If a user questions a comment for given post then commented is true otherwise false.
-   */
-  @Index(IfNotDefault.class)
+  // A performance optimization for gamification system.
+  // If post is already commented, then mark as true.
+  @Index
+  @IgnoreSave(IfNull.class)
   @Wither
   @NonFinal
-  private boolean commented;
+  private Boolean commented;
 
   @Index(IfNotDefault.class)
   @Wither
@@ -132,7 +132,6 @@ public class Post implements Votable {
 
   @Index
   @NonFinal
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private DateTime created;
 
   // Extra fields
@@ -155,66 +154,45 @@ public class Post implements Votable {
 
   // Methods
 
-  @ApiResourceProperty(name = "id")
   public String getWebsafeId() {
     return getKey().toWebSafeString();
   }
 
-  @ApiResourceProperty(name = "ownerId")
   public String getWebsafeOwnerId() {
-    return this.parent.toWebSafeString();
+    return parent.toWebSafeString();
   }
 
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   public Key<Post> getKey() {
     return Key.create(parent, getClass(), id);
   }
 
-  public String getAcceptedCommentId() {
+  public boolean isCommented() {
+    return commented != null;
+  }
+
+  @Nullable public String getAcceptedCommentId() {
+    if (acceptedCommentKey == null) {
+      return null;
+    }
     return acceptedCommentKey.toWebSafeString();
   }
 
-  @Override @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-  public <T> Key<T> getVotableKey() {
+  @Override public <T> Key<T> getVotableKey() {
     //noinspection unchecked
     return (Key<T>) getKey();
   }
 
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   public <E> List<E> getShards() {
     //noinspection unchecked
-    return (List<E>) Deref.deref(this.shardRefs);
-  }
-
-  public Media getMedia() {
-    if (media != null) {
-      final String mediaUrl = media.getUrl();
-
-      ImmutableList<Media.Size> sizes =
-          ImmutableList.<Media.Size>builder()
-              .add(new ThumbSize(mediaUrl))
-              .add(new MiniSize(mediaUrl))
-              .add(new LowSize(mediaUrl))
-              .add(new MediumSize(mediaUrl))
-              .add(new LargeSize(mediaUrl))
-              .build();
-
-      return media.withSizes(sizes);
-    }
-    return null;
-  }
-
-  @ApiResourceProperty(name = "created")
-  public Date getDate() {
-    return created.toDate();
-  }
-
-  @NoArgsConstructor
-  public static class ShardGroup {
+    return (List<E>) Deref.deref(shardRefs);
   }
 
   public enum PostType {
     QUESTION,
     BLOG
+  }
+
+  @NoArgsConstructor
+  public static class ShardGroup {
   }
 }

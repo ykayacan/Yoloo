@@ -6,6 +6,7 @@ import com.yoloo.android.data.repository.category.datasource.CategoryRemoteDataS
 import com.yoloo.android.data.sorter.CategorySorter;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,7 +31,12 @@ public class CategoryRepository {
     return instance;
   }
 
-  public void addCategory(CategoryRealm category) {
+  public void addCategory(CategoryRealm category) throws IOException {
+   /*ApiManager.INSTANCE.getApi()
+        .categories()
+        .insert()
+        .execute();*/
+
     addCategories(Collections.singletonList(category));
   }
 

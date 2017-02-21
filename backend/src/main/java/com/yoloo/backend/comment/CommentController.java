@@ -26,7 +26,7 @@ import com.yoloo.backend.notification.type.NotificationBundle;
 import com.yoloo.backend.post.Post;
 import com.yoloo.backend.post.PostShard;
 import com.yoloo.backend.post.PostShardService;
-import com.yoloo.backend.validator.Guard;
+import com.yoloo.backend.endpointsvalidator.Guard;
 import com.yoloo.backend.vote.Vote;
 import com.yoloo.backend.vote.VoteService;
 import java.util.Collection;
@@ -97,7 +97,6 @@ public class CommentController extends Controller {
    * @return the comment
    */
   public Comment insertComment(String postId, String content, User user) {
-
     ImmutableSet.Builder<Key<?>> keyBuilder = ImmutableSet.builder();
 
     // Create user key from user id.
@@ -201,15 +200,16 @@ public class CommentController extends Controller {
       saveBuilder.addAll(commentNotification.getNotifications());
     }
 
-    ofy().transact(() -> {
-      ofy().save().entities(saveBuilder.build()).now();
+    return ofy().transact(() -> {
+      Map<Key<Object>, Object> saved = ofy().save().entities(saveBuilder.build()).now();
 
       for (NotificationBundle bundle : notificationBundles) {
         notificationService.send(bundle);
       }
-    });
 
-    return comment;
+      //noinspection SuspiciousMethodCalls
+      return (Comment) saved.get(comment.getKey());
+    });
   }
 
   /**
@@ -295,15 +295,16 @@ public class CommentController extends Controller {
 
     saveBuilder.add(post).add(comment);
 
-    ofy().transact(() -> {
-      ofy().save().entities(saveBuilder.build()).now();
+    return ofy().transact(() -> {
+      Map<Key<Object>, Object>  saved = ofy().save().entities(saveBuilder.build()).now();
 
       for (NotificationBundle bundle : notificationBundles) {
         notificationService.send(bundle);
       }
-    });
 
-    return comment;
+      //noinspection SuspiciousMethodCalls
+      return (Comment) saved.get(commentKey);
+    });
   }
 
   /**

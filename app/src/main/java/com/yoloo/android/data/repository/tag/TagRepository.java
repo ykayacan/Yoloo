@@ -30,11 +30,7 @@ public class TagRepository {
   }
 
   public Observable<List<TagRealm>> listTags(TagSorter sorter) {
-    return Observable.mergeDelayError(
-        diskDataStore.list(sorter).subscribeOn(Schedulers.io()),
-        remoteDataStore.list(sorter)
-            .doOnNext(diskDataStore::replace)
-            .subscribeOn(Schedulers.io()));
+    return diskDataStore.list(sorter).subscribeOn(Schedulers.io());
   }
 
   public Observable<Response<List<TagRealm>>> listTags(String name, String cursor, int limit) {
@@ -44,6 +40,12 @@ public class TagRepository {
             .toList()
             .toObservable()
             .subscribe(diskDataStore::addAll))
+        .subscribeOn(Schedulers.io());
+  }
+
+  public Observable<Response<List<TagRealm>>> listTags2(String name, String cursor, int limit) {
+    return diskDataStore.list(TagSorter.DEFAULT)
+        .map(tagRealms -> Response.create(tagRealms, cursor, null))
         .subscribeOn(Schedulers.io());
   }
 

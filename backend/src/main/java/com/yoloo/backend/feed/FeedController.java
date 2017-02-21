@@ -55,7 +55,7 @@ public class FeedController extends Controller {
     List<Post> feed = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
 
     while (qi.hasNext()) {
-      feed.add(qi.next().getFeedItem());
+      feed.add(qi.next().getPost());
     }
 
     feed = postShardService.mergeShards(feed)

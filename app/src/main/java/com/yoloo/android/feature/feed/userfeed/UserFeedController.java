@@ -36,8 +36,6 @@ import com.bluelinelabs.conductor.changehandler.AnimatorChangeHandler;
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.yoloo.android.R;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.AccountRealm;
@@ -96,6 +94,7 @@ import com.yoloo.android.util.MenuHelper;
 import com.yoloo.android.util.RxBus;
 import com.yoloo.android.util.ShareUtil;
 import com.yoloo.android.util.VersionUtil;
+import com.yoloo.android.util.ViewUtil;
 import com.yoloo.android.util.WeakHandler;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import io.reactivex.disposables.Disposable;
@@ -167,6 +166,8 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
 
   @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
+    ViewUtil.setStatusBarColor(getActivity(), primaryDarkColor);
+
     handler = new WeakHandler();
 
     LocalMessageManager.getInstance().addListener(this);
@@ -235,6 +236,7 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
 
   @Override public void onAccountLoaded(AccountRealm account) {
     userId = account.getId();
+    setupDrawerInfo(account);
   }
 
   @Override public void onTrendingCategoriesLoaded(List<CategoryRealm> topics) {
@@ -349,7 +351,7 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     switch (msg.getId()) {
       case R.integer.message_create_new_post:
         msg.getObject();
-        rvFeed.smoothScrollToPosition(0);
+        rvFeed.smoothScrollToPosition(3);
         adapter.addPostToBeginning((PostRealm) msg.getObject());
         break;
     }
@@ -372,8 +374,7 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     startTransaction(CommentController.create(post), new FadeChangeHandler());
   }
 
-  @Override
-  public void onPostOptionsClick(View v, EpoxyModel<?> model, PostRealm post) {
+  @Override public void onPostOptionsClick(View v, EpoxyModel<?> model, PostRealm post) {
     final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
     final boolean self = userId.equals(post.getOwnerId());
     menu.getMenu().getItem(2).setVisible(self);
@@ -455,22 +456,24 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
     toggle.syncState();
 
     navigationView.setNavigationItemSelectedListener(this);
+  }
 
+  private void setupDrawerInfo(AccountRealm acc) {
     final View headerView = navigationView.getHeaderView(0);
     final ImageView ivNavAvatar = ButterKnife.findById(headerView, R.id.iv_nav_avatar);
     final TextView tvRealname = ButterKnife.findById(headerView, R.id.tv_nav_realname);
     final TextView tvUsername = ButterKnife.findById(headerView, R.id.tv_nav_username);
 
-    final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+    //final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-    if (user != null) {
+    if (acc != null) {
       Glide.with(getActivity())
-          .load(user.getPhotoUrl())
+          .load(acc.getAvatarUrl())
           .bitmapTransform(new CropCircleTransformation(getActivity()))
           .into(ivNavAvatar);
 
-      tvRealname.setText(user.getDisplayName());
-      tvUsername.setText(user.getDisplayName().trim().replace(" ", "").toLowerCase());
+      tvRealname.setText(acc.getRealname());
+      tvUsername.setText(acc.getUsername());
     }
 
     ivNavAvatar.setOnClickListener(v -> {
@@ -525,8 +528,8 @@ public class UserFeedController extends MvpController<UserFeedView, UserFeedPres
 
     rvFeed.addOnScrollListener(new EndlessRecyclerOnScrollListener(5) {
       @Override public void onLoadMore() {
-        handler.postDelayed(
-            () -> getPresenter().loadPosts(true, UUID.randomUUID().toString(), eTag, 20), 700);
+        /*handler.postDelayed(
+            () -> getPresenter().loadPosts(true, UUID.randomUUID().toString(), eTag, 20), 700);*/
       }
     });
   }

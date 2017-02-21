@@ -1,8 +1,8 @@
 package com.yoloo.android.feature.login;
 
-import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
@@ -18,11 +18,11 @@ import com.bluelinelabs.conductor.RouterTransaction;
 import com.yoloo.android.R;
 import com.yoloo.android.feature.base.BaseController;
 import com.yoloo.android.feature.login.welcome.WelcomeController;
-import com.yoloo.android.util.ViewUtil;
 
 public class AuthController extends BaseController {
 
   @BindView(R.id.layout_login_child) ViewGroup childContainer;
+  @BindView(R.id.appbar_auth) AppBarLayout appBarLayout;
   @BindView(R.id.toolbar_auth) Toolbar toolbar;
 
   @BindColor(R.color.primary_dark) int primaryDarkColor;
@@ -45,12 +45,12 @@ public class AuthController extends BaseController {
 
   @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-    ViewUtil.setStatusBarColor(getActivity(), Color.BLACK);
+    //ViewUtil.setStatusBarColor(getActivity(), Color.BLACK);
   }
 
   @Override protected void onDetach(@NonNull View view) {
     super.onDetach(view);
-    ViewUtil.setStatusBarColor(getActivity(), primaryDarkColor);
+    //ViewUtil.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {

@@ -1,5 +1,6 @@
 package com.yoloo.backend.util;
 
+import com.annimon.stream.Stream;
 import com.google.common.base.Splitter;
 import com.googlecode.objectify.Key;
 import io.reactivex.Observable;
@@ -16,5 +17,11 @@ public final class KeyUtil {
         .map(Key::<T>create)
         .toList()
         .toObservable();
+  }
+
+  public static <T> List<Key<T>> extractKeysFromIds2(String ids, String delimiter) {
+    return Stream.of(Splitter.on(delimiter).trimResults().omitEmptyStrings().split(ids))
+        .map(Key::<T>create)
+        .toList();
   }
 }

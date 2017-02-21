@@ -1,13 +1,16 @@
 package com.yoloo.android.data;
 
+import com.yoloo.android.data.model.Meta;
+
 public class Response<T> {
 
   private static final long STALE_MS = 5 * 1000; // Data is stale after 5 seconds
 
   private final T data;
-  private final String cursor;
-  private final String eTag;
-  private final long timestamp;
+  private String cursor;
+  private String eTag;
+  private long timestamp;
+  private Meta meta;
 
   private Response(T data, String cursor, String eTag) {
     this.data = data;

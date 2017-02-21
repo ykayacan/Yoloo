@@ -5,6 +5,7 @@ import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
+import com.googlecode.objectify.condition.IfNotZero;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.game.badge.Badge;
 import java.util.Set;
@@ -32,10 +33,10 @@ public class Tracker {
   @Id
   private String id;
 
-  @Index
+  @Index(IfNotZero.class)
   private int points;
 
-  @Index
+  @Index(IfNotZero.class)
   private int bounties;
 
   @Index

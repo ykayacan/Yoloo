@@ -165,17 +165,17 @@
     <attr name="aspectRatio" format="string" />
   </declare-styleable>
 
-  <declare-styleable name="MultiStateLayout">
-    <attr name="msv_loadingView" format="reference" />
-    <attr name="msv_emptyView" format="reference" />
-    <attr name="msv_errorView" format="reference" />
-    <attr name="msv_viewState" format="enum">
+  <declare-styleable name="StateLayout">
+    <attr name="loadingLayout" format="reference" />
+    <attr name="emptyLayout" format="reference" />
+    <attr name="errorLayout" format="reference" />
+    <attr name="initialViewState" format="enum">
       <enum name="content" value="0" />
       <enum name="error" value="1" />
       <enum name="empty" value="2" />
       <enum name="loading" value="3" />
     </attr>
-    <attr name="msv_animateViewChanges" format="boolean" />
+    <attr name="animateStateChanges" format="boolean" />
   </declare-styleable>
 
 </resources>

@@ -23,7 +23,7 @@ public class AcceptNotification implements NotificationBundle {
   public List<Notification> getNotifications() {
     Notification notification = Notification.builder()
         .senderKey(sender.getKey())
-        .receiverKey(record.getParentUserKey())
+        .receiverKey(record.getParent())
         .action(Action.ACCEPT)
         .payload("questionId", post.getWebsafeId())
         .created(DateTime.now())

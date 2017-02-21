@@ -101,7 +101,7 @@ public class UploadServlet extends HttpServlet {
 
           return Media.builder()
               .id(blob.getBucket() + "/" + blob.getName())
-              .parentAccountKey(accountKey)
+              .parent(accountKey)
               .mime(mime)
               .url(IMAGES_SERVICE.getServingUrl(options))
               .build();

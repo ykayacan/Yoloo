@@ -11,11 +11,11 @@ import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
+import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
+import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
+import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
+import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
 import com.yoloo.backend.post.Post;
-import com.yoloo.backend.validator.Validator;
-import com.yoloo.backend.validator.rule.common.AuthValidator;
-import com.yoloo.backend.validator.rule.common.IdValidationRule;
-import com.yoloo.backend.validator.rule.common.NotFoundRule;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
@@ -58,10 +58,10 @@ public class MediaEndpoint {
       @Nullable @Named("limit") Integer limit,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new IdValidationRule(accountId))
-        .addRule(new AuthValidator(user))
-        .addRule(new NotFoundRule(accountId))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(accountId, "accountId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(accountId, "Invalid accountId."))
         .validate();
 
     return getMediaController().listMedias(

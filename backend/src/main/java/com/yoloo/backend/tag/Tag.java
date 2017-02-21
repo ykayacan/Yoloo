@@ -1,8 +1,6 @@
 package com.yoloo.backend.tag;
 
-import com.google.api.server.spi.config.AnnotationBoolean;
-import com.google.api.server.spi.config.ApiResourceProperty;
-import com.google.appengine.repackaged.org.codehaus.jackson.annotate.JsonProperty;
+import com.google.api.server.spi.config.ApiTransformer;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.annotation.Cache;
@@ -13,6 +11,7 @@ import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
 import com.googlecode.objectify.condition.IfNotZero;
 import com.googlecode.objectify.condition.IfNull;
+import com.yoloo.backend.tag.transformer.TagTransformer;
 import com.yoloo.backend.util.Deref;
 import java.util.List;
 import lombok.AccessLevel;
@@ -30,6 +29,7 @@ import lombok.experimental.Wither;
 @Wither
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+@ApiTransformer(TagTransformer.class)
 public class Tag {
 
   public static final String FIELD_GROUP_KEYS = "groupKeys";
@@ -41,7 +41,7 @@ public class Tag {
   private Long id;
 
   @Load
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+  @NonFinal
   private List<Ref<TagShard>> shardRefs;
 
   @Index
@@ -55,7 +55,7 @@ public class Tag {
   @Index
   @IgnoreSave(IfNull.class)
   @NonFinal
-  private String language;
+  private String langCode;
 
   @Index(IfNotZero.class)
   @NonFinal
@@ -66,23 +66,19 @@ public class Tag {
    *
    * Updated in a given interval.
    */
-  @Index
-  @IgnoreSave(IfNull.class)
+  @Index(IfNotZero.class)
   @NonFinal
   private long totalTagCount;
 
   @Index
   @IgnoreSave(IfNull.class)
   @NonFinal
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private List<Key<Tag>> groupKeys;
 
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   public Key<Tag> getKey() {
     return Key.create(Tag.class, id);
   }
 
-  @JsonProperty("id")
   public String getWebsafeId() {
     return getKey().toWebSafeString();
   }

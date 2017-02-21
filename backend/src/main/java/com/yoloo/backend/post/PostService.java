@@ -1,17 +1,22 @@
 package com.yoloo.backend.post;
 
+import com.annimon.stream.Collectors;
+import com.annimon.stream.Stream;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Ref;
 import com.yoloo.backend.account.Account;
+import com.yoloo.backend.category.Category;
 import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.media.Media;
+import com.yoloo.backend.util.KeyUtil;
 import com.yoloo.backend.util.StringUtil;
 import com.yoloo.backend.vote.Vote;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.joda.time.DateTime;
 
@@ -27,7 +32,7 @@ public class PostService {
       Account account,
       String content,
       String tags,
-      String categories,
+      String categoryIds,
       Optional<String> title,
       Optional<Integer> bounty,
       Media media,
@@ -38,6 +43,11 @@ public class PostService {
 
     Map<Ref<PostShard>, PostShard> shardMap = postShardService.createShardMapWithRef(postKey);
 
+    final Set<String> categories =
+        Stream.of(KeyUtil.<Category>extractKeysFromIds2(categoryIds, ","))
+            .map(Category::extractNameFromKey)
+            .collect(Collectors.toSet());
+
     Post post = Post.builder()
         .id(postKey.getId())
         .parent(account.getKey())
@@ -47,7 +57,7 @@ public class PostService {
         .content(content)
         .shardRefs(Lists.newArrayList(shardMap.keySet()))
         .tags(StringUtil.split(tags, ","))
-        .categories(StringUtil.split(categories, ","))
+        .categories(categories)
         .dir(Vote.Direction.DEFAULT)
         .bounty(checkBounty(bounty, tracker))
         .acceptedCommentKey(null)
@@ -55,7 +65,7 @@ public class PostService {
         .commentCount(0L)
         .voteCount(0L)
         .reportCount(0)
-        .commented(false)
+        .commented(null)
         .postType(postType)
         .created(DateTime.now())
         .build();

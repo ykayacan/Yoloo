@@ -28,9 +28,10 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.Router;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
-import com.bluelinelabs.conductor.support.ControllerPagerAdapter;
+import com.bluelinelabs.conductor.support.RouterPagerAdapter;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.Response;
@@ -109,8 +110,8 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
     userId = getArgs().getString(KEY_USER_ID);
 
-    final ProfilePagerAdapter pagerAdapter =
-        new ProfilePagerAdapter(this, true, getResources(), userId);
+    final RouterPagerAdapter pagerAdapter =
+        new ProfilePagerAdapter(this, getResources(), userId);
 
     viewPager.setAdapter(pagerAdapter);
     tabLayout.setupWithViewPager(viewPager);
@@ -232,7 +233,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     }
   }
 
-  public void setupProfileInfo(AccountRealm account) {
+  private void setupProfileInfo(AccountRealm account) {
     final Resources res = getResources();
 
     tvTitle.setText(account.getUsername());
@@ -283,27 +284,15 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     view.setText(span, TextView.BufferType.SPANNABLE);
   }
 
-  private static class ProfilePagerAdapter extends ControllerPagerAdapter {
+  private static class ProfilePagerAdapter extends RouterPagerAdapter {
 
     private final Resources resources;
     private final String userId;
 
-    ProfilePagerAdapter(Controller host, boolean saveControllerState, Resources resources,
-        String userId) {
-      super(host, saveControllerState);
+    ProfilePagerAdapter(@NonNull Controller host, Resources resources, String userId) {
+      super(host);
       this.resources = resources;
       this.userId = userId;
-    }
-
-    @Override public Controller getItem(int position) {
-      switch (position) {
-        case 0:
-          return PostController.ofUser(userId, false);
-        case 1:
-          return PostController.ofUser(userId, true);
-        default:
-          return null;
-      }
     }
 
     @Override public int getCount() {
@@ -318,6 +307,15 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
           return resources.getString(R.string.label_profile_commented);
         default:
           return null;
+      }
+    }
+
+    @Override public void configureRouter(@NonNull Router router, int position) {
+      final boolean commented = position != 0;
+
+      if (!router.hasRootController()) {
+        PostController page = PostController.ofUser(userId, commented);
+        router.setRoot(RouterTransaction.with(page));
       }
     }
   }

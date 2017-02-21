@@ -21,7 +21,7 @@
       app:layout_constraintTop_toTopOf="parent"
       app:srcCompat="@drawable/ic_yoloo_logo_white" />
 
-    <TextView
+    <com.yoloo.android.ui.widget.BaselineGridTextView
       android:id="@+id/tv_login_welcome_title"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
@@ -35,7 +35,7 @@
       app:layout_constraintTop_toBottomOf="@+id/iv_login_yoloo_logo"
       tools:ignore="MissingPrefix" />
 
-    <TextView
+    <com.yoloo.android.ui.widget.BaselineGridTextView
       android:id="@+id/tv_login_welcome_desc"
       android:layout_width="@dimen/_295sdp"
       android:layout_height="wrap_content"

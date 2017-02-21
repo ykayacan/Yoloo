@@ -54,8 +54,10 @@ dependencies {
   //compile 'org.magicwerk:brownies-collections:0.9.13'
   //compile 'com.drewnoakes:metadata-extractor:2.10.1'
 
-  compile 'com.fasterxml.jackson.core:jackson-core:2.8.6'
-  compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.6'
+  compile 'com.fasterxml.jackson.core:jackson-core:2.8.7'
+  compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.7'
+
+  compile 'com.baidu.unbiz:fluent-validator:1.0.6'
 
   testCompile 'junit:junit:4.12'
   compile "com.google.appengine:appengine-api-labs:$APP_ENGINE_VERSION"

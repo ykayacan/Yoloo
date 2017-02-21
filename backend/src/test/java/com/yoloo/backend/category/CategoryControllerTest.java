@@ -30,7 +30,7 @@ public class CategoryControllerTest extends TestBase {
 
     assertEquals("Europe", category.getName());
     assertEquals(Category.Type.CONTINENT, category.getType());
-    assertEquals(0, category.getQuestions());
+    assertEquals(0, category.getPosts());
     assertEquals(0.0, category.getRank(), 0);
     assertEquals(CategoryShard.SHARD_COUNT, category.getShards().size());
   }
@@ -43,7 +43,7 @@ public class CategoryControllerTest extends TestBase {
 
     assertEquals("Budget Travel", category.getName());
     assertEquals(Category.Type.THEME, category.getType());
-    assertEquals(0, category.getQuestions());
+    assertEquals(0, category.getPosts());
     assertEquals(0.0, category.getRank(), 0);
     assertEquals(CategoryShard.SHARD_COUNT, category.getShards().size());
   }
@@ -56,7 +56,7 @@ public class CategoryControllerTest extends TestBase {
 
     assertEquals("Budget Travel", original.getName());
     assertEquals(Category.Type.THEME, original.getType());
-    assertEquals(0, original.getQuestions());
+    assertEquals(0, original.getPosts());
     assertEquals(0.0, original.getRank(), 0);
     assertEquals(CategoryShard.SHARD_COUNT, original.getShards().size());
 
@@ -65,7 +65,7 @@ public class CategoryControllerTest extends TestBase {
 
     assertEquals("Female Travel", updated.getName());
     assertEquals(Category.Type.THEME, updated.getType());
-    assertEquals(0, updated.getQuestions());
+    assertEquals(0, updated.getPosts());
     assertEquals(0.0, updated.getRank(), 0);
     assertEquals(CategoryShard.SHARD_COUNT, updated.getShards().size());
   }

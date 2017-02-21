@@ -1,12 +1,16 @@
 package com.yoloo.android.data.repository.post.datasource;
 
+import com.google.api.client.http.HttpHeaders;
 import com.yoloo.android.data.ApiManager;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.faker.PostFaker;
+import com.yoloo.android.data.model.Meta;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.sorter.PostSorter;
+import com.yoloo.backend.yolooApi.model.CollectionResponsePost;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -39,11 +43,14 @@ public class PostRemoteDataStore {
     return Completable.complete();
   }
 
-  public Observable<Response<List<PostRealm>>> listByFeed(String cursor, String eTag,
-      int limit) {
+  public Observable<Response<List<PostRealm>>> listByFeed(String cursor, String eTag, int limit) {
 
     return Observable.just(Response.create(PostFaker.generateAll(), null, null))
         .delay(700, TimeUnit.MILLISECONDS);
+  }
+
+  public Observable<Response<List<PostRealm>>> listByFeed(Meta meta) {
+    return Observable.empty();
   }
 
   public Observable<Response<List<PostRealm>>> listByBounty(String cursor, String eTag, int limit) {
@@ -82,9 +89,9 @@ public class PostRemoteDataStore {
             .execute()*/
   }
 
-  /*private CollectionResponseFeedItem getFeedApi(String idToken, String cursor, int limit,
+  private CollectionResponsePost getFeedApi(String idToken, String cursor, int limit,
       String eTag) throws IOException {
-    return ApiManager.instance.getApi()
+    return ApiManager.INSTANCE.getApi()
         .accounts()
         .feed()
         .setCursor(cursor)
@@ -92,5 +99,5 @@ public class PostRemoteDataStore {
         .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + idToken))
         .setRequestHeaders(new HttpHeaders().setIfNoneMatch(eTag))
         .execute();
-  }*/
+  }
 }

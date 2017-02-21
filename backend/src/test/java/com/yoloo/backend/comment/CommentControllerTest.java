@@ -52,6 +52,8 @@ public class CommentControllerTest extends TestBase {
   private Account owner;
   private Post post;
 
+  private Category europe;
+
   private PostController postController;
   private CommentController commentController;
   private TagController tagController;
@@ -100,7 +102,7 @@ public class CommentControllerTest extends TestBase {
     User user = new User(USER_EMAIL, USER_AUTH_DOMAIN, owner.getWebsafeId());
 
     try {
-      categoryController.insertCategory("europe", Category.Type.CONTINENT);
+      europe = categoryController.insertCategory("europe", Category.Type.CONTINENT);
     } catch (ConflictException e) {
       e.printStackTrace();
     }
@@ -108,9 +110,8 @@ public class CommentControllerTest extends TestBase {
     Tag passport = tagController.insertGroup("passport");
     tagController.insertTag("visa", "en", passport.getWebsafeId());
 
-    post =
-        postController.insertQuestion("Test content", "visa,passport", "europe", Optional.absent(),
-            Optional.absent(), user);
+    post = postController.insertQuestion("Test content", "visa,passport", europe.getWebsafeId(),
+        Optional.absent(), Optional.absent(), user);
   }
 
   @Test
@@ -122,7 +123,7 @@ public class CommentControllerTest extends TestBase {
     Comment comment = commentController.insertComment(this.post.getWebsafeId(), content, user);
 
     assertEquals(content, comment.getContent());
-    assertEquals(Key.create(user.getUserId()), comment.getParentUserKey());
+    assertEquals(Key.create(user.getUserId()), comment.getParent());
     assertEquals(owner.getUsername(), comment.getUsername());
     assertEquals(owner.getAvatarUrl(), comment.getAvatarUrl());
     assertEquals(Vote.Direction.DEFAULT, comment.getDir());
@@ -302,7 +303,7 @@ public class CommentControllerTest extends TestBase {
   private DeviceRecord createRecord(Account owner) {
     return DeviceRecord.builder()
         .id(owner.getWebsafeId())
-        .parentUserKey(owner.getKey())
+        .parent(owner.getKey())
         .regId(UUID.randomUUID().toString())
         .build();
   }

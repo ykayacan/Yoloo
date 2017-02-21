@@ -75,4 +75,27 @@ public final class PostContent {
 
       "20 günlük bir Asya turu ne kadardır kabaca?"
   );
+
+  public static final List<String> CONTENTS2 = Arrays.asList(
+      "Merhaba gezgin dostlar! İstanbula yeni vardım ve birkaç saate Sultanahmette olacağım. "
+          + "Böyle güzel yemek yapan hangi restoranlar var orda? Yemekten sonra gezilebilecek "
+          + "mekanları da önerebilirseniz sevinirim",
+
+      "Yeni TC kimlik kartları pasaport yerine kullanılabiliyor mu? Yaz için aklımda yurtdışı "
+          + "planları var, ve böyle bir şey varsa çok işime yarar açıkçası. "
+          + "Cevaplarınızı bekliyorum!",
+
+      "Gülhane parkında çadır kurmaya izin var mı? Bu gece için çadır kurabileceğimiz bir "
+          + "alan lazım bize!!!!!!!",
+
+      "Sıkıcı bir yazıyla sizi boğmadan direkt konuya geçmek istiyorum :) Öncelikle burayı gezerken"
+          + "derin bir tarihi geçmişi olduğunu aklınızda tutarak gezin. Örneğin Ayasofya "
+          + "Bizans İmparatorluğu tarafından 532-537 yılları arasında kilise olarak inşa edilmiş. "
+          + "Eski dilde, “Aya; Kutsal” , “Sofya; Bilgelik” demekmiş. Dolayısıyla Ayasofya; "
+          + "Kutsal Bilgelik anlamına geliyor. Osmanlı İmparatorluğu, İstanbul’u fethettikten sonra, "
+          + "Ayasofya, camiye çevrilmiş.\n"
+          + "Yapıldığı dönemde, Dünya’daki en geniş kubbeli kilise olan Ayasofya’nın mimarisinde o "
+          + "dönemin ünlü İmparatoru Jüstinyen, en ünlü matematik ve geometri bilginlerini "
+          + "de görevlendirilmiş."
+  );
 }

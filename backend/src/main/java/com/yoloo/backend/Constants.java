@@ -12,6 +12,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class Constants {
 
+  public static final String ADMIN_EMAIL = "admin@yolooapp.com";
+  public static final String ADMIN_USERNAME = "yoloo_admin";
+
   /**
    * Firebase app url.
    */
@@ -43,7 +46,7 @@ public final class Constants {
    * Web client ID from Google Cloud console.
    */
   public static final String WEB_CLIENT_ID =
-      "634217538679-slgv0gogb54vve15k3riccccf16dsp06.apps.googleusercontent.com";
+      "175355244637-cnod9pcii71rsqpjj17mp24v95uul63o.apps.googleusercontent.com";
 
   public static final String BASE64_CLIENT_ID =
       "NjM0MjE3NTM4Njc5LXNsZ3YwZ29nYjU0dnZlMTVrM3JpY2NjY2YxNmRzcDA2LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29t";

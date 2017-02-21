@@ -8,12 +8,12 @@ import com.google.api.server.spi.config.ApiNamespace;
 import com.google.appengine.api.users.User;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
-import com.yoloo.backend.validator.Validator;
-import com.yoloo.backend.validator.rule.common.AuthValidator;
-import com.yoloo.backend.validator.rule.common.IdValidationRule;
-import com.yoloo.backend.validator.rule.common.NotFoundRule;
-import com.yoloo.backend.validator.rule.follow.FollowConflictRule;
-import com.yoloo.backend.validator.rule.follow.FollowNotFoundRule;
+import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
+import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
+import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
+import com.yoloo.backend.endpointsvalidator.validator.FollowConflictValidator;
+import com.yoloo.backend.endpointsvalidator.validator.FollowValidator;
+import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
 import java.util.logging.Logger;
 import javax.inject.Named;
 
@@ -39,7 +39,7 @@ import javax.inject.Named;
 )
 public class FollowEndpoint {
 
-  private static final Logger logger =
+  private static final Logger LOG =
       Logger.getLogger(FollowEndpoint.class.getSimpleName());
 
   private final FollowController followController = FollowControllerFactory.of().create();
@@ -57,11 +57,12 @@ public class FollowEndpoint {
       httpMethod = ApiMethod.HttpMethod.POST)
   public void follow(@Named("accountId") String accountId, User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new IdValidationRule(accountId))
-        .addRule(new AuthValidator(user))
-        .addRule(new NotFoundRule(accountId))
-        .addRule(new FollowConflictRule(accountId, user))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(accountId, "accountId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(accountId, "Invalid accountId."))
+        .on(FollowValidator.create(user.getUserId(), accountId))
+        .on(FollowConflictValidator.create(user.getUserId(), accountId, "Already following."))
         .validate();
 
     followController.follow(accountId, user);
@@ -80,11 +81,10 @@ public class FollowEndpoint {
       httpMethod = ApiMethod.HttpMethod.DELETE)
   public void unfollow(@Named("accountId") String accountId, User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new IdValidationRule(accountId))
-        .addRule(new AuthValidator(user))
-        .addRule(new NotFoundRule(accountId))
-        .addRule(new FollowNotFoundRule(accountId, user))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(accountId, "accountId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(accountId, "Invalid accountId."))
         .validate();
 
     followController.unfollow(accountId, user);

@@ -12,6 +12,7 @@ import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.category.sort_strategy.CategorySorter;
+import com.yoloo.backend.endpointsvalidator.Guard;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import java.util.List;
@@ -19,7 +20,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 import lombok.AllArgsConstructor;
 
-import static com.yoloo.backend.OfyService.factory;
 import static com.yoloo.backend.OfyService.ofy;
 
 @AllArgsConstructor(staticName = "create")
@@ -44,15 +44,19 @@ public class CategoryController extends Controller {
    * @throws ConflictException the conflict exception
    */
   public Category insertCategory(String name, Category.Type type) throws ConflictException {
-    final Key<Category> categoryKey = factory().allocateId(Category.class);
+    Guard.checkConflictRequest(ofy().load().key(Category.createKey(name)).now(),
+        "Category exists.");
+
+    final Key<Category> categoryKey = Category.createKey(name);
 
     Map<Ref<CategoryShard>, CategoryShard> shardMap = createCategoryShardMap(categoryKey);
 
     Category category = Category.builder()
-        .id(categoryKey.getId())
+        .id(categoryKey.getName())
         .name(name)
         .type(type)
-        .rank(0)
+        .rank(0.0d)
+        .posts(0L)
         .shardRefs(Lists.newArrayList(shardMap.keySet()))
         .build();
 
@@ -61,9 +65,12 @@ public class CategoryController extends Controller {
         .addAll(shardMap.values())
         .build();
 
-    ofy().save().entities(saveList).now();
+    return ofy().transact(() -> {
+      Map<Key<Object>, Object> saved = ofy().save().entities(saveList).now();
 
-    return category;
+      //noinspection SuspiciousMethodCalls
+      return (Category) saved.get(categoryKey);
+    });
   }
 
   /**
@@ -109,7 +116,6 @@ public class CategoryController extends Controller {
     List<Category> categories = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
 
     while (qi.hasNext()) {
-      // Add fetched objects to map. Because cursor iteration needs to be iterated.
       categories.add(qi.next());
     }
 

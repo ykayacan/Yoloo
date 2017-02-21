@@ -18,7 +18,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import com.bluelinelabs.conductor.Controller;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -32,35 +31,36 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.yoloo.android.R;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.json.JSONException;
 import timber.log.Timber;
 
 public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResult> {
-  private static final String TAG = "FacebookProvider";
   private static final String EMAIL = "email";
   private static final String PUBLIC_PROFILE = "public_profile";
   private static final String ERROR = "err";
   private static final String ERROR_MSG = "err_msg";
 
-  private static CallbackManager sCallbackManager;
+  private static CallbackManager callbackManager;
 
-  private final List<String> mScopes;
+  private final List<String> scopes;
   // DO NOT USE DIRECTLY: see onSuccess(String, LoginResult) and onFailure(Bundle) below
-  private IdpCallback mCallbackObject;
+  private IdpCallback callbackObject;
 
-  public FacebookProvider(Context context, AuthUI.IdpConfig idpConfig) {
+  public FacebookProvider(AuthUI.IdpConfig idpConfig) {
     List<String> scopes = idpConfig.getScopes();
     if (scopes == null) {
-      mScopes = new ArrayList<>();
+      this.scopes = new ArrayList<>();
     } else {
-      mScopes = scopes;
+      this.scopes = scopes;
     }
   }
 
   @Nullable public static AuthCredential createAuthCredential(IdpResponse response) {
+    if (!response.getProviderType().equals(FacebookAuthProvider.PROVIDER_ID)) {
+      return null;
+    }
+
     return FacebookAuthProvider.getCredential(response.getIdpToken());
   }
 
@@ -76,11 +76,11 @@ public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResu
     controller.registerForActivityResult(
         CallbackManagerImpl.RequestCodeOffset.Login.toRequestCode());
 
-    sCallbackManager = CallbackManager.Factory.create();
+    callbackManager = CallbackManager.Factory.create();
     LoginManager loginManager = LoginManager.getInstance();
-    loginManager.registerCallback(sCallbackManager, this);
+    loginManager.registerCallback(callbackManager, this);
 
-    Set<String> permissionsList = new HashSet<>(mScopes);
+    List<String> permissionsList = new ArrayList<>(scopes);
 
     // Ensure we have email and public_profile scopes
     permissionsList.add(EMAIL);
@@ -90,41 +90,42 @@ public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResu
   }
 
   @Override public void setAuthenticationCallback(IdpCallback callback) {
-    mCallbackObject = callback;
+    callbackObject = callback;
   }
 
   @Override public void onActivityResult(int requestCode, int resultCode, Intent data) {
-    if (sCallbackManager != null) {
-      sCallbackManager.onActivityResult(requestCode, resultCode, data);
+    if (callbackManager != null) {
+      callbackManager.onActivityResult(requestCode, resultCode, data);
     }
   }
 
   @Override public void onSuccess(final LoginResult loginResult) {
     Timber.d("onSuccess(): %s", loginResult.getAccessToken());
-    GraphRequest request =
-        GraphRequest.newMeRequest(loginResult.getAccessToken(), (object, response) -> {
+    GraphRequest request = GraphRequest.newMeRequest(
+        loginResult.getAccessToken(),
+        (object, response) -> {
           FacebookRequestError requestError = response.getError();
           if (requestError != null) {
-            Log.e(TAG, "Received Facebook error: " + requestError.getErrorMessage());
+            Timber.e("Received Facebook error: %s", requestError.getErrorMessage());
             onFailure(new Bundle());
             return;
           }
           if (object == null) {
-            Log.w(TAG, "Received null response from Facebook GraphRequest");
+            Timber.w("Received null response from Facebook GraphRequest");
             onFailure(new Bundle());
           } else {
             try {
               String email = object.getString("email");
               onSuccess(email, loginResult);
             } catch (JSONException e) {
-              Log.e(TAG, "JSON Exception reading from Facebook GraphRequest", e);
+              Timber.e(e, "JSON Exception reading from Facebook GraphRequest");
               onFailure(new Bundle());
             }
           }
         });
 
     Bundle parameters = new Bundle();
-    parameters.putString("fields", "id,name,email");
+    parameters.putString("fields", "id,name,email,gender,birthday");
     request.setParameters(parameters);
     request.executeAsync();
   }
@@ -136,7 +137,7 @@ public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResu
   }
 
   @Override public void onError(FacebookException error) {
-    Log.e(TAG, "Error logging in with Facebook. " + error.getMessage());
+    Timber.e("Error logging in with Facebook. %s", error.getMessage());
     Bundle extra = new Bundle();
     extra.putString(ERROR, "error");
     extra.putString(ERROR_MSG, error.getMessage());
@@ -150,23 +151,23 @@ public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResu
 
   private void onSuccess(String email, LoginResult loginResult) {
     gcCallbackManager();
-    mCallbackObject.onSuccess(createIdpResponse(email, loginResult));
+    callbackObject.onSuccess(createIdpResponse(email, loginResult));
   }
 
   private void onFailure(Bundle bundle) {
     gcCallbackManager();
-    mCallbackObject.onFailure(bundle);
+    callbackObject.onFailure(bundle);
   }
 
   private void gcCallbackManager() {
-    // sCallbackManager must be static to prevent it from being destroyed if the activity
+    // callbackManager must be static to prevent it from being destroyed if the activity
     // containing FacebookProvider dies.
     // In startLogin(Activity), LoginManager#registerCallback(CallbackManager, FacebookCallback)
     // stores the FacebookCallback parameter--in this case a FacebookProvider instance--into
-    // a HashMap in the CallbackManager instance, sCallbackManager.
-    // Because FacebookProvider which contains an instance of an activity, mCallbackObject,
-    // is contained in sCallbackManager, that activity will not be garbage collected.
+    // a HashMap in the CallbackManager instance, callbackManager.
+    // Because FacebookProvider which contains an instance of an activity, callbackObject,
+    // is contained in callbackManager, that activity will not be garbage collected.
     // Thus, we have leaked an Activity.
-    sCallbackManager = null;
+    callbackManager = null;
   }
 }

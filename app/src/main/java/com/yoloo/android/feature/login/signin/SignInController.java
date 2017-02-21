@@ -18,6 +18,7 @@ import butterknife.OnClick;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.yoloo.android.R;
 import com.yoloo.android.data.faker.AccountFaker;
+import com.yoloo.android.data.faker.PostFaker;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
@@ -30,7 +31,6 @@ import com.yoloo.android.feature.login.IdpResponse;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.FormUtil;
 import com.yoloo.android.util.KeyboardUtil;
-import io.realm.Realm;
 import java.net.SocketTimeoutException;
 import timber.log.Timber;
 
@@ -40,9 +40,7 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
   static {
     AccountFaker.generateAll();
 
-    Realm realm = Realm.getDefaultInstance();
-    realm.executeTransaction(tx -> tx.insertOrUpdate(AccountFaker.generateMe()));
-    realm.close();
+    PostFaker.fakePosts();
   }
 
   @BindView(R.id.et_login_email) EditText etEmail;
@@ -133,11 +131,11 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
       etEmail.setError(errorFieldRequiredString);
       focusView = etEmail;
       cancel = true;
-    } else if (!FormUtil.isEmailValid(email)) {
+    } /*else if (!FormUtil.isEmailValid(email)) {
       etEmail.setError(errorInvalidEmail);
       focusView = etEmail;
       cancel = true;
-    }
+    }*/
 
     // Check for a valid password, if the user entered one.
     if (TextUtils.isEmpty(password)) {
@@ -209,7 +207,7 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
         //config.addScope(Scopes.PLUS_LOGIN);
         return new GoogleProvider(this, config);
       case AuthUI.FACEBOOK_PROVIDER:
-        return new FacebookProvider(getApplicationContext(), config);
+        return new FacebookProvider(config);
       default:
         throw new UnsupportedOperationException("Given providerId is not valid!");
     }

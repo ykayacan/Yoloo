@@ -25,7 +25,7 @@ public class BountyPresenter extends MvpPresenter<BountyView> {
   }
 
   private void loadDraftAndUser() {
-    Disposable d = Observable.zip(postRepository.getDraft(), userRepository.getMe(),
+    Disposable d = Observable.zip(postRepository.getDraft(), userRepository.getLocalMe(),
         Pair::create)
         .observeOn(AndroidSchedulers.mainThread(), true)
         .subscribe(pair -> getView().onDraftAndAccountLoaded(pair.first, pair.second),

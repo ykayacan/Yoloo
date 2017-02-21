@@ -1,5 +1,7 @@
 package com.yoloo.android.data.repository.user.datasource;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.yoloo.android.data.ApiManager;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.faker.AccountFaker;
@@ -35,11 +37,23 @@ public class UserRemoteDataStore {
   }
 
   public Observable<AccountRealm> getMe() {
-    Timber.d("getMe()");
     return Observable.just(AccountFaker.generateMe());
   }
 
   public Single<AccountRealm> add(AccountRealm account) {
+    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+    account.setId(user.getUid())
+        .setAvatarUrl(user.getPhotoUrl().getPath())
+        .setUsername(user.getDisplayName())
+        .setLevel(2)
+        .setRealname(user.getDisplayName())
+        .setBounties(35)
+        .setPosts(56)
+        .setFollowers(123)
+        .setFollowings(13)
+        .setAchievements(3)
+        .setPoints(88);
+
     return ApiManager.getIdToken()
         .doOnSuccess(s -> Timber.d("Token: %s", s))
         .flatMap(s -> Single.just(account));

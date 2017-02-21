@@ -50,7 +50,7 @@ public class TagController extends Controller {
     Tag tag = Tag.builder()
         .id(tagKey.getId())
         .name(name)
-        .language(langCode)
+        .langCode(langCode)
         .type(Tag.Type.NORMAL)
         .shardRefs(Lists.newArrayList(shardMap.keySet()))
         .groupKeys(KeyUtil.<Tag>extractKeysFromIds(groupIds, ",").blockingSingle())

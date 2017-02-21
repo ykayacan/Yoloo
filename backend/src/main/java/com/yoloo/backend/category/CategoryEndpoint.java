@@ -9,11 +9,12 @@ import com.google.api.server.spi.response.CollectionResponse;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
+import com.yoloo.backend.authentication.authenticators.AdminAuthenticator;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
 import com.yoloo.backend.category.sort_strategy.CategorySorter;
-import com.yoloo.backend.validator.Validator;
-import com.yoloo.backend.validator.rule.common.AuthValidator;
-import com.yoloo.backend.validator.rule.common.BadRequestValidator;
+import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
+import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
+import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
@@ -32,10 +33,7 @@ import javax.inject.Named;
         Constants.ANDROID_CLIENT_ID,
         Constants.IOS_CLIENT_ID,
         Constants.WEB_CLIENT_ID},
-    audiences = {Constants.AUDIENCE_ID},
-    authenticators = {
-        FirebaseAuthenticator.class
-    }
+    audiences = {Constants.AUDIENCE_ID}
 )
 public class CategoryEndpoint {
 
@@ -53,15 +51,16 @@ public class CategoryEndpoint {
   @ApiMethod(
       name = "categories.insert",
       path = "categories",
-      httpMethod = ApiMethod.HttpMethod.POST)
+      httpMethod = ApiMethod.HttpMethod.POST,
+      authenticators = AdminAuthenticator.class)
   public Category insert(
       @Named("name") String name,
       @Named("type") Category.Type type,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new BadRequestValidator(name, type))
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(name, "name is required."))
+        .on(AuthValidator.create(user))
         .validate();
 
     return categoryController.insertCategory(name, type);
@@ -80,15 +79,16 @@ public class CategoryEndpoint {
   @ApiMethod(
       name = "categories.update",
       path = "categories/{categoryId}",
-      httpMethod = ApiMethod.HttpMethod.PUT)
+      httpMethod = ApiMethod.HttpMethod.PUT,
+      authenticators = AdminAuthenticator.class)
   public Category update(
       @Named("categoryId") String categoryId,
       @Nullable @Named("name") String name,
       @Nullable @Named("type") Category.Type type,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(AuthValidator.create(user))
         .validate();
 
     return categoryController.updateCategory(
@@ -109,7 +109,11 @@ public class CategoryEndpoint {
   @ApiMethod(
       name = "categories.list",
       path = "categories",
-      httpMethod = ApiMethod.HttpMethod.GET)
+      httpMethod = ApiMethod.HttpMethod.GET,
+      authenticators = {
+          FirebaseAuthenticator.class,
+          AdminAuthenticator.class
+      })
   public CollectionResponse<Category> list(
       @Nullable @Named("sort") CategorySorter sorter,
       @Nullable @Named("cursor") String cursor,

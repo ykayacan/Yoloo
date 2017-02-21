@@ -42,6 +42,7 @@ public class PostRealm extends RealmObject {
   }*/
 
   public PostRealm() {
+    tags = new RealmList<>();
   }
 
   public String getId() {
@@ -111,9 +112,23 @@ public class PostRealm extends RealmObject {
     return tags;
   }
 
+  public PostRealm addTag(TagRealm tag) {
+    this.tags.add(tag);
+    return this;
+  }
+
   public PostRealm setTags(RealmList<TagRealm> tags) {
     this.tags = tags;
     return this;
+  }
+
+  public List<String> getTagNames() {
+    List<String> names = new ArrayList<>(3);
+    for (TagRealm tag : tags) {
+      names.add(tag.getName());
+    }
+
+    return names;
   }
 
   public RealmList<CategoryRealm> getCategories() {

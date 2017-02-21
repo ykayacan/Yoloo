@@ -215,7 +215,7 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
         config.addScope(Scopes.PLUS_LOGIN);
         return new GoogleProvider(this, config);
       case AuthUI.FACEBOOK_PROVIDER:
-        return new FacebookProvider(getApplicationContext(), config);
+        return new FacebookProvider(config);
       default:
         throw new UnsupportedOperationException("Given providerId is not valid!");
     }

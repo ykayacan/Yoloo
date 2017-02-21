@@ -15,6 +15,8 @@ import com.yoloo.android.util.NotificationUtil;
 import com.yoloo.android.util.WeakHandler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import java.util.UUID;
+import timber.log.Timber;
 
 public class CreatePostService extends Service {
 
@@ -44,11 +46,14 @@ public class CreatePostService extends Service {
 
     disposable = postRepository.getDraft()
         .doOnSubscribe(disposable -> showSendingNotification())
-        .map(draft -> draft.setFeedItem(true).setPending(false))
-        .flatMap(postRepository::addPost)
+        .map(draft -> draft.setId(UUID.randomUUID().toString()).setFeedItem(true).setPending(false))
+        .doOnNext(postRepository::addPost)
+        /*.flatMap(postRepository::addPost)*/
+        .doOnNext(postRealm -> Timber.d("Process: %s", postRealm.toString()))
         .doOnComplete(() -> postRepository.deleteDraft().subscribe())
         .observeOn(AndroidSchedulers.mainThread())
         .doOnNext(this::broadcastNewPostEvent)
+        .doOnError(Throwable::printStackTrace)
         .doOnComplete(this::showSuccessfulNotification)
         .subscribe();
 
@@ -61,7 +66,8 @@ public class CreatePostService extends Service {
   }
 
   private PostRepository getPostRepository() {
-    return PostRepository.getInstance(PostRemoteDataStore.getInstance(),
+    return PostRepository.getInstance(
+        PostRemoteDataStore.getInstance(),
         PostDiskDataStore.getInstance());
   }
 
@@ -101,6 +107,7 @@ public class CreatePostService extends Service {
   }
 
   public void broadcastNewPostEvent(PostRealm post) {
+    Timber.d("Broad");
     LocalMessageManager.getInstance().send(R.integer.message_create_new_post, post);
   }
 }

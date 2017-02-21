@@ -29,7 +29,7 @@ public class CommentNotification implements NotificationBundle {
   public List<Notification> getNotifications() {
     Notification notification = Notification.builder()
         .senderKey(sender.getKey())
-        .receiverKey(record.getParentUserKey())
+        .receiverKey(record.getParent())
         .senderUsername(sender.getUsername())
         .senderAvatarUrl(sender.getAvatarUrl())
         .action(Action.COMMENT)

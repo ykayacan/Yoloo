@@ -45,7 +45,7 @@ public class DeviceControllerTest extends TestBase {
 
     assertNotNull(record);
     assertEquals(regId, record.getRegId());
-    assertEquals(user.getUserId(), record.getParentUserKey().toWebSafeString());
+    assertEquals(user.getUserId(), record.getParent().toWebSafeString());
   }
 
   @Test(expected = NotFoundException.class)
@@ -65,7 +65,7 @@ public class DeviceControllerTest extends TestBase {
 
     assertNotNull(record);
     assertEquals(regId, record.getRegId());
-    assertEquals(user.getUserId(), record.getParentUserKey().toWebSafeString());
+    assertEquals(user.getUserId(), record.getParent().toWebSafeString());
 
     controller.unregisterDevice(regId, user);
 

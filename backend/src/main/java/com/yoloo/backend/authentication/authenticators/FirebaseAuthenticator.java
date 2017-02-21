@@ -12,6 +12,7 @@ import com.googlecode.objectify.Key;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.authentication.oauth2.OAuth2;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
 import static com.yoloo.backend.OfyService.ofy;
@@ -19,48 +20,49 @@ import static com.yoloo.backend.OfyService.ofy;
 @Singleton
 public class FirebaseAuthenticator implements Authenticator {
 
+  private static final Logger LOG =
+      Logger.getLogger(FirebaseAuthenticator.class.getName());
+
   @Override
   public User authenticate(final HttpServletRequest request) {
     String authHeader = request.getHeader(OAuth2.HeaderType.AUTHORIZATION);
 
-    if (Strings.isNullOrEmpty(authHeader) ||
-        !authHeader.contains(OAuth2.OAUTH_HEADER_NAME)) {
+    if (Strings.isNullOrEmpty(authHeader)
+        || !authHeader.contains(OAuth2.OAUTH_HEADER_NAME)) {
       return null;
     }
 
+    // [0] - Bearer
+    // [1] - Token
     final String idToken = authHeader.split(" ")[1];
-
-    /*return Single
-        .createTracker((SingleOnSubscribe<FirebaseToken>) e -> {
-          Task<FirebaseToken> authTask = FirebaseAuth.getInstance().verifyIdToken(idToken);
-
-          authTask.addOnSuccessListener(e::onSuccess);
-          authTask.addOnFailureListener(e::onError);
-        })
-        .map(token -> {
-          Key<Account> accountKey = ofy().load().type(Account.class)
-              .filter(Account.FIELD_FIREBASE_UUID + " =", token.getUid()).keys().first().now();
-
-          return new User(accountKey.toWebSafeString(), token.getEmail());
-        })
-        .blockingGet();*/
 
     Task<FirebaseToken> authTask = FirebaseAuth.getInstance().verifyIdToken(idToken)
         .addOnSuccessListener(decodedToken -> {
         });
 
-    try {
-      Tasks.await(authTask);
-    } catch (InterruptedException | ExecutionException e) {
-      e.printStackTrace();
+    if (isTaskCompleted(authTask) && authTask.isSuccessful()) {
+      FirebaseToken token = authTask.getResult();
+
+      final Key<Account> accountKey = ofy().load().type(Account.class)
+          .filter(Account.FIELD_FIREBASE_UUID + " =", token.getUid())
+          .keys().first().now();
+
+      if (accountKey != null) {
+        return new User(accountKey.toWebSafeString(), token.getEmail());
+      }
+
       return null;
     }
 
-    FirebaseToken token = authTask.getResult();
+    return null;
+  }
 
-    Key<Account> accountKey = ofy().load().type(Account.class)
-        .filter(Account.FIELD_FIREBASE_UUID + " =", token.getUid()).keys().first().now();
-
-    return new User(accountKey.toWebSafeString(), token.getEmail());
+  private boolean isTaskCompleted(Task<FirebaseToken> authTask) {
+    try {
+      Tasks.await(authTask);
+    } catch (InterruptedException | ExecutionException e) {
+      return false;
+    }
+    return true;
   }
 }

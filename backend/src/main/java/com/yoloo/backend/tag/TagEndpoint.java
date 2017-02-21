@@ -9,12 +9,12 @@ import com.google.api.server.spi.response.CollectionResponse;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
-import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
-import com.yoloo.backend.validator.Validator;
-import com.yoloo.backend.validator.rule.common.AuthValidator;
-import com.yoloo.backend.validator.rule.common.ForbiddenValidator;
-import com.yoloo.backend.validator.rule.common.IdValidationRule;
-import com.yoloo.backend.validator.rule.common.NotFoundRule;
+import com.yoloo.backend.authentication.authenticators.AdminAuthenticator;
+import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
+import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
+import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
+import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
+import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
@@ -37,7 +37,7 @@ import javax.inject.Named;
         Constants.WEB_CLIENT_ID},
     audiences = {Constants.AUDIENCE_ID},
     authenticators = {
-        FirebaseAuthenticator.class
+        AdminAuthenticator.class
     }
 )
 public class TagEndpoint {
@@ -67,8 +67,8 @@ public class TagEndpoint {
       @Named("groupIds") String groupIds,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(AuthValidator.create(user))
         .validate();
 
     return tagController.insertTag(name, langCode, groupIds);
@@ -92,8 +92,8 @@ public class TagEndpoint {
       @Nullable @Named("name") String name,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(AuthValidator.create(user))
         .validate();
 
     return tagController.updateTag(tagId, Optional.fromNullable(name));
@@ -112,11 +112,11 @@ public class TagEndpoint {
       httpMethod = ApiMethod.HttpMethod.DELETE)
   public void deleteTag(@Named("tagId") String tagId, User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new IdValidationRule(tagId))
-        .addRule(new AuthValidator(user))
-        .addRule(new NotFoundRule(tagId))
-        .addRule(new ForbiddenValidator(user, tagId, ForbiddenValidator.Operation.DELETE))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(tagId, "tagId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(tagId, "Invalid tagId."))
+        .on(ForbiddenValidator.create(tagId, user, ForbiddenValidator.Op.DELETE))
         .validate();
 
     tagController.deleteTag(tagId);
@@ -142,8 +142,8 @@ public class TagEndpoint {
       @Nullable @Named("limit") Integer limit,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(AuthValidator.create(user))
         .validate();
 
     return tagController.list(name, Optional.fromNullable(cursor), Optional.fromNullable(limit)
@@ -163,8 +163,8 @@ public class TagEndpoint {
       httpMethod = ApiMethod.HttpMethod.GET)
   public List<Tag> recommended(User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(AuthValidator.create(user))
         .validate();
 
     return tagController.recommendedTags();
@@ -184,8 +184,8 @@ public class TagEndpoint {
       httpMethod = ApiMethod.HttpMethod.POST)
   public Tag insertGroup(@Named("name") String name, User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(AuthValidator.create(user))
         .validate();
 
     return tagController.insertGroup(name);
@@ -209,8 +209,8 @@ public class TagEndpoint {
       @Nullable @Named("name") String name,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(AuthValidator.create(user))
         .validate();
 
     return tagController.updateGroup(groupId, Optional.fromNullable(name));
@@ -229,11 +229,11 @@ public class TagEndpoint {
       httpMethod = ApiMethod.HttpMethod.DELETE)
   public void deleteGroup(@Named("groupId") String groupId, User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new IdValidationRule(groupId))
-        .addRule(new AuthValidator(user))
-        .addRule(new NotFoundRule(groupId))
-        .addRule(new ForbiddenValidator(user, groupId, ForbiddenValidator.Operation.DELETE))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(groupId, "groupId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(groupId, "Invalid groupId."))
+        .on(ForbiddenValidator.create(groupId, user, ForbiddenValidator.Op.DELETE))
         .validate();
 
     tagController.deleteGroup(groupId);

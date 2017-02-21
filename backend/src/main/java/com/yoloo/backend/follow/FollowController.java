@@ -1,6 +1,7 @@
 package com.yoloo.backend.follow;
 
 import com.google.api.server.spi.response.CollectionResponse;
+import com.google.api.server.spi.response.NotFoundException;
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.users.User;
@@ -16,6 +17,7 @@ import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.notification.type.FollowNotification;
+import com.yoloo.backend.endpointsvalidator.Guard;
 import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -86,7 +88,7 @@ public class FollowController extends Controller {
     notificationService.send(notification);
   }
 
-  public void unfollow(String followingId, User user) {
+  public void unfollow(String followingId, User user) throws NotFoundException {
     // Create user key from user id.
     final Key<Account> followerKey = Key.create(user.getUserId());
 
@@ -96,6 +98,8 @@ public class FollowController extends Controller {
     final Key<Follow> followKey = ofy().load().type(Follow.class)
         .ancestor(followerKey).filter(Follow.FIELD_FOLLOWING_KEY + " =", followingKey)
         .keys().first().now();
+
+    Guard.checkNotFound(followKey, "Follow is not found.");
 
     Key<AccountShard> followerShardKey =
         accountShardService.getRandomShardKey(followerKey);

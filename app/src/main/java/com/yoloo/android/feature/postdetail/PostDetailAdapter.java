@@ -174,7 +174,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
         .onShareClickListener(onShareClickListener)
         .onCommentClickListener(onCommentClickListener)
         .onVoteClickListener(onVoteClickListener)
-        .layout(R.layout.item_feed_blog)
+        .layout(R.layout.item_feed_blog_detail)
         .circleTransformation(cropCircleTransformation)
         .post(post);
   }

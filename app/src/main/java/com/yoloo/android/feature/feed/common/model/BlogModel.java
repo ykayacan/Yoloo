@@ -152,7 +152,7 @@ public abstract class BlogModel extends EpoxyModelWithHolder<BlogModel.BlogHolde
   }
 
   private boolean isNormal() {
-    return getLayout() == R.layout.item_bounty;
+    return getLayout() == R.layout.item_feed_blog;
   }
 
   public String getItemId() {

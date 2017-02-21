@@ -137,9 +137,8 @@ class PostPresenter extends MvpPresenter<PostView> {
       getView().onEmpty();
     } else {
       getView().onLoaded(pair.second);
+      getView().showContent();
     }
-
-    getView().showContent();
   }
 
   private void showError(Throwable throwable) {

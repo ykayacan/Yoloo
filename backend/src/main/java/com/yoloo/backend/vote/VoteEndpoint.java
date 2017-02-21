@@ -8,10 +8,10 @@ import com.google.api.server.spi.config.ApiNamespace;
 import com.google.appengine.api.users.User;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
-import com.yoloo.backend.validator.Validator;
-import com.yoloo.backend.validator.rule.common.AuthValidator;
-import com.yoloo.backend.validator.rule.common.IdValidationRule;
-import com.yoloo.backend.validator.rule.common.NotFoundRule;
+import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
+import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
+import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
+import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
 import java.util.logging.Logger;
 import javax.inject.Named;
 
@@ -37,7 +37,7 @@ import javax.inject.Named;
 )
 public class VoteEndpoint {
 
-  private static final Logger logger =
+  private static final Logger LOG =
       Logger.getLogger(VoteEndpoint.class.getSimpleName());
 
   private final VoteController voteController = VoteControllerFactory.of().create();
@@ -59,10 +59,10 @@ public class VoteEndpoint {
       @Named("dir") Vote.Direction direction,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new IdValidationRule(postId))
-        .addRule(new AuthValidator(user))
-        .addRule(new NotFoundRule(postId))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(postId, "postId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(postId, "Invalid postId."))
         .validate();
 
     voteController.votePost(postId, direction, user);
@@ -85,10 +85,10 @@ public class VoteEndpoint {
       @Named("dir") Vote.Direction direction,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new IdValidationRule(commentId))
-        .addRule(new AuthValidator(user))
-        .addRule(new NotFoundRule(commentId))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(commentId, "commentId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(commentId, "Invalid commentId."))
         .validate();
 
     voteController.voteComment(commentId, direction, user);

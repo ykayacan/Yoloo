@@ -6,7 +6,10 @@ import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Parent;
 import com.yoloo.backend.account.Account;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 import lombok.experimental.Wither;
@@ -14,18 +17,21 @@ import lombok.experimental.Wither;
 @Entity
 @Value
 @Builder
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
 public class DeviceRecord {
 
   public static final String FIELD_REG_ID = "regId";
 
   /**
-   * Websafe {@code Account} ID with parentUserKey.
+   * Websafe {@code Account} ID with parent.
    */
   @Id
   private String id;
 
   @Parent
-  private Key<Account> parentUserKey;
+  @NonFinal
+  private Key<Account> parent;
 
   @Index
   @NonFinal

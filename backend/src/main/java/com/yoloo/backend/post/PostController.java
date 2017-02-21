@@ -30,7 +30,7 @@ import com.yoloo.backend.post.sort_strategy.PostSorter;
 import com.yoloo.backend.tag.TagShard;
 import com.yoloo.backend.tag.TagShardService;
 import com.yoloo.backend.util.StringUtil;
-import com.yoloo.backend.validator.Guard;
+import com.yoloo.backend.endpointsvalidator.Guard;
 import com.yoloo.backend.vote.VoteService;
 import io.reactivex.Single;
 import java.util.Collection;
@@ -106,7 +106,7 @@ public final class PostController extends Controller {
    *
    * @param content the content
    * @param tags the tags
-   * @param categories the categories
+   * @param categoryIds the categories
    * @param mediaId the media id
    * @param bounty the bounty
    * @param user the user
@@ -115,12 +115,12 @@ public final class PostController extends Controller {
   public Post insertQuestion(
       String content,
       String tags,
-      String categories,
+      String categoryIds,
       Optional<String> mediaId,
       Optional<Integer> bounty,
       User user) {
 
-    return insertPost(content, tags, categories, Optional.absent(), mediaId, bounty,
+    return insertPost(content, tags, categoryIds, Optional.absent(), mediaId, bounty,
         Post.PostType.QUESTION, user);
   }
 
@@ -128,18 +128,18 @@ public final class PostController extends Controller {
       String title,
       String content,
       String tags,
-      String categories,
+      String categoryIds,
       Optional<String> mediaId,
       User user) {
 
-    return insertPost(content, tags, categories, Optional.of(title), mediaId, Optional.absent(),
+    return insertPost(content, tags, categoryIds, Optional.of(title), mediaId, Optional.absent(),
         Post.PostType.BLOG, user);
   }
 
   private Post insertPost(
       String content,
       String tags,
-      String categories,
+      String categoryIds,
       Optional<String> title,
       Optional<String> mediaId,
       Optional<Integer> bounty,
@@ -185,7 +185,7 @@ public final class PostController extends Controller {
 
     // Create a new question from given inputs.
     PostEntity entity =
-        postService.create(account, content, tags, categories, title, bounty, media, tracker,
+        postService.create(account, content, tags, categoryIds, title, bounty, media, tracker,
             postType);
 
     Post post = entity.getPost();
@@ -197,7 +197,7 @@ public final class PostController extends Controller {
     Collection<TagShard> tagShards = tagShardService.updateShards(post.getTags());
 
     Collection<CategoryShard> categoryShards =
-        categoryShardService.updateShards(post.getCategories());
+        categoryShardService.updateShards(categoryIds);
 
     // Start gamification check.
     List<NotificationBundle> notificationBundles = Lists.newArrayList();
@@ -225,7 +225,7 @@ public final class PostController extends Controller {
       }
     });
 
-    FeedUpdateServlet.addToQueue(user.getUserId(), post.getWebsafeId());
+    UpdateFeedServlet.addToQueue(user.getUserId(), post.getWebsafeId());
 
     return post;
   }
@@ -323,7 +323,7 @@ public final class PostController extends Controller {
    *
    * @param accountId the account id
    * @param sorter the sorter
-   * @param category the category
+   * @param categories the category
    * @param tags the tags
    * @param limit the limit
    * @param cursor the cursor
@@ -334,7 +334,7 @@ public final class PostController extends Controller {
   public CollectionResponse<Post> listPosts(
       Optional<String> accountId,
       Optional<PostSorter> sorter,
-      Optional<String> category,
+      Optional<String> categories,
       Optional<String> tags,
       Optional<Integer> limit,
       Optional<String> cursor,
@@ -355,10 +355,10 @@ public final class PostController extends Controller {
       query = query.ancestor(Key.<Account>create(accountId.get()));
     }
 
-    if (category.isPresent()) {
-      Set<String> categorySet = split(category.get(), ",");
+    if (categories.isPresent()) {
+      Set<String> categoryNames = split(categories.get(), ",");
 
-      for (String categoryName : categorySet) {
+      for (String categoryName : categoryNames) {
         query = query.filter(Post.FIELD_CATEGORIES + " =", categoryName);
       }
     } else if (tags.isPresent()) {

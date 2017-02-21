@@ -3,15 +3,15 @@ package com.yoloo.backend.media.size;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.google.api.server.spi.config.ApiResourceProperty;
 import com.yoloo.backend.config.MediaConfig;
-import com.yoloo.backend.media.Media;
+import com.yoloo.backend.media.Size;
+import lombok.AllArgsConstructor;
 
 @JsonRootName("thumb")
 @ApiResourceProperty(name = "thumb")
-public class ThumbSize extends Media.Size {
+@AllArgsConstructor(staticName = "of")
+public class ThumbSize extends Size {
 
-  public ThumbSize(String url) {
-    super(url);
-  }
+  private String url;
 
   @Override
   public String getUrl() {

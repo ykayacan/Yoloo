@@ -19,7 +19,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.credentials.Credential;
@@ -269,9 +268,7 @@ public class AuthUI {
     });
 
     // Facebook sign out
-    if (FacebookSdk.isInitialized()) {
-      LoginManager.getInstance().logOut();
-    }
+    LoginManager.getInstance().logOut();
 
     // Wait for all tasks to complete
     return Tasks.whenAll(disableCredentialsTask, googleSignOutTask);
@@ -344,8 +341,8 @@ public class AuthUI {
     private final List<String> scopes;
 
     private IdpConfig(@NonNull String providerId, List<String> scopes) {
-      this.scopes = scopes;
       this.providerId = providerId;
+      this.scopes = scopes;
     }
 
     private IdpConfig(Parcel in) {

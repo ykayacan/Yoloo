@@ -33,4 +33,14 @@ public final class DisplayUtil {
     }
     return isLandscape;
   }
+
+  public static int getStatusBarHeight() {
+    int statusBarHeight = 0;
+    int resourceId = Resources.getSystem().getIdentifier("status_bar_height", "dimen", "android");
+    if (resourceId > 0) {
+      statusBarHeight = Resources.getSystem().getDimensionPixelSize(resourceId);
+    }
+
+    return statusBarHeight;
+  }
 }

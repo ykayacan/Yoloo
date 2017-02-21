@@ -11,7 +11,7 @@ final class CategoryUtil {
     return Observable.fromIterable(category.getShards())
         .cast(CategoryShard.class)
         .reduce((s1, s2) -> s1.addPost(s2.getPosts()))
-        .map(shard -> category.withQuestions(shard.getPosts()))
+        .map(shard -> category.withPosts(shard.getPosts()))
         .toObservable();
   }
 }

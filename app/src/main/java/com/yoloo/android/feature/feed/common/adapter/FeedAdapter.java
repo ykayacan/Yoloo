@@ -141,7 +141,9 @@ public class FeedAdapter extends EpoxyAdapter {
 
   public void clear() {
     if (isMainFeed) {
-      models.subList(3, models.size() - 1).clear();
+      if (models.size() > 3) {
+        models.subList(3, models.size() - 1).clear();
+      }
     } else {
       models.clear();
     }

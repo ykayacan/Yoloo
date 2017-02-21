@@ -10,11 +10,12 @@ import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
+import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
+import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
+import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
+import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
+import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
 import com.yoloo.backend.post.sort_strategy.PostSorter;
-import com.yoloo.backend.validator.Validator;
-import com.yoloo.backend.validator.rule.common.AuthValidator;
-import com.yoloo.backend.validator.rule.common.BadRequestValidator;
-import com.yoloo.backend.validator.rule.common.ForbiddenValidator;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.inject.Named;
@@ -39,7 +40,7 @@ import javax.inject.Named;
     })
 public class QuestionEndpoint {
 
-  private static final Logger LOGGER =
+  private static final Logger LOG =
       Logger.getLogger(QuestionEndpoint.class.getSimpleName());
 
   private final PostController postController = PostControllerFactory.of().create();
@@ -58,9 +59,9 @@ public class QuestionEndpoint {
       httpMethod = ApiMethod.HttpMethod.GET)
   public Post get(@Named("questionId") String questionId, User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new BadRequestValidator(questionId))
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(questionId, "questionId is required."))
+        .on(AuthValidator.create(user))
         .validate();
 
     return postController.getPost(questionId, user);
@@ -71,7 +72,7 @@ public class QuestionEndpoint {
    *
    * @param tags the tags
    * @param content the content
-   * @param categories the categories
+   * @param categoryIds the categories
    * @param mediaId the media id
    * @param bounty the bounty
    * @param user the user
@@ -85,20 +86,22 @@ public class QuestionEndpoint {
   public Post insert(
       @Named("content") String content,
       @Named("tags") String tags,
-      @Named("categories") String categories,
+      @Named("categoryIds") String categoryIds,
       @Nullable @Named("mediaId") String mediaId,
       @Nullable @Named("bounty") Integer bounty,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new BadRequestValidator(tags, content, categories))
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(content, "content is required."))
+        .on(BadRequestValidator.create(tags, "tags is required."))
+        .on(BadRequestValidator.create(categoryIds, "categoryIds is required."))
+        .on(AuthValidator.create(user))
         .validate();
 
     return postController.insertQuestion(
         content,
         tags,
-        categories,
+        categoryIds,
         Optional.fromNullable(mediaId),
         Optional.fromNullable(bounty),
         user);
@@ -128,10 +131,11 @@ public class QuestionEndpoint {
       @Nullable @Named("mediaId") String mediaId,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new BadRequestValidator(questionId))
-        .addRule(new AuthValidator(user))
-        .addRule(new ForbiddenValidator(user, questionId, ForbiddenValidator.Operation.UPDATE))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(questionId, "questionId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(questionId, "Invalid questionId."))
+        .on(ForbiddenValidator.create(questionId, user, ForbiddenValidator.Op.UPDATE))
         .validate();
 
     return postController.updatePost(
@@ -156,10 +160,11 @@ public class QuestionEndpoint {
       httpMethod = ApiMethod.HttpMethod.DELETE)
   public void delete(@Named("questionId") String questionId, User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new BadRequestValidator(questionId))
-        .addRule(new AuthValidator(user))
-        .addRule(new ForbiddenValidator(user, questionId, ForbiddenValidator.Operation.DELETE))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(questionId, "questionId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(questionId, "Invalid questionId."))
+        .on(ForbiddenValidator.create(questionId, user, ForbiddenValidator.Op.DELETE))
         .validate();
 
     postController.deletePost(questionId);
@@ -189,7 +194,9 @@ public class QuestionEndpoint {
       @Nullable @Named("limit") Integer limit,
       User user) throws ServiceException {
 
-    Validator.builder().addRule(new AuthValidator(user)).validate();
+    EndpointsValidator.create()
+        .on(AuthValidator.create(user))
+        .validate();
 
     return postController.listPosts(
         Optional.fromNullable(accountId),
@@ -215,9 +222,10 @@ public class QuestionEndpoint {
       httpMethod = ApiMethod.HttpMethod.PUT)
   public void report(@Named("questionId") String questionId, User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new BadRequestValidator(questionId))
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(questionId, "questionId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(questionId, "Invalid questionId."))
         .validate();
 
     postController.reportPost(questionId, user);

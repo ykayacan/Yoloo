@@ -56,6 +56,7 @@ public class PostControllerTest extends TestBase {
 
   private Category budgetTravel;
   private Category europe;
+  private Category america;
 
   private Tag passport;
 
@@ -127,6 +128,11 @@ public class PostControllerTest extends TestBase {
     } catch (ConflictException e) {
       e.printStackTrace();
     }
+    try {
+      america = categoryController.insertCategory("america", Category.Type.CONTINENT);
+    } catch (ConflictException e) {
+      e.printStackTrace();
+    }
 
     passport = tagController.insertGroup("passport");
 
@@ -139,7 +145,8 @@ public class PostControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     Post original =
-        postController.insertQuestion("Test content", "visa,passport", "europe", Optional.absent(),
+        postController.insertQuestion("Test content", "visa,passport", europe.getWebsafeId(),
+            Optional.absent(),
             Optional.of(10), user);
 
     Post fetched = postController.getPost(original.getWebsafeId(), user);
@@ -169,7 +176,8 @@ public class PostControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     Post original =
-        postController.insertQuestion("Test content", "visa,passport", "europe", Optional.absent(),
+        postController.insertQuestion("Test content", "visa,passport", europe.getWebsafeId(),
+            Optional.absent(),
             Optional.of(10), user);
     voteController.votePost(original.getWebsafeId(), Vote.Direction.UP, user);
 
@@ -202,7 +210,7 @@ public class PostControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     String tags = visa.getName() + "," + visa2.getName();
-    String categories = europe.getName() + "," + budgetTravel.getName();
+    String categories = europe.getWebsafeId() + "," + budgetTravel.getWebsafeId();
 
     Post post = postController.insertQuestion("Test content", tags, categories, Optional.absent(),
         Optional.of(10), user);
@@ -239,11 +247,11 @@ public class PostControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     String tags = visa.getName() + "," + visa2.getName();
-    String categories = europe.getName() + "," + budgetTravel.getName();
+    String categories = europe.getWebsafeId() + "," + budgetTravel.getWebsafeId();
 
     Media media = Media.builder()
         .id("bucket/test_item")
-        .parentAccountKey(owner.getKey())
+        .parent(owner.getKey())
         .mime(MediaType.ANY_IMAGE_TYPE.toString())
         .url("test url")
         .build();
@@ -281,11 +289,15 @@ public class PostControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     String tags = visa.getName() + "," + visa2.getName();
-    String categories1 = europe.getName() + "," + budgetTravel.getName();
+    String categoryIds = europe.getWebsafeId()
+        + ","
+        + budgetTravel.getWebsafeId()
+        + ","
+        + america.getWebsafeId();
 
-    postController.insertQuestion("Test content", tags, categories1, Optional.absent(),
+    postController.insertQuestion("Test content", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
-    postController.insertQuestion("Test content", tags, categories1, Optional.absent(),
+    postController.insertQuestion("Test content", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
 
     CollectionResponse<Post> response = postController.listPosts(
@@ -302,7 +314,7 @@ public class PostControllerTest extends TestBase {
     assertEquals(2, response.getItems().size());
     for (Post post : response.getItems()) {
       assertEquals("Test content", post.getContent());
-      assertEquals("[europe, budget travel]", post.getCategories().toString());
+      assertEquals("[budget travel, europe, america]", post.getCategories().toString());
     }
   }
 
@@ -311,12 +323,12 @@ public class PostControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     String tags = visa.getName() + "," + visa2.getName();
-    String categories1 = europe.getName() + "," + budgetTravel.getName();
+    String categories1 = europe.getWebsafeId() + "," + budgetTravel.getWebsafeId();
 
     postController.insertQuestion("Test content", tags, categories1, Optional.absent(),
         Optional.of(10), user);
 
-    String categories2 = europe.getName();
+    String categories2 = europe.getWebsafeId();
 
     postController.insertQuestion("Test content", tags, categories2, Optional.absent(),
         Optional.of(10), user);
@@ -335,7 +347,7 @@ public class PostControllerTest extends TestBase {
     assertEquals(1, response.getItems().size());
     for (Post post : response.getItems()) {
       assertEquals("Test content", post.getContent());
-      assertEquals("[europe, budget travel]", post.getCategories().toString());
+      assertEquals("[budget travel, europe]", post.getCategories().toString());
     }
   }
 
@@ -344,22 +356,22 @@ public class PostControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     String tags = visa.getName() + "," + visa2.getName();
-    String categories1 = europe.getName() + "," + budgetTravel.getName();
+    String categoryIds = europe.getWebsafeId() + "," + budgetTravel.getWebsafeId();
 
-    Post p1 = postController.insertQuestion("1. post", tags, categories1, Optional.absent(),
+    Post p1 = postController.insertQuestion("1. post", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
     commentController.insertComment(p1.getWebsafeId(), "Test comment", user);
     voteController.votePost(p1.getWebsafeId(), Vote.Direction.UP, user);
 
-    Post p2 = postController.insertQuestion("2. post", tags, categories1, Optional.absent(),
+    Post p2 = postController.insertQuestion("2. post", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
 
-    Post p3 = postController.insertQuestion("3. post", tags, categories1, Optional.absent(),
+    Post p3 = postController.insertQuestion("3. post", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
     commentController.insertComment(p3.getWebsafeId(), "Test comment", user);
     voteController.votePost(p3.getWebsafeId(), Vote.Direction.DOWN, user);
 
-    Post p4 = postController.insertQuestion("4. post", tags, categories1, Optional.absent(),
+    Post p4 = postController.insertQuestion("4. post", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
     commentController.insertComment(p4.getWebsafeId(), "Test comment", user);
     commentController.insertComment(p4.getWebsafeId(), "Test comment 2", user);
@@ -427,7 +439,7 @@ public class PostControllerTest extends TestBase {
   private DeviceRecord createRecord(Account owner) {
     return DeviceRecord.builder()
         .id(owner.getWebsafeId())
-        .parentUserKey(owner.getKey())
+        .parent(owner.getKey())
         .regId(UUID.randomUUID().toString())
         .build();
   }

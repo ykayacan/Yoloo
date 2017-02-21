@@ -78,13 +78,23 @@
   </servlet-mapping>
 
   <servlet>
-    <servlet-name>FeedUpdateServlet</servlet-name>
-    <servlet-class>com.yoloo.backend.post.FeedUpdateServlet</servlet-class>
+    <servlet-name>UpdateFeedServlet</servlet-name>
+    <servlet-class>com.yoloo.backend.post.UpdateFeedServlet</servlet-class>
   </servlet>
 
   <servlet-mapping>
-    <servlet-name>FeedUpdateServlet</servlet-name>
+    <servlet-name>UpdateFeedServlet</servlet-name>
     <url-pattern>/tasks/update/feed</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>CreateUserFeedServlet</servlet-name>
+    <servlet-class>com.yoloo.backend.account.task.CreateUserFeedServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>CreateUserFeedServlet</servlet-name>
+    <url-pattern>/tasks/create/feed</url-pattern>
   </servlet-mapping>
 
   <servlet>
@@ -189,8 +199,18 @@
 
   <security-constraint>
     <web-resource-collection>
-      <web-resource-name>FeedUpdateServlet</web-resource-name>
+      <web-resource-name>UpdateFeedServlet</web-resource-name>
       <url-pattern>/tasks/update/feed</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>admin</role-name>
+    </auth-constraint>
+  </security-constraint>
+
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>CreateUserFeedServlet</web-resource-name>
+      <url-pattern>/tasks/create/feed</url-pattern>
     </web-resource-collection>
     <auth-constraint>
       <role-name>admin</role-name>

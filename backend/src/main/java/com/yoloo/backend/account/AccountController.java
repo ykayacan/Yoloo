@@ -19,18 +19,20 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.NotFoundException;
 import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.cmd.Query;
+import com.yoloo.backend.Constants;
+import com.yoloo.backend.account.task.CreateUserFeedServlet;
 import com.yoloo.backend.authentication.oauth2.OAuth2;
 import com.yoloo.backend.base.Controller;
-import com.yoloo.backend.category.Category;
 import com.yoloo.backend.follow.Follow;
 import com.yoloo.backend.game.GamificationService;
 import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.media.Media;
+import com.yoloo.backend.media.Size;
 import com.yoloo.backend.media.size.ThumbSize;
 import com.yoloo.backend.shard.ShardUtil;
 import com.yoloo.backend.util.KeyUtil;
 import com.yoloo.backend.util.ServerConfig;
-import com.yoloo.backend.validator.Guard;
+import com.yoloo.backend.endpointsvalidator.Guard;
 import io.reactivex.Observable;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +59,15 @@ public final class AccountController extends Controller {
   private AccountShardService accountShardService;
 
   private GamificationService gamificationService;
+
+  private static String generateUsername(FirebaseToken token) {
+    return token.getName()
+        .trim()
+        .replaceAll("\\s+", "")
+        .toLowerCase()
+        .substring(0, 10)
+        .concat(String.valueOf(System.currentTimeMillis()).substring(5));
+  }
 
   /**
    * Get account.
@@ -91,7 +102,7 @@ public final class AccountController extends Controller {
    *
    * @param locale the locale
    * @param gender the gender
-   * @param topicIds the topic ids
+   * @param categoryIds the topic ids
    * @param request the request  @return the account
    * @return the account
    * @throws ConflictException the conflict exception
@@ -99,7 +110,7 @@ public final class AccountController extends Controller {
   public Account insertAccount(
       String locale,
       Account.Gender gender,
-      String topicIds,
+      String categoryIds,
       HttpServletRequest request) throws ConflictException, BadRequestException {
 
     final String authHeader =
@@ -108,12 +119,10 @@ public final class AccountController extends Controller {
 
     FirebaseToken token = getFirebaseToken(authHeader.split(" ")[1]);
 
-    try {
-      isUserRegistered(token);
-
+    if (AccountUtil.isUserRegistered(token)) {
       throw new ConflictException("User is already registered.");
-    } catch (NotFoundException e) {
-      AccountEntity entity = createAccountEntity(token, locale, gender, topicIds);
+    } else {
+      AccountEntity entity = createAccountEntity(token, locale, gender, categoryIds);
 
       Tracker tracker = gamificationService.createTracker(entity.getAccount().getKey());
 
@@ -125,6 +134,8 @@ public final class AccountController extends Controller {
 
       return ofy().transact(() -> {
         Map<Key<Object>, Object> saved = ofy().save().entities(saveList).now();
+
+        CreateUserFeedServlet.addToQueue(entity.getAccount().getWebsafeId(), categoryIds);
 
         //noinspection SuspiciousMethodCalls
         Account account = (Account) saved.get(entity.getAccount().getKey());
@@ -139,32 +150,21 @@ public final class AccountController extends Controller {
   /**
    * Add admin account.
    *
-   * @param request the request
    * @return the account
    * @throws ConflictException the conflict exception
    */
-  public Account insertAdmin(HttpServletRequest request)
-      throws ConflictException, BadRequestException {
+  public Account insertAdmin() throws ConflictException {
+    Account admin = ofy().load().key(Key.create(Account.class, 1L)).now();
 
-    final String authHeader =
-        Guard.checkBadRequest(request.getHeader(OAuth2.HeaderType.AUTHORIZATION),
-            "Authorization Header can not be null!");
+    Guard.checkConflictRequest(admin, "Admin is already registered.");
 
-    FirebaseToken token = getFirebaseToken(authHeader.split(" ")[1]);
+    return ofy().transact(() -> {
+      AccountEntity model = createAdminAccountEntity();
 
-    try {
-      isUserRegistered(token);
+      ofy().save().entity(model.getAccount()).now();
 
-      throw new ConflictException("User is already registered.");
-    } catch (NotFoundException e) {
-      AccountEntity model = createAdminAccountEntity(token);
-
-      return ofy().transact(() -> {
-        ofy().save().entities(model.getAccount()).now();
-
-        return model.getAccount();
-      });
-    }
+      return ofy().load().key(model.getAccount().getKey()).now();
+    });
   }
 
   /**
@@ -290,12 +290,6 @@ public final class AccountController extends Controller {
     }
   }
 
-  private void isUserRegistered(FirebaseToken token) {
-    ofy().load().type(Account.class)
-        .filter(Account.FIELD_EMAIL + " =", token.getEmail())
-        .keys().first().safe();
-  }
-
   private FirebaseToken getFirebaseToken(String idToken) {
     Task<FirebaseToken> authTask = getFirebaseTask(idToken);
     awaitTask(authTask);
@@ -358,7 +352,7 @@ public final class AccountController extends Controller {
         .locale(locale)
         .gender(gender)
         .shardRefs(Lists.newArrayList(shardMap.keySet()))
-        .categoryKeys(KeyUtil.<Category>extractKeysFromIds(categoryIds, ",").blockingSingle())
+        .categoryKeys(KeyUtil.extractKeysFromIds2(categoryIds, ","))
         .counts(Account.Counts.builder().build())
         .detail(Account.Detail.builder().build())
         .created(DateTime.now())
@@ -370,15 +364,11 @@ public final class AccountController extends Controller {
         .build();
   }
 
-  private AccountEntity createAdminAccountEntity(FirebaseToken token) {
-    final Key<Account> accountKey = factory().allocateId(Account.class);
-
+  private AccountEntity createAdminAccountEntity() {
     Account account = Account.builder()
-        .id(accountKey.getId())
-        .username(generateUsername(token))
-        .realname(token.getName())
-        .firebaseUUID(token.getUid())
-        .email(new Email(token.getEmail()))
+        .id(1L)
+        .username(Constants.ADMIN_USERNAME)
+        .email(new Email(Constants.ADMIN_EMAIL))
         .created(DateTime.now())
         .build();
 
@@ -387,20 +377,13 @@ public final class AccountController extends Controller {
         .build();
   }
 
-  private String generateUsername(FirebaseToken token) {
-    return token.getName()
-        .trim()
-        .replaceAll("\\s+", "")
-        .concat(String.valueOf(System.currentTimeMillis()).substring(5));
-  }
-
   private Account updateAccount(Account account, Optional<Media> media, Optional<String> username) {
     if (username.isPresent()) {
       account = account.withUsername(username.get());
     }
 
     if (media.isPresent()) {
-      Media.Size size = new ThumbSize(media.get().getUrl());
+      Size size = ThumbSize.of(media.get().getUrl());
 
       account = account.withAvatarUrl(new Link(size.getUrl()));
     }

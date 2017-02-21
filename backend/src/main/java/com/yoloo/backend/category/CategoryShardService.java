@@ -1,10 +1,11 @@
 package com.yoloo.backend.category;
 
+import com.annimon.stream.Stream;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.shard.ShardService;
 import com.yoloo.backend.shard.ShardUtil;
+import com.yoloo.backend.util.KeyUtil;
 import io.reactivex.Observable;
 import java.util.Collection;
 import java.util.List;
@@ -67,29 +68,20 @@ public class CategoryShardService implements ShardService<Category, CategoryShar
     return CategoryShard.createKey(entityKey, shardNum);
   }
 
-  public Collection<CategoryShard> updateShards(Iterable<String> categories) {
-    Query<Category> query = ofy().load().type(Category.class);
-
-    for (String category : categories) {
-      query = query.filter(Category.FIELD_NAME + " =", category);
-    }
-
-    List<Key<Category>> categoryKeys = query.keys().list();
+  public Collection<CategoryShard> updateShards(String categoryIds) {
+    List<Key<Category>> categoryKeys = KeyUtil.extractKeysFromIds2(categoryIds, ",");
 
     List<Key<CategoryShard>> categoryShardKeys =
         Lists.newArrayListWithCapacity(categoryKeys.size());
 
-    for (Key<Category> key : categoryKeys) {
-      categoryShardKeys.add(getRandomShardKey(key));
-    }
+    categoryShardKeys.addAll(Stream.of(categoryKeys).map(this::getRandomShardKey).toList());
 
     Map<Key<CategoryShard>, CategoryShard> map = ofy().load().keys(categoryShardKeys);
 
-    for (CategoryShard ccs : map.values()) {
-      ccs.increasePosts();
-
-      map.put(ccs.getKey(), ccs);
-    }
+    Stream.of(map).forEach(entry -> {
+      entry.getValue().increasePosts();
+      map.put(entry.getKey(), entry.getValue());
+    });
 
     return map.values();
   }

@@ -11,8 +11,8 @@ import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Ref;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.account.AccountShard;
 import com.yoloo.backend.account.AccountEntity;
+import com.yoloo.backend.account.AccountShard;
 import com.yoloo.backend.account.AccountShardService;
 import com.yoloo.backend.category.Category;
 import com.yoloo.backend.category.CategoryController;
@@ -104,8 +104,8 @@ public class VoteControllerTest extends TestBase {
 
     ofy().save().entities(saveList).now();
 
-    post = postController.insertQuestion("Test content", "visa,passport", "europe", Optional.absent(),
-        Optional.absent(), user);
+    post = postController.insertQuestion("Test content", "visa,passport", europe.getWebsafeId(),
+        Optional.absent(), Optional.absent(), user);
   }
 
   @Test
@@ -292,7 +292,7 @@ public class VoteControllerTest extends TestBase {
   private DeviceRecord createRecord(Account owner) {
     return DeviceRecord.builder()
         .id(owner.getWebsafeId())
-        .parentUserKey(owner.getKey())
+        .parent(owner.getKey())
         .regId(UUID.randomUUID().toString())
         .build();
   }

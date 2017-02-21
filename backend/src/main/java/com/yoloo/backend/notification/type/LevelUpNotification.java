@@ -20,7 +20,7 @@ public class LevelUpNotification implements NotificationBundle {
 
   @Override public List<Notification> getNotifications() {
     Notification notification = Notification.builder()
-        .receiverKey(record.getParentUserKey())
+        .receiverKey(record.getParent())
         .action(Action.GAME)
         .payload("level", tracker.getLevel())
         .created(DateTime.now())

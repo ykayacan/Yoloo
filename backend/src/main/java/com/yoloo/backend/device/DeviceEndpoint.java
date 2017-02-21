@@ -8,8 +8,8 @@ import com.google.api.server.spi.config.ApiNamespace;
 import com.google.appengine.api.users.User;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
-import com.yoloo.backend.validator.Validator;
-import com.yoloo.backend.validator.rule.common.AuthValidator;
+import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
+import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
 import java.util.logging.Logger;
 import javax.inject.Named;
 
@@ -35,7 +35,7 @@ import javax.inject.Named;
 )
 public class DeviceEndpoint {
 
-  private static final Logger LOGGER =
+  private static final Logger LOG =
       Logger.getLogger(DeviceEndpoint.class.getName());
 
   /**
@@ -51,8 +51,8 @@ public class DeviceEndpoint {
       httpMethod = ApiMethod.HttpMethod.POST)
   public void registerDevice(@Named("regId") String regId, User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(AuthValidator.create(user))
         .validate();
 
     getDeviceController().registerDevice(regId, user);
@@ -71,8 +71,8 @@ public class DeviceEndpoint {
       httpMethod = ApiMethod.HttpMethod.DELETE)
   public void unregisterDevice(@Named("regId") String regId, User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(AuthValidator.create(user))
         .validate();
 
     getDeviceController().unregisterDevice(regId, user);

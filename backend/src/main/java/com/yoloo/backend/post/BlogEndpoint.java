@@ -10,11 +10,11 @@ import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
+import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
+import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
+import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
+import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
 import com.yoloo.backend.post.sort_strategy.PostSorter;
-import com.yoloo.backend.validator.Validator;
-import com.yoloo.backend.validator.rule.common.AuthValidator;
-import com.yoloo.backend.validator.rule.common.BadRequestValidator;
-import com.yoloo.backend.validator.rule.common.ForbiddenValidator;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
@@ -54,9 +54,9 @@ public class BlogEndpoint {
       httpMethod = ApiMethod.HttpMethod.GET)
   public Post get(@Named("blogId") String blogId, User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new BadRequestValidator(blogId))
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(blogId, "blogId is required."))
+        .on(AuthValidator.create(user))
         .validate();
 
     return postController.getPost(blogId, user);
@@ -68,7 +68,7 @@ public class BlogEndpoint {
    * @param title the title
    * @param content the content
    * @param tags the tags
-   * @param categories the categories
+   * @param categoryIds the categories
    * @param mediaId the media id
    * @param user the user
    * @return the question
@@ -82,20 +82,23 @@ public class BlogEndpoint {
       @Named("title") String title,
       @Named("content") String content,
       @Named("tags") String tags,
-      @Named("categories") String categories,
+      @Named("categoryIds") String categoryIds,
       @Nullable @Named("mediaId") String mediaId,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new BadRequestValidator(title, tags, content, categories))
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(title, "title is required."))
+        .on(BadRequestValidator.create(content, "content is required."))
+        .on(BadRequestValidator.create(tags, "tags is required."))
+        .on(BadRequestValidator.create(categoryIds, "categoryIds is required."))
+        .on(AuthValidator.create(user))
         .validate();
 
     return postController.insertBlog(
         title,
         content,
         tags,
-        categories,
+        categoryIds,
         Optional.fromNullable(mediaId),
         user);
   }
@@ -124,10 +127,10 @@ public class BlogEndpoint {
       @Nullable @Named("mediaId") String mediaId,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new BadRequestValidator(blogId))
-        .addRule(new AuthValidator(user))
-        .addRule(new ForbiddenValidator(user, blogId, ForbiddenValidator.Operation.UPDATE))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(blogId, "blogId is required."))
+        .on(AuthValidator.create(user))
+        .on(ForbiddenValidator.create(blogId, user, ForbiddenValidator.Op.UPDATE))
         .validate();
 
     return postController.updatePost(
@@ -152,10 +155,10 @@ public class BlogEndpoint {
       httpMethod = ApiMethod.HttpMethod.DELETE)
   public void delete(@Named("blogId") String blogId, User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new BadRequestValidator(blogId))
-        .addRule(new AuthValidator(user))
-        .addRule(new ForbiddenValidator(user, blogId, ForbiddenValidator.Operation.DELETE))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(blogId, "blogId is required."))
+        .on(AuthValidator.create(user))
+        .on(ForbiddenValidator.create(blogId, user, ForbiddenValidator.Op.DELETE))
         .validate();
 
     postController.deletePost(blogId);
@@ -185,7 +188,9 @@ public class BlogEndpoint {
       @Nullable @Named("limit") Integer limit,
       User user) throws ServiceException {
 
-    Validator.builder().addRule(new AuthValidator(user)).validate();
+    EndpointsValidator.create()
+        .on(AuthValidator.create(user))
+        .validate();
 
     return postController.listPosts(
         Optional.fromNullable(accountId),
@@ -211,9 +216,9 @@ public class BlogEndpoint {
       httpMethod = ApiMethod.HttpMethod.PUT)
   public void report(@Named("blogId") String blogId, User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new BadRequestValidator(blogId))
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(blogId, "blogId is required."))
+        .on(AuthValidator.create(user))
         .validate();
 
     postController.reportPost(blogId, user);

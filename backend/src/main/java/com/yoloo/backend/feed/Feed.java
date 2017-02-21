@@ -11,6 +11,7 @@ import com.yoloo.backend.account.Account;
 import com.yoloo.backend.post.Post;
 import lombok.Builder;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 
 @Entity
 @Cache
@@ -25,9 +26,10 @@ public class Feed {
   private Key<Account> parent;
 
   @Load
+  @NonFinal
   private Ref<Post> postRef;
 
-  public Post getFeedItem() {
+  public Post getPost() {
     return postRef.getValue();
   }
 }

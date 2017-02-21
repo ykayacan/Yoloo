@@ -14,6 +14,7 @@ import io.realm.RealmResults;
 import io.realm.Sort;
 import java.util.Collections;
 import java.util.List;
+import timber.log.Timber;
 
 public class PostDiskDataStore {
 
@@ -44,6 +45,7 @@ public class PostDiskDataStore {
   }
 
   public void add(PostRealm post) {
+    Timber.d("Post: %s", post.toString());
     addAll(Collections.singletonList(post));
   }
 
@@ -112,6 +114,27 @@ public class PostDiskDataStore {
       } else {
         results = query.findAll();
       }
+
+      List<PostRealm> posts = realm.copyFromRealm(results);
+
+      realm.close();
+
+      return Response.create(posts, null, null);
+    });
+  }
+
+  public Observable<Response<List<PostRealm>>> listByTag(String tagName) {
+    return Observable.fromCallable(() -> {
+      Realm realm = Realm.getDefaultInstance();
+
+      RealmQuery<PostRealm> query = realm.where(PostRealm.class);
+
+      RealmResults<PostRealm> results;
+
+      query.notEqualTo(PostRealmFields.PENDING, true);
+
+      results = query.equalTo(PostRealmFields.TAGS.NAME, tagName)
+          .findAllSorted(PostRealmFields.CREATED, Sort.DESCENDING);
 
       List<PostRealm> posts = realm.copyFromRealm(results);
 

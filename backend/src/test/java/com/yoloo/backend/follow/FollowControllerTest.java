@@ -132,7 +132,7 @@ public class FollowControllerTest extends TestBase {
   private DeviceRecord createRecord(Account owner) {
     return DeviceRecord.builder()
         .id(owner.getWebsafeId())
-        .parentUserKey(owner.getKey())
+        .parent(owner.getKey())
         .regId(UUID.randomUUID().toString())
         .build();
   }

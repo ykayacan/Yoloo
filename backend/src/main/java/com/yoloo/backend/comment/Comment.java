@@ -1,9 +1,7 @@
 package com.yoloo.backend.comment;
 
-import com.google.api.server.spi.config.AnnotationBoolean;
-import com.google.api.server.spi.config.ApiResourceProperty;
+import com.google.api.server.spi.config.ApiTransformer;
 import com.google.appengine.api.datastore.Link;
-import com.google.appengine.repackaged.org.codehaus.jackson.annotate.JsonProperty;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.annotation.Cache;
@@ -15,11 +13,11 @@ import com.googlecode.objectify.annotation.Load;
 import com.googlecode.objectify.annotation.Parent;
 import com.googlecode.objectify.condition.IfNotDefault;
 import com.yoloo.backend.account.Account;
+import com.yoloo.backend.comment.transformer.CommentTransformer;
 import com.yoloo.backend.post.Post;
 import com.yoloo.backend.util.Deref;
 import com.yoloo.backend.vote.Votable;
 import com.yoloo.backend.vote.Vote;
-import java.util.Date;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -36,6 +34,7 @@ import org.joda.time.DateTime;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+@ApiTransformer(CommentTransformer.class)
 public class Comment implements Votable {
 
   public static final String FIELD_QUESTION_KEY = "questionKey";
@@ -43,29 +42,30 @@ public class Comment implements Votable {
   public static final String FIELD_ACCEPTED = "accepted";
 
   @Id
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private long id;
 
   @Parent
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-  private Key<Account> parentUserKey;
+  @NonFinal
+  private Key<Account> parent;
 
   @Wither
+  @NonFinal
   private String username;
 
   @Wither
+  @NonFinal
   private Link avatarUrl;
 
   @Wither
+  @NonFinal
   private String content;
 
   @Load(ShardGroup.class)
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+  @NonFinal
   private List<Ref<CommentShard>> shardRefs;
 
   @Index
   @NonFinal
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private Key<Post> questionKey;
 
   @Wither
@@ -75,10 +75,10 @@ public class Comment implements Votable {
 
   @Index
   @NonFinal
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private DateTime created;
 
   // Extra fields
+
   @Ignore
   @Wither
   private Vote.Direction dir;
@@ -87,34 +87,29 @@ public class Comment implements Votable {
   @Wither
   private long votes;
 
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   public Key<Comment> getKey() {
-    return Key.create(parentUserKey, Comment.class, id);
+    return Key.create(parent, Comment.class, id);
   }
 
-  @JsonProperty("id")
   public String getWebsafeId() {
     return getKey().toWebSafeString();
   }
 
+  public String getWebsafeOwnerId() {
+    return parent.toWebSafeString();
+  }
+
   @Override
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   public <T> Key<T> getVotableKey() {
     //noinspection unchecked
     return (Key<T>) getKey();
   }
 
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   public List<CommentShard> getShards() {
     return Deref.deref(this.shardRefs);
   }
 
-  @ApiResourceProperty(name = "created")
-  public Date getDate() {
-    return created.toDate();
-  }
-
   @NoArgsConstructor
-  public static final class ShardGroup {
+  public static class ShardGroup {
   }
 }

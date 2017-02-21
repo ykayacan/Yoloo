@@ -41,9 +41,7 @@ public class UserRepository {
   }
 
   public Observable<AccountRealm> getMe() {
-    return Observable.mergeDelayError(
-        diskDataStore.getMe().subscribeOn(Schedulers.io()),
-        remoteDataStore.getMe().doOnNext(diskDataStore::add).subscribeOn(Schedulers.io()));
+    return remoteDataStore.getMe().doOnNext(diskDataStore::add).subscribeOn(Schedulers.io());
   }
 
   public Observable<AccountRealm> getLocalMe() {

@@ -21,6 +21,7 @@ import android.widget.AdapterView;
 import android.widget.Spinner;
 import butterknife.BindColor;
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
@@ -54,12 +55,14 @@ import com.yoloo.android.feature.photo.PhotoController;
 import com.yoloo.android.feature.postdetail.PostDetailController;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.search.SearchController;
+import com.yoloo.android.feature.write.EditorType;
+import com.yoloo.android.feature.write.catalog.CatalogController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
-import com.yoloo.android.ui.widget.MultiStateLayout;
 import com.yoloo.android.ui.widget.SpinnerTitleArrayAdapter;
+import com.yoloo.android.ui.widget.StateLayout;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.ControllerUtil;
 import com.yoloo.android.util.DrawableHelper;
@@ -90,7 +93,7 @@ public class PostController extends MvpController<PostView, PostPresenter>
   private static final String KEY_BOUNTY = "BOUNTY";
   private static final String KEY_BOOKMARKED = "BOOKMARKED";
 
-  @BindView(R.id.root_view) MultiStateLayout rootView;
+  @BindView(R.id.root_view) StateLayout rootView;
   @BindView(R.id.toolbar_feed_global) Toolbar toolbar;
   @BindView(R.id.rv_feed_global) RecyclerView rvPostFeed;
   @BindView(R.id.spinner_feed_global) Spinner spinner;
@@ -184,7 +187,17 @@ public class PostController extends MvpController<PostView, PostPresenter>
     setupSpinner();
     setupRecyclerView();
 
-    rootView.setViewForState(swipeRefreshLayout, MultiStateLayout.VIEW_STATE_CONTENT);
+    rootView.setContentView(swipeRefreshLayout);
+
+    rootView.setViewStateListener((stateView, viewState) -> {
+      if (viewState == StateLayout.VIEW_STATE_EMPTY) {
+        ButterKnife.findById(stateView, R.id.btn_empty_action)
+            .setOnClickListener(v -> {
+              startTransaction(CatalogController.create(EditorType.ASK_QUESTION),
+                  new VerticalChangeHandler());
+            });
+      }
+    });
   }
 
   @Override protected void onAttach(@NonNull View view) {
@@ -245,7 +258,7 @@ public class PostController extends MvpController<PostView, PostPresenter>
 
   @Override public void onLoading(boolean pullToRefresh) {
     if (!pullToRefresh) {
-      rootView.setViewState(MultiStateLayout.VIEW_STATE_LOADING);
+      rootView.setState(StateLayout.VIEW_STATE_LOADING);
       //LceAnimator.showLoading(loadingView, swipeRefreshLayout, errorView);
     }
   }
@@ -259,20 +272,20 @@ public class PostController extends MvpController<PostView, PostPresenter>
   }
 
   @Override public void showContent() {
-    rootView.setViewState(MultiStateLayout.VIEW_STATE_CONTENT);
+    Timber.d("showContent()");
+    rootView.setState(StateLayout.VIEW_STATE_CONTENT);
     //LceAnimator.showContent(loadingView, swipeRefreshLayout, errorView);
     swipeRefreshLayout.setRefreshing(false);
   }
 
   @Override public void onError(Throwable e) {
-    rootView.setViewState(MultiStateLayout.VIEW_STATE_ERROR);
+    rootView.setState(StateLayout.VIEW_STATE_ERROR);
     swipeRefreshLayout.setRefreshing(false);
-    Timber.e(e);
   }
 
   @Override public void onEmpty() {
-    rootView.setViewState(MultiStateLayout.VIEW_STATE_EMPTY);
-    //actionView.setVisibility(View.VISIBLE);
+    rootView.setState(StateLayout.VIEW_STATE_EMPTY);
+    swipeRefreshLayout.setRefreshing(false);
   }
 
   @Override public void onRefresh() {
@@ -296,8 +309,7 @@ public class PostController extends MvpController<PostView, PostPresenter>
             UserDiskDataStore.getInstance()));
   }
 
-  @Override
-  public void onPostOptionsClick(View v, EpoxyModel<?> model, PostRealm post) {
+  @Override public void onPostOptionsClick(View v, EpoxyModel<?> model, PostRealm post) {
     final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
     final boolean self = currentUserId.equals(post.getOwnerId());
     menu.getMenu().getItem(0).setVisible(viewType != VIEW_TYPE_BOOKMARKED);

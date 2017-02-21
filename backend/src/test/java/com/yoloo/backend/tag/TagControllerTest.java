@@ -77,7 +77,7 @@ public class TagControllerTest extends TestBase {
         .insertTag("tag1", Locale.ENGLISH.getISO3Language(), group.getWebsafeId());
 
     assertEquals("tag1", tag.getName());
-    assertEquals(Locale.ENGLISH.getISO3Language(), tag.getLanguage());
+    assertEquals(Locale.ENGLISH.getISO3Language(), tag.getLangCode());
     assertEquals(TagShard.SHARD_COUNT, tag.getShards().size());
 
     List<Key<Tag>> keys = new ArrayList<>(1);
@@ -99,7 +99,7 @@ public class TagControllerTest extends TestBase {
     Tag tag = tagController.insertTag("h1", Locale.ENGLISH.getISO3Language(), groupIds);
 
     assertEquals("h1", tag.getName());
-    assertEquals(Locale.ENGLISH.getISO3Language(), tag.getLanguage());
+    assertEquals(Locale.ENGLISH.getISO3Language(), tag.getLangCode());
 
     List<Key<Tag>> keys = new ArrayList<>(1);
     keys.add(group1.getKey());

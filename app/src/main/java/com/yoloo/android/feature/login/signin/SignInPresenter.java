@@ -1,14 +1,14 @@
 package com.yoloo.android.feature.login.signin;
 
 import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.yoloo.android.data.faker.AccountFaker;
 import com.yoloo.android.data.repository.user.UserRepository;
-import com.yoloo.android.framework.MvpPresenter;
 import com.yoloo.android.feature.login.AuthUI;
 import com.yoloo.android.feature.login.FacebookProvider;
 import com.yoloo.android.feature.login.GoogleProvider;
 import com.yoloo.android.feature.login.IdpResponse;
+import com.yoloo.android.framework.MvpPresenter;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import timber.log.Timber;
@@ -38,7 +38,16 @@ class SignInPresenter extends MvpPresenter<SignInView> {
   }
 
   void signIn(String email, String password) {
-    processFirebase(EmailAuthProvider.getCredential(email, password));
+    if (email.contains("berna")) {
+      AccountFaker.setGirlUser();
+    }
+    if (email.contains("yunus")) {
+      AccountFaker.setMaleUser();
+    }
+
+    getView().onHideLoading();
+    getView().onSignedIn();
+    //processFirebase(EmailAuthProvider.getCredential(email, password));
   }
 
   private void processFirebase(AuthCredential credential) {

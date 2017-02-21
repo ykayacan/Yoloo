@@ -30,7 +30,7 @@ public class ChildSearchPresenter extends MvpPresenter<ChildSearchView> {
   }
 
   public void loadTags(String name, String cursor) {
-    Disposable d = tagRepository.listTags(name, cursor, 20)
+    Disposable d = tagRepository.listTags2(name, cursor, 20)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showTags, Timber::e);
 

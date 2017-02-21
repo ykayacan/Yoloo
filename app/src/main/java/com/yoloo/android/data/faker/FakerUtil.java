@@ -91,7 +91,7 @@ public class FakerUtil {
 
   public static Date getRandomDate() {
     final long beginTime = Timestamp.valueOf("2017-01-13 00:00:00").getTime();
-    final long endTime = Timestamp.valueOf("2017-01-14 00:58:00").getTime();
+    final long endTime = Timestamp.valueOf("2017-02-14 00:58:00").getTime();
     long diff = endTime - beginTime + 1;
 
     long timeStamp = beginTime + (long) (Math.random() * diff);

@@ -2,13 +2,17 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/empty_view"
   android:layout_width="@dimen/_216sdp"
   android:layout_height="wrap_content"
   android:layout_gravity="center"
   android:gravity="center"
-  android:orientation="vertical">
+  android:orientation="vertical"
+  android:visibility="gone"
+  tools:visibility="visible">
 
   <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_empty_title"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:drawablePadding="@dimen/padding_normal"
@@ -18,6 +22,7 @@
     app:drawableTop="@drawable/ic_empty_feed" />
 
   <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_empty_content"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/padding_micro"
@@ -26,6 +31,7 @@
     tools:visibility="visible" />
 
   <Button
+    android:id="@+id/btn_empty_action"
     style="@style/Yoloo.Button.Colored"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"

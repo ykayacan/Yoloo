@@ -1,6 +1,6 @@
 <resources>
 
-  <style name="Yoloo" parent="Theme.AppCompat.Light.NoActionBar">
+  <style name="Yoloo.Base" parent="Theme.AppCompat.Light.NoActionBar">
     <item name="colorPrimary">@color/primary</item>
     <item name="colorPrimaryDark">@color/primary_dark</item>
     <item name="colorAccent">@color/accent</item>
@@ -9,7 +9,12 @@
     <!--<item name="colorControlHighlight">@color/ripple_light</item>-->
   </style>
 
-  <style name="Yoloo.Splash">
+  <style name="Yoloo" parent="Yoloo.Base"> <!-- pre-Lollipop -->
+    <item name="android:windowTranslucentStatus">true</item>
+    <item name="android:windowTranslucentNavigation">true</item>
+  </style>
+
+  <style name="Yoloo.Splash" parent="Yoloo">
     <item name="android:windowBackground">@drawable/layer_splash</item>
   </style>
 
@@ -55,8 +60,7 @@
     <item name="android:layout_height">40dp</item>
   </style>
 
-  <style name="Yoloo.Button.Bounty" parent="@style/Yoloo.Button.Colored">
-    <item name="colorButtonNormal">@color/primary_blue</item>
+  <style name="Yoloo.Button.Empty" parent="@style/Yoloo.Button.Colored">
     <item name="android:paddingTop">12dp</item>
     <item name="android:paddingBottom">12dp</item>
     <item name="android:paddingRight">72dp</item>
@@ -67,15 +71,8 @@
     <item name="android:drawableStart">@drawable/ic_bounty_coin_36dp</item>
   </style>
 
-  <style name="Yoloo.Button.Empty" parent="@style/Yoloo.Button.Colored">
-    <item name="android:paddingTop">12dp</item>
-    <item name="android:paddingBottom">12dp</item>
-    <item name="android:paddingRight">72dp</item>
-    <item name="android:paddingEnd">72dp</item>
-    <item name="android:paddingLeft">72dp</item>
-    <item name="android:paddingStart">72dp</item>
-    <item name="android:drawableLeft">@drawable/ic_bounty_coin_36dp</item>
-    <item name="android:drawableStart">@drawable/ic_bounty_coin_36dp</item>
+  <style name="Yoloo.Button.Bounty" parent="@style/Yoloo.Button.Empty">
+    <item name="colorButtonNormal">@color/primary_blue</item>
   </style>
 
   <style name="Yoloo.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

@@ -10,12 +10,12 @@ import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
-import com.yoloo.backend.validator.Validator;
-import com.yoloo.backend.validator.rule.comment.CommentCreateRule;
-import com.yoloo.backend.validator.rule.common.AuthValidator;
-import com.yoloo.backend.validator.rule.common.BadRequestValidator;
-import com.yoloo.backend.validator.rule.common.IdValidationRule;
-import com.yoloo.backend.validator.rule.common.NotFoundRule;
+import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
+import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
+import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
+import com.yoloo.backend.endpointsvalidator.validator.CommentUpdateValidator;
+import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
+import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.inject.Named;
@@ -42,7 +42,7 @@ import javax.inject.Named;
 )
 public class CommentEndpoint {
 
-  private static final Logger LOGGER =
+  private static final Logger LOG =
       Logger.getLogger(CommentEndpoint.class.getSimpleName());
 
   private final CommentController commentController = CommentControllerFactory.of().create();
@@ -65,9 +65,11 @@ public class CommentEndpoint {
       @Named("commentId") String commentId,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new BadRequestValidator(postId, commentId))
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(postId, "postId is required."))
+        .on(BadRequestValidator.create(commentId, "commentId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(postId, "Invalid postId."))
         .validate();
 
     return commentController.getComment(commentId, user);
@@ -91,11 +93,11 @@ public class CommentEndpoint {
       @Named("content") String content,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new IdValidationRule(postId))
-        .addRule(new AuthValidator(user))
-        .addRule(new CommentCreateRule(content))
-        .addRule(new NotFoundRule(postId))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(postId, "postId is required."))
+        .on(BadRequestValidator.create(content, "content is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(postId, "Invalid postId."))
         .validate();
 
     return commentController.insertComment(postId, content, user);
@@ -123,10 +125,12 @@ public class CommentEndpoint {
       @Nullable @Named("accepted") Boolean accepted,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new IdValidationRule(postId))
-        .addRule(new AuthValidator(user))
-        .addRule(new NotFoundRule(postId))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(postId, "postId is required."))
+        .on(BadRequestValidator.create(commentId, "commentId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(postId, "Invalid postId."))
+        .on(CommentUpdateValidator.create(postId, commentId, user))
         .validate();
 
     return commentController.updateComment(postId, commentId, Optional.fromNullable(content),
@@ -136,7 +140,7 @@ public class CommentEndpoint {
   /**
    * Deletes the specified {@code Comment}.
    *
-   * @param questionId the ID from the entity to be updated
+   * @param postId the ID from the entity to be updated
    * @param commentId the websafe comment id
    * @param user the user
    * @return the updated version from the entity
@@ -147,17 +151,19 @@ public class CommentEndpoint {
       path = "posts/{postId}/comments/{commentId}",
       httpMethod = ApiMethod.HttpMethod.DELETE)
   public void delete(
-      @Named("postId") String questionId,
+      @Named("postId") String postId,
       @Named("commentId") String commentId,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new IdValidationRule(questionId))
-        .addRule(new AuthValidator(user))
-        .addRule(new NotFoundRule(questionId))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(postId, "postId is required."))
+        .on(BadRequestValidator.create(commentId, "commentId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(postId, "Invalid postId."))
+        .on(ForbiddenValidator.create(commentId, user, ForbiddenValidator.Op.DELETE))
         .validate();
 
-    commentController.deleteComment(questionId, commentId, user);
+    commentController.deleteComment(postId, commentId, user);
   }
 
   /**
@@ -181,10 +187,10 @@ public class CommentEndpoint {
       User user)
       throws ServiceException {
 
-    Validator.builder()
-        .addRule(new BadRequestValidator(postId))
-        .addRule(new AuthValidator(user))
-        .addRule(new NotFoundRule(postId))
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(postId, "postId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(postId, "Invalid postId."))
         .validate();
 
     return commentController.listComments(postId, Optional.fromNullable(cursor),

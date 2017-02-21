@@ -10,8 +10,8 @@ import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
-import com.yoloo.backend.validator.Validator;
-import com.yoloo.backend.validator.rule.common.AuthValidator;
+import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
+import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
@@ -48,8 +48,8 @@ public class NotificationEndpoint {
       @Nullable @Named("limit") Integer limit,
       User user) throws ServiceException {
 
-    Validator.builder()
-        .addRule(new AuthValidator(user))
+    EndpointsValidator.create()
+        .on(AuthValidator.create(user))
         .validate();
 
     return notificationController.listNotifications(

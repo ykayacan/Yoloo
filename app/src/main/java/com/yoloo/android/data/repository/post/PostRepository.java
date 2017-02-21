@@ -44,12 +44,10 @@ public class PostRepository {
             .subscribeOn(Schedulers.io()));
   }
 
-  public Observable<PostRealm> addPost(PostRealm post) {
+  public void addPost(PostRealm post) {
     Preconditions.checkNotNull(post, "post can not be null.");
 
-    return remoteDataStore.add(post)
-        .doOnNext(diskDataStore::add)
-        .subscribeOn(Schedulers.io());
+    diskDataStore.add(post);
   }
 
   public Completable deletePost(String postId) {
@@ -73,16 +71,7 @@ public class PostRepository {
   }
 
   public Observable<Response<List<PostRealm>>> listByFeed(String cursor, String eTag, int limit) {
-    // TODO: 15.02.2017 Fix data
-    //return diskDataStore.listByFeed().subscribeOn(Schedulers.io());
-    return Observable.mergeDelayError(
-        diskDataStore.listByFeed().subscribeOn(Schedulers.io()),
-        remoteDataStore.listByFeed(cursor, eTag, limit)
-            .filter(response -> !response.getData().isEmpty())
-            .doOnNext(response -> diskDataStore.addAll(response.getData()))
-            .subscribeOn(Schedulers.io()))
-        .filter(response -> !response.getData().isEmpty())
-        .filter(Response::isUpToDate);
+    return diskDataStore.listByFeed().subscribeOn(Schedulers.io());
   }
 
   public Observable<Response<List<PostRealm>>> listByBounty(String cursor, String eTag, int limit) {
@@ -108,7 +97,7 @@ public class PostRepository {
       String cursor, String eTag, int limit) {
     Preconditions.checkNotNull(tagNames, "tagNames can not be null.");
 
-    return remoteDataStore.listByTags(tagNames, sorter, cursor, eTag, limit)
+    return diskDataStore.listByTag(tagNames)
         .doOnNext(response -> diskDataStore.addAll(response.getData()))
         .subscribeOn(Schedulers.io());
   }
