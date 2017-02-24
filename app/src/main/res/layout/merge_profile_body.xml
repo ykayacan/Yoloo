@@ -11,8 +11,8 @@
     android:layout_marginEnd="8dp"
     android:layout_marginRight="8dp"
     android:layout_marginTop="8dp"
-    android:foreground="?attr/selectableItemBackgroundBorderless"
-    app:cardElevation="2dp"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardElevation="@dimen/cardview_default_elevation"
     app:cardUseCompatPadding="true"
     app:layout_constraintHorizontal_chainStyle="packed"
     app:layout_constraintLeft_toLeftOf="parent"
@@ -20,16 +20,15 @@
     app:layout_constraintTop_toBottomOf="@+id/iv_profile_bg">
 
     <ImageView
+      style="@style/Widget.Yoloo.ProfileCard.Image"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:background="@color/primary"
-      android:padding="15dp"
-      android:tint="@android:color/white"
       app:srcCompat="@drawable/ic_bookmark_star_32dp" />
 
     <TextView
       android:id="@+id/tv_profile_points"
-      style="@style/TextAppearance.ProfileCard"
+      style="@style/Widget.Yoloo.ProfileCard"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_gravity="bottom"
@@ -44,24 +43,23 @@
     android:layout_marginEnd="8dp"
     android:layout_marginRight="8dp"
     android:layout_marginTop="8dp"
-    android:foreground="?attr/selectableItemBackgroundBorderless"
-    app:cardElevation="2dp"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardElevation="@dimen/cardview_default_elevation"
     app:cardUseCompatPadding="true"
     app:layout_constraintLeft_toRightOf="@+id/card_profile_points"
     app:layout_constraintRight_toLeftOf="@+id/card_profile_achievements"
     app:layout_constraintTop_toBottomOf="@+id/iv_profile_bg">
 
     <ImageView
+      style="@style/Widget.Yoloo.ProfileCard.Image"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:background="@color/primary_yellow"
-      android:padding="15dp"
-      android:tint="@android:color/white"
       app:srcCompat="@drawable/ic_coin_stack_32dp" />
 
     <TextView
       android:id="@+id/tv_profile_bounties"
-      style="@style/TextAppearance.ProfileCard"
+      style="@style/Widget.Yoloo.ProfileCard"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_gravity="bottom"
@@ -74,8 +72,8 @@
     android:layout_width="108dp"
     android:layout_height="108dp"
     android:layout_marginTop="8dp"
-    android:foreground="?attr/selectableItemBackgroundBorderless"
-    app:cardElevation="2dp"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardElevation="@dimen/cardview_default_elevation"
     app:cardUseCompatPadding="true"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintLeft_toRightOf="@+id/card_profile_bounties"
@@ -83,16 +81,15 @@
     app:layout_constraintTop_toBottomOf="@+id/iv_profile_bg">
 
     <ImageView
+      style="@style/Widget.Yoloo.ProfileCard.Image"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:background="@color/primary_blue"
-      android:padding="15dp"
-      android:tint="@android:color/white"
       app:srcCompat="@drawable/ic_trophy_cup_silhouette_32dp" />
 
     <TextView
       android:id="@+id/tv_profile_achievements"
-      style="@style/TextAppearance.ProfileCard"
+      style="@style/Widget.Yoloo.ProfileCard"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_gravity="bottom"

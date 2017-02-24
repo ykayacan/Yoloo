@@ -10,12 +10,12 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.NotFoundException;
 import com.googlecode.objectify.Ref;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.account.AccountShard;
 import com.yoloo.backend.account.AccountEntity;
+import com.yoloo.backend.account.AccountShard;
 import com.yoloo.backend.account.AccountShardService;
 import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.util.TestBase;
-import io.reactivex.Observable;
+import java.util.Map;
 import java.util.UUID;
 import org.joda.time.DateTime;
 import org.junit.Test;
@@ -78,12 +78,12 @@ public class FollowControllerTest extends TestBase {
 
     followController.follow(following.getWebsafeId(), user);
 
-    assertEquals(1, shardService.merge(follower).blockingSingle().getFollowings());
-    assertEquals(1, shardService.merge(following).blockingSingle().getFollowers());
+    assertEquals(1, shardService.merge(follower).blockingSingle().getFollowingCount());
+    assertEquals(1, shardService.merge(following).blockingSingle().getFollowerCount());
 
     Follow follow = ofy().load().type(Follow.class).ancestor(follower.getKey()).first().now();
 
-    assertEquals(follower.getKey(), follow.getParentUserKey());
+    assertEquals(follower.getKey(), follow.getFollowerKey());
     assertEquals(following.getKey(), follow.getFollowingKey());
 
     assertEquals(1, ofy().load().type(Follow.class).ancestor(follower.getKey()).count());
@@ -97,8 +97,8 @@ public class FollowControllerTest extends TestBase {
     followController.follow(following.getKey().toWebSafeString(), user);
     followController.unfollow(following.getKey().toWebSafeString(), user);
 
-    assertEquals(0, shardService.merge(follower).blockingSingle().getFollowings());
-    assertEquals(0, shardService.merge(follower).blockingSingle().getFollowers());
+    assertEquals(0, shardService.merge(follower).blockingSingle().getFollowingCount());
+    assertEquals(0, shardService.merge(follower).blockingSingle().getFollowerCount());
 
     ofy().load().type(Follow.class).ancestor(follower.getKey()).first().safe();
   }
@@ -108,25 +108,21 @@ public class FollowControllerTest extends TestBase {
 
     AccountShardService ass = AccountShardService.create();
 
-    return Observable.range(1, AccountShard.SHARD_COUNT)
-        .map(shardNum -> ass.createShard(ownerKey, shardNum))
-        .toMap(Ref::create)
-        .map(shardMap -> {
-          Account account = Account.builder()
-              .id(ownerKey.getId())
-              .avatarUrl(new Link("Test avatar"))
-              .email(new Email(USER_EMAIL))
-              .username("Test user")
-              .shardRefs(Lists.newArrayList(shardMap.keySet()))
-              .created(DateTime.now())
-              .build();
+    Map<Ref<AccountShard>, AccountShard> map = ass.createShardMapWithRef(ownerKey);
 
-          return AccountEntity.builder()
-              .account(account)
-              .shards(shardMap)
-              .build();
-        })
-        .blockingGet();
+    Account account = Account.builder()
+        .id(ownerKey.getId())
+        .avatarUrl(new Link("Test avatar"))
+        .email(new Email(USER_EMAIL))
+        .username("Test user")
+        .shardRefs(Lists.newArrayList(map.keySet()))
+        .created(DateTime.now())
+        .build();
+
+    return AccountEntity.builder()
+        .account(account)
+        .shards(map)
+        .build();
   }
 
   private DeviceRecord createRecord(Account owner) {

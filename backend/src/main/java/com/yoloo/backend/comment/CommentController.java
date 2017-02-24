@@ -16,6 +16,7 @@ import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.device.DeviceUtil;
+import com.yoloo.backend.endpointsvalidator.Guard;
 import com.yoloo.backend.game.GamificationService;
 import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.notification.NotificationService;
@@ -26,7 +27,6 @@ import com.yoloo.backend.notification.type.NotificationBundle;
 import com.yoloo.backend.post.Post;
 import com.yoloo.backend.post.PostShard;
 import com.yoloo.backend.post.PostShardService;
-import com.yoloo.backend.endpointsvalidator.Guard;
 import com.yoloo.backend.vote.Vote;
 import com.yoloo.backend.vote.VoteService;
 import java.util.Collection;
@@ -82,9 +82,9 @@ public class CommentController extends Controller {
 
     Guard.checkNotFound(comment, "Comment does not exists!");
 
-    return CommentUtil
-        .mergeCommentCounts(comment)
-        .flatMap(comment1 -> voteService.checkCommentVote(comment1, accountKey, true))
+    return commentShardService
+        .mergeShards(comment)
+        .flatMap(comment1 -> voteService.checkCommentVote(comment1, accountKey))
         .blockingSingle();
   }
 
@@ -136,10 +136,10 @@ public class CommentController extends Controller {
     DeviceRecord record = (DeviceRecord) fetched.get(recordKey);
 
     // Create a new comment from given inputs.
-    CommentEntity model = commentService.create(account, questionKey, content);
+    CommentEntity entity = commentService.createComment(account, questionKey, content);
 
-    Comment comment = model.getComment();
-    List<CommentShard> shards = model.getShards();
+    Comment comment = entity.getComment();
+    Collection<CommentShard> shards = entity.getShards().values();
 
     post = post.withCommented(!post.isCommented());
 
@@ -296,7 +296,7 @@ public class CommentController extends Controller {
     saveBuilder.add(post).add(comment);
 
     return ofy().transact(() -> {
-      Map<Key<Object>, Object>  saved = ofy().save().entities(saveBuilder.build()).now();
+      Map<Key<Object>, Object> saved = ofy().save().entities(saveBuilder.build()).now();
 
       for (NotificationBundle bundle : notificationBundles) {
         notificationService.send(bundle);
@@ -331,7 +331,7 @@ public class CommentController extends Controller {
     // Immutable helper listFeed object to save all entities in a single db write.
     final ImmutableList<Key<?>> deleteList = ImmutableList.<Key<?>>builder()
         .add(commentKey)
-        .addAll(commentShardService.createShardKeys(commentKey))
+        .addAll(commentShardService.createShardMapWithKey(commentKey).keySet())
         .addAll(voteKeys)
         .build();
 
@@ -381,10 +381,11 @@ public class CommentController extends Controller {
       }
     }
 
-    comments = CommentUtil.mergeCommentCounts(comments)
-        .toList(DEFAULT_LIST_LIMIT)
-        .flatMap(comments1 -> CommentUtil.mergeVoteDirection(comments1, authKey).toList())
-        .blockingGet();
+    if (!comments.isEmpty()) {
+      comments = commentShardService.mergeShards(comments)
+          .flatMap(comments1 -> voteService.checkCommentVote(comments1, authKey))
+          .blockingFirst();
+    }
 
     return CollectionResponse.<Comment>builder()
         .setItems(comments)

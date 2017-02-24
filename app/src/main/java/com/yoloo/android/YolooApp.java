@@ -35,6 +35,10 @@ public class YolooApp extends Application {
     return application.refWatcher;
   }*/
 
+  public static Context getAppContext() {
+    return appContext;
+  }
+
   @Override
   public void onCreate() {
     super.onCreate();
@@ -48,9 +52,8 @@ public class YolooApp extends Application {
     initCalligraphy();
 
     //initializeLeakCanary();
-    //enabledStrictMode();
+    enabledStrictMode();
     //TinyDancer.create().show(this);
-
 
   }
 
@@ -58,10 +61,6 @@ public class YolooApp extends Application {
   protected void attachBaseContext(Context base) {
     super.attachBaseContext(base);
     MultiDex.install(this);
-  }
-
-  public static Context getAppContext() {
-    return appContext;
   }
 
   private void initCalligraphy() {
@@ -93,6 +92,11 @@ public class YolooApp extends Application {
           .detectAll()
           .penaltyLog()
           .penaltyDeath()
+          .build());
+
+      StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+          .detectAll()
+          .penaltyLog()
           .build());
     }
   }
@@ -129,12 +133,7 @@ public class YolooApp extends Application {
 
     @Override
     protected boolean isLoggable(String tag, int priority) {
-      if (priority == Log.VERBOSE || priority == Log.DEBUG) {
-        return false;
-      }
-
-      // Only log WARN, INFO, ERROR, WTF
-      return true;
+      return !(priority == Log.VERBOSE || priority == Log.DEBUG);
     }
 
     @Override

@@ -33,8 +33,8 @@ public class CommentNotification implements NotificationBundle {
         .senderUsername(sender.getUsername())
         .senderAvatarUrl(sender.getAvatarUrl())
         .action(Action.COMMENT)
-        .payload("comment", CommentUtil.trimmedContent(comment, 50))
-        .payload("questionId", comment.getQuestionKey().toWebSafeString())
+        .payload("comment", CommentUtil.trimContent(comment.getContent(), 50))
+        .payload("questionId", comment.getPostKey().toWebSafeString())
         .created(DateTime.now())
         .build();
 
@@ -45,7 +45,7 @@ public class CommentNotification implements NotificationBundle {
   public PushMessage getPushMessage() {
     PushMessage.DataBody dataBody = PushMessage.DataBody.builder()
         .value(PushConstants.ACTION, Action.COMMENT.getValueString())
-        .value(PushConstants.QUESTION_ID, comment.getQuestionKey().toWebSafeString())
+        .value(PushConstants.QUESTION_ID, comment.getPostKey().toWebSafeString())
         .value(PushConstants.SENDER_USERNAME, sender.getUsername())
         .value(PushConstants.SENDER_AVATAR_URL, sender.getAvatarUrl().getValue())
         .value(PushConstants.ACCEPTED_ID, post.getAcceptedCommentId())

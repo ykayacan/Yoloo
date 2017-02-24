@@ -44,6 +44,7 @@ public class AccountRealm extends RealmObject {
   private String password;
 
   public AccountRealm() {
+    // Empty constructor.
   }
 
   /*public AccountRealm(Account account) {
@@ -54,9 +55,9 @@ public class AccountRealm extends RealmObject {
     this.email = account.getEmail().getEmail();
     this.me = true;
     this.locale = account.getLocale();
-    this.followers = account.getCounts().getFollowers();
-    this.followings = account.getCounts().getFollowings();
-    this.posts = account.getCounts().getPosts();
+    this.followerCount = account.getCounts().getFollowers();
+    this.followingCount = account.getCounts().getFollowings();
+    this.postCount = account.getCounts().getPosts();
   }*/
 
   public String getId() {
@@ -274,9 +275,9 @@ public class AccountRealm extends RealmObject {
         ", gender='" + gender + '\'' +
         ", following=" + following +
         ", categories=" + categories +
-        ", followings=" + followings +
-        ", followers=" + followers +
-        ", posts=" + posts +
+        ", followingCount=" + followings +
+        ", followerCount=" + followers +
+        ", postCount=" + posts +
         ", level=" + level +
         ", points=" + points +
         ", bounties=" + bounties +

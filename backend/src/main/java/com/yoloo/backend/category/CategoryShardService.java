@@ -3,8 +3,10 @@ package com.yoloo.backend.category;
 import com.annimon.stream.Stream;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
-import com.yoloo.backend.shard.ShardService;
+import com.googlecode.objectify.Ref;
+import com.yoloo.backend.config.ShardConfig;
 import com.yoloo.backend.shard.ShardUtil;
+import com.yoloo.backend.shard.Shardable;
 import com.yoloo.backend.util.KeyUtil;
 import io.reactivex.Observable;
 import java.util.Collection;
@@ -16,56 +18,70 @@ import lombok.NoArgsConstructor;
 import static com.yoloo.backend.OfyService.ofy;
 
 @NoArgsConstructor(staticName = "create")
-public class CategoryShardService implements ShardService<Category, CategoryShard> {
+public class CategoryShardService implements Shardable<CategoryShard, Category> {
 
-  @Override
-  public List<Key<CategoryShard>> createShardKeys(Iterable<Key<Category>> keys) {
-    return Observable
-        .fromIterable(keys)
-        .concatMapIterable(this::createShardKeys)
-        .toList()
+  @Override public Map<Ref<CategoryShard>, CategoryShard> createShardMapWithRef(
+      Iterable<Key<Category>> keys) {
+    return Observable.fromIterable(keys)
+        .flatMap(postKey -> Observable.range(1, ShardConfig.CATEGORY_SHARD_COUNTER)
+            .map(shardNum -> CategoryShard.builder()
+                .id(ShardUtil.generateShardId(postKey, shardNum))
+                .posts(0L)
+                .build()))
+        .toMap(Ref::create)
         .blockingGet();
   }
 
-  @Override
-  public List<Key<CategoryShard>> createShardKeys(final Key<Category> entityKey) {
-    return Observable
-        .range(1, CategoryShard.SHARD_COUNT)
-        .map(id -> CategoryShard.createKey(entityKey, id))
-        .toList()
+  @Override public Map<Key<CategoryShard>, CategoryShard> createShardMapWithKey(
+      Iterable<Key<Category>> keys) {
+    return Observable.fromIterable(keys)
+        .flatMap(postKey -> Observable.range(1, ShardConfig.CATEGORY_SHARD_COUNTER)
+            .map(shardNum -> CategoryShard.builder()
+                .id(ShardUtil.generateShardId(postKey, shardNum))
+                .posts(0L)
+                .build()))
+        .toMap(Key::create)
         .blockingGet();
   }
 
-  @Override
-  public List<CategoryShard> createShards(Iterable<Key<Category>> keys) {
-    return Observable
-        .fromIterable(keys)
-        .concatMapIterable(this::createShards)
-        .toList()
+  @Override public Map<Ref<CategoryShard>, CategoryShard> createShardMapWithRef(Key<Category> key) {
+    return Observable.range(1, ShardConfig.CATEGORY_SHARD_COUNTER)
+        .map(shardNum -> CategoryShard.builder()
+            .id(ShardUtil.generateShardId(key, shardNum))
+            .posts(0L)
+            .build())
+        .toMap(Ref::create)
         .blockingGet();
   }
 
-  @Override
-  public List<CategoryShard> createShards(final Key<Category> entityKey) {
-    return Observable
-        .range(1, CategoryShard.SHARD_COUNT)
-        .map(shardId -> createShard(entityKey, shardId))
-        .toList()
+  @Override public Map<Key<CategoryShard>, CategoryShard> createShardMapWithKey(Key<Category> key) {
+    return Observable.range(1, ShardConfig.CATEGORY_SHARD_COUNTER)
+        .map(shardNum -> CategoryShard.builder()
+            .id(ShardUtil.generateShardId(key, shardNum))
+            .posts(0L)
+            .build())
+        .toMap(Key::create)
         .blockingGet();
   }
 
-  @Override
-  public CategoryShard createShard(Key<Category> entityKey, int shardId) {
-    return CategoryShard.builder()
-        .id(ShardUtil.generateShardId(entityKey, shardId))
-        .posts(0)
-        .build();
-  }
-
-  @Override
-  public Key<CategoryShard> getRandomShardKey(Key<Category> entityKey) {
-    final int shardNum = new Random().nextInt(CategoryShard.SHARD_COUNT - 1 + 1) + 1;
+  @Override public Key<CategoryShard> getRandomShardKey(Key<Category> entityKey) {
+    final int shardNum = new Random().nextInt(ShardConfig.CATEGORY_SHARD_COUNTER - 1 + 1) + 1;
     return CategoryShard.createKey(entityKey, shardNum);
+  }
+
+  @Override public Observable<List<Category>> mergeShards(Collection<Category> entities) {
+    return Observable.fromIterable(entities)
+        .flatMap(this::mergeShards)
+        .toList(entities.size() == 0 ? 1 : entities.size())
+        .toObservable();
+  }
+
+  @Override public Observable<Category> mergeShards(Category entity) {
+    return Observable.fromIterable(entity.getShards())
+        .cast(CategoryShard.class)
+        .reduce((s1, s2) -> s1.addPost(s2.getPosts()))
+        .map(shard -> entity.withPosts(shard.getPosts()))
+        .toObservable();
   }
 
   public Collection<CategoryShard> updateShards(String categoryIds) {

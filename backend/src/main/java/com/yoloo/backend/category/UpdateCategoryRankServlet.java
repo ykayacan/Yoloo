@@ -17,6 +17,8 @@ public class UpdateCategoryRankServlet extends HttpServlet {
   private static final String UPDATE_CATEGORY_RANK_QUEUE = "update-category-rank-queue";
   private static final String URL = "/tasks/update/category/rank";
 
+  private final CategoryShardService categoryShardService = CategoryShardService.create();
+
   public static void create() {
     Queue queue = QueueFactory.getQueue(UPDATE_CATEGORY_RANK_QUEUE);
     queue.addAsync(TaskOptions.Builder.withUrl(URL));
@@ -30,7 +32,7 @@ public class UpdateCategoryRankServlet extends HttpServlet {
 
   private void updateRank() {
     Observable.fromIterable(ofy().load().type(Category.class).list())
-        .flatMap(CategoryUtil::mergeShards)
+        .flatMap(categoryShardService::mergeShards)
         .toList()
         .subscribe(categories -> ofy().save().entities(categories));
   }

@@ -28,7 +28,7 @@
   <string name="navigation_drawer_close">Close navigation drawer</string>
 
   <!-- USER FEED -->
-  <string name="label_feed_toolbar_title">YOLOO</string>
+  <string name="label_feed_toolbar_title">Home</string>
   <string name="label_feed_trending_now">Trending now</string>
   <string name="label_feed_explore">Explore</string>
   <string name="label_feed_news">Travel News</string>
@@ -197,6 +197,9 @@
 
   <string name="idp_name_google">Google</string>
   <string name="idp_name_facebook">Facebook</string>
+
+  <!-- NEWS -->
+  <string name="label_news_toolbar_title">News</string>
 
 
   <string-array name="label_sub_feed_list">

@@ -38,7 +38,7 @@ import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.feature.comment.OnMarkAsAcceptedClickListener;
-import com.yoloo.android.feature.commentcompose.ComposeLayout;
+import com.yoloo.android.feature.writecommentbox.WriteCommentBox;
 import com.yoloo.android.feature.feed.common.event.PostDeleteEvent;
 import com.yoloo.android.feature.feed.common.event.UpdateEvent;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
@@ -68,7 +68,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     implements PostDetailView, SwipeRefreshLayout.OnRefreshListener,
     EndlessRecyclerViewScrollListener.OnLoadMoreListener, OnProfileClickListener,
     OnPostOptionsClickListener, OnShareClickListener, OnCommentClickListener,
-    OnVoteClickListener, OnContentImageClickListener, ComposeLayout.NewCommentListener,
+    OnVoteClickListener, OnContentImageClickListener, WriteCommentBox.NewCommentListener,
     OnMarkAsAcceptedClickListener, OnItemLongClickListener<CommentRealm>,
     OnMentionClickListener {
 
@@ -77,7 +77,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   @BindView(R.id.toolbar_post_detail) Toolbar toolbar;
   @BindView(R.id.rv_post_detail) RecyclerView rvFeed;
   @BindView(R.id.swipe_post_detail) SwipeRefreshLayout swipeRefreshLayout;
-  @BindView(R.id.layout_compose) ComposeLayout composeLayout;
+  @BindView(R.id.layout_compose) WriteCommentBox composeLayout;
 
   @BindColor(R.color.primary) int primaryColor;
   @BindColor(R.color.divider) int dividerColor;

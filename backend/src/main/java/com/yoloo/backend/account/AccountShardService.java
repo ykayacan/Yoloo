@@ -1,66 +1,67 @@
 package com.yoloo.backend.account;
 
 import com.googlecode.objectify.Key;
-import com.yoloo.backend.shard.ShardService;
+import com.googlecode.objectify.Ref;
+import com.yoloo.backend.config.ShardConfig;
 import com.yoloo.backend.shard.ShardUtil;
+import com.yoloo.backend.shard.Shardable;
 import io.reactivex.Observable;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(staticName = "create")
-public class AccountShardService implements ShardService<Account, AccountShard> {
+public class AccountShardService implements Shardable<AccountShard, Account> {
 
   @Override
-  public List<Key<AccountShard>> createShardKeys(Iterable<Key<Account>> keys) {
-    return Observable
-        .fromIterable(keys)
-        .concatMapIterable(this::createShardKeys)
-        .toList()
+  public Map<Ref<AccountShard>, AccountShard> createShardMapWithRef(Iterable<Key<Account>> keys) {
+    return Observable.fromIterable(keys)
+        .flatMap(this::createShardsFromPostKey)
+        .toMap(Ref::create)
         .blockingGet();
   }
 
   @Override
-  public List<Key<AccountShard>> createShardKeys(final Key<Account> entityKey) {
-    return Observable
-        .range(1, AccountShard.SHARD_COUNT)
-        .map(id -> AccountShard.createKey(entityKey, id))
-        .toList()
+  public Map<Key<AccountShard>, AccountShard> createShardMapWithKey(Iterable<Key<Account>> keys) {
+    return Observable.fromIterable(keys)
+        .flatMap(this::createShardsFromPostKey)
+        .toMap(Key::create)
         .blockingGet();
   }
 
-  @Override
-  public List<AccountShard> createShards(Iterable<Key<Account>> keys) {
-    return Observable
-        .fromIterable(keys)
-        .concatMapIterable(this::createShards)
-        .toList()
+  @Override public Map<Ref<AccountShard>, AccountShard> createShardMapWithRef(Key<Account> key) {
+    return createShardsFromPostKey(key)
+        .toMap(Ref::create)
         .blockingGet();
   }
 
-  @Override
-  public List<AccountShard> createShards(final Key<Account> entityKey) {
-    return Observable
-        .range(1, AccountShard.SHARD_COUNT)
-        .map(shardId -> createShard(entityKey, shardId))
-        .toList()
+  @Override public Map<Key<AccountShard>, AccountShard> createShardMapWithKey(Key<Account> key) {
+    return createShardsFromPostKey(key)
+        .toMap(Key::create)
         .blockingGet();
-  }
-
-  @Override
-  public AccountShard createShard(Key<Account> entityKey, int shardNum) {
-    return AccountShard.builder()
-        .id(ShardUtil.generateShardId(entityKey, shardNum))
-        .followers(0)
-        .followings(0)
-        .questions(0)
-        .build();
   }
 
   @Override
   public Key<AccountShard> getRandomShardKey(Key<Account> entityKey) {
     final int shardNum = new Random().nextInt(AccountShard.SHARD_COUNT - 1 + 1) + 1;
     return AccountShard.createKey(entityKey, shardNum);
+  }
+
+  @Override public Observable<List<Account>> mergeShards(Collection<Account> entities) {
+    return Observable.fromIterable(entities)
+        .flatMap(this::mergeShards)
+        .toList(entities.size() == 0 ? 1 : entities.size())
+        .toObservable();
+  }
+
+  @Override public Observable<Account> mergeShards(Account entity) {
+    return Observable.fromIterable(entity.getShards())
+        .cast(AccountShard.class)
+        .reduce(this::reduceCounters)
+        .map(s -> entity.withCounts(buildCounter(s)))
+        .toObservable();
   }
 
   public AccountShard updateCounter(AccountShard shard, Update type) {
@@ -93,12 +94,34 @@ public class AccountShardService implements ShardService<Account, AccountShard> 
         .toObservable();
   }
 
-  private AccountShard reduceCounters(AccountShard s1,
-      AccountShard s2) {
+  private AccountShard reduceCounters(AccountShard s1, AccountShard s2) {
     return AccountShard.builder()
-        .followers(s1.getFollowers() + s2.getFollowers())
-        .followings(s1.getFollowings() + s2.getFollowings())
-        .questions(s1.getQuestions() + s2.getQuestions())
+        .followerCount(s1.getFollowerCount() + s2.getFollowerCount())
+        .followingCount(s1.getFollowingCount() + s2.getFollowingCount())
+        .postCount(s1.getPostCount() + s2.getPostCount())
+        .build();
+  }
+
+  private Account.Counts buildCounter(AccountShard shard) {
+    return Account.Counts.builder()
+        .followers(shard.getFollowerCount())
+        .followings(shard.getFollowingCount())
+        .questions(shard.getPostCount())
+        .build();
+  }
+
+  private Observable<AccountShard> createShardsFromPostKey(Key<Account> accountKey) {
+    return Observable
+        .range(1, ShardConfig.ACCOUNT_SHARD_COUNTER)
+        .map(shardNum -> createShard(accountKey, shardNum));
+  }
+
+  private AccountShard createShard(Key<Account> accountKey, Integer shardNum) {
+    return AccountShard.builder()
+        .id(ShardUtil.generateShardId(accountKey, shardNum))
+        .followerCount(0L)
+        .followingCount(0L)
+        .postCount(0L)
         .build();
   }
 

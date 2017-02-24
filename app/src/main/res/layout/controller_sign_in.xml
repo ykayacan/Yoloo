@@ -18,11 +18,9 @@
 
     <LinearLayout
       android:id="@+id/layout_login_input_container"
-      android:layout_width="280dp"
+      style="@style/Widget.Yoloo.InputContainer"
+      android:layout_width="@dimen/_272sdp"
       android:layout_height="wrap_content"
-      android:background="@drawable/login_input_container_bg"
-      android:focusableInTouchMode="true"
-      android:orientation="vertical"
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintRight_toRightOf="parent"
       app:layout_constraintTop_toTopOf="@+id/gl_login_top">
@@ -57,9 +55,9 @@
 
       <View
         android:layout_width="match_parent"
-        android:layout_height="1dp"
+        android:layout_height="@dimen/divider_height"
         android:layout_marginTop="8dp"
-        android:background="@color/background_lightish" />
+        android:background="@color/divider" />
 
       <Button
         android:id="@+id/btn_login_ready"
@@ -88,7 +86,7 @@
     <Button
       android:id="@+id/btn_facebook_sign_in"
       style="@style/Yoloo.Button.AccountChooser.FacebookButton"
-      android:layout_width="240dp"
+      android:layout_width="@dimen/_240sdp"
       android:layout_height="40dp"
       android:text="@string/action_login_facebook_sing_in"
       app:layout_constraintLeft_toLeftOf="@+id/layout_login_input_container"
@@ -98,7 +96,7 @@
     <Button
       android:id="@+id/btn_google_sign_in"
       style="@style/Yoloo.Button.AccountChooser.GoogleButton"
-      android:layout_width="240dp"
+      android:layout_width="@dimen/_240sdp"
       android:layout_height="40dp"
       android:layout_marginTop="8dp"
       android:text="@string/action_login_google_sign_in"

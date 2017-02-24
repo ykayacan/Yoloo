@@ -9,9 +9,9 @@ import java.util.Map;
 
 public interface Shardable<S extends Shardable.Shard, E> {
 
-  Map<Ref<S>, S> createShardMapWithRef(Collection<Key<E>> keys);
+  Map<Ref<S>, S> createShardMapWithRef(Iterable<Key<E>> keys);
 
-  Map<Key<S>, S> createShardMapWithKey(Collection<Key<E>> keys);
+  Map<Key<S>, S> createShardMapWithKey(Iterable<Key<E>> keys);
 
   Map<Ref<S>, S> createShardMapWithRef(Key<E> key);
 
@@ -24,5 +24,8 @@ public interface Shardable<S extends Shardable.Shard, E> {
   Observable<E> mergeShards(E entity);
 
   interface Shard {
+    void increaseVotesBy(long value);
+
+    void decreaseVotesBy(long value);
   }
 }

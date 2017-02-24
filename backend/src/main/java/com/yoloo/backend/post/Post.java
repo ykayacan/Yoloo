@@ -11,6 +11,7 @@ import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.IgnoreSave;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
+import com.googlecode.objectify.annotation.OnLoad;
 import com.googlecode.objectify.annotation.Parent;
 import com.googlecode.objectify.condition.IfNotDefault;
 import com.googlecode.objectify.condition.IfNotZero;
@@ -138,18 +139,22 @@ public class Post implements Votable {
 
   @Wither
   @Ignore
+  @NonFinal
   private Vote.Direction dir;
 
   @Wither
   @Ignore
+  @NonFinal
   private long voteCount;
 
   @Wither
   @Ignore
+  @NonFinal
   private long commentCount;
 
   @Wither
   @Ignore
+  @NonFinal
   private int reportCount;
 
   // Methods
@@ -182,9 +187,40 @@ public class Post implements Votable {
     return (Key<T>) getKey();
   }
 
+  @Override public Votable setVoteDir(Vote.Direction dir) {
+    return Post.builder()
+        .id(id)
+        .parent(parent)
+        .avatarUrl(avatarUrl)
+        .username(username)
+        .title(title)
+        .content(content)
+        .shardRefs(shardRefs)
+        .tags(tags)
+        .categories(categories)
+        .dir(dir)
+        .bounty(bounty)
+        .acceptedCommentKey(acceptedCommentKey)
+        .media(media)
+        .commentCount(commentCount)
+        .voteCount(voteCount)
+        .reportCount(reportCount)
+        .commented(commented)
+        .postType(postType)
+        .created(created)
+        .build();
+  }
+
   public <E> List<E> getShards() {
     //noinspection unchecked
     return (List<E>) Deref.deref(shardRefs);
+  }
+
+  @OnLoad void onLoad() {
+    voteCount = 0L;
+    commentCount = 0L;
+    reportCount = 0;
+    dir = Vote.Direction.DEFAULT;
   }
 
   public enum PostType {

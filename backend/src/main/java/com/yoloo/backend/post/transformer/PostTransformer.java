@@ -30,7 +30,7 @@ public class PostTransformer implements Transformer<Post, PostDTO> {
         .voteCount(in.getVoteCount())
         .commentCount(in.getCommentCount())
         .reportCount(in.getReportCount())
-        .type(in.getPostType().name())
+        .type(in.getPostType().name().toLowerCase())
         .created(in.getCreated().toDate())
         .build();
   }

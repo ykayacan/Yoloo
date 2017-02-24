@@ -2,6 +2,7 @@ package com.yoloo.android.feature.profile;
 
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,6 +15,7 @@ import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -43,7 +45,7 @@ import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.feed.postfeed.PostController;
+import com.yoloo.android.feature.feed.globalfeed.GlobalFeedController;
 import com.yoloo.android.feature.follow.FollowController;
 import com.yoloo.android.feature.notification.NotificationController;
 import com.yoloo.android.feature.search.SearchController;
@@ -278,7 +280,9 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     final int i = original.indexOf("\n") + 1;
 
     Spannable span = Spannable.Factory.getInstance().newSpannable(original);
-    span.setSpan(new ForegroundColorSpan(color), i, original.length(),
+    span.setSpan(new StyleSpan(Typeface.BOLD), i, original.length(),
+        Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+    span.setSpan(new ForegroundColorSpan(Color.WHITE), i, original.length(),
         Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
     view.setText(span, TextView.BufferType.SPANNABLE);
@@ -314,7 +318,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
       final boolean commented = position != 0;
 
       if (!router.hasRootController()) {
-        PostController page = PostController.ofUser(userId, commented);
+        GlobalFeedController page = GlobalFeedController.ofUser(userId, commented);
         router.setRoot(RouterTransaction.with(page));
       }
     }

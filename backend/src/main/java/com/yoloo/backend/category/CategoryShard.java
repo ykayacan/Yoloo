@@ -4,7 +4,6 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
-import com.yoloo.backend.config.ShardConfig;
 import com.yoloo.backend.shard.Shardable;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,8 +18,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CategoryShard implements Shardable.Shard {
-
-  public static final int SHARD_COUNT = ShardConfig.CATEGORY_SHARD_COUNTER;
 
   /**
    * CategoryId:shardNum
@@ -49,5 +46,13 @@ public class CategoryShard implements Shardable.Shard {
   public CategoryShard addPost(long post) {
     this.posts += post;
     return this;
+  }
+
+  @Override public void increaseVotesBy(long value) {
+
+  }
+
+  @Override public void decreaseVotesBy(long value) {
+
   }
 }

@@ -81,10 +81,6 @@ public class CreateUserFeedServlet extends HttpServlet {
 
   private int getRequiredEntitySize(List<Key<Category>> keys) {
     final int size = keys.size();
-    if (size > 3) {
-      return 25;
-    }
-
-    return 35;
+    return size > 3 ? 25 : 35;
   }
 }

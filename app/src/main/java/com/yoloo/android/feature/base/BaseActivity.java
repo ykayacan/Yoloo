@@ -31,7 +31,7 @@ import com.yoloo.android.data.repository.notification.datasource.NotificationDis
 import com.yoloo.android.data.repository.notification.datasource.NotificationRemoteDataSource;
 import com.yoloo.android.feature.fcm.FCMListener;
 import com.yoloo.android.feature.fcm.FCMManager;
-import com.yoloo.android.feature.feed.userfeed.UserFeedController;
+import com.yoloo.android.feature.feed.mainfeed.MainFeedController;
 import com.yoloo.android.feature.login.AuthController;
 import com.yoloo.android.util.NotificationHelper;
 import com.yoloo.android.util.Preconditions;
@@ -76,7 +76,7 @@ public class BaseActivity extends AppCompatActivity implements FCMListener {
         setStatusAndNavBarTransparent();
         router.setRoot(RouterTransaction.with(AuthController.create()));
       } else {
-        router.setRoot(RouterTransaction.with(UserFeedController.create()));
+        router.setRoot(RouterTransaction.with(MainFeedController.create()));
       }
     }
 
@@ -133,13 +133,13 @@ public class BaseActivity extends AppCompatActivity implements FCMListener {
           (HashMap<String, String>) bundle.getSerializable(KEY_DATA);
       Preconditions.checkNotNull(data, "Data can not be null");
 
-      switch (action) {
+      /*switch (action) {
         case NotificationHelper.FOLLOW:
           break;
         case NotificationHelper.COMMENT:
           // TODO: 21.01.2017 Implement transaction
           //startTransaction(CommentController.ofCategory(data.getPost("qId"), ));
-      }
+      }*/
     }
   }
 
@@ -158,7 +158,7 @@ public class BaseActivity extends AppCompatActivity implements FCMListener {
         }
 
         if (to != null) {
-          if (to instanceof UserFeedController) {
+          if (to instanceof MainFeedController) {
             getWindow().getDecorView().setSystemUiVisibility(defaultSystemVisibility);
           } else if (to instanceof AuthController) {
             setStatusAndNavBarTransparent();
@@ -180,7 +180,6 @@ public class BaseActivity extends AppCompatActivity implements FCMListener {
     ViewUtil.setStatusBarColor(this, Color.TRANSPARENT);
     getWindow().getDecorView().setSystemUiVisibility(
         View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
             | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
   }
 

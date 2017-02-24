@@ -34,7 +34,7 @@
 
   </android.support.v4.widget.SwipeRefreshLayout>
 
-  <com.yoloo.android.feature.commentcompose.ComposeLayout
+  <com.yoloo.android.feature.writecommentbox.WriteCommentBox
     android:id="@+id/layout_compose"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"

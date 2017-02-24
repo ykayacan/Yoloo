@@ -35,6 +35,7 @@ import com.yoloo.backend.vote.VoteController;
 import com.yoloo.backend.vote.VoteControllerFactory;
 import io.reactivex.Observable;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.joda.time.DateTime;
 import org.junit.Test;
@@ -54,10 +55,7 @@ public class CommentControllerTest extends TestBase {
 
   private Category europe;
 
-  private PostController postController;
   private CommentController commentController;
-  private TagController tagController;
-  private CategoryController categoryController;
   private VoteController voteController;
 
   private PostShardService postShardService;
@@ -76,10 +74,10 @@ public class CommentControllerTest extends TestBase {
   public void setUp() {
     super.setUp();
 
-    postController = PostControllerFactory.of().create();
+    PostController postController = PostControllerFactory.of().create();
     commentController = CommentControllerFactory.of().create();
-    tagController = TagControllerFactory.of().create();
-    categoryController = CategoryControllerFactory.of().create();
+    TagController tagController = TagControllerFactory.of().create();
+    CategoryController categoryController = CategoryControllerFactory.of().create();
     voteController = VoteControllerFactory.of().create();
 
     postShardService = PostShardService.create();
@@ -127,11 +125,11 @@ public class CommentControllerTest extends TestBase {
     assertEquals(owner.getUsername(), comment.getUsername());
     assertEquals(owner.getAvatarUrl(), comment.getAvatarUrl());
     assertEquals(Vote.Direction.DEFAULT, comment.getDir());
-    assertEquals(0, comment.getVotes());
+    assertEquals(0, comment.getVoteCount());
     assertEquals(false, comment.isAccepted());
 
     Post post = Observable.just(
-        ofy().load().group(Post.ShardGroup.class).key(comment.getQuestionKey()).now())
+        ofy().load().group(Post.ShardGroup.class).key(comment.getPostKey()).now())
         .flatMap(postShardService::mergeShards)
         .blockingSingle();
 
@@ -156,7 +154,7 @@ public class CommentControllerTest extends TestBase {
         commentController.insertComment(post.getWebsafeId(), "Test comment", user);
 
     Tracker tracker = ofy().load().key(trackerKey).now();
-    Post post = ofy().load().key(comment.getQuestionKey()).now();
+    Post post = ofy().load().key(comment.getPostKey()).now();
 
     assertEquals(true, post.isCommented());
     assertEquals(true, tracker.isFirstComment());
@@ -200,7 +198,7 @@ public class CommentControllerTest extends TestBase {
     assertEquals(originalContent, changed.getContent());
     assertEquals(true, changed.isAccepted());
 
-    Post post = ofy().load().key(changed.getQuestionKey()).now();
+    Post post = ofy().load().key(changed.getPostKey()).now();
     assertEquals(changed.getKey(), post.getAcceptedCommentKey());
   }
 
@@ -227,7 +225,7 @@ public class CommentControllerTest extends TestBase {
     Comment comment =
         commentController.insertComment(post.getWebsafeId(), content, user);
 
-    voteController.voteComment(comment.getWebsafeId(), Vote.Direction.UP, user);
+    voteController.vote(comment.getWebsafeId(), Vote.Direction.UP, user);
 
     commentController.deleteComment(post.getWebsafeId(), comment.getWebsafeId(), user);
 
@@ -256,10 +254,10 @@ public class CommentControllerTest extends TestBase {
     Comment comment4 =
         commentController.insertComment(post.getWebsafeId(), "Test comment4", user);
 
-    voteController.voteComment(comment1.getWebsafeId(), Vote.Direction.UP, user);
-    voteController.voteComment(comment2.getWebsafeId(), Vote.Direction.UP, user);
-    voteController.voteComment(comment3.getWebsafeId(), Vote.Direction.UP, user);
-    voteController.voteComment(comment4.getWebsafeId(), Vote.Direction.UP, user);
+    voteController.vote(comment1.getWebsafeId(), Vote.Direction.UP, user);
+    voteController.vote(comment2.getWebsafeId(), Vote.Direction.UP, user);
+    voteController.vote(comment3.getWebsafeId(), Vote.Direction.UP, user);
+    voteController.vote(comment4.getWebsafeId(), Vote.Direction.UP, user);
 
     CollectionResponse<Comment> response =
         commentController.listComments(post.getWebsafeId(), Optional.absent(), Optional.absent(),
@@ -269,7 +267,7 @@ public class CommentControllerTest extends TestBase {
 
     for (Comment comment : response.getItems()) {
       assertEquals(2, comment.getShards().size());
-      assertEquals(1, comment.getVotes());
+      assertEquals(1, comment.getVoteCount());
       assertEquals(Vote.Direction.UP, comment.getDir());
     }
   }
@@ -279,25 +277,21 @@ public class CommentControllerTest extends TestBase {
 
     AccountShardService ass = AccountShardService.create();
 
-    return Observable.range(1, AccountShard.SHARD_COUNT)
-        .map(shardNum -> ass.createShard(ownerKey, shardNum))
-        .toMap(Ref::create)
-        .map(shardMap -> {
-          Account account = Account.builder()
-              .id(ownerKey.getId())
-              .avatarUrl(new Link("Test avatar"))
-              .email(new Email(USER_EMAIL))
-              .username("Test user")
-              .shardRefs(Lists.newArrayList(shardMap.keySet()))
-              .created(DateTime.now())
-              .build();
+    Map<Ref<AccountShard>, AccountShard> map = ass.createShardMapWithRef(ownerKey);
 
-          return AccountEntity.builder()
-              .account(account)
-              .shards(shardMap)
-              .build();
-        })
-        .blockingGet();
+    Account account = Account.builder()
+        .id(ownerKey.getId())
+        .avatarUrl(new Link("Test avatar"))
+        .email(new Email(USER_EMAIL))
+        .username("Test user")
+        .shardRefs(Lists.newArrayList(map.keySet()))
+        .created(DateTime.now())
+        .build();
+
+    return AccountEntity.builder()
+        .account(account)
+        .shards(map)
+        .build();
   }
 
   private DeviceRecord createRecord(Account owner) {

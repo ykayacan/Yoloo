@@ -59,7 +59,7 @@ public class FeedController extends Controller {
     }
 
     feed = postShardService.mergeShards(feed)
-        .flatMap(posts -> voteService.checkPostVote(posts, accountKey, false))
+        .flatMap(posts -> voteService.checkPostVote(posts, accountKey))
         .blockingSingle();
 
     return CollectionResponse.<Post>builder()

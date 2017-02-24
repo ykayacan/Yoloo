@@ -3,47 +3,31 @@ package com.yoloo.backend.tag;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.KeyRange;
 import com.yoloo.backend.util.TestBase;
-
+import java.util.Map;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
-import java.util.List;
-
-import static com.yoloo.backend.util.TestObjectifyService.fact;
 import static com.yoloo.backend.util.TestObjectifyService.ofy;
 import static org.junit.Assert.assertEquals;
 
-@RunWith(JUnit4.class)
 public class TagShardServiceTest extends TestBase {
 
-    @Override
-    public void setUp() {
-        super.setUp();
+  @Test public void testFindShardKeys_single() throws Exception {
+    Key<Tag> hashTagKey = ofy().factory().allocateId(Tag.class);
 
-        fact().register(Tag.class);
-        fact().register(TagShard.class);
-    }
+    TagShardService shardService = TagShardService.create();
 
-    @Test
-    public void testFindShardKeys_single() throws Exception {
-        Key<Tag> hashTagKey = ofy().factory().allocateId(Tag.class);
+    Map<Key<TagShard>, TagShard> map = shardService.createShardMapWithKey(hashTagKey);
 
-        TagShardService shardService = TagShardService.create();
+    assertEquals(TagShard.SHARD_COUNT, map.keySet().size());
+  }
 
-        List<Key<TagShard>> shardKeys = shardService.createShardKeys(hashTagKey);
+  @Test public void testFindShardKeys_collection() throws Exception {
+    KeyRange<Tag> hashTagKeyRange = ofy().factory().allocateIds(Tag.class, 5);
 
-        assertEquals(TagShard.SHARD_COUNT, shardKeys.size());
-    }
+    TagShardService shardService = TagShardService.create();
 
-    @Test
-    public void testFindShardKeys_collection() throws Exception {
-        KeyRange<Tag> hashTagKeyRange = ofy().factory().allocateIds(Tag.class, 5);
+    Map<Key<TagShard>, TagShard> map = shardService.createShardMapWithKey(hashTagKeyRange);
 
-        TagShardService shardService = TagShardService.create();
-
-        List<Key<TagShard>> shardKeys = shardService.createShardKeys(hashTagKeyRange);
-
-        assertEquals(TagShard.SHARD_COUNT * 5, shardKeys.size());
-    }
+    assertEquals(TagShard.SHARD_COUNT * 5, map.keySet().size());
+  }
 }

@@ -4,7 +4,6 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
-import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Parent;
 import com.yoloo.backend.account.Account;
 import lombok.AccessLevel;
@@ -29,16 +28,17 @@ public class Vote {
   private String id;
 
   @Parent
+  @NonFinal
   private Key<Account> parent;
 
   @Wither
+  @NonFinal
   private Direction dir;
 
-  @Index
   @NonFinal
   private Key<Votable> votableKey;
 
-  public static Key<Vote> createKey(Key<Votable> votableKey, Key<Account> accountKey) {
+  public static Key<Vote> createKey(Key<? extends Votable> votableKey, Key<Account> accountKey) {
     return Key.create(accountKey, Vote.class, votableKey.toWebSafeString());
   }
 

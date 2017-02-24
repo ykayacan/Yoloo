@@ -3,6 +3,7 @@ package com.yoloo.android.ui.recyclerview;
 import android.support.v4.util.SparseArrayCompat;
 import com.airbnb.epoxy.EpoxyAdapter;
 import com.airbnb.epoxy.EpoxyModel;
+import com.annimon.stream.Stream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,9 +22,7 @@ public abstract class SelectableAdapter extends EpoxyAdapter implements Selectab
   @Override public void clearSelection() {
     List<EpoxyModel<?>> items = getSelectedItems();
     selectedItems.clear();
-    for (EpoxyModel<?> item : items) {
-      notifyModelChanged(item);
-    }
+    Stream.of(items).forEach(this::notifyModelChanged);
   }
 
   @Override public int getSelectedItemCount() {

@@ -28,7 +28,7 @@ import javax.inject.Named;
         ownerName = Constants.API_OWNER,
         packagePath = Constants.API_PACKAGE_PATH))
 @ApiClass(
-    resource = "questions",
+    resource = "postCount",
     clientIds = {
         Constants.ANDROID_CLIENT_ID,
         Constants.IOS_CLIENT_ID,
@@ -54,8 +54,8 @@ public class QuestionEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "questions.get",
-      path = "questions/{questionId}",
+      name = "postCount.get",
+      path = "postCount/{questionId}",
       httpMethod = ApiMethod.HttpMethod.GET)
   public Post get(@Named("questionId") String questionId, User user) throws ServiceException {
 
@@ -80,8 +80,8 @@ public class QuestionEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "questions.insert",
-      path = "questions",
+      name = "postCount.insert",
+      path = "postCount",
       httpMethod = ApiMethod.HttpMethod.POST)
   public Post insert(
       @Named("content") String content,
@@ -120,8 +120,8 @@ public class QuestionEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "questions.update",
-      path = "questions/{questionId}",
+      name = "postCount.update",
+      path = "postCount/{questionId}",
       httpMethod = ApiMethod.HttpMethod.PUT)
   public Post update(
       @Named("questionId") String questionId,
@@ -155,8 +155,8 @@ public class QuestionEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "questions.delete",
-      path = "questions/{questionId}",
+      name = "postCount.delete",
+      path = "postCount/{questionId}",
       httpMethod = ApiMethod.HttpMethod.DELETE)
   public void delete(@Named("questionId") String questionId, User user) throws ServiceException {
 
@@ -182,8 +182,8 @@ public class QuestionEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "questions.list",
-      path = "questions",
+      name = "postCount.list",
+      path = "postCount",
       httpMethod = ApiMethod.HttpMethod.GET)
   public CollectionResponse<Post> list(
       @Nullable @Named("accountId") String accountId,
@@ -217,8 +217,8 @@ public class QuestionEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "questions.report",
-      path = "questions/{questionId}/report",
+      name = "postCount.report",
+      path = "postCount/{questionId}/report",
       httpMethod = ApiMethod.HttpMethod.PUT)
   public void report(@Named("questionId") String questionId, User user) throws ServiceException {
 

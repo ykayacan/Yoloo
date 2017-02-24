@@ -14,7 +14,6 @@ import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import com.yoloo.backend.endpointsvalidator.validator.FollowConflictValidator;
 import com.yoloo.backend.endpointsvalidator.validator.FollowValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
-import java.util.logging.Logger;
 import javax.inject.Named;
 
 @Api(
@@ -27,7 +26,7 @@ import javax.inject.Named;
     )
 )
 @ApiClass(
-    resource = "questions",
+    resource = "postCount",
     clientIds = {
         Constants.ANDROID_CLIENT_ID,
         Constants.IOS_CLIENT_ID,
@@ -38,9 +37,6 @@ import javax.inject.Named;
     }
 )
 public class FollowEndpoint {
-
-  private static final Logger LOG =
-      Logger.getLogger(FollowEndpoint.class.getSimpleName());
 
   private final FollowController followController = FollowControllerFactory.of().create();
 

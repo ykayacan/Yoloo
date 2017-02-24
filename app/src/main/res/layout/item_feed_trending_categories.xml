@@ -41,5 +41,5 @@
     android:clipToPadding="false"
     android:paddingLeft="@dimen/padding_normal"
     android:paddingRight="@dimen/padding_normal"
-    tools:listitem="@layout/item_feed_category" />
+    tools:listitem="@layout/item_feed_sub_trending_category" />
 </LinearLayout>

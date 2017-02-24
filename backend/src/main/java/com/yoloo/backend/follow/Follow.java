@@ -7,7 +7,6 @@ import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Parent;
 import com.yoloo.backend.account.Account;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,18 +22,16 @@ import lombok.experimental.Wither;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Follow {
 
-    /**
-     * The constant FIELD_FOLLOWING_KEY.
-     */
-    public static final String FIELD_FOLLOWING_KEY = "followingKey";
+  public static final String FIELD_FOLLOWING_KEY = "followingKey";
 
-    @Id
-    private Long id;
+  @Id
+  private Long id;
 
-    @Parent
-    private Key<Account> parentUserKey;
+  @Parent
+  @NonFinal
+  private Key<Account> followerKey;
 
-    @Index
-    @NonFinal
-    private Key<Account> followingKey;
+  @Index
+  @NonFinal
+  private Key<Account> followingKey;
 }

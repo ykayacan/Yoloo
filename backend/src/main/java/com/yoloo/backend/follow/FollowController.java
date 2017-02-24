@@ -52,10 +52,8 @@ public class FollowController extends Controller {
 
     Follow follow = followAccount(followerKey, followingKey);
 
-    Key<AccountShard> followerShardKey =
-        accountShardService.getRandomShardKey(followerKey);
-    Key<AccountShard> followingShardKey =
-        accountShardService.getRandomShardKey(followingKey);
+    Key<AccountShard> followerShardKey = accountShardService.getRandomShardKey(followerKey);
+    Key<AccountShard> followingShardKey = accountShardService.getRandomShardKey(followingKey);
 
     Map<Key<Object>, Object> fetched = ofy().load()
         .keys(followerKey, recordKey, followerShardKey, followingShardKey);
@@ -96,7 +94,8 @@ public class FollowController extends Controller {
     final Key<Account> followingKey = Key.create(followingId);
 
     final Key<Follow> followKey = ofy().load().type(Follow.class)
-        .ancestor(followerKey).filter(Follow.FIELD_FOLLOWING_KEY + " =", followingKey)
+        .ancestor(followerKey)
+        .filter(Follow.FIELD_FOLLOWING_KEY + " =", followingKey)
         .keys().first().now();
 
     Guard.checkNotFound(followKey, "Follow is not found.");
@@ -131,16 +130,16 @@ public class FollowController extends Controller {
   }
 
   public CollectionResponse<Account> list(String accountId, ListType type, Optional<Integer> limit,
-      Optional<String> cursor, User user) {
+      Optional<String> cursor) {
     // Create account key from websafe id.
     final Key<Account> followerKey = Key.create(accountId);
 
     // Init query fetch request.
     Query<Follow> query = ofy().load().type(Follow.class);
 
-    if (type.equals(ListType.FOLLOWING)) {
+    if (type == ListType.FOLLOWING) {
       query = query.ancestor(followerKey);
-    } else if (type.equals(ListType.FOLLOWER)) {
+    } else if (type == ListType.FOLLOWER) {
       query = query.filter(Follow.FIELD_FOLLOWING_KEY + " =", followerKey);
     }
 
@@ -157,10 +156,10 @@ public class FollowController extends Controller {
     ImmutableList.Builder<Key<Account>> builder = ImmutableList.builder();
 
     while (qi.hasNext()) {
-      if (type.equals(ListType.FOLLOWING)) {
+      if (type == ListType.FOLLOWING) {
         builder.add(qi.next().getFollowingKey());
-      } else if (type.equals(ListType.FOLLOWER)) {
-        builder.add(qi.next().getParentUserKey());
+      } else if (type == ListType.FOLLOWER) {
+        builder.add(qi.next().getFollowerKey());
       }
     }
 
@@ -172,10 +171,10 @@ public class FollowController extends Controller {
         .build();
   }
 
-  private Follow followAccount(Key<Account> fromKey, Key<Account> toKey) {
+  private Follow followAccount(Key<Account> followerKey, Key<Account> followingKey) {
     return Follow.builder()
-        .parentUserKey(fromKey)
-        .followingKey(toKey)
+        .followerKey(followerKey)
+        .followingKey(followingKey)
         .build();
   }
 }

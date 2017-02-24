@@ -16,7 +16,6 @@ import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
@@ -41,9 +40,6 @@ import javax.inject.Named;
     }
 )
 public class TagEndpoint {
-
-  private static final Logger LOG =
-      Logger.getLogger(TagEndpoint.class.getSimpleName());
 
   private final TagController tagController = TagControllerFactory.of().create();
 

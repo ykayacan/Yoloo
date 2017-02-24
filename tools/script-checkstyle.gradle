@@ -1,0 +1,16 @@
+apply plugin: 'checkstyle'
+
+task checkstyle(type: Checkstyle,
+        group: 'Verification',
+        description: 'Runs code style checks') {
+
+  configFile = file("../tools/rules-checkstyle.xml")
+  source fileTree('src/main/java/')
+  classpath = files()
+
+  reports {
+    xml.enabled = false
+    html.enabled = true
+    html.destination = "$project.buildDir/outputs/checkstyle/checkstyle.html"
+  }
+}

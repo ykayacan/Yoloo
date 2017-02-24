@@ -32,7 +32,7 @@ import com.yoloo.android.data.repository.comment.datasource.CommentRemoteDataSto
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.commentcompose.ComposeLayout;
+import com.yoloo.android.feature.writecommentbox.WriteCommentBox;
 import com.yoloo.android.feature.feed.common.event.AcceptedEvent;
 import com.yoloo.android.feature.feed.common.event.UpdateEvent;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
@@ -53,7 +53,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
     implements CommentView, EndlessRecyclerViewScrollListener.OnLoadMoreListener,
     OnProfileClickListener, OnVoteClickListener, OnMentionClickListener,
     OnMarkAsAcceptedClickListener, OnItemLongClickListener<CommentRealm>,
-    ComposeLayout.NewCommentListener {
+    WriteCommentBox.NewCommentListener {
 
   private static final String KEY_POST_ID = "POST_ID";
   private static final String KEY_POST_OWNER_ID = "POST_OWNER_ID";
@@ -61,7 +61,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
   private static final String KEY_POST_TYPE = "POST_TYPE";
 
   @BindView(R.id.rv_comment) RecyclerView rvComment;
-  @BindView(R.id.layout_compose) ComposeLayout composeLayout;
+  @BindView(R.id.layout_compose) WriteCommentBox composeLayout;
   @BindView(R.id.toolbar_comment) Toolbar toolbar;
 
   @BindColor(R.color.primary) int primaryColor;
@@ -224,13 +224,9 @@ public class CommentController extends MvpController<CommentView, CommentPresent
   @Override public void onItemLongClick(View v, EpoxyModel<?> model, CommentRealm item) {
     new AlertDialog.Builder(getActivity())
         .setItems(R.array.action_comment_dialog, (dialog, which) -> {
-          switch (which) {
-            case 0:
-              getPresenter().deleteComment(item);
-              adapter.delete(model);
-              break;
-            default:
-              break;
+          if (which == 0) {
+            getPresenter().deleteComment(item);
+            adapter.delete(model);
           }
         })
         .show();

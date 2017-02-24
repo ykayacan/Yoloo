@@ -1,9 +1,10 @@
 package com.yoloo.backend.post;
 
+import com.annimon.stream.Stream;
 import com.google.api.server.spi.response.CollectionResponse;
 import com.google.api.server.spi.response.NotFoundException;
 import com.google.appengine.api.datastore.Cursor;
-import com.google.appengine.api.datastore.QueryResultIterator;
+import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
@@ -20,6 +21,7 @@ import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentService;
 import com.yoloo.backend.comment.CommentShardService;
 import com.yoloo.backend.device.DeviceRecord;
+import com.yoloo.backend.endpointsvalidator.Guard;
 import com.yoloo.backend.game.GamificationService;
 import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.media.Media;
@@ -29,29 +31,27 @@ import com.yoloo.backend.notification.type.NotificationBundle;
 import com.yoloo.backend.post.sort_strategy.PostSorter;
 import com.yoloo.backend.tag.TagShard;
 import com.yoloo.backend.tag.TagShardService;
-import com.yoloo.backend.util.StringUtil;
-import com.yoloo.backend.endpointsvalidator.Guard;
+import com.yoloo.backend.util.CollectionTransformer;
 import com.yoloo.backend.vote.VoteService;
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import lombok.AllArgsConstructor;
+import lombok.extern.java.Log;
 
 import static com.yoloo.backend.OfyService.ofy;
 import static com.yoloo.backend.util.StringUtil.split;
 import static com.yoloo.backend.util.StringUtil.splitToSet;
 
+@Log
 @AllArgsConstructor(staticName = "create")
 public final class PostController extends Controller {
 
-  private static final Logger LOG =
-      Logger.getLogger(PostController.class.getName());
-
   /**
-   * Maximum number of questions to return.
+   * Maximum number of postCount to return.
    */
   private static final int DEFAULT_LIST_LIMIT = 20;
 
@@ -85,19 +85,14 @@ public final class PostController extends Controller {
    * @throws NotFoundException the not found exception
    */
   public Post getPost(String postId, User user) throws NotFoundException {
-    final Key<Account> accountKey = Key.create(user.getUserId());
-
-    // Create post key from websafe id.
-    final Key<Post> postKey = Key.create(postId);
-
-    // Fetch question.
-    Post post = ofy().load().group(Post.ShardGroup.class).key(postKey).now();
+    Post post = ofy().load().group(Post.ShardGroup.class)
+        .key(Key.<Post>create(postId)).now();
 
     Guard.checkNotFound(post, "Could not find post with ID: " + postId);
 
     return postShardService
         .mergeShards(post)
-        .flatMap(post1 -> voteService.checkPostVote(post1, accountKey, true))
+        .flatMap(__ -> voteService.checkPostVote(__, Key.create(user.getUserId())))
         .blockingSingle();
   }
 
@@ -181,11 +176,13 @@ public final class PostController extends Controller {
     //noinspection SuspiciousMethodCalls
     DeviceRecord record = (DeviceRecord) fetched.get(recordKey);
     //noinspection SuspiciousMethodCalls
-    Media media = (Media) fetched.get(mediaId.isPresent() ? Key.create(mediaId.get()) : null);
+    Media media = (Media) fetched.get(mediaId.isPresent()
+        ? Key.create(mediaId.get())
+        : mediaId.orNull());
 
     // Create a new question from given inputs.
     PostEntity entity =
-        postService.create(account, content, tags, categoryIds, title, bounty, media, tracker,
+        postService.createPost(account, content, tags, categoryIds, title, bounty, media, tracker,
             postType);
 
     Post post = entity.getPost();
@@ -196,8 +193,7 @@ public final class PostController extends Controller {
 
     Collection<TagShard> tagShards = tagShardService.updateShards(post.getTags());
 
-    Collection<CategoryShard> categoryShards =
-        categoryShardService.updateShards(categoryIds);
+    Collection<CategoryShard> categoryShards = categoryShardService.updateShards(categoryIds);
 
     // Start gamification check.
     List<NotificationBundle> notificationBundles = Lists.newArrayList();
@@ -276,7 +272,7 @@ public final class PostController extends Controller {
         .map(post -> title.isPresent() ? post.withTitle(title.get()) : post)
         .map(post -> bounty.isPresent() ? post.withBounty(bounty.get()) : post)
         .map(post -> content.isPresent() ? post.withContent(content.get()) : post)
-        .map(post -> tags.isPresent() ? post.withTags(StringUtil.split(tags.get(), ",")) : post)
+        .map(post -> tags.isPresent() ? post.withTags(split(tags.get(), ",")) : post)
         .map(post -> Optional.fromNullable(media).isPresent() ? post.withMedia(media) : post)
         .doOnSuccess(post -> ofy().transact(() -> ofy().save().entity(post).now()))
         .blockingGet();
@@ -292,27 +288,25 @@ public final class PostController extends Controller {
     // Create post key from websafe id.
     final Key<Post> postKey = Key.create(postId);
 
-    Guard.checkNotFound(postKey, "Could not find post with ID: " + postId);
-
-    Key<AccountShard> shardKey =
-        accountShardService.getRandomShardKey(postKey.getParent());
-    AccountShard shard = ofy().load().key(shardKey).now();
+    AccountShard shard = ofy().load()
+        .key(accountShardService.getRandomShardKey(postKey.getParent()))
+        .now();
     shard.decreaseQuestions();
 
-    // TODO: 27.11.2016 Change this operations to a push queue.
+    postService.getCommentKeysObservable(postKey);
 
     List<Key<Comment>> commentKeys = postService.getCommentKeys(postKey);
 
-    ofy().transact(() -> {
-      ImmutableSet<Key<?>> deleteList = ImmutableSet.<Key<?>>builder()
-          .addAll(commentShardService.createShardKeys(commentKeys))
-          .addAll(commentService.getVoteKeys(commentKeys))
-          .addAll(commentKeys)
-          .addAll(postService.getVoteKeys(postKey))
-          .addAll(postShardService.createShardMapWithKey(postKey).keySet())
-          .add(postKey)
-          .build();
+    ImmutableSet<Key<?>> deleteList = ImmutableSet.<Key<?>>builder()
+        .addAll(commentShardService.createShardMapWithKey(commentKeys).keySet())
+        .addAll(commentService.getVoteKeys(commentKeys))
+        .addAll(commentKeys)
+        .addAll(postService.getVoteKeys(postKey))
+        .addAll(postShardService.createShardMapWithKey(postKey).keySet())
+        .add(postKey)
+        .build();
 
+    ofy().transact(() -> {
       ofy().defer().save().entity(shard);
       ofy().defer().delete().keys(deleteList);
     });
@@ -341,17 +335,54 @@ public final class PostController extends Controller {
       Post.PostType postType,
       User user) {
 
-    // Create account key from websafe id.
-    final Key<Account> accountKey = Key.create(user.getUserId());
+    return Observable
+        .fromCallable(() -> {
+          Query<Post> query = ofy().load()
+              .group(Post.ShardGroup.class)
+              .type(Post.class)
+              .filter(Post.FIELD_POST_TYPE + " =", postType);
 
-    // If sorter parameter is null, default sort strategy is "NEWEST".
-    PostSorter postSorter = sorter.or(PostSorter.NEWEST);
+          query = accountId.isPresent()
+              ? query.ancestor(Key.<Account>create(accountId.get()))
+              : query;
+
+          if (categories.isPresent()) {
+            Set<String> categoryNames = split(categories.get(), ",");
+
+            for (String categoryName : categoryNames) {
+              query = query.filter(Post.FIELD_CATEGORIES + " =", categoryName);
+            }
+          }
+
+          if (tags.isPresent()) {
+            Set<String> tagSet = splitToSet(tags.get(), ",");
+
+            for (String tagName : tagSet) {
+              query = query.filter(Post.FIELD_TAGS + " =", tagName);
+            }
+          }
+
+          query = PostSorter.sort(query, sorter.or(PostSorter.NEWEST));
+          query = cursor.isPresent()
+              ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
+              : query;
+          return query.limit(limit.or(DEFAULT_LIST_LIMIT));
+        })
+        .map(QueryResultIterable::iterator)
+        .flatMap(qi -> Observable.fromIterable(Stream.of(qi).toList())
+            .toList()
+            .flatMapObservable(postShardService::mergeShards)
+            .flatMap(__ -> voteService.checkPostVote(__, Key.create(user.getUserId())))
+            .compose(CollectionTransformer.create(qi)))
+        .blockingSingle();
 
     // Init query fetch request.
-    Query<Post> query = ofy().load().type(Post.class)
-        .filter(Post.FIELD_POST_TYPE + " =", postType);
+    /*Query<Post> query = ofy().load()
+        .group(Post.ShardGroup.class)
+        .type(Post.class)
+        .filter(Post.FIELD_POST_TYPE + " =", postType);*/
 
-    if (accountId.isPresent()) {
+    /*if (accountId.isPresent()) {
       query = query.ancestor(Key.<Account>create(accountId.get()));
     }
 
@@ -361,7 +392,9 @@ public final class PostController extends Controller {
       for (String categoryName : categoryNames) {
         query = query.filter(Post.FIELD_CATEGORIES + " =", categoryName);
       }
-    } else if (tags.isPresent()) {
+    }
+
+    if (tags.isPresent()) {
       Set<String> tagSet = splitToSet(tags.get(), ",");
 
       for (String tagName : tagSet) {
@@ -369,8 +402,8 @@ public final class PostController extends Controller {
       }
     }
 
-    // Sort by post sorter then edit query.
-    query = PostSorter.sort(query, postSorter);
+    // Sort query.
+    query = PostSorter.sort(query, sorter.or(PostSorter.NEWEST));
 
     // Fetch items from beginning from cursor.
     query = cursor.isPresent()
@@ -382,20 +415,25 @@ public final class PostController extends Controller {
 
     final QueryResultIterator<Post> qi = query.iterator();
 
-    List<Post> posts = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
+    //List<Post> postCount = Stream.of(qi).toList();
 
-    while (qi.hasNext()) {
-      posts.add(qi.next());
+    return Observable.fromIterable(Stream.of(qi).toList())
+        .toList()
+        .flatMapObservable(postShardService::mergeShards)
+        .flatMap(__ -> voteService.checkPostVote(__, Key.create(user.getUserId())))
+        .compose(CollectionTransformer.create(qi))
+        .blockingSingle();*/
+
+    /*if (!postCount.isEmpty()) {
+      postCount = postShardService.mergeShards(postCount)
+          .flatMap(__ -> voteService.checkPostVote(__, accountKey))
+          .blockingFirst();
     }
 
-    posts = postShardService.mergeShards(posts)
-        .flatMap(posts1 -> voteService.checkPostVote(posts1, accountKey, false))
-        .blockingSingle();
-
     return CollectionResponse.<Post>builder()
-        .setItems(posts)
+        .setItems(postCount)
         .setNextPageToken(qi.getCursor().toWebSafeString())
-        .build();
+        .build();*/
   }
 
   /**
@@ -405,16 +443,8 @@ public final class PostController extends Controller {
    * @param user the user
    */
   public void reportPost(String postId, User user) throws NotFoundException {
-    // Create question key from websafe question id.
-    final Key<Post> questionKey = Key.create(postId);
-
-    final Key<Account> reporterKey = Key.create(user.getUserId());
-
-    Post post = ofy().load().key(questionKey).now();
-
-    Guard.checkNotFound(post, "Could not find post with ID: " + postId);
-
-    post.toBuilder().reportedByKey(reporterKey).build();
+    Post post = ofy().load().key(Key.<Post>create(postId)).now();
+    post.toBuilder().reportedByKey(Key.create(user.getUserId())).build();
 
     ofy().save().entity(post);
   }

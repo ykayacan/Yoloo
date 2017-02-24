@@ -54,7 +54,6 @@ public class MainCatalogController extends BaseController {
   }
 
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    // handle arrow click here
     final int itemId = item.getItemId();
     switch (itemId) {
       case android.R.id.home:

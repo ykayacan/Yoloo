@@ -34,8 +34,8 @@ import com.yoloo.backend.util.TestBase;
 import com.yoloo.backend.vote.Vote;
 import com.yoloo.backend.vote.VoteController;
 import com.yoloo.backend.vote.VoteControllerFactory;
-import io.reactivex.Observable;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.joda.time.DateTime;
@@ -52,21 +52,15 @@ public class PostControllerTest extends TestBase {
   private static final String USER_AUTH_DOMAIN = "gmail.com";
 
   private Account owner;
-  private Account owner2;
 
   private Category budgetTravel;
   private Category europe;
   private Category america;
 
-  private Tag passport;
-
   private Tag visa;
   private Tag visa2;
 
   private PostController postController;
-  private FollowController followController;
-  private TagController tagController;
-  private CategoryController categoryController;
   private VoteController voteController;
   private CommentController commentController;
 
@@ -85,9 +79,9 @@ public class PostControllerTest extends TestBase {
     super.setUp();
 
     postController = PostControllerFactory.of().create();
-    followController = FollowControllerFactory.of().create();
-    tagController = TagControllerFactory.of().create();
-    categoryController = CategoryControllerFactory.of().create();
+    FollowController followController = FollowControllerFactory.of().create();
+    TagController tagController = TagControllerFactory.of().create();
+    CategoryController categoryController = CategoryControllerFactory.of().create();
     voteController = VoteControllerFactory.of().create();
     commentController = CommentControllerFactory.of().create();
 
@@ -95,7 +89,7 @@ public class PostControllerTest extends TestBase {
     AccountEntity model2 = createAccount();
 
     owner = model1.getAccount();
-    owner2 = model2.getAccount();
+    Account owner2 = model2.getAccount();
 
     DeviceRecord record1 = createRecord(owner);
     DeviceRecord record2 = createRecord(owner2);
@@ -134,7 +128,7 @@ public class PostControllerTest extends TestBase {
       e.printStackTrace();
     }
 
-    passport = tagController.insertGroup("passport");
+    Tag passport = tagController.insertGroup("passport");
 
     visa = tagController.insertTag("visa", "en", passport.getWebsafeId());
     visa2 = tagController.insertTag("visa2", "en", passport.getWebsafeId());
@@ -179,7 +173,7 @@ public class PostControllerTest extends TestBase {
         postController.insertQuestion("Test content", "visa,passport", europe.getWebsafeId(),
             Optional.absent(),
             Optional.of(10), user);
-    voteController.votePost(original.getWebsafeId(), Vote.Direction.UP, user);
+    voteController.vote(original.getWebsafeId(), Vote.Direction.UP, user);
 
     Post fetched = postController.getPost(original.getWebsafeId(), user);
 
@@ -361,7 +355,7 @@ public class PostControllerTest extends TestBase {
     Post p1 = postController.insertQuestion("1. post", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
     commentController.insertComment(p1.getWebsafeId(), "Test comment", user);
-    voteController.votePost(p1.getWebsafeId(), Vote.Direction.UP, user);
+    voteController.vote(p1.getWebsafeId(), Vote.Direction.UP, user);
 
     Post p2 = postController.insertQuestion("2. post", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
@@ -369,7 +363,7 @@ public class PostControllerTest extends TestBase {
     Post p3 = postController.insertQuestion("3. post", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
     commentController.insertComment(p3.getWebsafeId(), "Test comment", user);
-    voteController.votePost(p3.getWebsafeId(), Vote.Direction.DOWN, user);
+    voteController.vote(p3.getWebsafeId(), Vote.Direction.DOWN, user);
 
     Post p4 = postController.insertQuestion("4. post", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
@@ -415,25 +409,21 @@ public class PostControllerTest extends TestBase {
 
     AccountShardService ass = AccountShardService.create();
 
-    return Observable.range(1, AccountShard.SHARD_COUNT)
-        .map(shardNum -> ass.createShard(ownerKey, shardNum))
-        .toMap(Ref::create)
-        .map(shardMap -> {
-          Account account = Account.builder()
-              .id(ownerKey.getId())
-              .avatarUrl(new Link("Test avatar"))
-              .email(new Email(USER_EMAIL))
-              .username("Test user")
-              .shardRefs(Lists.newArrayList(shardMap.keySet()))
-              .created(DateTime.now())
-              .build();
+    Map<Ref<AccountShard>, AccountShard> map = ass.createShardMapWithRef(ownerKey);
 
-          return AccountEntity.builder()
-              .account(account)
-              .shards(shardMap)
-              .build();
-        })
-        .blockingGet();
+    Account account = Account.builder()
+        .id(ownerKey.getId())
+        .avatarUrl(new Link("Test avatar"))
+        .email(new Email(USER_EMAIL))
+        .username("Test user")
+        .shardRefs(Lists.newArrayList(map.keySet()))
+        .created(DateTime.now())
+        .build();
+
+    return AccountEntity.builder()
+        .account(account)
+        .shards(map)
+        .build();
   }
 
   private DeviceRecord createRecord(Account owner) {

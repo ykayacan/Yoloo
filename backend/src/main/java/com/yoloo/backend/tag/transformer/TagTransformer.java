@@ -11,7 +11,7 @@ public class TagTransformer implements Transformer<Tag, TagDTO> {
         .name(in.getName())
         .posts(in.getPosts())
         .totalTagCount(in.getTotalTagCount())
-        .type(in.getType().name())
+        .type(in.getType().name().toLowerCase())
         .build();
   }
 

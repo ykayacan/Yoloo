@@ -1,11 +1,13 @@
 package com.yoloo.backend.tag;
 
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.config.ShardConfig;
-import com.yoloo.backend.shard.ShardService;
 import com.yoloo.backend.shard.ShardUtil;
+import com.yoloo.backend.shard.Shardable;
 import io.reactivex.Observable;
+import ix.Ix;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -16,60 +18,69 @@ import lombok.AllArgsConstructor;
 import static com.yoloo.backend.OfyService.ofy;
 
 @AllArgsConstructor(staticName = "create")
-public class TagShardService implements ShardService<Tag, TagShard> {
+public class TagShardService implements Shardable<TagShard, Tag> {
 
-  @Override
-  public List<Key<TagShard>> createShardKeys(Iterable<Key<Tag>> keys) {
-    return Observable
-        .fromIterable(keys)
-        .concatMapIterable(this::createShardKeys)
-        .toList()
-        .cache()
+  @Override public Map<Ref<TagShard>, TagShard> createShardMapWithRef(Iterable<Key<Tag>> keys) {
+    return Observable.fromIterable(keys)
+        .flatMap(postKey -> Observable.range(1, ShardConfig.TAG_SHARD_COUNTER)
+            .map(shardNum -> TagShard.builder()
+                .id(ShardUtil.generateShardId(postKey, shardNum))
+                .posts(0L)
+                .build()))
+        .toMap(Ref::create)
         .blockingGet();
   }
 
-  @Override
-  public List<Key<TagShard>> createShardKeys(final Key<Tag> entityKey) {
-    return Observable
-        .range(1, ShardConfig.TAG_SHARD_COUNTER)
-        .map(id -> TagShard.createKey(entityKey, id))
-        .toList()
-        .cache()
+  @Override public Map<Key<TagShard>, TagShard> createShardMapWithKey(Iterable<Key<Tag>> keys) {
+    return Observable.fromIterable(keys)
+        .flatMap(postKey -> Observable.range(1, ShardConfig.TAG_SHARD_COUNTER)
+            .map(shardNum -> TagShard.builder()
+                .id(ShardUtil.generateShardId(postKey, shardNum))
+                .posts(0L)
+                .build()))
+        .toMap(Key::create)
         .blockingGet();
   }
 
-  @Override
-  public List<TagShard> createShards(Iterable<Key<Tag>> keys) {
-    return Observable
-        .fromIterable(keys)
-        .concatMapIterable(this::createShards)
-        .toList()
-        .cache()
+  @Override public Map<Ref<TagShard>, TagShard> createShardMapWithRef(Key<Tag> key) {
+    return Observable.range(1, ShardConfig.TAG_SHARD_COUNTER)
+        .map(shardNum -> TagShard.builder()
+            .id(ShardUtil.generateShardId(key, shardNum))
+            .posts(0L)
+            .build())
+        .toMap(Ref::create)
         .blockingGet();
   }
 
-  @Override
-  public List<TagShard> createShards(final Key<Tag> entityKey) {
-    return Observable
-        .range(1, ShardConfig.TAG_SHARD_COUNTER)
-        .map(shardId -> createShard(entityKey, shardId))
-        .toList()
-        .cache()
+  @Override public Map<Key<TagShard>, TagShard> createShardMapWithKey(Key<Tag> key) {
+    return Observable.range(1, ShardConfig.TAG_SHARD_COUNTER)
+        .map(shardNum -> TagShard.builder()
+            .id(ShardUtil.generateShardId(key, shardNum))
+            .posts(0L)
+            .build())
+        .toMap(Key::create)
         .blockingGet();
-  }
-
-  @Override
-  public TagShard createShard(Key<Tag> entityKey, int shardNum) {
-    return TagShard.builder()
-        .id(ShardUtil.generateShardId(entityKey, shardNum))
-        .posts(0)
-        .build();
   }
 
   @Override
   public Key<TagShard> getRandomShardKey(Key<Tag> entityKey) {
     final int shardNum = new Random().nextInt(TagShard.SHARD_COUNT - 1 + 1) + 1;
     return TagShard.createKey(entityKey, shardNum);
+  }
+
+  @Override public Observable<List<Tag>> mergeShards(Collection<Tag> entities) {
+    return Observable.fromIterable(entities)
+        .flatMap(this::mergeShards)
+        .toList(entities.size() == 0 ? 1 : entities.size())
+        .toObservable();
+  }
+
+  @Override public Observable<Tag> mergeShards(Tag entity) {
+    return Observable.fromIterable(entity.getShards())
+        .cast(TagShard.class)
+        .reduce((s1, s2) -> s1.addValues(s2.getPosts()))
+        .map(s -> entity.withPosts(s.getPosts()))
+        .toObservable();
   }
 
   public Collection<TagShard> updateShards(Iterable<String> tagNames) {
@@ -82,9 +93,7 @@ public class TagShardService implements ShardService<Tag, TagShard> {
     List<Key<Tag>> tagKeys = query.keys().list();
 
     List<Key<TagShard>> tagShardKeys = new ArrayList<>(tagKeys.size());
-    for (Key<Tag> key : tagKeys) {
-      tagShardKeys.add(getRandomShardKey(key));
-    }
+    tagShardKeys.addAll(Ix.from(tagKeys).map(this::getRandomShardKey).toList());
 
     Map<Key<TagShard>, TagShard> tagShardMap = ofy().load().keys(tagShardKeys);
 

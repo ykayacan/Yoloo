@@ -104,6 +104,30 @@
     <item name="android:background">@color/background_lightish_2</item>
   </style>
 
+  <style name="Widget.Yoloo.InputContainer">
+    <item name="android:focusableInTouchMode">true</item>
+    <item name="android:background">@drawable/login_input_container_bg</item>
+    <item name="android:orientation">vertical</item>
+  </style>
+
+  <style name="Widget.Yoloo.ProfileCard">
+    <item name="android:textAppearance">@style/TextAppearance.AppCompat.Caption</item>
+    <item name="android:textColor">@color/profile_card_text</item>
+    <item name="android:padding">4dp</item>
+    <item name="android:textAlignment">center</item>
+    <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
+  </style>
+
+  <style name="Widget.Yoloo.ProfileCard.Image">
+    <item name="android:tint">@android:color/white</item>
+    <item name="android:padding">14dp</item>
+  </style>
+
+  <style name="TextAppearance.FeedText" parent="@style/TextAppearance.AppCompat.Body1">
+    <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
+    <item name="android:lineSpacingMultiplier">1.1</item>
+  </style>
+
   <style name="TextAppearance.Username" parent="@style/TextAppearance.AppCompat.Body2">
     <item name="android:maxEms">6</item>
     <item name="android:maxLines">1</item>
@@ -119,13 +143,6 @@
 
   <style name="TextAppearance.ProfileCounter" parent="TextAppearance.AppCompat.Body1">
     <item name="android:textAlignment">center</item>
-  </style>
-
-  <style name="TextAppearance.ProfileCard" parent="TextAppearance.AppCompat.Caption">
-    <item name="android:textColor">@color/profile_card_text</item>
-    <item name="android:padding">4dp</item>
-    <item name="android:textAlignment">center</item>
-    <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
   </style>
 
   <style name="TextAppearance.UnreadCount" parent="android:TextAppearance">

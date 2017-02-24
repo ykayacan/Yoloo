@@ -51,8 +51,8 @@ public class VoteEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "posts.vote",
-      path = "posts/{postId}/votes",
+      name = "postCount.vote",
+      path = "postCount/{postId}/votes",
       httpMethod = ApiMethod.HttpMethod.POST)
   public void votePost(
       @Named("postId") String postId,
@@ -65,7 +65,7 @@ public class VoteEndpoint {
         .on(NotFoundValidator.create(postId, "Invalid postId."))
         .validate();
 
-    voteController.votePost(postId, direction, user);
+    voteController.vote(postId, direction, user);
   }
 
   /**
@@ -91,6 +91,6 @@ public class VoteEndpoint {
         .on(NotFoundValidator.create(commentId, "Invalid commentId."))
         .validate();
 
-    voteController.voteComment(commentId, direction, user);
+    voteController.vote(commentId, direction, user);
   }
 }

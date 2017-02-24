@@ -5,7 +5,8 @@ apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'realm-android'
 apply plugin: 'com.jakewharton.hugo'
 apply plugin: 'com.getkeepsafe.dexcount'
-apply from: '../config/quality/quality.gradle'
+apply from: "$project.rootDir/tools/quality.gradle"
+apply from: "$project.rootDir/tools/script-git-version.gradle"
 
 android {
   compileSdkVersion 25
@@ -14,8 +15,6 @@ android {
     applicationId "com.yoloo.android"
     minSdkVersion 16
     targetSdkVersion 25
-    versionCode 1
-    versionName "1.0"
     testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     // Enabling multidex support.
@@ -37,50 +36,59 @@ android {
     }
   }
 
-  productFlavors {
-    // Define separate dev and prod product flavors.
-    dev {
-      // dev utilizes minSDKVersion = 21 to allow the Android gradle plugin
-      // to pre-dex each module and produce an APK that can be tested on
-      // Android Lollipop without time consuming dex merging processes.
-      minSdkVersion 21
-    }
-    prod {
-      // The actual minSdkVersion for the application.
-      minSdkVersion 16
-    }
-  }
-
   signingConfigs {
     // You must set up an environment var before release signing
     // Run: export APP_KEY={password}
     release {
-      storeFile file('keystore/release.keystore')
+      storeFile file('../keystore/release.keystore')
       keyAlias 'alias'
       storePassword "$System.env.APP_KEY"
       keyPassword "$System.env.APP_KEY"
     }
 
     debug {
-      storeFile file('keystore/debug.keystore')
+      storeFile file('../keystore/debug.keystore')
       keyAlias 'androiddebugkey'
       storePassword 'android'
       keyPassword 'android'
     }
   }
 
+  productFlavors {
+    // Define separate dev and prod product flavors.
+    dev {
+      signingConfig signingConfigs.debug
+      versionCode gitVersionCodeTime
+      versionName gitVersionName
+      // dev utilizes minSDKVersion = 21 to allow the Android gradle plugin
+      // to pre-dex each module and produce an APK that can be tested on
+      // Android Lollipop without time consuming dex merging processes.
+      minSdkVersion 21
+    }
+    prod {
+      signingConfig signingConfigs.release
+      versionCode gitVersionCode
+      versionName gitVersionName
+      // The actual minSdkVersion for the application.
+      minSdkVersion 16
+    }
+  }
+
   buildTypes {
     release {
-      signingConfig signingConfigs.release
-
       minifyEnabled true
       shrinkResources true
-      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+      proguardFiles getDefaultProguardFile('proguard-android.txt'),
+              "$project.rootDir/tools/rules-proguard.pro"
+      signingConfig signingConfigs.release
     }
 
     debug {
-      versionNameSuffix " Debug"
+      minifyEnabled false
+      shrinkResources false
       debuggable true
+      versionNameSuffix " Debug"
+      signingConfig signingConfigs.debug
     }
   }
 
@@ -91,6 +99,7 @@ android {
 
   configurations.all {
     resolutionStrategy.force 'com.google.code.findbugs:jsr305:3.0.1'
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
   }
 
   compileOptions {
@@ -101,15 +110,15 @@ android {
 
 def PLAY_SERVICES_VERSION_DEV = "10.0.1"
 def PLAY_SERVICES_VERSION_PROD = "10.2.0"
-def SUPPORT_LIBRARY_VERSION = "25.1.1"
+def SUPPORT_LIBRARY_VERSION = "25.2.0"
 def FIREBASE_VERSION = PLAY_SERVICES_VERSION_DEV
 def PLAY_SERVICES_VERSION = PLAY_SERVICES_VERSION_DEV
-def EPOXY_VERSION = "1.7.2"
+def EPOXY_VERSION = "1.7.5"
 
 dependencies {
   compile fileTree(include: ['*.jar'], dir: 'libs')
   endpointsServer project(path: ':backend', configuration: 'endpoints')
-  compile ('com.google.api-client:google-api-client:1.22.0') {
+  compile('com.google.api-client:google-api-client:1.22.0') {
     exclude group: 'org.apache.httpcomponents', module: 'httpclient'
   }
 
@@ -120,7 +129,7 @@ dependencies {
   compile "com.android.support:support-compat:$SUPPORT_LIBRARY_VERSION"
   compile "com.android.support:palette-v7:$SUPPORT_LIBRARY_VERSION"
   compile 'com.android.support:multidex:1.0.1'
-  compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
+  compile 'com.android.support.constraint:constraint-layout:1.0.0'
 
   //compile "com.google.firebase:firebase-core:$FIREBASE_VERSION"
   compile "com.google.firebase:firebase-auth:$FIREBASE_VERSION"
@@ -137,6 +146,9 @@ dependencies {
   })
 
   compile "com.hootsuite.android:nachos:1.0.0"
+  compile('com.beloo.widget:ChipsLayoutManager:0.3.7@aar', {
+    exclude group: 'com.android.support'
+  })
 
   compile('com.bluelinelabs:conductor:2.1.1-SNAPSHOT', {
     exclude group: 'com.android.support'
@@ -145,7 +157,7 @@ dependencies {
     exclude group: 'com.android.support'
   })
 
-  compile ('com.github.bumptech.glide:glide:3.7.0', {
+  compile('com.github.bumptech.glide:glide:3.7.0', {
     exclude group: 'com.android.support'
   })
 
@@ -157,7 +169,7 @@ dependencies {
   compile 'io.reactivex.rxjava2:rxjava:2.0.6'
   compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
 
-  compile ("com.airbnb.android:epoxy:$EPOXY_VERSION", {
+  compile("com.airbnb.android:epoxy:$EPOXY_VERSION", {
     exclude group: 'com.android.support'
   })
   annotationProcessor "com.airbnb.android:epoxy-processor:$EPOXY_VERSION"
@@ -169,17 +181,17 @@ dependencies {
     exclude group: 'com.square.okhttp3'
   })
 
-  compile ('com.github.jksiezni.permissive:permissive:0.2', {
+  compile('com.github.jksiezni.permissive:permissive:0.2', {
     exclude group: 'com.android.support'
   })
   compile('com.sandrios.android:sandriosCamera:1.0.9', {
     exclude group: 'com.bumptech.glide'
     exclude group: 'gun0912.ted'
   })
-  compile ('com.github.chrisbanes:PhotoView:1.3.1', {
+  compile('com.github.chrisbanes:PhotoView:1.3.1', {
     exclude group: 'com.android.support'
   })
-  compile ('net.danlew:android.joda:2.9.5.1', {
+  compile('net.danlew:android.joda:2.9.5.1', {
     exclude group: 'joda-time'
   })
   compile 'joda-time:joda-time:2.9.7:no-tzdb'
@@ -187,7 +199,7 @@ dependencies {
   compile 'com.annimon:stream:1.1.5'
   compile 'com.intuit.sdp:sdp-android:1.0.4'
   compile 'uk.co.chrisjenx:calligraphy:2.2.0'
-  compile 'com.airbnb.android:lottie:1.0.3'
+  compile 'com.airbnb.android:lottie:1.5.1'
 
   annotationProcessor 'dk.ilios:realmfieldnameshelper:1.1.0'
 

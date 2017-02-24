@@ -215,8 +215,8 @@ public class AccountEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "accounts.followers",
-      path = "accounts/{accountId}/followers",
+      name = "accounts.followerCount",
+      path = "accounts/{accountId}/followerCount",
       httpMethod = ApiMethod.HttpMethod.GET)
   public CollectionResponse<Account> followers(
       @Named("accountId") String accountId,
@@ -234,8 +234,8 @@ public class AccountEndpoint {
         accountId,
         ListType.FOLLOWER,
         Optional.fromNullable(limit),
-        Optional.fromNullable(cursor),
-        user);
+        Optional.fromNullable(cursor)
+    );
   }
 
   /**
@@ -249,8 +249,8 @@ public class AccountEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "accounts.followings",
-      path = "accounts/{accountId}/followings",
+      name = "accounts.followingCount",
+      path = "accounts/{accountId}/followingCount",
       httpMethod = ApiMethod.HttpMethod.GET)
   public CollectionResponse<Account> followings(
       @Named("accountId") String accountId,
@@ -268,8 +268,8 @@ public class AccountEndpoint {
         accountId,
         ListType.FOLLOWING,
         Optional.fromNullable(limit),
-        Optional.fromNullable(cursor),
-        user);
+        Optional.fromNullable(cursor)
+    );
   }
 
   private AccountController getAccountController() {

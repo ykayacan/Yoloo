@@ -1,9 +1,9 @@
 package com.yoloo.backend.util;
 
-import com.annimon.stream.Stream;
 import com.google.common.base.Splitter;
 import com.googlecode.objectify.Key;
 import io.reactivex.Observable;
+import ix.Ix;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -20,7 +20,7 @@ public final class KeyUtil {
   }
 
   public static <T> List<Key<T>> extractKeysFromIds2(String ids, String delimiter) {
-    return Stream.of(Splitter.on(delimiter).trimResults().omitEmptyStrings().split(ids))
+    return Ix.from(Splitter.on(delimiter).trimResults().omitEmptyStrings().split(ids))
         .map(Key::<T>create)
         .toList();
   }

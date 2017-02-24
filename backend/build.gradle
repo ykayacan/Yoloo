@@ -47,6 +47,7 @@ dependencies {
   compile 'joda-time:joda-time:2.9.7'
   compileOnly 'org.projectlombok:lombok:1.16.12'
   compile 'io.reactivex.rxjava2:rxjava:2.0.6'
+  compile 'com.github.akarnokd:ixjava:1.0.0-RC5'
   compile 'com.twitter:twitter-text:1.14.3'
   compile 'com.google.guava:guava:20.0'
   compile 'com.annimon:stream:1.1.5'
@@ -56,8 +57,6 @@ dependencies {
 
   compile 'com.fasterxml.jackson.core:jackson-core:2.8.7'
   compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.7'
-
-  compile 'com.baidu.unbiz:fluent-validator:1.0.6'
 
   testCompile 'junit:junit:4.12'
   compile "com.google.appengine:appengine-api-labs:$APP_ENGINE_VERSION"

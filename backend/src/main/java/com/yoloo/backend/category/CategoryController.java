@@ -13,7 +13,6 @@ import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.category.sort_strategy.CategorySorter;
 import com.yoloo.backend.endpointsvalidator.Guard;
-import io.reactivex.Observable;
 import io.reactivex.Single;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +48,8 @@ public class CategoryController extends Controller {
 
     final Key<Category> categoryKey = Category.createKey(name);
 
-    Map<Ref<CategoryShard>, CategoryShard> shardMap = createCategoryShardMap(categoryKey);
+    Map<Ref<CategoryShard>, CategoryShard> shardMap =
+        categoryShardService.createShardMapWithRef(categoryKey);
 
     Category category = Category.builder()
         .id(categoryKey.getName())
@@ -144,12 +144,5 @@ public class CategoryController extends Controller {
 
     query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
     return query;
-  }
-
-  private Map<Ref<CategoryShard>, CategoryShard> createCategoryShardMap(Key<Category> categoryKey) {
-    return Observable.range(1, CategoryShard.SHARD_COUNT)
-        .map(shardNum -> categoryShardService.createShard(categoryKey, shardNum))
-        .toMap(Ref::create)
-        .blockingGet();
   }
 }

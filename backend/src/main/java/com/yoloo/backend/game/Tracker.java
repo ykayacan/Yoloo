@@ -88,4 +88,8 @@ public class Tracker {
   public void addBadge(Badge badge) {
     badges.add(badge);
   }
+
+  public boolean hasEnoughBounty(int toConsume) {
+    return bounties >= toConsume;
+  }
 }

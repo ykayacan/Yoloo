@@ -75,7 +75,7 @@ public class CategoryRealm extends RealmObject {
         "id='" + id + '\'' +
         ", name='" + name + '\'' +
         ", backgroundUrl='" + backgroundUrl + '\'' +
-        ", posts=" + posts +
+        ", postCount=" + posts +
         ", rank=" + rank +
         ", type='" + type + '\'' +
         '}';

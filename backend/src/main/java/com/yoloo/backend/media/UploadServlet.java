@@ -111,7 +111,7 @@ public class UploadServlet extends HttpServlet {
           ofy().save().entities(medias).now();
 
           printSuccessResponse(medias, out);
-        });
+        }, throwable -> printErrorResponse(throwable.getMessage(), out));
   }
 
   private boolean filterFileStream(FileItemStream fileItemStream) {

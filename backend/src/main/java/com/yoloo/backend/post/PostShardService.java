@@ -11,58 +11,36 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import lombok.NoArgsConstructor;
+import lombok.extern.java.Log;
 
+@Log
 @NoArgsConstructor(staticName = "create")
 public class PostShardService implements Shardable<PostShard, Post> {
 
   @Override
-  public Map<Ref<PostShard>, PostShard> createShardMapWithRef(Collection<Key<Post>> keys) {
+  public Map<Ref<PostShard>, PostShard> createShardMapWithRef(Iterable<Key<Post>> keys) {
     return Observable.fromIterable(keys)
-        .flatMap(postKey -> Observable.range(1, ShardConfig.POST_SHARD_COUNTER)
-            .map(shardNum -> PostShard.builder()
-                .id(ShardUtil.generateShardId(postKey, shardNum))
-                .comments(0L)
-                .votes(0L)
-                .reports(0)
-                .build()))
+        .flatMap(this::createShardsFromPostKey)
         .toMap(Ref::create)
         .blockingGet();
   }
 
   @Override
-  public Map<Key<PostShard>, PostShard> createShardMapWithKey(Collection<Key<Post>> keys) {
+  public Map<Key<PostShard>, PostShard> createShardMapWithKey(Iterable<Key<Post>> keys) {
     return Observable.fromIterable(keys)
-        .flatMap(postKey -> Observable.range(1, ShardConfig.POST_SHARD_COUNTER)
-            .map(shardNum -> PostShard.builder()
-                .id(ShardUtil.generateShardId(postKey, shardNum))
-                .comments(0L)
-                .votes(0L)
-                .reports(0)
-                .build()))
+        .flatMap(this::createShardsFromPostKey)
         .toMap(Key::create)
         .blockingGet();
   }
 
   @Override public Map<Ref<PostShard>, PostShard> createShardMapWithRef(Key<Post> key) {
-    return Observable.range(1, ShardConfig.POST_SHARD_COUNTER)
-        .map(shardNum -> PostShard.builder()
-            .id(ShardUtil.generateShardId(key, shardNum))
-            .comments(0L)
-            .votes(0L)
-            .reports(0)
-            .build())
+    return createShardsFromPostKey(key)
         .toMap(Ref::create)
         .blockingGet();
   }
 
   @Override public Map<Key<PostShard>, PostShard> createShardMapWithKey(Key<Post> key) {
-    return Observable.range(1, ShardConfig.POST_SHARD_COUNTER)
-        .map(shardNum -> PostShard.builder()
-            .id(ShardUtil.generateShardId(key, shardNum))
-            .comments(0L)
-            .votes(0L)
-            .reports(0)
-            .build())
+    return createShardsFromPostKey(key)
         .toMap(Key::create)
         .blockingGet();
   }
@@ -75,7 +53,7 @@ public class PostShardService implements Shardable<PostShard, Post> {
   @Override public Observable<List<Post>> mergeShards(Collection<Post> entities) {
     return Observable.fromIterable(entities)
         .flatMap(this::mergeShards)
-        .toList(entities.size())
+        .toList(entities.size() == 0 ? 1 : entities.size())
         .toObservable();
   }
 
@@ -87,5 +65,19 @@ public class PostShardService implements Shardable<PostShard, Post> {
             .withCommentCount(s.getComments())
             .withReportCount(s.getReports()))
         .toObservable();
+  }
+
+  private Observable<PostShard> createShardsFromPostKey(Key<Post> postKey) {
+    return Observable.range(1, ShardConfig.POST_SHARD_COUNTER)
+        .map(shardNum -> createShard(postKey, shardNum));
+  }
+
+  private PostShard createShard(Key<Post> postKey, Integer shardNum) {
+    return PostShard.builder()
+        .id(ShardUtil.generateShardId(postKey, shardNum))
+        .comments(0L)
+        .votes(0L)
+        .reports(0)
+        .build();
   }
 }

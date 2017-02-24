@@ -206,7 +206,7 @@ public class BlogEndpoint {
   /**
    * Reports the {@code Post} with the corresponding ID.
    *
-   * @param blogId the websafe question id
+   * @param blogId the websafe blog id
    * @param user the user
    * @throws ServiceException the service exception
    */

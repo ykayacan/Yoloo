@@ -29,7 +29,7 @@ import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
-import com.yoloo.android.feature.feed.postfeed.PostController;
+import com.yoloo.android.feature.feed.globalfeed.GlobalFeedController;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
@@ -160,7 +160,7 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
     KeyboardUtil.hideKeyboard(etSearch);
 
     getParentController().getRouter()
-        .pushController(RouterTransaction.with(PostController.ofTag(item.getName()))
+        .pushController(RouterTransaction.with(GlobalFeedController.ofTag(item.getName()))
             .pushChangeHandler(new VerticalChangeHandler())
             .popChangeHandler(new VerticalChangeHandler()));
   }

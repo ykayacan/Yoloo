@@ -8,8 +8,7 @@
   app:animateStateChanges="true"
   app:emptyLayout="@layout/layout_empty_view"
   app:errorLayout="@layout/layout_error_view"
-  app:initialViewState="loading"
-  app:loadingLayout="@layout/layout_loading_view">
+  app:loadingLayout="@layout/layout_feed_loading_view">
 
   <android.support.design.widget.AppBarLayout
     android:layout_width="match_parent"

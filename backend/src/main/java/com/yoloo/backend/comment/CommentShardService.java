@@ -1,63 +1,79 @@
 package com.yoloo.backend.comment;
 
 import com.googlecode.objectify.Key;
-import com.yoloo.backend.shard.ShardService;
+import com.googlecode.objectify.Ref;
+import com.yoloo.backend.config.ShardConfig;
 import com.yoloo.backend.shard.ShardUtil;
+import com.yoloo.backend.shard.Shardable;
 import io.reactivex.Observable;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(staticName = "create")
-public class CommentShardService implements ShardService<Comment, CommentShard> {
+public class CommentShardService implements Shardable<CommentShard, Comment> {
 
   @Override
-  public List<Key<CommentShard>> createShardKeys(Iterable<Key<Comment>> keys) {
-    return Observable
-        .fromIterable(keys)
-        .concatMapIterable(this::createShardKeys)
-        .toList()
+  public Map<Ref<CommentShard>, CommentShard> createShardMapWithRef(Iterable<Key<Comment>> keys) {
+    return Observable.fromIterable(keys)
+        .flatMap(this::createShardsFromPostKey)
+        .toMap(Ref::create)
         .blockingGet();
   }
 
   @Override
-  public List<Key<CommentShard>> createShardKeys(Key<Comment> entityKey) {
-    return Observable
-        .range(1, CommentShard.SHARD_COUNT)
-        .map(id -> CommentShard.createKey(entityKey, id))
-        .toList()
+  public Map<Key<CommentShard>, CommentShard> createShardMapWithKey(Iterable<Key<Comment>> keys) {
+    return Observable.fromIterable(keys)
+        .flatMap(this::createShardsFromPostKey)
+        .toMap(Key::create)
         .blockingGet();
   }
 
-  @Override
-  public List<CommentShard> createShards(Iterable<Key<Comment>> keys) {
-    return Observable
-        .fromIterable(keys)
-        .concatMapIterable(this::createShards)
-        .toList()
+  @Override public Map<Ref<CommentShard>, CommentShard> createShardMapWithRef(Key<Comment> key) {
+    return createShardsFromPostKey(key)
+        .toMap(Ref::create)
         .blockingGet();
   }
 
-  @Override
-  public List<CommentShard> createShards(Key<Comment> entityKey) {
-    return Observable
-        .range(1, CommentShard.SHARD_COUNT)
-        .map(shardId -> createShard(entityKey, shardId))
-        .toList()
+  @Override public Map<Key<CommentShard>, CommentShard> createShardMapWithKey(Key<Comment> key) {
+    return createShardsFromPostKey(key)
+        .toMap(Key::create)
         .blockingGet();
-  }
-
-  @Override
-  public CommentShard createShard(Key<Comment> entityKey, int shardNum) {
-    return CommentShard.builder()
-        .id(ShardUtil.generateShardId(entityKey, shardNum))
-        .votes(0)
-        .build();
   }
 
   @Override
   public Key<CommentShard> getRandomShardKey(Key<Comment> entityKey) {
-    final int shardNum = new Random().nextInt(CommentShard.SHARD_COUNT - 1 + 1) + 1;
+    final int shardNum = new Random().nextInt(ShardConfig.COMMENT_SHARD_COUNTER - 1 + 1) + 1;
     return CommentShard.createKey(entityKey, shardNum);
+  }
+
+  @Override public Observable<List<Comment>> mergeShards(Collection<Comment> entities) {
+    return Observable.fromIterable(entities)
+        .flatMap(this::mergeShards)
+        .toList(entities.size() == 0 ? 1 : entities.size())
+        .toObservable();
+  }
+
+  @Override public Observable<Comment> mergeShards(Comment entity) {
+    return Observable.fromIterable(entity.getShards())
+        .cast(CommentShard.class)
+        .reduce((s1, s2) -> s1.addValues(s2.getVotes()))
+        .map(s -> entity.withVoteCount(s.getVotes()))
+        .toObservable();
+  }
+
+  private Observable<CommentShard> createShardsFromPostKey(Key<Comment> postKey) {
+    return Observable
+        .range(1, ShardConfig.COMMENT_SHARD_COUNTER)
+        .map(shardNum -> createShard(postKey, shardNum));
+  }
+
+  private CommentShard createShard(Key<Comment> postKey, Integer shardNum) {
+    return CommentShard.builder()
+        .id(ShardUtil.generateShardId(postKey, shardNum))
+        .votes(0L)
+        .build();
   }
 }

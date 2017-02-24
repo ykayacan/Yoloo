@@ -12,19 +12,16 @@
   <include layout="@layout/merge_item_feed_header" />
 
   <TextView
+    style="@style/TextAppearance.FeedText"
     android:id="@+id/tv_item_question_normal_content"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
-    android:layout_marginTop="0dp"
-    android:lineSpacingMultiplier="1.1"
     android:paddingBottom="@dimen/padding_micro"
     android:paddingEnd="@dimen/padding_normal"
     android:paddingLeft="@dimen/padding_normal"
     android:paddingRight="@dimen/padding_normal"
     android:paddingStart="@dimen/padding_normal"
     android:paddingTop="@dimen/padding_normal"
-    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-    app:layout_constraintHorizontal_bias="0.0"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toBottomOf="@+id/iv_item_feed_user_avatar"

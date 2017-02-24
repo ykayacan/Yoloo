@@ -12,7 +12,7 @@ import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
 import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
 import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
-import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.dto.PostDTO;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.inject.Named;
@@ -52,8 +52,8 @@ public class BookmarkEndpoint {
    * @throws ServiceException the service exception
    */
   /*@ApiMethod(
-      name = "posts.bookmarkPost",
-      path = "posts/{postId}/bookmark",
+      name = "postCount.bookmarkPost",
+      path = "postCount/{postId}/bookmark",
       httpMethod = ApiMethod.HttpMethod.POST)
   public void insert(@Named("postId") String postId, User user) throws ServiceException {
 
@@ -73,8 +73,8 @@ public class BookmarkEndpoint {
    * @throws ServiceException the service exception
    */
   /*@ApiMethod(
-      name = "posts.unbookmarkPost",
-      path = "posts/{postId}/bookmark",
+      name = "postCount.unbookmarkPost",
+      path = "postCount/{postId}/bookmark",
       httpMethod = ApiMethod.HttpMethod.DELETE)
   public void delete(@Named("postId") String postId, User user)
       throws ServiceException {
@@ -97,10 +97,10 @@ public class BookmarkEndpoint {
    * @return a response that encapsulates the result listFeed and the next page token/cursor
    */
   @ApiMethod(
-      name = "posts.bookmarkPost.list",
-      path = "posts/bookmarks",
+      name = "postCount.bookmarkPost.list",
+      path = "postCount/bookmarks",
       httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Post> list(
+  public CollectionResponse<PostDTO> list(
       @Nullable @Named("cursor") String cursor,
       @Nullable @Named("limit") Integer limit,
       User user) throws ServiceException {

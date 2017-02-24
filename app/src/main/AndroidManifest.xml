@@ -47,7 +47,7 @@
       android:exported="false" />
 
     <service
-      android:name=".feature.write.CreatePostService"
+      android:name=".feature.editor.CreatePostService"
       android:exported="false" />
 
     <activity

@@ -1,5 +1,6 @@
 package com.yoloo.backend.bookmark;
 
+import com.annimon.stream.Stream;
 import com.google.api.server.spi.response.CollectionResponse;
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.QueryResultIterator;
@@ -12,6 +13,8 @@ import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.post.Post;
 import com.yoloo.backend.post.PostShardService;
+import com.yoloo.backend.post.dto.PostDTO;
+import com.yoloo.backend.post.transformer.PostTransformer;
 import com.yoloo.backend.vote.VoteService;
 import java.util.Collection;
 import java.util.List;
@@ -31,7 +34,7 @@ public class BookmarkController extends Controller {
    */
   private static final int DEFAULT_LIST_LIMIT = 20;
 
-  private BookmarkService bookmarkService;
+  private PostTransformer postTransformer;
 
   private PostShardService postShardService;
 
@@ -47,9 +50,9 @@ public class BookmarkController extends Controller {
     // Create user key from user id.
     final Key<Account> authKey = Key.create(user.getUserId());
 
-    final Key<Post> questionKey = Key.create(questionId);
+    final Key<Post> postKey = Key.create(questionId);
 
-    Bookmark saved = bookmarkService.create(questionKey, authKey);
+    Bookmark saved = createBookmark(postKey, authKey);
 
     ofy().save().entity(saved).now();
   }
@@ -77,7 +80,9 @@ public class BookmarkController extends Controller {
    * @param user the user
    * @return the collection response
    */
-  public CollectionResponse<Post> listBookmarks(Optional<Integer> limit, Optional<String> cursor,
+  public CollectionResponse<PostDTO> listBookmarks(
+      Optional<Integer> limit,
+      Optional<String> cursor,
       User user) {
     // Create account key from websafe id.
     final Key<Account> authKey = Key.create(user.getUserId());
@@ -99,22 +104,32 @@ public class BookmarkController extends Controller {
 
     final QueryResultIterator<Bookmark> qi = query.iterator();
 
-    List<Key<Post>> questionKeys = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
+    List<Key<Post>> postKeys = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
 
     while (qi.hasNext()) {
       // Add fetched objects to map. Because cursor iteration needs to be iterated.
-      questionKeys.add(qi.next().getSavedQuestionKey());
+      postKeys.add(qi.next().getSavedPostKey());
     }
 
-    Collection<Post> posts = ofy().load().keys(questionKeys).values();
+    Collection<Post> posts = ofy().load().keys(postKeys).values();
 
     posts = postShardService.mergeShards(posts)
-        .flatMap(posts1 -> voteService.checkPostVote(posts1, authKey, false))
+        .flatMap(posts1 -> voteService.checkPostVote(posts1, authKey))
         .blockingSingle();
 
-    return CollectionResponse.<Post>builder()
-        .setItems(posts)
+    List<PostDTO> postDTOs =
+        Stream.of(posts).map(post -> postTransformer.transformTo(post)).toList();
+
+    return CollectionResponse.<PostDTO>builder()
+        .setItems(postDTOs)
         .setNextPageToken(qi.getCursor().toWebSafeString())
+        .build();
+  }
+
+  private Bookmark createBookmark(Key<Post> questionKey, Key<Account> parentKey) {
+    return Bookmark.builder()
+        .id(questionKey.toWebSafeString())
+        .parent(parentKey)
         .build();
   }
 }

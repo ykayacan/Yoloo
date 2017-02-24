@@ -10,5 +10,7 @@ public interface Votable {
   @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   <T> Key<T> getVotableKey();
 
+  Votable setVoteDir(Vote.Direction dir);
+
   DateTime getCreated();
 }

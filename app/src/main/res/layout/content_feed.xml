@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.yoloo.android.ui.widget.StateLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
-  android:id="@+id/feed_root"
+  android:id="@+id/root_view"
   android:layout_width="match_parent"
-  android:layout_height="match_parent">
+  android:layout_height="match_parent"
+  app:animateStateChanges="true"
+  app:emptyLayout="@layout/layout_empty_view"
+  app:errorLayout="@layout/layout_error_view"
+  app:loadingLayout="@layout/layout_feed_loading_view">
 
   <android.support.design.widget.AppBarLayout
     android:id="@+id/appbar_feed"
@@ -33,33 +37,23 @@
 
   </android.support.v4.widget.SwipeRefreshLayout>
 
-  <com.airbnb.lottie.LottieAnimationView
-    android:id="@+id/animation_view"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center"
-    android:visibility="gone"
-    app:lottie_autoPlay="true"
-    app:lottie_fileName="PinJump.json"
-    app:lottie_loop="true" />
-
-  <include layout="@layout/layout_error_view" />
-
-  <View
-    android:id="@+id/view_feed_action"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center"
-    android:visibility="gone" />
-
-  <View
+  <!--<View
     android:id="@+id/dimming_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+    app:layout_behavior="@string/appbar_scrolling_view_behavior" />-->
 
-  <com.yoloo.android.ui.widget.fabmenu.FloatingActionsMenu
+  <android.support.design.widget.FloatingActionButton
+    android:id="@+id/fab_ask_question"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="end|bottom"
+    android:layout_margin="@dimen/fab_margin"
+    android:contentDescription="@string/action_feed_fab_ask_question"
+    app:srcCompat="@drawable/ic_edit_white_18dp" />
+
+  <!--<com.yoloo.android.ui.widget.fabmenu.FloatingActionsMenu
     android:id="@+id/fab_menu_feed"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -83,40 +77,6 @@
       app:fabSize="mini"
       app:srcCompat="@drawable/ic_edit_white_18dp" />
 
-  </com.yoloo.android.ui.widget.fabmenu.FloatingActionsMenu>
+  </com.yoloo.android.ui.widget.fabmenu.FloatingActionsMenu>-->
 
-  <!--<com.yoloo.android.ui.widget.floatingactionmenu.widget.FloatingActionMenu
-    android:id="@+id/fab_menu_feed"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="end|bottom"
-    app:fabMenuCloseIconAngle="135"
-    app:fabMenuCloseIconSrc="@drawable/ic_close_white_24dp"
-    app:fabMenuLabelStyle="@style/Yoloo.LightLabel">
-
-    <android.support.design.widget.FloatingActionButton
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_margin="@dimen/fab_margin"
-      android:tint="@android:color/white"
-      app:srcCompat="@drawable/ic_add_black_24dp" />
-
-    <android.support.design.widget.FloatingActionButton
-      android:id="@+id/fab_ask_question"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:contentDescription="@string/action_feed_fab_ask_question"
-      app:fabSize="mini"
-      app:srcCompat="@drawable/ic_edit_white_18dp" />
-
-    <android.support.design.widget.FloatingActionButton
-      android:id="@+id/fab_share_trip"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:contentDescription="@string/action_feed_fab_share_trip"
-      app:fabSize="mini"
-      app:srcCompat="@drawable/ic_edit_white_18dp" />
-
-  </com.yoloo.android.ui.widget.floatingactionmenu.widget.FloatingActionMenu>-->
-
-</android.support.design.widget.CoordinatorLayout>
+</com.yoloo.android.ui.widget.StateLayout>

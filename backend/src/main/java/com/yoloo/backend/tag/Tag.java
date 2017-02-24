@@ -34,7 +34,7 @@ public class Tag {
 
   public static final String FIELD_GROUP_KEYS = "groupKeys";
   public static final String FIELD_NAME = "name";
-  public static final String FIELD_QUESTIONS = "questions";
+  public static final String FIELD_QUESTIONS = "postCount";
   public static final String FIELD_TYPE = "type";
 
   @Id

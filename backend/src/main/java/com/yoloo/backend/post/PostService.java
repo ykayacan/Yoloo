@@ -2,6 +2,7 @@ package com.yoloo.backend.post;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
+import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
@@ -14,6 +15,7 @@ import com.yoloo.backend.media.Media;
 import com.yoloo.backend.util.KeyUtil;
 import com.yoloo.backend.util.StringUtil;
 import com.yoloo.backend.vote.Vote;
+import io.reactivex.Observable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,7 +30,7 @@ public class PostService {
 
   private PostShardService postShardService;
 
-  public PostEntity create(
+  public PostEntity createPost(
       Account account,
       String content,
       String tags,
@@ -73,23 +75,33 @@ public class PostService {
     return PostEntity.builder().post(post).shards(shardMap).build();
   }
 
-  public List<Key<Comment>> getCommentKeys(Key<Post> questionKey) {
+  public Observable<QueryResultIterable<Key<Comment>>> getCommentKeysObservable(Key<Post> postKey) {
+    return Observable.fromCallable(() -> ofy().load().type(Comment.class)
+        .filter(Comment.FIELD_QUESTION_KEY + " =", postKey)
+        .keys().iterable());
+  }
+
+  public Observable<QueryResultIterable<Key<Vote>>> getVoteKeysObservable(Key<Post> postKey) {
+    return Observable.fromCallable(() -> ofy().load().type(Vote.class)
+        .filter(Vote.FIELD_VOTABLE_KEY + " =", postKey)
+        .keys().iterable());
+  }
+
+  public List<Key<Comment>> getCommentKeys(Key<Post> postKey) {
     return ofy().load().type(Comment.class)
-        .filter(Comment.FIELD_QUESTION_KEY + " =", questionKey)
+        .filter(Comment.FIELD_QUESTION_KEY + " =", postKey)
         .keys().list();
   }
 
-  public List<Key<Vote>> getVoteKeys(Key<Post> questionKey) {
+  public List<Key<Vote>> getVoteKeys(Key<Post> postKey) {
     return ofy().load().type(Vote.class)
-        .filter(Vote.FIELD_VOTABLE_KEY + " =", questionKey)
+        .filter(Vote.FIELD_VOTABLE_KEY + " =", postKey)
         .keys().list();
   }
 
   private int checkBounty(Optional<Integer> bounty, Tracker tracker) {
-    if (bounty.isPresent()) {
-      return tracker.getBounties() >= bounty.get() ? bounty.get() : 0;
-    } else {
-      return bounty.or(0);
-    }
+    return bounty.isPresent()
+        ? (tracker.hasEnoughBounty(bounty.get()) ? bounty.get() : 0)
+        : bounty.or(0);
   }
 }

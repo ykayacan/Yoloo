@@ -11,16 +11,17 @@ import com.yoloo.backend.post.Post;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.experimental.NonFinal;
 import org.joda.time.DateTime;
 
 @Entity
 @Cache
 @Value
 @Builder
-@Wither
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
 public class Bookmark {
 
   public static final String FIELD_CREATED = "created";
@@ -32,12 +33,14 @@ public class Bookmark {
   private String id;
 
   @Parent
-  private Key<Account> parentUserKey;
+  @NonFinal
+  private Key<Account> parent;
 
   @Index
+  @NonFinal
   private DateTime created;
 
-  public Key<Post> getSavedQuestionKey() {
+  public Key<Post> getSavedPostKey() {
     return Key.create(id);
   }
 }

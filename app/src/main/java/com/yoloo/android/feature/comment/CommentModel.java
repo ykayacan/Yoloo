@@ -13,7 +13,7 @@ import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CommentRealm;
-import com.yoloo.android.feature.feed.common.annotation.PostType;
+import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
@@ -65,7 +65,7 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
     holder.tvAccept.setVisibility(isPostOwner
         /*&& !isCommentOwner*/
         && !postAccepted
-        && postType != PostType.TYPE_BLOG
+        && postType != PostRealm.POST_BLOG
         ? View.VISIBLE : View.GONE);
 
     DrawableHelper.withContext(context)

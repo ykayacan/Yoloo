@@ -5,8 +5,9 @@ import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
-import com.googlecode.objectify.condition.IfNotDefault;
+import com.googlecode.objectify.condition.IfNotZero;
 import com.yoloo.backend.config.ShardConfig;
+import com.yoloo.backend.shard.Shardable;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class AccountShard {
+public final class AccountShard implements Shardable.Shard {
 
   public static final int SHARD_COUNT = ShardConfig.ACCOUNT_SHARD_COUNTER;
 
@@ -29,14 +30,14 @@ public final class AccountShard {
   @Id
   private String id;
 
-  @Index(IfNotDefault.class)
-  private long followings;
+  @Index(IfNotZero.class)
+  private long followingCount;
 
-  @Index(IfNotDefault.class)
-  private long followers;
+  @Index(IfNotZero.class)
+  private long followerCount;
 
-  @Index(IfNotDefault.class)
-  private long questions;
+  @Index(IfNotZero.class)
+  private long postCount;
 
   public static Key<AccountShard> createKey(Key<Account> accountKey, int shardId) {
     return Key.create(AccountShard.class, accountKey.toWebSafeString() + ":" + shardId);
@@ -47,30 +48,38 @@ public final class AccountShard {
   }
 
   public String getWebsafeAccountId() {
-    return this.id.split(":")[0];
+    return id.split(":")[0];
   }
 
   public long increaseFollowings() {
-    return ++followings;
+    return ++followingCount;
   }
 
   public long decreaseFollowings() {
-    return --followings;
+    return --followingCount;
   }
 
   public long increaseFollowers() {
-    return ++followers;
+    return ++followerCount;
   }
 
   public long decreaseFollowers() {
-    return --followers;
+    return --followerCount;
   }
 
   public long increaseQuestions() {
-    return ++questions;
+    return ++postCount;
   }
 
   public long decreaseQuestions() {
-    return --questions;
+    return --postCount;
+  }
+
+  @Override public void increaseVotesBy(long value) {
+
+  }
+
+  @Override public void decreaseVotesBy(long value) {
+
   }
 }

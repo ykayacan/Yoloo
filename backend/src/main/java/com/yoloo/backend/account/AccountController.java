@@ -16,58 +16,46 @@ import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.tasks.Task;
 import com.google.firebase.tasks.Tasks;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.NotFoundException;
 import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.account.task.CreateUserFeedServlet;
 import com.yoloo.backend.authentication.oauth2.OAuth2;
 import com.yoloo.backend.base.Controller;
+import com.yoloo.backend.endpointsvalidator.Guard;
 import com.yoloo.backend.follow.Follow;
 import com.yoloo.backend.game.GamificationService;
 import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.media.Media;
 import com.yoloo.backend.media.Size;
 import com.yoloo.backend.media.size.ThumbSize;
-import com.yoloo.backend.shard.ShardUtil;
 import com.yoloo.backend.util.KeyUtil;
 import com.yoloo.backend.util.ServerConfig;
-import com.yoloo.backend.endpointsvalidator.Guard;
-import io.reactivex.Observable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import lombok.extern.java.Log;
 import org.joda.time.DateTime;
 
 import static com.yoloo.backend.OfyService.factory;
 import static com.yoloo.backend.OfyService.ofy;
+import static com.yoloo.backend.account.AccountUtil.generateUsername;
+import static com.yoloo.backend.account.AccountUtil.isUserRegistered;
 
+@Log
 @AllArgsConstructor(staticName = "create")
 public final class AccountController extends Controller {
 
-  private static final Logger LOG =
-      Logger.getLogger(AccountController.class.getName());
-
   /**
-   * Maximum number of questions to return.
+   * Maximum number of postCount to return.
    */
   private static final int DEFAULT_LIST_LIMIT = 20;
 
   private AccountShardService accountShardService;
 
   private GamificationService gamificationService;
-
-  private static String generateUsername(FirebaseToken token) {
-    return token.getName()
-        .trim()
-        .replaceAll("\\s+", "")
-        .toLowerCase()
-        .substring(0, 10)
-        .concat(String.valueOf(System.currentTimeMillis()).substring(5));
-  }
 
   /**
    * Get account.
@@ -83,7 +71,8 @@ public final class AccountController extends Controller {
     final Key<Tracker> trackerKey = Tracker.createKey(targetAccountKey);
 
     // Fetch account.
-    Map<Key<Object>, Object> fetched = ofy().load().group(Account.ShardGroup.class)
+    Map<Key<Object>, Object> fetched = ofy().load()
+        .group(Account.ShardGroup.class)
         .keys(targetAccountKey, trackerKey);
 
     //noinspection SuspiciousMethodCalls
@@ -119,7 +108,7 @@ public final class AccountController extends Controller {
 
     FirebaseToken token = getFirebaseToken(authHeader.split(" ")[1]);
 
-    if (AccountUtil.isUserRegistered(token)) {
+    if (isUserRegistered(token)) {
       throw new ConflictException("User is already registered.");
     } else {
       AccountEntity entity = createAccountEntity(token, locale, gender, categoryIds);
@@ -218,15 +207,13 @@ public final class AccountController extends Controller {
   public void deleteAccount(User user) {
     final Key<Account> accountKey = Key.create(user.getUserId());
 
-    List<Key<AccountShard>> shardKeys = accountShardService.createShardKeys(accountKey);
-
     // TODO: 16.12.2016 Remove shards keys.
 
     ofy().transact(() -> {
       List<Key<Object>> keys = ofy().load().ancestor(accountKey).keys().list();
       ImmutableSet<Key<?>> deleteList = ImmutableSet.<Key<?>>builder()
           .addAll(keys)
-          .addAll(shardKeys)
+          .addAll(accountShardService.createShardMapWithKey(accountKey).keySet())
           .build();
 
       if (ServerConfig.isDev()) {
@@ -266,13 +253,9 @@ public final class AccountController extends Controller {
   }
 
   public WrapperBoolean checkUsername(String username) {
-    try {
-      ofy().load().type(Account.class).filter(Account.FIELD_USERNAME + " =", username)
-          .keys().first().safe();
-      return new WrapperBoolean(true);
-    } catch (NotFoundException e) {
-      return new WrapperBoolean(false);
-    }
+    return new WrapperBoolean(ofy().load().type(Account.class)
+        .filter(Account.FIELD_USERNAME + " =", username)
+        .keys().first().now() != null);
   }
 
   private Task<FirebaseToken> getFirebaseTask(String idToken) {
@@ -286,6 +269,7 @@ public final class AccountController extends Controller {
     try {
       Tasks.await(authTask);
     } catch (InterruptedException | ExecutionException e) {
+      log.info("Error: " + e.getMessage());
       e.printStackTrace();
     }
   }
@@ -306,9 +290,9 @@ public final class AccountController extends Controller {
 
   private Account.Counts buildCounter(AccountShard shard) {
     return Account.Counts.builder()
-        .followers(shard.getFollowers())
-        .followings(shard.getFollowings())
-        .questions(shard.getQuestions())
+        .followers(shard.getFollowerCount())
+        .followings(shard.getFollowingCount())
+        .questions(shard.getPostCount())
         .build();
   }
 
@@ -325,14 +309,11 @@ public final class AccountController extends Controller {
         .filter(Account.FIELD_USERNAME + " >=", q)
         .filter(Account.FIELD_USERNAME + " <", q + "\ufffd");
 
-    // Fetch items from beginning from cursor.
     query = cursor.isPresent()
         ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
         : query;
 
-    // Limit items.
-    query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
-    return query;
+    return query.limit(limit.or(DEFAULT_LIST_LIMIT));
   }
 
   private AccountEntity createAccountEntity(FirebaseToken token, String locale,
@@ -340,7 +321,8 @@ public final class AccountController extends Controller {
 
     final Key<Account> accountKey = factory().allocateId(Account.class);
 
-    Map<Ref<AccountShard>, AccountShard> shardMap = createAccountShardMap(accountKey);
+    Map<Ref<AccountShard>, AccountShard> shardMap =
+        accountShardService.createShardMapWithRef(accountKey);
 
     Account account = Account.builder()
         .id(accountKey.getId())
@@ -389,21 +371,5 @@ public final class AccountController extends Controller {
     }
 
     return account;
-  }
-
-  private Map<Ref<AccountShard>, AccountShard> createAccountShardMap(Key<Account> accountKey) {
-    return Observable.range(1, AccountShard.SHARD_COUNT)
-        .map(shardNum -> createShard(accountKey, shardNum))
-        .toMap(Ref::create)
-        .blockingGet();
-  }
-
-  private AccountShard createShard(Key<Account> accountKey, Integer shardNum) {
-    return AccountShard.builder()
-        .id(ShardUtil.generateShardId(accountKey, shardNum))
-        .followers(0L)
-        .followings(0L)
-        .questions(0)
-        .build();
   }
 }

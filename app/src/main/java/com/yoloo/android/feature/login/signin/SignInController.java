@@ -22,7 +22,7 @@ import com.yoloo.android.data.faker.PostFaker;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.feed.userfeed.UserFeedController;
+import com.yoloo.android.feature.feed.mainfeed.MainFeedController;
 import com.yoloo.android.feature.login.AuthUI;
 import com.yoloo.android.feature.login.FacebookProvider;
 import com.yoloo.android.feature.login.GoogleProvider;
@@ -160,7 +160,7 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
   }
 
   @Override public void onSignedIn() {
-    getParentController().getRouter().setRoot(RouterTransaction.with(UserFeedController.create()));
+    getParentController().getRouter().setRoot(RouterTransaction.with(MainFeedController.create()));
   }
 
   @Override public void onError(Throwable t) {

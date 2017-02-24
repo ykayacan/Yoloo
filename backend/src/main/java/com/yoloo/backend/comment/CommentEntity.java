@@ -1,6 +1,7 @@
 package com.yoloo.backend.comment;
 
-import java.util.List;
+import com.googlecode.objectify.Ref;
+import java.util.Map;
 import lombok.Builder;
 import lombok.Value;
 
@@ -9,5 +10,5 @@ import lombok.Value;
 class CommentEntity {
 
   private Comment comment;
-  private List<CommentShard> shards;
+  private Map<Ref<CommentShard>, CommentShard> shards;
 }

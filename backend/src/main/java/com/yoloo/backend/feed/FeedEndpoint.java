@@ -27,7 +27,7 @@ import javax.inject.Named;
     )
 )
 @ApiClass(
-    resource = "posts",
+    resource = "postCount",
     clientIds = {
         Constants.ANDROID_CLIENT_ID,
         Constants.IOS_CLIENT_ID,

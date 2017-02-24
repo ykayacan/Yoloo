@@ -6,13 +6,11 @@
 
   <LinearLayout
     android:id="@+id/layout_login_input_container"
-    android:layout_width="280dp"
+    style="@style/Widget.Yoloo.InputContainer"
+    android:layout_width="@dimen/_272sdp"
     android:layout_height="wrap_content"
     android:layout_gravity="center_horizontal"
     android:layout_marginTop="@dimen/_104sdp"
-    android:background="@drawable/login_input_container_bg"
-    android:focusableInTouchMode="true"
-    android:orientation="vertical"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
@@ -55,8 +53,8 @@
 
     <View
       android:layout_width="match_parent"
-      android:layout_height="1dp"
-      android:background="@color/background_lightish" />
+      android:layout_height="@dimen/divider_height"
+      android:background="@color/divider" />
 
     <Button
       android:id="@+id/btn_login_ready"

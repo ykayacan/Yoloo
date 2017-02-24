@@ -2,6 +2,7 @@ package com.yoloo.backend.category;
 
 import com.google.api.server.spi.response.CollectionResponse;
 import com.google.common.base.Optional;
+import com.yoloo.backend.config.ShardConfig;
 import com.yoloo.backend.util.TestBase;
 import org.junit.Test;
 
@@ -32,7 +33,7 @@ public class CategoryControllerTest extends TestBase {
     assertEquals(Category.Type.CONTINENT, category.getType());
     assertEquals(0, category.getPosts());
     assertEquals(0.0, category.getRank(), 0);
-    assertEquals(CategoryShard.SHARD_COUNT, category.getShards().size());
+    assertEquals(ShardConfig.CATEGORY_SHARD_COUNTER, category.getShards().size());
   }
 
   @Test
@@ -45,7 +46,7 @@ public class CategoryControllerTest extends TestBase {
     assertEquals(Category.Type.THEME, category.getType());
     assertEquals(0, category.getPosts());
     assertEquals(0.0, category.getRank(), 0);
-    assertEquals(CategoryShard.SHARD_COUNT, category.getShards().size());
+    assertEquals(ShardConfig.CATEGORY_SHARD_COUNTER, category.getShards().size());
   }
 
   @Test
@@ -58,7 +59,7 @@ public class CategoryControllerTest extends TestBase {
     assertEquals(Category.Type.THEME, original.getType());
     assertEquals(0, original.getPosts());
     assertEquals(0.0, original.getRank(), 0);
-    assertEquals(CategoryShard.SHARD_COUNT, original.getShards().size());
+    assertEquals(ShardConfig.CATEGORY_SHARD_COUNTER, original.getShards().size());
 
     Category updated = categoryController.updateCategory(original.getWebsafeId(),
         Optional.of("Female Travel"), Optional.absent());
@@ -67,7 +68,7 @@ public class CategoryControllerTest extends TestBase {
     assertEquals(Category.Type.THEME, updated.getType());
     assertEquals(0, updated.getPosts());
     assertEquals(0.0, updated.getRank(), 0);
-    assertEquals(CategoryShard.SHARD_COUNT, updated.getShards().size());
+    assertEquals(ShardConfig.CATEGORY_SHARD_COUNTER, updated.getShards().size());
   }
 
   @Test

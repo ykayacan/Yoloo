@@ -15,17 +15,16 @@ import io.reactivex.Observable;
 import io.reactivex.Single;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
+import java.util.Set;
 import lombok.AllArgsConstructor;
+import lombok.extern.java.Log;
 
 import static com.yoloo.backend.OfyService.factory;
 import static com.yoloo.backend.OfyService.ofy;
 
+@Log
 @AllArgsConstructor(staticName = "create")
 public class TagController extends Controller {
-
-  private static final Logger LOG =
-      Logger.getLogger(TagController.class.getName());
 
   /**
    * Maximum number of comments to return.
@@ -45,7 +44,7 @@ public class TagController extends Controller {
   public Tag insertTag(String name, String langCode, String groupIds) {
     final Key<Tag> tagKey = factory().allocateId(Tag.class);
 
-    Map<Ref<TagShard>, TagShard> shardMap = createTagShardMap(tagKey);
+    Map<Ref<TagShard>, TagShard> shardMap = tagShardService.createShardMapWithRef(tagKey);
 
     Tag tag = Tag.builder()
         .id(tagKey.getId())
@@ -53,7 +52,7 @@ public class TagController extends Controller {
         .langCode(langCode)
         .type(Tag.Type.NORMAL)
         .shardRefs(Lists.newArrayList(shardMap.keySet()))
-        .groupKeys(KeyUtil.<Tag>extractKeysFromIds(groupIds, ",").blockingSingle())
+        .groupKeys(KeyUtil.extractKeysFromIds2(groupIds, ","))
         .build();
 
     ImmutableSet<Object> saveList = ImmutableSet.builder()
@@ -97,7 +96,7 @@ public class TagController extends Controller {
           entry.getValue().withTotalTagCount(entry.getValue().getTotalTagCount() - 1));
     }
 
-    List<Key<TagShard>> shardKeys = tagShardService.createShardKeys(tagKey);
+    Set<Key<TagShard>> shardKeys = tagShardService.createShardMapWithKey(tagKey).keySet();
 
     ImmutableSet<Key<?>> deleteList = ImmutableSet.<Key<?>>builder()
         .add(tagKey)
@@ -116,7 +115,8 @@ public class TagController extends Controller {
    * @param limit the limit
    * @return the collection response
    */
-  public CollectionResponse<Tag> list(String name, Optional<String> cursor, Optional<Integer> limit) {
+  public CollectionResponse<Tag> list(String name, Optional<String> cursor,
+      Optional<Integer> limit) {
     name = name.toLowerCase().trim();
 
     Query<Tag> groupQuery;
@@ -181,7 +181,7 @@ public class TagController extends Controller {
   public Tag insertGroup(String name) {
     final Key<Tag> tagKey = factory().allocateId(Tag.class);
 
-    Map<Ref<TagShard>, TagShard> shardMap = createTagShardMap(tagKey);
+    Map<Ref<TagShard>, TagShard> shardMap = tagShardService.createShardMapWithRef(tagKey);
 
     Tag tag = Tag.builder()
         .id(tagKey.getId())
@@ -241,12 +241,5 @@ public class TagController extends Controller {
           ofy().defer().delete().key(groupKey);
         })
         .subscribe();
-  }
-
-  private Map<Ref<TagShard>, TagShard> createTagShardMap(Key<Tag> tagKey) {
-    return Observable.range(1, TagShard.SHARD_COUNT)
-        .map(shardNum -> tagShardService.createShard(tagKey, shardNum))
-        .toMap(Ref::create)
-        .blockingGet();
   }
 }

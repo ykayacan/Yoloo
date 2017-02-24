@@ -12,9 +12,9 @@
 
   <TextView
     android:id="@+id/tv_item_question_normal_content"
+    style="@style/TextAppearance.FeedText"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
-    android:lineSpacingMultiplier="1.1"
     android:paddingBottom="@dimen/padding_micro"
     android:paddingEnd="@dimen/padding_normal"
     android:paddingLeft="@dimen/padding_normal"
