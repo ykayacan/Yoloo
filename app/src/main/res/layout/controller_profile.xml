@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:background="@color/background_lightish_2">
@@ -22,37 +23,164 @@
       <ImageView
         android:id="@+id/iv_profile_bg"
         android:layout_width="0dp"
-        android:layout_height="192dp"
+        android:layout_height="@dimen/_216asdp"
         android:scaleType="centerCrop"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/toolbar_profile"
+        app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/profile_bg_1x" />
 
       <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar_profile"
         android:layout_width="0dp"
-        android:layout_height="56dp"
+        android:layout_height="?attr/actionBarSize"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:popupTheme="@style/Yoloo.PopupOverlay">
 
-        <TextView
-          android:id="@+id/tv_profile_title"
-          android:layout_width="128dp"
+        <ImageView
+          android:id="@+id/iv_profile_edit"
+          style="@style/Widget.AppCompat.Light.ActionButton"
+          android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:ellipsize="end"
-          android:gravity="start"
-          android:maxLines="1"
-          android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+          android:layout_gravity="end"
+          android:tint="@android:color/white"
+          app:srcCompat="@drawable/ic_settings_black_24dp" />
 
       </android.support.v7.widget.Toolbar>
 
-      <include layout="@layout/merge_profile_header" />
+      <ImageView
+        android:id="@+id/iv_profile_avatar"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_marginLeft="@dimen/_32asdp"
+        android:layout_marginStart="@dimen/_32asdp"
+        android:layout_marginTop="@dimen/padding_micro"
+        android:foreground="@drawable/shape_avatar_stroke"
+        android:scaleType="centerCrop"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar_profile"
+        tools:src="@drawable/login_bg" />
 
-      <include layout="@layout/merge_profile_body" />
+      <com.yoloo.android.ui.widget.BaselineGridTextView
+        android:id="@+id/tv_profile_short_bio"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/_32asdp"
+        android:layout_marginRight="@dimen/_32asdp"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLength="120"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/_12asdp"
+        app:layout_constraintBottom_toTopOf="@+id/tv_profile_realname"
+        app:layout_constraintLeft_toLeftOf="@+id/iv_profile_avatar"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/iv_profile_avatar"
+        app:layout_constraintVertical_bias="0.5"
+        tools:text="@string/lorem_ipsum_long" />
+
+      <com.yoloo.android.ui.widget.BaselineGridTextView
+        android:id="@+id/tv_profile_realname"
+        style="@style/Widget.Yoloo.Username"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        app:layout_constraintBottom_toBottomOf="@+id/iv_profile_bg"
+        app:layout_constraintLeft_toLeftOf="parent"
+        tools:text="username" />
+
+      <com.yoloo.android.ui.widget.BaselineGridTextView
+        android:id="@+id/tv_profile_level"
+        style="@style/Widget.Yoloo.Username"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:drawableLeft="@drawable/shape_dot"
+        android:drawablePadding="8dp"
+        android:drawableStart="@drawable/shape_dot"
+        android:gravity="center"
+        app:layout_constraintBaseline_toBaselineOf="@+id/tv_profile_realname"
+        app:layout_constraintLeft_toRightOf="@+id/tv_profile_realname"
+        tools:text="Level 1" />
+
+      <Button
+        android:id="@+id/btn_profile_follow"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_marginEnd="16dp"
+        android:textColor="@android:color/white"
+        android:visibility="gone"
+        app:layout_constraintBaseline_toBaselineOf="@+id/tv_profile_level"
+        app:layout_constraintRight_toRightOf="@+id/iv_profile_bg"
+        tools:text="Follow" />
+
+      <TextView
+        android:id="@+id/tv_profile_posts"
+        style="@style/Widget.Yoloo.ProfileCounter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="@dimen/_24asdp"
+        android:layout_marginStart="@dimen/_24asdp"
+        app:layout_constraintBottom_toBottomOf="@+id/iv_profile_avatar"
+        app:layout_constraintLeft_toRightOf="@+id/iv_profile_avatar"
+        app:layout_constraintTop_toTopOf="@+id/iv_profile_avatar"
+        app:layout_constraintVertical_bias="0.5"
+        tools:text="@string/label_profile_posts" />
+
+      <View
+        android:id="@+id/view1"
+        android:layout_width="1dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:background="@color/background_lightish_2"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_profile_posts"
+        app:layout_constraintLeft_toRightOf="@+id/tv_profile_posts"
+        app:layout_constraintTop_toTopOf="@+id/tv_profile_posts" />
+
+      <TextView
+        android:id="@+id/tv_profile_followers"
+        style="@style/Widget.Yoloo.ProfileCounter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/tv_profile_posts"
+        app:layout_constraintLeft_toRightOf="@+id/view1"
+        tools:text="@string/label_profile_followers" />
+
+      <View
+        android:id="@+id/view2"
+        android:layout_width="1dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        android:background="@color/background_lightish_2"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_profile_followers"
+        app:layout_constraintLeft_toRightOf="@+id/tv_profile_followers"
+        app:layout_constraintTop_toTopOf="@+id/tv_profile_followers" />
+
+      <TextView
+        android:id="@+id/tv_profile_following"
+        style="@style/Widget.Yoloo.ProfileCounter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/tv_profile_followers"
+        app:layout_constraintLeft_toRightOf="@+id/view2"
+        tools:text="@string/label_profile_following" />
+
+      <!--<include layout="@layout/merge_profile_header" />-->
+
+      <include layout="@layout/merge_profile_cards" />
 
     </android.support.constraint.ConstraintLayout>
 

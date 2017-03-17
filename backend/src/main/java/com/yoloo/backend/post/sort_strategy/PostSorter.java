@@ -33,7 +33,7 @@ public enum PostSorter {
     }
   };
 
-  private String title;
+  private final String title;
 
   public static Query<Post> sort(Query<Post> query, PostSorter sorter) {
     return sorter.getSortStrategy(query).sort();

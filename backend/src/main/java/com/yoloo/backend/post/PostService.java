@@ -46,7 +46,7 @@ public class PostService {
     Map<Ref<PostShard>, PostShard> shardMap = postShardService.createShardMapWithRef(postKey);
 
     final Set<String> categories =
-        Stream.of(KeyUtil.<Category>extractKeysFromIds2(categoryIds, ","))
+        Stream.of(KeyUtil.<Category>extractKeysFromIds(categoryIds, ","))
             .map(Category::extractNameFromKey)
             .collect(Collectors.toSet());
 

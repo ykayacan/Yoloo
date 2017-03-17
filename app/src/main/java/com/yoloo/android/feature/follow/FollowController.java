@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindColor;
 import butterknife.BindView;
+import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
@@ -23,10 +24,10 @@ import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.search.OnFollowClickListener;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
@@ -55,7 +56,6 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   private FollowAdapter adapter;
 
   private String cursor;
-  private String eTag;
 
   private EndlessRecyclerViewScrollListener endlessRecyclerViewScrollListener;
 
@@ -77,8 +77,8 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
     return inflater.inflate(R.layout.controller_follow, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
-    super.onViewCreated(view);
+  @Override protected void onViewBound(@NonNull View view) {
+    super.onViewBound(view);
     setupToolbar();
     setHasOptionsMenu(true);
     setupPullToRefresh();
@@ -94,9 +94,9 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
     final int viewType = args.getInt(KEY_VIEW_TYPE);
 
     if (viewType == TYPE_FOLLOWERS) {
-      getPresenter().loadFollowers(false, userId, cursor, eTag, 20);
+      getPresenter().loadFollowers(false, userId, cursor, 20);
     } else {
-      getPresenter().loadFollowings(false, userId, cursor, eTag, 20);
+      getPresenter().loadFollowings(false, userId, cursor, 20);
     }
 
     rvFollow.addOnScrollListener(endlessRecyclerViewScrollListener);
@@ -127,7 +127,6 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
     swipeRefreshLayout.setRefreshing(false);
 
     cursor = value.getCursor();
-    eTag = value.geteTag();
     adapter.addUsers(value.getData());
   }
 
@@ -154,14 +153,15 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
         UserDiskDataStore.getInstance()));
   }
 
-  @Override public void onProfileClick(View v, String ownerId) {
-    getRouter().pushController(RouterTransaction.with(ProfileController.create(ownerId))
+  @Override public void onProfileClick(View v, EpoxyModel<?> model, String userId) {
+    getRouter().pushController(RouterTransaction.with(ProfileController.create(userId))
         .pushChangeHandler(new VerticalChangeHandler())
         .popChangeHandler(new VerticalChangeHandler()));
   }
 
-  @Override public void onFollowClick(View v, String userId, int direction) {
-    getPresenter().follow(userId, direction);
+  @Override
+  public void onFollowClick(View v, EpoxyModel<?> model, AccountRealm account, int direction) {
+    getPresenter().follow(account.getId(), direction);
   }
 
   private void setupToolbar() {

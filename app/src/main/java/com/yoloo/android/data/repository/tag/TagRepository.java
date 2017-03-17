@@ -45,7 +45,7 @@ public class TagRepository {
 
   public Observable<Response<List<TagRealm>>> listTags2(String name, String cursor, int limit) {
     return diskDataStore.list(TagSorter.DEFAULT)
-        .map(tagRealms -> Response.create(tagRealms, cursor, null))
+        .map(tagRealms -> Response.create(tagRealms, cursor))
         .subscribeOn(Schedulers.io());
   }
 

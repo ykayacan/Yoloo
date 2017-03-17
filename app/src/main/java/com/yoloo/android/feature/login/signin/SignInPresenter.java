@@ -1,8 +1,8 @@
 package com.yoloo.android.feature.login.signin;
 
 import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.yoloo.android.data.faker.AccountFaker;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.feature.login.AuthUI;
 import com.yoloo.android.feature.login.FacebookProvider;
@@ -27,8 +27,6 @@ class SignInPresenter extends MvpPresenter<SignInView> {
   }
 
   void signIn(IdpResponse response) {
-    getView().onShowLoading();
-
     final String providerType = response.getProviderType();
     if (providerType.equals(AuthUI.GOOGLE_PROVIDER)) {
       processFirebase(GoogleProvider.createAuthCredential(response));
@@ -38,37 +36,30 @@ class SignInPresenter extends MvpPresenter<SignInView> {
   }
 
   void signIn(String email, String password) {
-    if (email.contains("berna")) {
-      AccountFaker.setGirlUser();
-    }
-    if (email.contains("yunus")) {
-      AccountFaker.setMaleUser();
-    }
-
-    getView().onHideLoading();
-    getView().onSignedIn();
-    //processFirebase(EmailAuthProvider.getCredential(email, password));
+    processFirebase(EmailAuthProvider.getCredential(email, password));
   }
 
   private void processFirebase(AuthCredential credential) {
+    getView().onShowLoading();
+
     FirebaseAuth.getInstance().signInWithCredential(credential).addOnCompleteListener(task -> {
       Timber.d("signInWithCredential:onComplete %s", task.isSuccessful());
 
       // If sign in fails, display a message to the user. If sign in succeeds
       // the auth state listener will be notified and logic to handle the
       // signed in user can be handled in the listener.
-      if (!task.isSuccessful()) {
+      if (task.isSuccessful()) {
+        loadUser();
+      } else {
         getView().onHideLoading();
         getView().onError(task.getException());
-      } else {
-        loadUser();
       }
     });
   }
 
   private void loadUser() {
     Disposable d = userRepository.getMe()
-        .observeOn(AndroidSchedulers.mainThread(), true)
+        .observeOn(AndroidSchedulers.mainThread())
         .subscribe(account -> {
           getView().onHideLoading();
           getView().onSignedIn();

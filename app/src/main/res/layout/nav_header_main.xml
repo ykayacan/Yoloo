@@ -28,19 +28,19 @@
     app:layout_constraintLeft_toLeftOf="parent"
     tools:src="@android:drawable/sym_def_app_icon" />
 
-  <TextView
+  <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_nav_realname"
+    style="@style/Widget.Yoloo.Username.Nav"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:layout_marginLeft="@dimen/activity_horizontal_margin"
     android:layout_marginStart="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/nav_header_vertical_spacing"
-    android:textAppearance="@style/TextAppearance.Username"
     app:layout_constraintBottom_toTopOf="@+id/tv_nav_username"
     app:layout_constraintLeft_toLeftOf="parent"
     tools:text="realname" />
 
-  <TextView
+  <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_nav_username"
     android:layout_width="0dp"
     android:layout_height="wrap_content"

@@ -41,7 +41,7 @@ public class NewsController extends MvpController<NewsView, NewsPresenter> imple
     return inflater.inflate(R.layout.controller_news, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
+  @Override protected void onViewBound(@NonNull View view) {
     setupToolbar();
     setHasOptionsMenu(true);
     setupRecyclerView();

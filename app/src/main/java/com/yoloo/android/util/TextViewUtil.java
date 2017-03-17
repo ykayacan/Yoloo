@@ -7,6 +7,7 @@ import android.widget.TextView;
 public final class TextViewUtil {
 
   private TextViewUtil() {
+    // empty constructor
   }
 
   public static void setTextAppearance(TextView textView, Context context, @StyleRes int styleRes) {

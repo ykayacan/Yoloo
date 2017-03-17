@@ -109,7 +109,7 @@ public abstract class EndlessRecyclerOnScrollListener extends RecyclerView.OnScr
     firstVisibleItem = findFirstVisibleItemPosition(recyclerView);
 
     // If the total item count is zero and the previous isn't, assume the
-    // list is invalidated and should be reset back to initial state
+    // listNotifications is invalidated and should be reset back to initial state
     if (totalItemCount < previousTotal) {
       previousTotal = 0;
       loading = true;

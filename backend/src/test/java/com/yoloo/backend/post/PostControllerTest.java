@@ -113,17 +113,17 @@ public class PostControllerTest extends TestBase {
     followController.follow(owner2.getWebsafeId(), user);
 
     try {
-      budgetTravel = categoryController.insertCategory("budget travel", Category.Type.THEME);
+      budgetTravel = categoryController.insertCategory("budget travel", null);
     } catch (ConflictException e) {
       e.printStackTrace();
     }
     try {
-      europe = categoryController.insertCategory("europe", Category.Type.THEME);
+      europe = categoryController.insertCategory("europe", null);
     } catch (ConflictException e) {
       e.printStackTrace();
     }
     try {
-      america = categoryController.insertCategory("america", Category.Type.CONTINENT);
+      america = categoryController.insertCategory("america", null);
     } catch (ConflictException e) {
       e.printStackTrace();
     }
@@ -301,7 +301,7 @@ public class PostControllerTest extends TestBase {
         Optional.absent(),
         Optional.absent(),
         Optional.absent(),
-        Post.PostType.QUESTION,
+        Optional.of(Post.PostType.QUESTION),
         user);
 
     assertNotNull(response.getItems());
@@ -334,7 +334,7 @@ public class PostControllerTest extends TestBase {
         Optional.absent(),
         Optional.absent(),
         Optional.absent(),
-        Post.PostType.QUESTION,
+        Optional.of(Post.PostType.QUESTION),
         user);
 
     assertNotNull(response.getItems());
@@ -377,7 +377,7 @@ public class PostControllerTest extends TestBase {
         Optional.absent(),
         Optional.absent(),
         Optional.absent(),
-        Post.PostType.QUESTION,
+        Optional.of(Post.PostType.QUESTION),
         user);
 
     assertNotNull(response.getItems());

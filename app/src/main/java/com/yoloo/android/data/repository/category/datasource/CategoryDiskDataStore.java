@@ -3,13 +3,15 @@ package com.yoloo.android.data.repository.category.datasource;
 import com.yoloo.android.data.model.CategoryRealm;
 import com.yoloo.android.data.model.CategoryRealmFields;
 import com.yoloo.android.data.sorter.CategorySorter;
-import io.reactivex.Observable;
-import io.realm.Realm;
-import io.realm.RealmResults;
-import io.realm.Sort;
-import java.util.ArrayList;
+
 import java.util.Collections;
 import java.util.List;
+
+import io.reactivex.Observable;
+import io.realm.Realm;
+import io.realm.RealmQuery;
+import io.realm.RealmResults;
+import io.realm.Sort;
 
 public class CategoryDiskDataStore {
 
@@ -18,11 +20,6 @@ public class CategoryDiskDataStore {
   private CategoryDiskDataStore() {
   }
 
-  /**
-   * Gets instance.
-   *
-   * @return the instance
-   */
   public static CategoryDiskDataStore getInstance() {
     if (instance == null) {
       instance = new CategoryDiskDataStore();
@@ -30,56 +27,40 @@ public class CategoryDiskDataStore {
     return instance;
   }
 
-  /**
-   * Add.
-   *
-   * @param categoryRealm the category realm
-   */
-  public void add(CategoryRealm categoryRealm) {
-    addAll(Collections.singletonList(categoryRealm));
-  }
-
-  /**
-   * Add all.
-   *
-   * @param realms the realms
-   */
-  public void addAll(List<CategoryRealm> realms) {
+  public void addAll(List<CategoryRealm> categories) {
     Realm realm = Realm.getDefaultInstance();
-    realm.executeTransaction(tx -> tx.insertOrUpdate(realms));
+    realm.executeTransaction(tx -> tx.insertOrUpdate(categories));
     realm.close();
   }
 
-  /**
-   * List observable.
-   *
-   * @param sorter the sorter
-   * @return the observable
-   */
-  public Observable<List<CategoryRealm>> list(CategorySorter sorter) {
+  public Observable<List<CategoryRealm>> list(CategorySorter sorter, int limit) {
     return Observable.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 
-      List<CategoryRealm> categories;
-      switch (sorter) {
-        case TRENDING:
-          RealmResults<CategoryRealm> results = realm.where(CategoryRealm.class)
-              .findAllSorted(CategoryRealmFields.RANK, Sort.DESCENDING);
+      RealmQuery<CategoryRealm> query = realm.where(CategoryRealm.class);
 
-          categories = new ArrayList<>(7);
-          for (int i = 0; i < 7; i++) {
-            categories.add(realm.copyFromRealm(results.get(i)));
-          }
-          break;
-        case DEFAULT:
-        default:
-          categories = realm.copyFromRealm(realm.where(CategoryRealm.class).findAll());
-          break;
+      if (sorter == CategorySorter.TRENDING) {
+        RealmResults<CategoryRealm> results =
+            query.findAllSorted(CategoryRealmFields.RANK, Sort.DESCENDING);
+
+        List<CategoryRealm> categories = results.isEmpty()
+            ? Collections.emptyList()
+            : realm.copyFromRealm(results, limit);
+
+        realm.close();
+
+        return categories;
+      } else {
+        RealmResults<CategoryRealm> results = query.findAll();
+
+        List<CategoryRealm> categories = results.isEmpty()
+            ? Collections.emptyList()
+            : realm.copyFromRealm(results, limit);
+
+        realm.close();
+
+        return categories;
       }
-
-      realm.close();
-
-      return categories;
     });
   }
 }

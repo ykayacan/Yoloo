@@ -39,6 +39,7 @@
   <ScrollView
     android:layout_width="0dp"
     android:layout_height="0dp"
+    android:fillViewport="true"
     app:layout_constraintBottom_toTopOf="@+id/layout_editor_action"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
@@ -90,6 +91,23 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/et_blogeditor_title" />
+
+      <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/editor_tag_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingEnd="@dimen/padding_normal"
+        android:paddingLeft="@dimen/padding_normal"
+        android:paddingRight="@dimen/padding_normal"
+        android:paddingStart="@dimen/padding_normal"
+        android:visibility="gone"
+        app:dividerDrawable="@drawable/tag_divider"
+        app:flexWrap="wrap"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/et_editor"
+        app:showDivider="end|middle"
+        tools:visibility="visible" />
 
     </android.support.constraint.ConstraintLayout>
 

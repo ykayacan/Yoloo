@@ -5,14 +5,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import static com.yoloo.android.feature.editor.EditorType.ASK_QUESTION;
-import static com.yoloo.android.feature.editor.EditorType.SHARE_TRIP;
+import static com.yoloo.android.feature.editor.EditorType.BLOG;
 
 @IntDef({
     ASK_QUESTION,
-    SHARE_TRIP
+    BLOG
 })
 @Retention(RetentionPolicy.SOURCE)
 public @interface EditorType {
   int ASK_QUESTION = 0;
-  int SHARE_TRIP = 1;
+  int BLOG = 1;
 }

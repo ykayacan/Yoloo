@@ -11,6 +11,7 @@ import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
+import com.yoloo.backend.authentication.authenticators.AdminAuthenticator;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
 import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
 import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
@@ -19,9 +20,10 @@ import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
 import com.yoloo.backend.follow.FollowController;
 import com.yoloo.backend.follow.ListType;
-import com.yoloo.backend.game.GamificationService;
 import com.yoloo.backend.notification.NotificationService;
+
 import java.util.logging.Logger;
+
 import javax.annotation.Nullable;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
@@ -31,25 +33,39 @@ import javax.servlet.http.HttpServletRequest;
     version = "v1",
     namespace = @ApiNamespace(
         ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER,
-        packagePath = Constants.API_PACKAGE_PATH
-    )
-)
-@ApiClass(
-    resource = "accounts",
+        ownerName = Constants.API_OWNER))
+@ApiClass(resource = "accounts",
     clientIds = {
         Constants.ANDROID_CLIENT_ID,
         Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID},
-    audiences = {Constants.AUDIENCE_ID,},
-    authenticators = {
-        FirebaseAuthenticator.class
-    }
+        Constants.WEB_CLIENT_ID
+    },
+    audiences = Constants.AUDIENCE_ID,
+    authenticators = FirebaseAuthenticator.class
 )
 public class AccountEndpoint {
 
-  private static final Logger LOG =
-      Logger.getLogger(AccountEndpoint.class.getSimpleName());
+  private static final Logger LOG = Logger.getLogger(AccountEndpoint.class.getSimpleName());
+
+  private final AccountController accountController = AccountControllerProvider.of().create();
+
+  /**
+   * Returns the {@link Account}.
+   *
+   * @param user the user
+   * @return the entity with the corresponding ID
+   * @throws ServiceException the service exception
+   */
+  @ApiMethod(
+      name = "accounts.me",
+      path = "accounts/me",
+      httpMethod = ApiMethod.HttpMethod.GET)
+  public Account getMe(User user) throws ServiceException {
+
+    EndpointsValidator.create().on(AuthValidator.create(user)).validate();
+
+    return accountController.getAccount(user.getUserId(), user);
+  }
 
   /**
    * Returns the {@link Account} with the corresponding ID.
@@ -70,7 +86,7 @@ public class AccountEndpoint {
         .on(NotFoundValidator.create(accountId, "Invalid accountId."))
         .validate();
 
-    return getAccountController().getAccount(accountId, user);
+    return accountController.getAccount(accountId, user);
   }
 
   /**
@@ -86,6 +102,7 @@ public class AccountEndpoint {
       path = "accounts",
       httpMethod = ApiMethod.HttpMethod.POST)
   public Account register(
+      @Named("realname") String realname,
       @Named("locale") String locale,
       @Named("gender") Account.Gender gender,
       @Named("categoryIds") String categoryIds,
@@ -97,7 +114,7 @@ public class AccountEndpoint {
         .on(BadRequestValidator.create(categoryIds, "categoryIds is required."))
         .validate();
 
-    return getAccountController().insertAccount(locale, gender, categoryIds, request);
+    return accountController.insertAccount(realname, locale, gender, categoryIds, request);
   }
 
   /**
@@ -107,11 +124,11 @@ public class AccountEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "accounts.admin",
-      path = "accounts/admin",
+      name = "admin.accounts.insert",
+      path = "admin/accounts",
       httpMethod = ApiMethod.HttpMethod.POST)
   public Account registerAdmin() throws ServiceException {
-    return getAccountController().insertAdmin();
+    return accountController.insertAdmin();
   }
 
   /**
@@ -120,7 +137,7 @@ public class AccountEndpoint {
    * @param accountId the account id
    * @param mediaId the media id
    * @param username the username
-   * @param badge the badge
+   * @param bio the bio
    * @param user the user
    * @return the updated version of the entity
    * @throws ServiceException the service exception
@@ -132,8 +149,11 @@ public class AccountEndpoint {
   public Account update(
       @Named("accountId") String accountId,
       @Nullable @Named("mediaId") String mediaId,
+      @Nullable @Named("name") String realName,
       @Nullable @Named("username") String username,
-      @Nullable @Named("badge") String badge,
+      @Nullable @Named("websiteUrl") String websiteUrl,
+      @Nullable @Named("bio") String bio,
+      @Nullable @Named("gender") Account.Gender gender,
       User user) throws ServiceException {
 
     EndpointsValidator.create()
@@ -143,10 +163,14 @@ public class AccountEndpoint {
         .on(ForbiddenValidator.create(accountId, user, ForbiddenValidator.Op.UPDATE))
         .validate();
 
-    return getAccountController().updateAccount(
+    return accountController.updateAccount(
         accountId,
         Optional.fromNullable(mediaId),
-        Optional.fromNullable(username));
+        Optional.fromNullable(username),
+        Optional.fromNullable(realName),
+        Optional.fromNullable(websiteUrl),
+        Optional.fromNullable(bio),
+        Optional.fromNullable(gender));
   }
 
   /**
@@ -161,11 +185,28 @@ public class AccountEndpoint {
       httpMethod = ApiMethod.HttpMethod.DELETE)
   public void delete(User user) throws ServiceException {
 
-    EndpointsValidator.create()
-        .on(AuthValidator.create(user))
-        .validate();
+    EndpointsValidator.create().on(AuthValidator.create(user)).validate();
 
-    getAccountController().deleteAccount(user);
+    accountController.deleteAccount(user);
+  }
+
+  /**
+   * Deletes the specified {@code Account}.
+   *
+   * @param user the user
+   * @throws ServiceException the service exception
+   */
+  @ApiMethod(
+      name = "admin.accounts.delete",
+      path = "admin/accounts/{accountId}",
+      httpMethod = ApiMethod.HttpMethod.DELETE,
+      authenticators = AdminAuthenticator.class)
+  public void deleteWithAdminRights(@Named("accountId") String accountId, User user)
+      throws ServiceException {
+
+    EndpointsValidator.create().on(AuthValidator.create(user)).validate();
+
+    accountController.deleteAccount(accountId);
   }
 
   @ApiMethod(
@@ -176,33 +217,17 @@ public class AccountEndpoint {
       @Named("q") String query,
       @Nullable @Named("cursor") String cursor,
       @Nullable @Named("limit") Integer limit,
-      User user) throws ServiceException {
+      User user)
+      throws ServiceException {
 
     EndpointsValidator.create()
         .on(BadRequestValidator.create(query, "query is required."))
         .on(AuthValidator.create(user))
         .validate();
 
-    return getAccountController().searchAccounts(
-        query,
-        Optional.fromNullable(cursor),
+    return accountController.searchAccounts(query, Optional.fromNullable(cursor),
         Optional.fromNullable(limit));
   }
-
-  /**
-   * Check username is available.
-   *
-   * @param username the username
-   * @return the wrapper boolean
-   * @throws ServiceException the service exception
-   */
-  /*@ApiMethod(
-      name = "accounts.checkUsername",
-      path = "accounts/check",
-      httpMethod = ApiMethod.HttpMethod.GET)
-  public WrapperBoolean checkUsername(@Named("username") String username) throws ServiceException {
-    return getAccountController().checkUsername(username);
-  }*/
 
   /**
    * Returns the {@link Account}.
@@ -215,8 +240,8 @@ public class AccountEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "accounts.followerCount",
-      path = "accounts/{accountId}/followerCount",
+      name = "accounts.followers",
+      path = "accounts/{accountId}/followers",
       httpMethod = ApiMethod.HttpMethod.GET)
   public CollectionResponse<Account> followers(
       @Named("accountId") String accountId,
@@ -230,12 +255,8 @@ public class AccountEndpoint {
         .on(NotFoundValidator.create(accountId, "Invalid accountId."))
         .validate();
 
-    return getFollowController().list(
-        accountId,
-        ListType.FOLLOWER,
-        Optional.fromNullable(limit),
-        Optional.fromNullable(cursor)
-    );
+    return getFollowController().list(accountId, ListType.FOLLOWER, Optional.fromNullable(limit),
+        Optional.fromNullable(cursor));
   }
 
   /**
@@ -249,8 +270,8 @@ public class AccountEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "accounts.followingCount",
-      path = "accounts/{accountId}/followingCount",
+      name = "accounts.followings",
+      path = "accounts/{accountId}/followings",
       httpMethod = ApiMethod.HttpMethod.GET)
   public CollectionResponse<Account> followings(
       @Named("accountId") String accountId,
@@ -264,22 +285,12 @@ public class AccountEndpoint {
         .on(NotFoundValidator.create(accountId, "Invalid accountId."))
         .validate();
 
-    return getFollowController().list(
-        accountId,
-        ListType.FOLLOWING,
-        Optional.fromNullable(limit),
-        Optional.fromNullable(cursor)
-    );
-  }
-
-  private AccountController getAccountController() {
-    return AccountController.create(AccountShardService.create(), GamificationService.create());
+    return getFollowController().list(accountId, ListType.FOLLOWING, Optional.fromNullable(limit),
+        Optional.fromNullable(cursor));
   }
 
   private FollowController getFollowController() {
-    return FollowController.create(
-        AccountShardService.create(),
-        NotificationService.create(URLFetchServiceFactory.getURLFetchService())
-    );
+    return FollowController.create(AccountShardService.create(),
+        NotificationService.create(URLFetchServiceFactory.getURLFetchService()));
   }
 }

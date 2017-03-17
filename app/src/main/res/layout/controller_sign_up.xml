@@ -7,10 +7,10 @@
   <LinearLayout
     android:id="@+id/layout_login_input_container"
     style="@style/Widget.Yoloo.InputContainer"
-    android:layout_width="@dimen/_272sdp"
+    android:layout_width="@dimen/_272asdp"
     android:layout_height="wrap_content"
     android:layout_gravity="center_horizontal"
-    android:layout_marginTop="@dimen/_104sdp"
+    android:layout_marginTop="@dimen/_104asdp"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
@@ -27,9 +27,9 @@
       android:layout_marginTop="16dp"
       android:background="@drawable/edittext_login_bg"
       android:hint="@string/hint_full_name"
-      android:inputType="text" />
+      android:inputType="textCapSentences" />
 
-    <EditText
+    <AutoCompleteTextView
       android:id="@+id/et_login_email"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
@@ -40,6 +40,7 @@
       android:layout_marginTop="16dp"
       android:background="@drawable/edittext_login_bg"
       android:hint="@string/hint_email"
+      android:imeOptions="actionNext"
       android:inputType="textEmailAddress" />
 
     <EditText
@@ -49,7 +50,11 @@
       android:layout_margin="16dp"
       android:background="@drawable/edittext_login_bg"
       android:hint="@string/hint_password"
-      android:inputType="textPassword" />
+      android:imeActionId="@+id/sign_up"
+      android:imeActionLabel="@string/action_sing_up_short"
+      android:imeOptions="actionUnspecified"
+      android:inputType="textPassword"
+      android:maxLines="1" />
 
     <View
       android:layout_width="match_parent"
@@ -65,7 +70,8 @@
       android:text="@string/action_login_ready"
       android:textAllCaps="false"
       android:textAppearance="@style/TextAppearance.AppCompat.Title"
-      android:textColor="@color/accent" />
+      android:textColor="@color/accent"
+      android:textStyle="bold" />
 
   </LinearLayout>
 

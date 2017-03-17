@@ -7,6 +7,10 @@ import android.text.Spanned;
 
 public final class HtmlUtil {
 
+  private HtmlUtil() {
+    // empty constructor
+  }
+
   public static Spanned fromHtml(Context context, @StringRes int stringRes) {
     return VersionUtil.hasN()
         ? Html.fromHtml(context.getString(stringRes), Html.FROM_HTML_MODE_COMPACT)

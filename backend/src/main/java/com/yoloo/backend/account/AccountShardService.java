@@ -49,7 +49,7 @@ public class AccountShardService implements Shardable<AccountShard, Account> {
     return AccountShard.createKey(entityKey, shardNum);
   }
 
-  @Override public Observable<List<Account>> mergeShards(Collection<Account> entities) {
+  @Override public Observable<List<Account>> mergeShards(Collection<? extends Account> entities) {
     return Observable.fromIterable(entities)
         .flatMap(this::mergeShards)
         .toList(entities.size() == 0 ? 1 : entities.size())
@@ -79,10 +79,10 @@ public class AccountShardService implements Shardable<AccountShard, Account> {
         shard.decreaseFollowers();
         break;
       case POST_UP:
-        shard.increaseQuestions();
+        shard.increasePostCount();
         break;
       case POST_DOWN:
-        shard.decreaseQuestions();
+        shard.decreasePostCount();
         break;
     }
     return shard;

@@ -29,8 +29,7 @@ public class TestBase extends GAETestBase {
 
   private Closeable rootService;
 
-  @Before
-  public void setUp() {
+  @Before public void setUp() {
     this.setUpObjectifyFactory(new TestObjectifyFactory());
     JodaTimeTranslators.add(fact());
 
@@ -59,13 +58,12 @@ public class TestBase extends GAETestBase {
     fact().register(Bookmark.class);
   }
 
-  @After
-  public void tearDown() {
+  @After public void tearDown() {
     rootService.close();
     rootService = null;
   }
 
-  protected void setUpObjectifyFactory(TestObjectifyFactory factory) {
+  private void setUpObjectifyFactory(TestObjectifyFactory factory) {
     if (rootService != null) {
       rootService.close();
     }

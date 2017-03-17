@@ -5,11 +5,12 @@ import com.yoloo.android.data.model.FcmRealm;
 import com.yoloo.android.data.model.NotificationRealm;
 import com.yoloo.android.data.repository.notification.datasource.NotificationDiskDataSource;
 import com.yoloo.android.data.repository.notification.datasource.NotificationRemoteDataSource;
-import com.yoloo.android.util.Preconditions;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class NotificationRepository {
 
@@ -32,25 +33,22 @@ public class NotificationRepository {
     return instance;
   }
 
-  public Observable<FcmRealm> registerFcmToken(FcmRealm fcm) {
-    Preconditions.checkNotNull(fcm, "Fcm token can not be null.");
-
+  public Completable registerFcmToken(@Nonnull FcmRealm fcm) {
     return remoteDataStore.registerFcmToken(fcm)
-        .doOnNext(diskDataStore::registerFcmToken)
+        .doOnComplete(() -> diskDataStore.registerFcmToken(fcm))
         .subscribeOn(Schedulers.io());
   }
 
-  public Completable unregisterFcmToken(FcmRealm fcm) {
-    Preconditions.checkNotNull(fcm, "Fcm token can not be null.");
-    
+  public Completable unregisterFcmToken(@Nonnull FcmRealm fcm) {
     return remoteDataStore.unregisterFcmToken(fcm)
         .doOnComplete(diskDataStore::unregisterFcmToken)
         .subscribeOn(Schedulers.io());
   }
 
-  public Observable<Response<List<NotificationRealm>>> list(String cursor, String eTag, int limit) {
+  public Observable<Response<List<NotificationRealm>>> listNotifications(@Nullable String cursor,
+      int limit) {
     return Observable.mergeDelayError(
-        diskDataStore.list().subscribeOn(Schedulers.io()),
+        diskDataStore.list(limit).subscribeOn(Schedulers.io()),
         remoteDataStore.list(cursor, limit)
             .doOnNext(response -> diskDataStore.addAll(response.getData()))
             .subscribeOn(Schedulers.io()));

@@ -5,15 +5,15 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:2.3.0-rc1'
+    classpath 'com.android.tools.build:gradle:2.4.0-alpha1'
     classpath 'com.google.gms:google-services:3.0.0'
     classpath 'com.google.firebase:firebase-plugins:1.0.4'
-    classpath 'me.tatarka:gradle-retrolambda:3.5.0'
-    classpath "io.realm:realm-gradle-plugin:2.3.1"
-    classpath "com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0-beta3"
+    classpath 'me.tatarka:gradle-retrolambda:3.6.0'
+    classpath 'io.realm:realm-gradle-plugin:3.0.0'
+    classpath 'com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0-beta6'
     classpath 'com.google.guava:guava:20.0'
     classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
-    classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.6.2'
+    //classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.6.2'
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.14.0'
 
     // NOTE: Do not place your application dependencies here; they belong
@@ -42,3 +42,5 @@ task wrapper(type: Wrapper) {
   gradleVersion = '3.4'
   distributionUrl = distributionUrl.replace("bin", "all")
 }
+
+apply from: rootProject.file('dependencies.gradle')

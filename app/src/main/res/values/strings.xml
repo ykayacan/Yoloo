@@ -27,7 +27,7 @@
   <string name="navigation_drawer_open">Open navigation drawer</string>
   <string name="navigation_drawer_close">Close navigation drawer</string>
 
-  <!-- USER FEED -->
+  <!-- HOME FEED -->
   <string name="label_feed_toolbar_title">Home</string>
   <string name="label_feed_trending_now">Trending now</string>
   <string name="label_feed_explore">Explore</string>
@@ -37,6 +37,7 @@
   <string name="label_feed_read_more_news">More</string>
   <string name="label_feed_no_data_1">Oops, we don\'t have posts…</string>
   <string name="label_feed_no_data_2">Take a deep breath and ask a question.</string>
+  <string name="label_feed_read_more">%1$s… read more</string>
 
   <string name="action_feed_popup_bookmark">Bookmark</string>
   <string name="action_feed_popup_unbookmark">Unbookmark</string>
@@ -56,7 +57,7 @@
   <string name="label_toolbar_bookmark_title">Saved posts</string>
 
   <!-- EDITOR -->
-  <string name="hint_editor_write_title">Write title of your story here</string>
+  <string name="hint_editor_write_title">Click here to write title…</string>
   <string name="hint_editor_blog_content">Write anything about your story here…</string>
   <string name="hint_editor_question_content">Ask anything about your trip here…</string>
   <string name="hint_editor_max_tags">Enter maximum 7 tags here</string>
@@ -73,7 +74,7 @@
   <string name="label_select_media">Select media</string>
   <string name="label_editor_crop_image_title">Crop Image</string>
   <string name="label_tag"># %1$s</string>
-  <string name="label_editor_ensure_bounty">Do you want to add %1$d bounties?</string>
+  <string name="label_editor_ensure_bounty">Do you want to add %1$d bountyCount?</string>
   <string name="label_editor_bounty_description">
     You will increase the chance of getting answered by asking bounty questions.
   </string>
@@ -136,12 +137,16 @@
   <string name="label_profile_following">%1$s\nfollowing</string>
   <string name="label_profile_points">%1$s\nPOINTS</string>
   <string name="label_profile_bounties">%1$d\nBOUNTIES</string>
-  <string name="label_profile_achievements">%1$d\nACHIEVEMENTS</string>
-  <string name="label_profile_questions">Questions</string>
-  <string name="label_profile_commented">Commented</string>
+  <string name="label_profile_countries">%1$d\nCOUNTRIES</string>
+  <string name="label_profile_tab_posts">Posts</string>
+  <string name="label_profile_tab_photos">Photos</string>
+  <string name="label_profile_tab_countries">Countries</string>
+  <string name="label_profile_tab_interests">Interests</string>
+  <string name="label_profile_username">\@%1$s</string>
 
-  <string name="action_profile_follow">FOLLOW</string>
-  <string name="action_profile_unfollow">UNFOLLOW</string>
+  <string name="action_profile_follow">Follow</string>
+  <string name="action_profile_unfollow">Unfollow</string>
+  <string name="action_profile_menu_settings">Edit Profile</string>
 
   <!-- SEARCH -->
   <string name="hint_search">Search…</string>
@@ -149,7 +154,8 @@
   <string name="label_search_tags">Tags</string>
   <string name="label_search_users">People</string>
   <string name="label_search_post_count">%1$d public posts</string>
-  <string name="label_search_followed">%1$s followed.</string>
+  <string name="label_search_followed">You followed %1$s</string>
+  <string name="label_search_unfollowed">You unfollowed %1$s</string>
 
   <!-- NOTIFICATION -->
   <string name="label_notification_title">Notifications</string>
@@ -157,6 +163,8 @@
   <string name="label_notification_mention">\@%1$s mentioned you in a comment: %2$s</string>
   <string name="label_notification_follow">\@%1$s followed you.</string>
   <string name="label_notification_accept">Your comment is accepted.</string>
+  <string name="error_network_unavailable">Network unavailable.
+    Your post will be sent when network is available.</string>
 
   <!-- LOGIN -->
   <string name="label_login_welcome_title">Welcome to Yoloo</string>
@@ -164,7 +172,7 @@
     and connect with travelers.
   </string>
   <string name="label_login_select_categories">
-    Select at least 3 categories to personalize your feed.
+    Select at least 3 news to personalize your feed.
   </string>
   <string name="label_login_or">or</string>
   <string name="label_loading">Loading</string>
@@ -178,11 +186,14 @@
   <string name="action_login_facebook_sing_in">Continue with Facebook</string>
   <string name="action_login_ready">I\'m ready</string>
   <string name="action_login_sign_in">Sign In</string>
+  <string name="action_sign_in_short">Sign in</string>
+  <string name="action_sing_up_short">Sign up</string>
 
   <string name="error_google_play_services">Google Play Services error.</string>
   <string name="error_auth_failed">Authentication failed.</string>
   <string name="error_server_down">Server is not available!</string>
   <string name="error_already_registered">Already registered.</string>
+  <string name="error_unknownhost">Internet is unavailable.</string>
 
   <string name="error_invalid_email">Invalid email</string>
   <string name="error_email_already_taken">Email is in use</string>
@@ -193,13 +204,39 @@
   <string name="hint_email">E-mail</string>
   <string name="hint_password">Password</string>
 
-  <string name="com_facebook_loginview_log_in_button_long">Continue with Facebook</string>
-
   <string name="idp_name_google">Google</string>
   <string name="idp_name_facebook">Facebook</string>
 
   <!-- NEWS -->
   <string name="label_news_toolbar_title">News</string>
+
+  <!-- COMPONENT NEWCOMERS -->
+  <string name="label_newcomers_group_title">Recently Joined</string>
+  <string name="label_newcomers_group_action">See All</string>
+
+  <!-- PROFILE EDIT -->
+  <string name="label_profile_edit_title">Edit Profile</string>
+  <string name="label_profile_edit_change_photo">Change Photo</string>
+  <string name="label_profile_edit_personal_info_header">Personal Info</string>
+  <string name="label_profile_edit_extra_info_header">Extra Info</string>
+  <string name="label_profile_edit_menu_save">Save</string>
+
+  <string name="hint_profile_edit_realname">Real Name</string>
+  <string name="hint_profile_edit_username">Username</string>
+  <string name="hint_profile_edit_website">Website</string>
+  <string name="hint_profile_edit_bio">Bio</string>
+  <string name="hint_profile_edit_email">E-mail</string>
+  <string name="hint_profile_edit_password">Change Password</string>
+
+  <string name="error_profile_edit_empty_realname">Real Name is empty.</string>
+  <string name="error_profile_edit_empty_username">Username is empty.</string>
+  <string name="error_profile_edit_empty_email">Email is empty.</string>
+
+  <string-array name="spinner_profile_edit_gender">
+    <item>Unspecified</item>
+    <item>Male</item>
+    <item>Female</item>
+  </string-array>
 
 
   <string-array name="label_sub_feed_list">
@@ -235,5 +272,10 @@
 
   <!-- CHAT -->
   <string name="label_toolbar_conversationlist_title">Conversations</string>
+  <string name="title_activity_login">Sign in</string>
+
+  <string name="transition_test" translatable="false">transition.test</string>
+  <string name="transition_avatar" translatable="false">transition.avatar</string>
+  <string name="transition_username" translatable="false">transition.username%1$s</string>
 
 </resources>

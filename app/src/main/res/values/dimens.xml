@@ -51,4 +51,9 @@
   <dimen name="profile_avatar_width">72dp</dimen>
 
   <dimen name="feed_actions_height">40dp</dimen>
+
+  <dimen name="drag_dismiss_distance">112dp</dimen> <!-- 2 * ?android:actionBarSize -->
+
+  <dimen name="layout_arc_child_offset">100dp</dimen>
+  <dimen name="layout_arc_radius">135dp</dimen>
 </resources>

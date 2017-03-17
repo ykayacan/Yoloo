@@ -6,7 +6,6 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import com.airbnb.epoxy.EpoxyAdapter;
 import com.airbnb.epoxy.EpoxyModel;
-import com.airbnb.epoxy.SimpleEpoxyModel;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.CommentRealm;
@@ -21,12 +20,12 @@ import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
-import com.yoloo.android.feature.feed.component.blogcomponent.BlogModel;
-import com.yoloo.android.feature.feed.component.blogcomponent.BlogModel_;
-import com.yoloo.android.feature.feed.component.postcomponent.NormalQuestionModel;
-import com.yoloo.android.feature.feed.component.postcomponent.NormalQuestionModel_;
-import com.yoloo.android.feature.feed.component.postcomponent.RichQuestionModel;
-import com.yoloo.android.feature.feed.component.postcomponent.RichQuestionModel_;
+import com.yoloo.android.feature.feed.component.blog.BlogModel;
+import com.yoloo.android.feature.feed.component.blog.BlogModel_;
+import com.yoloo.android.feature.feed.component.post.TextQuestionModel;
+import com.yoloo.android.feature.feed.component.post.TextQuestionModel_;
+import com.yoloo.android.feature.feed.component.post.RichQuestionModel;
+import com.yoloo.android.feature.feed.component.post.RichQuestionModel_;
 import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.List;
@@ -43,8 +42,8 @@ public class PostDetailAdapter extends EpoxyAdapter {
   private final OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener;
   private final OnItemLongClickListener<CommentRealm> onCommentLongClickListener;
 
-  private final SimpleEpoxyModel commentHeaderModel =
-      new SimpleEpoxyModel(R.layout.item_comment_header);
+  /*private final SimpleEpoxyModel commentHeaderModel =
+      new SimpleEpoxyModel(R.layout.item_comment_header);*/
 
   private final CropCircleTransformation cropCircleTransformation;
 
@@ -78,9 +77,9 @@ public class PostDetailAdapter extends EpoxyAdapter {
   }
 
   public void addPost(PostRealm post) {
-    final int postType = post.getType();
+    final int postType = post.getPostType();
 
-    if (postType == PostRealm.POST_NORMAL) {
+    if (postType == PostRealm.POST_TEXT) {
       addModel(createNormalQuestionDetail(post));
     } else if (postType == PostRealm.POST_RICH) {
       addModel(createRichQuestionDetail(post));
@@ -88,7 +87,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
       addModel(createBlogDetail(post));
     }
 
-    addModel(commentHeaderModel);
+    //addModel(commentHeaderModel);
   }
 
   public void addComments(List<CommentRealm> comments, AccountRealm account, PostRealm post) {
@@ -105,7 +104,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
   }
 
   public void addComment(CommentRealm comment, AccountRealm account, PostRealm post) {
-    showCommentsHeader(true);
+    //showCommentsHeader(true);
     addModel(createCommentModel(comment, account, post));
   }
 
@@ -121,9 +120,9 @@ public class PostDetailAdapter extends EpoxyAdapter {
     recyclerView.smoothScrollToPosition(getItemCount() - 1);
   }
 
-  public void showCommentsHeader(boolean show) {
+  /*public void showCommentsHeader(boolean show) {
     commentHeaderModel.show(show);
-  }
+  }*/
 
   private CommentModel createCommentModel(CommentRealm comment, AccountRealm account,
       PostRealm post) {
@@ -132,7 +131,7 @@ public class PostDetailAdapter extends EpoxyAdapter {
         .isCommentOwner(isCommentOwner(comment, account))
         .isPostOwner(isPostOwner(post, account))
         .postAccepted(isAccepted(post))
-        .postType(post.getType())
+        .postType(post.getPostType())
         .backgroundColor(Color.WHITE)
         .circleTransformation(cropCircleTransformation)
         .onCommentLongClickListener(onCommentLongClickListener)
@@ -155,8 +154,8 @@ public class PostDetailAdapter extends EpoxyAdapter {
         .post(post);
   }
 
-  private NormalQuestionModel createNormalQuestionDetail(PostRealm post) {
-    return new NormalQuestionModel_()
+  private TextQuestionModel createNormalQuestionDetail(PostRealm post) {
+    return new TextQuestionModel_()
         .onProfileClickListener(onProfileClickListener)
         .onPostOptionsClickListener(onPostOptionsClickListener)
         .onShareClickListener(onShareClickListener)

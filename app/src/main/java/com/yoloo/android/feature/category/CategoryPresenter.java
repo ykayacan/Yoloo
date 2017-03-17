@@ -20,7 +20,7 @@ class CategoryPresenter extends MvpPresenter<CategoryView> {
   }
 
   private void loadCategories() {
-    Disposable d = categoryRepository.listCategories(100, CategorySorter.DEFAULT)
+    Disposable d = categoryRepository.listCategories(CategorySorter.DEFAULT, 100)
         .observeOn(AndroidSchedulers.mainThread(), true)
         .subscribe(categories -> getView().onCategoriesLoaded(categories),
             throwable -> getView().onError(throwable));

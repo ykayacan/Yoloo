@@ -10,7 +10,7 @@ import lombok.Singular;
 public class EndpointsValidator {
 
   @Singular(value = "on")
-  private List<Validator> validators = new ArrayList<>();
+  private List<Validator> validators = new ArrayList<>(5);
 
   public EndpointsValidator on(Validator validator) {
     validators.add(validator);

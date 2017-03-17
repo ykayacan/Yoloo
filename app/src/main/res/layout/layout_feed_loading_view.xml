@@ -11,6 +11,7 @@
     android:layout_height="wrap_content"
     android:layout_gravity="center"
     app:lottie_autoPlay="true"
+    app:lottie_cacheStrategy="weak"
     app:lottie_fileName="PinJump.json"
     app:lottie_loop="true" />
 

@@ -67,11 +67,11 @@ public final class AccountShard implements Shardable.Shard {
     return --followerCount;
   }
 
-  public long increaseQuestions() {
+  public long increasePostCount() {
     return ++postCount;
   }
 
-  public long decreaseQuestions() {
+  public long decreasePostCount() {
     return --postCount;
   }
 

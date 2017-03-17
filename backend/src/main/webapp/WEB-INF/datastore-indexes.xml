@@ -1,28 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <datastore-indexes autoGenerate="true">
   <datastore-index ancestor="true" kind="Vote">
-    <property name="parentUserKey" direction="asc" />
+    <property name="parent" direction="asc" />
     <property name="created" direction="asc" />
   </datastore-index>
 
-  <datastore-index ancestor="false" kind="Question">
+  <datastore-index ancestor="false" kind="Post">
     <property name="created" direction="desc" />
+    <property name="postType" direction="asc" />
     <property name="rank" direction="desc" />
   </datastore-index>
 
-  <datastore-index ancestor="false" kind="Question">
+  <datastore-index ancestor="false" kind="Post">
     <property name="created" direction="desc" />
-    <property name="categories" direction="asc" />
+    <property name="postType" direction="asc" />
+    <property name="news" direction="asc" />
   </datastore-index>
 
-  <datastore-index ancestor="false" kind="Question">
+  <datastore-index ancestor="false" kind="Post">
     <property name="bounty" direction="desc" />
+    <property name="postType" direction="asc" />
     <property name="created" direction="desc" />
   </datastore-index>
 
   <datastore-index ancestor="false" kind="Comment">
     <property name="created" direction="desc" />
-    <property name="questionKey" direction="asc" />
+    <property name="postKey" direction="asc" />
   </datastore-index>
 
   <datastore-index ancestor="true" kind="Notification">

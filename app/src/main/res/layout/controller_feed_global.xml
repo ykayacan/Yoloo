@@ -4,10 +4,10 @@
   android:id="@+id/root_view"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="@color/background_lightish_2"
-  app:animateStateChanges="true"
+  app:contentViewId="@+id/swipe_feed_global"
   app:emptyLayout="@layout/layout_empty_view"
   app:errorLayout="@layout/layout_error_view"
+  app:initialViewState="loading"
   app:loadingLayout="@layout/layout_feed_loading_view">
 
   <android.support.design.widget.AppBarLayout

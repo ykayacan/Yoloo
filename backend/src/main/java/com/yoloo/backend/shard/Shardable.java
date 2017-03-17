@@ -19,7 +19,7 @@ public interface Shardable<S extends Shardable.Shard, E> {
 
   Key<S> getRandomShardKey(Key<E> entityKey);
 
-  Observable<List<E>> mergeShards(Collection<E> entities);
+  Observable<List<E>> mergeShards(Collection<? extends E> entities);
 
   Observable<E> mergeShards(E entity);
 

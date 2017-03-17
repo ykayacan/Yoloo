@@ -5,6 +5,7 @@ import android.os.Build;
 public final class VersionUtil {
 
   private VersionUtil() {
+    // empty constructor
   }
 
   public static boolean hasL() {

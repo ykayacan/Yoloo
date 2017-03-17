@@ -43,21 +43,20 @@ public class NotificationDiskDataSource {
     realm.close();
   }
 
-  public Observable<Response<List<NotificationRealm>>> list() {
+  public Observable<Response<List<NotificationRealm>>> list(int limit) {
     return Observable.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 
       RealmResults<NotificationRealm> results = realm.where(NotificationRealm.class)
           .findAllSorted(NotificationRealmFields.CREATED, Sort.DESCENDING);
 
-      if (results.isEmpty()) {
-        realm.close();
-        return Response.create(Collections.emptyList(), null, null);
-      } else {
-        List<NotificationRealm> notifications = realm.copyFromRealm(results);
-        realm.close();
-        return Response.create(notifications, null, null);
-      }
+      List<NotificationRealm> notifications = results.isEmpty()
+          ? Collections.emptyList()
+          : realm.copyFromRealm(results);
+
+      realm.close();
+
+      return Response.create(notifications, null);
     });
   }
 }

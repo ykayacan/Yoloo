@@ -1,6 +1,7 @@
 package com.yoloo.backend.category;
 
 import com.google.api.server.spi.config.ApiTransformer;
+import com.google.appengine.api.datastore.Link;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.annotation.Cache;
@@ -8,7 +9,6 @@ import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
-import com.googlecode.objectify.condition.IfNotZero;
 import com.yoloo.backend.category.transformer.CategoryTransformer;
 import com.yoloo.backend.util.Deref;
 import java.util.List;
@@ -49,12 +49,12 @@ public class Category {
   @NonFinal
   private String name;
 
-  @Index
   @Wither
   @NonFinal
-  private Type type;
+  private Link imageUrl;
 
-  @Index(IfNotZero.class)
+  /*@Index(IfNotZero.class)*/
+  @Index
   @Wither
   @NonFinal
   private double rank;
@@ -77,11 +77,6 @@ public class Category {
 
   public List<CategoryShard> getShards() {
     return Deref.deref(shardRefs);
-  }
-
-  public enum Type {
-    CONTINENT,
-    THEME
   }
 
   public static class ShardGroup {

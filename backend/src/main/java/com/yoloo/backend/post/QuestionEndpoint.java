@@ -28,7 +28,7 @@ import javax.inject.Named;
         ownerName = Constants.API_OWNER,
         packagePath = Constants.API_PACKAGE_PATH))
 @ApiClass(
-    resource = "postCount",
+    resource = "posts",
     clientIds = {
         Constants.ANDROID_CLIENT_ID,
         Constants.IOS_CLIENT_ID,
@@ -54,13 +54,13 @@ public class QuestionEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "postCount.get",
-      path = "postCount/{questionId}",
+      name = "questions.get",
+      path = "questions/{questionId}",
       httpMethod = ApiMethod.HttpMethod.GET)
   public Post get(@Named("questionId") String questionId, User user) throws ServiceException {
 
     EndpointsValidator.create()
-        .on(BadRequestValidator.create(questionId, "questionId is required."))
+        .on(BadRequestValidator.create(questionId, "postId is required."))
         .on(AuthValidator.create(user))
         .validate();
 
@@ -80,8 +80,8 @@ public class QuestionEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "postCount.insert",
-      path = "postCount",
+      name = "questions.insert",
+      path = "questions",
       httpMethod = ApiMethod.HttpMethod.POST)
   public Post insert(
       @Named("content") String content,
@@ -120,8 +120,8 @@ public class QuestionEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "postCount.update",
-      path = "postCount/{questionId}",
+      name = "questions.update",
+      path = "questions/{questionId}",
       httpMethod = ApiMethod.HttpMethod.PUT)
   public Post update(
       @Named("questionId") String questionId,
@@ -155,8 +155,8 @@ public class QuestionEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "postCount.delete",
-      path = "postCount/{questionId}",
+      name = "questions.delete",
+      path = "questions/{questionId}",
       httpMethod = ApiMethod.HttpMethod.DELETE)
   public void delete(@Named("questionId") String questionId, User user) throws ServiceException {
 
@@ -182,8 +182,8 @@ public class QuestionEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "postCount.list",
-      path = "postCount",
+      name = "questions.list",
+      path = "questions",
       httpMethod = ApiMethod.HttpMethod.GET)
   public CollectionResponse<Post> list(
       @Nullable @Named("accountId") String accountId,
@@ -205,29 +205,7 @@ public class QuestionEndpoint {
         Optional.fromNullable(tags),
         Optional.fromNullable(limit),
         Optional.fromNullable(cursor),
-        Post.PostType.QUESTION,
+        Optional.of(Post.PostType.QUESTION),
         user);
-  }
-
-  /**
-   * Reports the {@code Post} with the corresponding ID.
-   *
-   * @param questionId the websafe question id
-   * @param user the user
-   * @throws ServiceException the service exception
-   */
-  @ApiMethod(
-      name = "postCount.report",
-      path = "postCount/{questionId}/report",
-      httpMethod = ApiMethod.HttpMethod.PUT)
-  public void report(@Named("questionId") String questionId, User user) throws ServiceException {
-
-    EndpointsValidator.create()
-        .on(BadRequestValidator.create(questionId, "questionId is required."))
-        .on(AuthValidator.create(user))
-        .on(NotFoundValidator.create(questionId, "Invalid questionId."))
-        .validate();
-
-    postController.reportPost(questionId, user);
   }
 }

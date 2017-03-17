@@ -7,8 +7,11 @@ import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.datastore.QueryResultIterator;
+import com.google.appengine.api.images.ImagesService;
+import com.google.appengine.api.images.ServingUrlOptions;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.firebase.auth.FirebaseAuth;
@@ -22,6 +25,7 @@ import com.yoloo.backend.Constants;
 import com.yoloo.backend.account.task.CreateUserFeedServlet;
 import com.yoloo.backend.authentication.oauth2.OAuth2;
 import com.yoloo.backend.base.Controller;
+import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.endpointsvalidator.Guard;
 import com.yoloo.backend.follow.Follow;
 import com.yoloo.backend.game.GamificationService;
@@ -31,13 +35,19 @@ import com.yoloo.backend.media.Size;
 import com.yoloo.backend.media.size.ThumbSize;
 import com.yoloo.backend.util.KeyUtil;
 import com.yoloo.backend.util.ServerConfig;
+
+import org.joda.time.DateTime;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+
 import javax.servlet.http.HttpServletRequest;
+
+import ix.Ix;
 import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
-import org.joda.time.DateTime;
 
 import static com.yoloo.backend.OfyService.factory;
 import static com.yoloo.backend.OfyService.ofy;
@@ -56,6 +66,8 @@ public final class AccountController extends Controller {
   private AccountShardService accountShardService;
 
   private GamificationService gamificationService;
+
+  private ImagesService imagesService;
 
   /**
    * Get account.
@@ -97,6 +109,7 @@ public final class AccountController extends Controller {
    * @throws ConflictException the conflict exception
    */
   public Account insertAccount(
+      String realname,
       String locale,
       Account.Gender gender,
       String categoryIds,
@@ -111,7 +124,7 @@ public final class AccountController extends Controller {
     if (isUserRegistered(token)) {
       throw new ConflictException("User is already registered.");
     } else {
-      AccountEntity entity = createAccountEntity(token, locale, gender, categoryIds);
+      AccountEntity entity = createAccountEntity(token, realname, locale, gender, categoryIds);
 
       Tracker tracker = gamificationService.createTracker(entity.getAccount().getKey());
 
@@ -156,6 +169,23 @@ public final class AccountController extends Controller {
     });
   }
 
+  public Account insertTestAccount() {
+    return ofy().transact(() -> {
+      AccountEntity entity = createTestAccountEntity();
+      Tracker tracker = gamificationService.createTracker(entity.getAccount().getKey());
+      DeviceRecord record = DeviceRecord.builder()
+          .id(entity.getAccount().getWebsafeId())
+          .parent(entity.getAccount().getKey())
+          .regId("")
+          .build();
+
+      ofy().save().entities(entity.getAccount(), tracker, record).now();
+      ofy().save().entities(entity.getShards().values()).now();
+
+      return ofy().load().key(entity.getAccount().getKey()).now();
+    });
+  }
+
   /**
    * Update account.
    *
@@ -164,8 +194,14 @@ public final class AccountController extends Controller {
    * @param username the username
    * @return the account
    */
-  public Account updateAccount(String accountId, Optional<String> mediaId,
-      Optional<String> username) {
+  public Account updateAccount(
+      String accountId,
+      Optional<String> mediaId,
+      Optional<String> username,
+      Optional<String> realName,
+      Optional<String> websiteUrl,
+      Optional<String> bio,
+      Optional<Account.Gender> gender) {
 
     ImmutableSet.Builder<Key<?>> keyBuilder = ImmutableSet.builder();
 
@@ -187,16 +223,42 @@ public final class AccountController extends Controller {
     Account account = (Account) fetched.get(accountKey);
     //noinspection SuspiciousMethodCalls
     Tracker tracker = (Tracker) fetched.get(trackerKey);
-    //noinspection SuspiciousMethodCalls
-    Media media = (Media) fetched.get(Key.create(mediaId.get()));
 
-    account = updateAccount(account, Optional.fromNullable(media), username);
+    return Ix.just(account)
+        .map(updated -> {
+          if (username.isPresent()) {
+            updated = updated.withUsername(username.get());
+          }
 
-    ofy().save().entity(account);
+          if (realName.isPresent()) {
+            updated = updated.withRealname(realName.get());
+          }
 
-    return account
-        .withCounts(accountShardService.merge(account).map(this::buildCounter).blockingFirst())
-        .withDetail(buildDetail(tracker));
+          if (mediaId.isPresent()) {
+            Media media = (Media) fetched.get(Key.create(mediaId.get()));
+            Size size = ThumbSize.of(media.getUrl());
+            updated = updated.withAvatarUrl(new Link(size.getUrl()));
+          }
+
+          if (websiteUrl.isPresent()) {
+            updated = updated.withWebsiteUrl(new Link(websiteUrl.get()));
+          }
+
+          if (bio.isPresent()) {
+            updated = updated.withBio(bio.get());
+          }
+
+          if (gender.isPresent()) {
+            updated = updated.withGender(gender.get());
+          }
+
+          return updated;
+        })
+        .doOnNext(updated -> ofy().transact(() -> ofy().save().entity(updated)))
+        .map(updated -> updated
+            .withCounts(accountShardService.merge(updated).map(this::buildCounter).blockingFirst())
+            .withDetail(buildDetail(tracker)))
+        .single();
   }
 
   /**
@@ -205,14 +267,19 @@ public final class AccountController extends Controller {
    * @param user the user
    */
   public void deleteAccount(User user) {
-    final Key<Account> accountKey = Key.create(user.getUserId());
+    deleteAccount(user.getUserId());
+  }
 
-    // TODO: 16.12.2016 Remove shards keys.
+  public void deleteAccount(String accountId) {
+    final Key<Account> accountKey = Key.create(accountId);
 
     ofy().transact(() -> {
       List<Key<Object>> keys = ofy().load().ancestor(accountKey).keys().list();
+      final Key<Tracker> trackerKey = Tracker.createKey(accountKey);
+
       ImmutableSet<Key<?>> deleteList = ImmutableSet.<Key<?>>builder()
           .addAll(keys)
+          .add(trackerKey)
           .addAll(accountShardService.createShardMapWithKey(accountKey).keySet())
           .build();
 
@@ -316,7 +383,7 @@ public final class AccountController extends Controller {
     return query.limit(limit.or(DEFAULT_LIST_LIMIT));
   }
 
-  private AccountEntity createAccountEntity(FirebaseToken token, String locale,
+  private AccountEntity createAccountEntity(FirebaseToken token, String realname, String locale,
       Account.Gender gender, String categoryIds) {
 
     final Key<Account> accountKey = factory().allocateId(Account.class);
@@ -327,14 +394,14 @@ public final class AccountController extends Controller {
     Account account = Account.builder()
         .id(accountKey.getId())
         .username(generateUsername(token))
-        .realname(token.getName())
+        .realname(setRealname(token, realname))
         .firebaseUUID(token.getUid())
         .email(new Email(token.getEmail()))
-        .avatarUrl(new Link(token.getPicture()))
+        .avatarUrl(new Link(checkAvatarUrl(token)))
         .locale(locale)
         .gender(gender)
         .shardRefs(Lists.newArrayList(shardMap.keySet()))
-        .categoryKeys(KeyUtil.extractKeysFromIds2(categoryIds, ","))
+        .interestedCategoryKeys(KeyUtil.extractKeysFromIds(categoryIds, ","))
         .counts(Account.Counts.builder().build())
         .detail(Account.Detail.builder().build())
         .created(DateTime.now())
@@ -359,17 +426,51 @@ public final class AccountController extends Controller {
         .build();
   }
 
-  private Account updateAccount(Account account, Optional<Media> media, Optional<String> username) {
-    if (username.isPresent()) {
-      account = account.withUsername(username.get());
+  private AccountEntity createTestAccountEntity() {
+    final Key<Account> testKey = Key.create(Account.class, 1L);
+
+    Map<Ref<AccountShard>, AccountShard> shardMap =
+        accountShardService.createShardMapWithRef(testKey);
+
+    Account account = Account.builder()
+        .id(testKey.getId())
+        .username("test")
+        .realname("test")
+        .firebaseUUID("")
+        .email(new Email("test@test.com"))
+        .avatarUrl(new Link(""))
+        .locale("")
+        .gender(Account.Gender.UNSPECIFIED)
+        .shardRefs(Lists.newArrayList(shardMap.keySet()))
+        .interestedCategoryKeys(Collections.emptyList())
+        .counts(Account.Counts.builder().build())
+        .detail(Account.Detail.builder().build())
+        .created(DateTime.now())
+        .build();
+
+    return AccountEntity.builder()
+        .account(account)
+        .shards(shardMap)
+        .build();
+  }
+
+  private String checkAvatarUrl(FirebaseToken token) {
+    final String avatarUrl = token.getPicture();
+
+    if (Strings.isNullOrEmpty(avatarUrl)) {
+      ServingUrlOptions options = ServingUrlOptions.Builder
+          .withGoogleStorageFileName(
+              "/gs/yoloo-151719.appspot.com/system-default/empty_user_avatar.webp");
+
+      return imagesService.getServingUrl(options);
     }
 
-    if (media.isPresent()) {
-      Size size = ThumbSize.of(media.get().getUrl());
+    return avatarUrl;
+  }
 
-      account = account.withAvatarUrl(new Link(size.getUrl()));
-    }
-
-    return account;
+  private String setRealname(FirebaseToken token, String realname) {
+    return Strings.isNullOrEmpty(token.getName())
+        ? realname
+        : token.getName();
   }
 }

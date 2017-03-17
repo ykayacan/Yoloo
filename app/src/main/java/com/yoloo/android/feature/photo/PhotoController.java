@@ -14,8 +14,10 @@ import butterknife.BindView;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.feature.base.BaseController;
+import com.yoloo.android.ui.widget.ElasticDragDismissFrameLayout;
 import com.yoloo.android.util.BundleBuilder;
-import com.yoloo.android.util.ViewUtil;
+import com.yoloo.android.util.VersionUtil;
+import com.yoloo.android.util.ViewUtils;
 import uk.co.senab.photoview.PhotoView;
 
 public class PhotoController extends BaseController {
@@ -25,8 +27,9 @@ public class PhotoController extends BaseController {
   @BindView(R.id.iv_photo) PhotoView ivPhoto;
   @BindView(R.id.toolbar_photo) Toolbar toolbar;
 
-  @BindColor(R.color.primary_dark)
-  int primaryDarkColor;
+  @BindColor(R.color.primary_dark) int primaryDarkColor;
+
+  private ElasticDragDismissFrameLayout.SystemChromeFader chromeFader;
 
   public PhotoController(Bundle args) {
     super(args);
@@ -43,9 +46,19 @@ public class PhotoController extends BaseController {
     return inflater.inflate(R.layout.controller_photo, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
-    super.onViewCreated(view);
-    ViewUtil.setStatusBarColor(getActivity(), Color.BLACK);
+  @Override protected void onViewBound(@NonNull View view) {
+    super.onViewBound(view);
+    ViewUtils.setStatusBarColor(getActivity(), Color.BLACK);
+
+    if (VersionUtil.hasL()) {
+      chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(getActivity()) {
+        @Override public void onDragDismissed() {
+          getRouter().popController(PhotoController.this);
+        }
+      };
+
+      ((ElasticDragDismissFrameLayout) view).addListener(chromeFader);
+    }
 
     setHasOptionsMenu(true);
     setupToolbar();
@@ -55,9 +68,16 @@ public class PhotoController extends BaseController {
         .into(ivPhoto);
   }
 
+  @Override protected void onDestroyView(@NonNull View view) {
+    super.onDestroyView(view);
+    if (VersionUtil.hasL()) {
+      ((ElasticDragDismissFrameLayout) view).removeListener(chromeFader);
+    }
+  }
+
   @Override protected void onDestroy() {
     super.onDestroy();
-    ViewUtil.setStatusBarColor(getActivity(), primaryDarkColor);
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {

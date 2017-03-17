@@ -1,36 +1,47 @@
 package com.yoloo.android.util;
 
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.TreeMap;
+import android.support.v4.util.SparseArrayCompat;
 
 public final class CountUtil {
 
-  private static final NavigableMap<Long, String> SUFFIXES = new TreeMap<>();
+  private static final SparseArrayCompat<String> SUFFIXES = new SparseArrayCompat<>(3);
 
   static {
-    SUFFIXES.put(1_000L, "k");
-    SUFFIXES.put(1_000_000L, "M");
-    SUFFIXES.put(1_000_000_000L, "G");
+    SUFFIXES.append(1_000, "k");
+    SUFFIXES.append(1_000_000, "M");
+    SUFFIXES.append(1_000_000_000, "B");
   }
 
   private CountUtil() {
+    // empty constructor
   }
 
-  public static String format(long value) {
-    //Long.MIN_VALUE == -Long.MIN_VALUE so we need an adjustment here
-    if (value == Long.MIN_VALUE) return format(Long.MIN_VALUE + 1);
-    if (value < 0) return "-" + format(-value);
-    if (value < 1000) return Long.toString(value); //deal with easy case
+  public static String formatCount(long value) {
+    if (value == Long.MIN_VALUE) {
+      return formatCount(Long.MIN_VALUE + 1);
+    } else if (value < 0) {
+      return "-" + formatCount(-value);
+    } else if (value < 1000) {
+      return Long.toString(value); //deal with easy case
+    }
 
-    final Map.Entry<Long, String> e = SUFFIXES.floorEntry(value);
-    final Long divideBy = e.getKey();
-    final String suffix = e.getValue();
+    final int index = floorIndex(SUFFIXES, (int) value);
+
+    final int divideBy = SUFFIXES.keyAt(index);
+    final String suffix = SUFFIXES.valueAt(index);
 
     final long truncated = value / (divideBy / 10); // The number part getPost the output times 10
     final boolean hasDecimal = truncated < 1000
         && (truncated / 100d) != (truncated / 100)
         && (truncated * 10) % 10 != 0; // If the decimal part is equal to 0, return false.
     return hasDecimal ? (truncated / 10d) + suffix : (truncated / 10) + suffix;
+  }
+
+  private static int floorIndex(SparseArrayCompat<?> sparseArray, int key) {
+    int index = sparseArray.indexOfKey(key);
+    if (index < 0) {
+      index = ~index - 1;
+    }
+    return index;
   }
 }

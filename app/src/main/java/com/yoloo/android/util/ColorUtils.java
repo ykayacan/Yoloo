@@ -31,19 +31,20 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Utility methods for working with colors.
  */
-public class ColorUtils {
+public final class ColorUtils {
 
   public static final int IS_LIGHT = 0;
   public static final int IS_DARK = 1;
   public static final int LIGHTNESS_UNKNOWN = 2;
 
   private ColorUtils() {
+    // empty constructor
   }
 
   /**
    * Set the alpha component of {@code color} to be {@code alpha}.
    */
-  public static @CheckResult @ColorInt int modifyAlpha(@ColorInt int color,
+  @CheckResult @ColorInt public static int modifyAlpha(@ColorInt int color,
       @IntRange(from = 0, to = 255) int alpha) {
     return (color & 0x00ffffff) | (alpha << 24);
   }
@@ -51,7 +52,7 @@ public class ColorUtils {
   /**
    * Set the alpha component of {@code color} to be {@code alpha}.
    */
-  public static @CheckResult @ColorInt int modifyAlpha(@ColorInt int color,
+  @CheckResult @ColorInt public static int modifyAlpha(@ColorInt int color,
       @FloatRange(from = 0f, to = 1f) float alpha) {
     return modifyAlpha(color, (int) (255f * alpha));
   }
@@ -62,13 +63,13 @@ public class ColorUtils {
    * Annoyingly we have to return this Lightness 'enum' rather than a boolean as palette isn't
    * guaranteed to find the most populous color.
    */
-  public static @Lightness int isDark(Palette palette) {
+  @Lightness public static int isDark(Palette palette) {
     Palette.Swatch mostPopulous = getMostPopulousSwatch(palette);
     if (mostPopulous == null) return LIGHTNESS_UNKNOWN;
     return isDark(mostPopulous.getHsl()) ? IS_DARK : IS_LIGHT;
   }
 
-  public static @Nullable Palette.Swatch getMostPopulousSwatch(Palette palette) {
+  @Nullable public static Palette.Swatch getMostPopulousSwatch(Palette palette) {
     Palette.Swatch mostPopulous = null;
     if (palette != null) {
       for (Palette.Swatch swatch : palette.getSwatches()) {
@@ -97,7 +98,7 @@ public class ColorUtils {
   public static boolean isDark(@NonNull Bitmap bitmap, int backupPixelX, int backupPixelY) {
     // first try palette with a small color quant size
     Palette palette = Palette.from(bitmap).maximumColorCount(3).generate();
-    if (palette != null && palette.getSwatches().size() > 0) {
+    if (palette.getSwatches().size() > 0) {
       return isDark(palette) == IS_DARK;
     } else {
       // if palette failed, then check the color of the specified pixel
@@ -130,8 +131,7 @@ public class ColorUtils {
    * @param lightnessMultiplier the amount to modify the color e.g. 0.1f will alter it by 10%
    * @return the adjusted color
    */
-  public static @ColorInt int scrimify(@ColorInt int color,
-      boolean isDark,
+  @ColorInt public static int scrimify(@ColorInt int color, boolean isDark,
       @FloatRange(from = 0f, to = 1f) float lightnessMultiplier) {
     float[] hsl = new float[3];
     android.support.v4.graphics.ColorUtils.colorToHSL(color, hsl);
@@ -146,7 +146,7 @@ public class ColorUtils {
     return android.support.v4.graphics.ColorUtils.HSLToColor(hsl);
   }
 
-  public static @ColorInt int scrimify(@ColorInt int color,
+  @ColorInt public static int scrimify(@ColorInt int color,
       @FloatRange(from = 0f, to = 1f) float lightnessMultiplier) {
     return scrimify(color, isDark(color), lightnessMultiplier);
   }

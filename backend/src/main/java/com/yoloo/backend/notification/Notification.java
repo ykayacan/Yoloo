@@ -1,7 +1,6 @@
 package com.yoloo.backend.notification;
 
-import com.google.api.server.spi.config.AnnotationBoolean;
-import com.google.api.server.spi.config.ApiResourceProperty;
+import com.google.api.server.spi.config.ApiTransformer;
 import com.google.appengine.api.datastore.Link;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cache;
@@ -10,6 +9,7 @@ import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Parent;
 import com.yoloo.backend.account.Account;
+import com.yoloo.backend.notification.transformer.NotificationTransformer;
 import java.util.Map;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -26,40 +26,42 @@ import org.joda.time.DateTime;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+@ApiTransformer(NotificationTransformer.class)
 public class Notification {
 
   public static final String FIELD_CREATED = "created";
 
   @Id
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   private Long id;
 
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+  @NonFinal
   private Key<Account> senderKey;
 
   @Parent
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
+  @NonFinal
   private Key<Account> receiverKey;
 
+  @NonFinal
   private String senderUsername;
 
+  @NonFinal
   private Link senderAvatarUrl;
 
+  @NonFinal
   private Action action;
 
   @Singular
+  @NonFinal
   private Map<String, Object> payloads;
 
   @Index
   @NonFinal
   private DateTime created;
 
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
   public Key<Notification> getKey() {
     return Key.create(receiverKey, Notification.class, id);
   }
 
-  @ApiResourceProperty(name = "id")
   public String getWebsafeId() {
     return getKey().toWebSafeString();
   }

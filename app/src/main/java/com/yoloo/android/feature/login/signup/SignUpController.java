@@ -9,24 +9,34 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
-import butterknife.BindString;
-import butterknife.BindView;
-import butterknife.OnClick;
+
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.yoloo.android.R;
+import com.yoloo.android.data.repository.notification.NotificationRepository;
+import com.yoloo.android.data.repository.notification.datasource.NotificationDiskDataSource;
+import com.yoloo.android.data.repository.notification.datasource.NotificationRemoteDataSource;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.feed.mainfeed.MainFeedController;
+import com.yoloo.android.feature.feed.home.FeedHomeController;
 import com.yoloo.android.feature.login.AuthUI;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.FormUtil;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.LocaleUtil;
+
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
+
+import butterknife.BindString;
+import butterknife.BindView;
+import butterknife.OnClick;
+import butterknife.OnEditorAction;
+import butterknife.OnFocusChange;
 
 public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
     implements SignUpView {
@@ -34,7 +44,7 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
   private static final String KEY_CATEGORY_IDS = "CATEGORY_IDS";
 
   @BindView(R.id.et_login_fullname) EditText etFullName;
-  @BindView(R.id.et_login_email) EditText etEmail;
+  @BindView(R.id.et_login_email) AutoCompleteTextView etEmail;
   @BindView(R.id.et_login_password) EditText etPassword;
 
   @BindString(R.string.label_loading) String loadingString;
@@ -67,17 +77,26 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
     return inflater.inflate(R.layout.controller_sign_up, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
-    super.onViewCreated(view);
+  @Override protected void onViewBound(@NonNull View view) {
+    super.onViewBound(view);
 
     getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+  }
+
+  @Override public boolean handleBack() {
+    KeyboardUtil.hideKeyboard(getView());
+    return super.handleBack();
   }
 
   @NonNull @Override public SignUpPresenter createPresenter() {
     return new SignUpPresenter(
         UserRepository.getInstance(
             UserRemoteDataStore.getInstance(),
-            UserDiskDataStore.getInstance()));
+            UserDiskDataStore.getInstance()),
+        NotificationRepository.getInstance(
+            NotificationRemoteDataSource.getInstance(),
+            NotificationDiskDataSource.getInstance()
+        ));
   }
 
   @OnClick(R.id.btn_login_ready) void signUp() {
@@ -104,7 +123,7 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
       etEmail.setError(errorFieldRequiredString);
       focusView = etEmail;
       cancel = true;
-    } else if (!FormUtil.isEmailValid(email)) {
+    } else if (!FormUtil.isEmailAddress(email)) {
       etEmail.setError(errorInvalidEmail);
       focusView = etEmail;
       cancel = true;
@@ -128,10 +147,24 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
     } else {
       KeyboardUtil.hideKeyboard(etPassword);
 
-      String locale = LocaleUtil.getCurrentLocale(getActivity()).getDisplayCountry();
+      String locale = LocaleUtil.getCurrentLocale(getActivity()).getISO3Country();
 
-      getPresenter().signUp(email, password, categoryIds, locale);
+      getPresenter().signUp(fullname, email, password, categoryIds, locale);
     }
+  }
+
+  @OnFocusChange(R.id.et_login_email) void onEmailFocusChanged(boolean hasFocus) {
+    if (hasFocus) {
+      FormUtil.populateEmail(getActivity(), etEmail);
+    }
+  }
+
+  @OnEditorAction(R.id.et_login_password) boolean onEditorAction(int actionId) {
+    if (actionId == R.id.sign_up || actionId == EditorInfo.IME_NULL) {
+      signUp();
+      return true;
+    }
+    return false;
   }
 
   @Override public void onUsernameUnAvailable() {
@@ -139,7 +172,7 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
   }
 
   @Override public void onSignedUp() {
-    getParentController().getRouter().setRoot(RouterTransaction.with(MainFeedController.create()));
+    getParentController().getRouter().setRoot(RouterTransaction.with(FeedHomeController.create()));
   }
 
   @Override public void onError(Throwable t) {

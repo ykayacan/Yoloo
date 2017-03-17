@@ -12,7 +12,9 @@ import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.post.Post;
 import com.yoloo.backend.post.PostShardService;
+import com.yoloo.backend.util.CollectionTransformer;
 import com.yoloo.backend.vote.VoteService;
+import io.reactivex.Observable;
 import java.util.List;
 import java.util.logging.Logger;
 import lombok.AllArgsConstructor;
@@ -50,22 +52,25 @@ public class FeedController extends Controller {
 
     Query<Feed> query = getFeedQuery(limit, cursor, accountKey);
 
-    final QueryResultIterator<Feed> qi = query.iterator();
+    final QueryResultIterator<Key<Feed>> qi = query.keys().iterator();
 
-    List<Post> feed = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
+    List<Key<Post>> postKeys = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
 
     while (qi.hasNext()) {
-      feed.add(qi.next().getPost());
+      final Key<Feed> feedKey = qi.next();
+      final Key<Post> postKey = Feed.getPostKey(feedKey);
+      postKeys.add(postKey);
     }
 
-    feed = postShardService.mergeShards(feed)
+    return Observable.just(postKeys)
+        .filter(keys -> !keys.isEmpty())
+        .flatMap(keys ->
+            Observable.fromCallable(() ->
+                ofy().load().group(Post.ShardGroup.class).keys(postKeys).values()))
+        .flatMap(posts -> postShardService.mergeShards(posts))
         .flatMap(posts -> voteService.checkPostVote(posts, accountKey))
+        .compose(CollectionTransformer.create(qi.getCursor().toWebSafeString()))
         .blockingSingle();
-
-    return CollectionResponse.<Post>builder()
-        .setItems(feed)
-        .setNextPageToken(qi.getCursor().toWebSafeString())
-        .build();
   }
 
   private Query<Feed> getFeedQuery(Optional<Integer> limit, Optional<String> cursor,
@@ -73,7 +78,6 @@ public class FeedController extends Controller {
 
     Query<Feed> query = ofy()
         .load()
-        .group(Post.ShardGroup.class)
         .type(Feed.class)
         .ancestor(accountKey);
 

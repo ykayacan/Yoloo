@@ -57,8 +57,8 @@ public class CommentEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "postCount.comments.get",
-      path = "postCount/{postId}/comments/{commentId}",
+      name = "posts.comments.get",
+      path = "posts/{postId}/comments/{commentId}",
       httpMethod = ApiMethod.HttpMethod.GET)
   public Comment get(
       @Named("postId") String postId,
@@ -85,8 +85,8 @@ public class CommentEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "postCount.comments.insert",
-      path = "postCount/{postId}/comments",
+      name = "posts.comments.insert",
+      path = "posts/{postId}/comments",
       httpMethod = ApiMethod.HttpMethod.POST)
   public Comment insert(
       @Named("postId") String postId,
@@ -115,8 +115,8 @@ public class CommentEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "postCount.comments.update",
-      path = "postCount/{postId}/comments/{commentId}",
+      name = "posts.comments.update",
+      path = "posts/{postId}/comments/{commentId}",
       httpMethod = ApiMethod.HttpMethod.PUT)
   public Comment update(
       @Named("postId") String postId,
@@ -147,8 +147,8 @@ public class CommentEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "postCount.comments.delete",
-      path = "postCount/{postId}/comments/{commentId}",
+      name = "posts.comments.delete",
+      path = "posts/{postId}/comments/{commentId}",
       httpMethod = ApiMethod.HttpMethod.DELETE)
   public void delete(
       @Named("postId") String postId,
@@ -177,8 +177,8 @@ public class CommentEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "postCount.comments.list",
-      path = "postCount/{postId}/comments",
+      name = "posts.comments.list",
+      path = "posts/{postId}/comments",
       httpMethod = ApiMethod.HttpMethod.GET)
   public CollectionResponse<Comment> list(
       @Named("postId") String postId,

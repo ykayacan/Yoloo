@@ -1,0 +1,161 @@
+ext.versions = [
+    minSdk                    : 16,
+    targetSdk                 : 25,
+    compileSdk                : 25,
+    buildTools                : '25.0.2',
+    javaSource                : JavaVersion.VERSION_1_8,
+    javaTarget                : JavaVersion.VERSION_1_8,
+
+    androidGradlePlugin       : '2.4.0-alpha1',
+    retrolambdaGradlePlugin   : '3.5.0',
+    versionsGradlePlugin      : '0.14.0',
+    hugoPlugin                : '1.2.1',
+    firebaseGradlePlugins     : '1.0.4',
+    googleServicesGradlePlugin: '3.0.0',
+    realmGradlePlugin         : '3.0.0',
+    endpointsGradlePlugin     : '1.0.0-beta5',
+
+    rxJava2                   : '2.0.7',
+    rxJava2Android            : '2.0.1',
+
+    firebase                  : '10.2.0',
+    firebaseJobDispatcher     : '0.5.2',
+    playServices              : '10.2.0',
+    supportLibs               : '25.3.0',
+    multidex                  : '1.0.1',
+    constraintLayout          : '1.0.2',
+
+    okHttp                    : '3.6.0',
+    okHttpIntegration         : '1.4.0@aar',
+    okHttpUrlconnection       : '3.6.0',
+
+    butterKnife               : '8.5.1',
+    glide                     : '3.7.0',
+    timber                    : '4.5.1',
+    conductor                 : '2.1.1',
+    epoxy                     : '1.7.5',
+    facebookSdk               : '4.20.0',
+    ucrop                     : '2.2.0',
+    nachos                    : '1.0.0',
+    chipLayoutManager         : '0.3.7@aar',
+    permissive                : '0.2',
+    sandriosCamera            : '1.0.9',
+    photoView                 : '1.3.1',
+    stream                    : '1.1.6',
+    asdp                      : '1.1',
+    calligraphy               : '2.2.0',
+    lottie                    : '1.5.3',
+    arclayout                 : '1.1.0@aar',
+    flexbox                   : '0.3.0-alpha2',
+    realmFieldNameHelper      : '1.1.0',
+    googleApiClientAndroid    : '1.22.0',
+
+    tinyDancer                : '0.1.1',
+    stetho                    : '1.4.2',
+    stethoRealm               : '2.0.0',
+
+    junit                     : '4.12',
+    findbugs                  : '3.0.1',
+    espressoCore              : '2.2.2']
+
+ext.gradlePlugins = [
+    android    : "com.android.tools.build:gradle:$versions.androidGradlePlugin",
+    retrolambda: "me.tatarka:gradle-retrolambda:$versions.retrolambdaGradlePlugin",
+    versions   : "com.github.ben-manes:gradle-versions-plugin:$versions.versionsGradlePlugin"]
+
+ext.libraries = [
+    rxJava2            : "io.reactivex.rxjava2:rxjava:$versions.rxJava2",
+    rxJava2Android     : "io.reactivex.rxjava2:rxandroid:$versions.rxJava2Android",
+
+    okHttp             : "com.squareup.okhttp3:okhttp:$versions.okHttp",
+    okHttpIntegration  : "com.github.bumptech.glide:okhttp3-integration:$versions.okHttpIntegration",
+    okHttpUrlconnection: "com.squareup.okhttp3:okhttp-urlconnection:$versions.okHttpUrlconnection",
+
+    supportAnnotations : "com.android.support:support-annotations:$versions.supportLibs",
+    supportAppCompat   : "com.android.support:appcompat-v7:$versions.supportLibs",
+    supportDesign      : "com.android.support:design:$versions.supportLibs",
+    supportRecyclerView: "com.android.support:recyclerview-v7:$versions.supportLibs",
+    supportCardView    : "com.android.support:cardview-v7:$versions.supportLibs",
+
+    butterKnife        : "com.jakewharton:butterknife:$versions.butterKnife",
+    butterKnifeCompiler: "com.jakewharton:butterknife-compiler:$versions.butterKnife",
+    timber             : "com.jakewharton.timber:timber:$versions.timber",
+
+    // Analytics https://tech.yandex.com/metrica-mobile-sdk/
+    yandexAppMetrica   : "com.yandex.android:mobmetricalib:$versions.yandexAppMetrica",
+
+    // Developer Tools
+    stetho             : "com.facebook.stetho:stetho:$versions.stetho",
+    leakCanary         : "com.squareup.leakcanary:leakcanary-android:$versions.leakCanary",
+    tinyDancer         : "com.github.brianPlummer:tinydancer:$versions.tinyDancer",
+
+    // Test dependencies
+    junit              : "junit:junit:$versions.junit",
+    mockitoCore        : "org.mockito:mockito-core:$versions.mockito",
+    supportTestRunner  : "com.android.support.test:runner:$versions.supportTestRunner",
+    supportTestRules   : "com.android.support.test:rules:$versions.supportTestRunner",
+    espressoCore       : "com.android.support.test.espresso:espresso-core:$versions.espresso",
+    espressoContrib    : "com.android.support.test.espresso:espresso-contrib:$versions.espresso",]
+
+rootProject.ext.JAVA_SOURCE_VERSION = JavaVersion.VERSION_1_8
+rootProject.ext.JAVA_TARGET_VERSION = JavaVersion.VERSION_1_8
+
+rootProject.ext.TARGET_SDK_VERSION = 25
+rootProject.ext.COMPILE_SDK_VERSION = 25
+rootProject.ext.MIN_SDK_VERSION = 16
+
+rootProject.ext.ANDROID_BUILD_TOOLS_VERSION = "25.0.2"
+rootProject.ext.ANDROID_SUPPORT_LIBS_VERSION = "25.3.0"
+
+rootProject.ext.ANDROID_MULTIDEX_VERSION = "1.0.1"
+rootProject.ext.ANDROID_CONSTRAINT_LAYOUT_VERSION = "1.0.2"
+rootProject.ext.PLAY_SERVICES_VERSION = "10.2.0"
+rootProject.ext.FIREBASE_VERSION = "10.2.0"
+rootProject.ext.BUTTERKNIFE_VERSION = "8.5.1"
+rootProject.ext.EPOXY_VERSION = "1.7.5"
+rootProject.ext.CONDUCTOR_VERSION = "2.1.1"
+rootProject.ext.OKHTTP_VERSION = "3.6.0"
+rootProject.ext.RXJAVA2 = "2.0.7"
+rootProject.ext.RXJAVAANDROID = "2.0.1"
+rootProject.ext.GLIDE = "3.7.0"
+
+rootProject.ext.JUNIT_VERSION = "4.12"
+
+ext {
+  ANDROID_SUPPORT_LIBS_VERSION = "25.3.0"
+
+  supportDependencies = [
+      design      : "com.android.support:design:$ANDROID_SUPPORT_LIBS_VERSION",
+      recyclerView: "com.android.support:recyclerview-v7:$ANDROID_SUPPORT_LIBS_VERSION",
+      cardView    : "com.android.support:cardview-v7:$ANDROID_SUPPORT_LIBS_VERSION",]
+}
+
+rootProject.ext.deps = [
+    androidSupportLibrary  : "com.android.support:appcompat-v7:$ANDROID_SUPPORT_LIBS_VERSION",
+    androidCardView        : "com.android.support:cardview-v7:$ANDROID_SUPPORT_LIBS_VERSION",
+    androidDesignLibrary   : "com.android.support:design:$ANDROID_SUPPORT_LIBS_VERSION",
+    androidRecyclerView    : "com.android.support:recyclerview-v7:$ANDROID_SUPPORT_LIBS_VERSION",
+    androidPalette         : "com.android.support:palette-v7:$ANDROID_SUPPORT_LIBS_VERSION",
+    androidSupportCompat   : "com.android.support:support-compat:$ANDROID_SUPPORT_LIBS_VERSION",
+    androidCustomTabs      : "com.android.support:support-compat:$ANDROID_SUPPORT_LIBS_VERSION",
+    androidAnnotations     : "com.android.support:support-annotations:$ANDROID_SUPPORT_LIBS_VERSION",
+    androidConstraintLayout: "com.android.support.constraint:constraint-layout:$ANDROID_CONSTRAINT_LAYOUT_VERSION",
+    androidMultidex        : "com.android.support:multidex:$ANDROID_MULTIDEX_VERSION",
+    firebaseCore           : "com.google.firebase:firebase-core:$FIREBASE_VERSION",
+    firebaseAuth           : "com.google.firebase:firebase-auth:$FIREBASE_VERSION",
+    firebaseMessaging      : "com.google.firebase:firebase-messaging:$FIREBASE_VERSION",
+    firebaseInvites        : "com.google.firebase:firebase-invites:$FIREBASE_VERSION",
+    firebaseDatabase       : "com.google.firebase:firebase-database:$FIREBASE_VERSION",
+    firebaseCrash          : "com.google.firebase:firebase-crash:$FIREBASE_VERSION",
+    googlePlayAuth         : "com.google.android.gms:play-services-auth:$PLAY_SERVICES_VERSION",
+    butterknifeLibrary     : "com.jakewharton:butterknife:$BUTTERKNIFE_VERSION",
+    butterknifeCompiler    : "com.jakewharton:butterknife-compiler:$BUTTERKNIFE_VERSION",
+    epoxyLibrary           : "com.airbnb.android:epoxy:$EPOXY_VERSION",
+    epoxyProcessor         : "com.airbnb.android:epoxy-processor:$EPOXY_VERSION",
+    conductor              : "com.bluelinelabs:conductor:$CONDUCTOR_VERSION",
+    conductorSupport       : "com.bluelinelabs:conductor-support:$CONDUCTOR_VERSION",
+    okhttp                 : "com.squareup.okhttp3:okhttp:$OKHTTP_VERSION",
+    rxjava2                : "io.reactivex.rxjava2:rxjava:$RXJAVA2",
+    rxjavaAndroid          : "io.reactivex.rxjava2:rxandroid:$RXJAVAANDROID",
+    glide                  : "com.github.bumptech.glide:glide:$GLIDE",
+    junit                  : "junit:junit:$JUNIT_VERSION"]

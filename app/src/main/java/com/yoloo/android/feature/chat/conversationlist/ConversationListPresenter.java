@@ -28,7 +28,7 @@ class ConversationListPresenter extends MvpPresenter<ConversationListView> {
   }
 
   private void loadChats() {
-    Disposable d = userRepository.getLocalMe()
+    Disposable d = userRepository.getLocalMe().toObservable()
         .observeOn(AndroidSchedulers.mainThread())
         .map(AccountRealm::getId)
         .flatMap(chatRepository::listChatsByUserId)

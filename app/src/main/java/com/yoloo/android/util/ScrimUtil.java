@@ -34,6 +34,7 @@ public class ScrimUtil {
   private static final LruCache<Integer, Drawable> cubicGradientScrimCache = new LruCache<>(10);
 
   private ScrimUtil() {
+    // empty constructor
   }
 
   /**

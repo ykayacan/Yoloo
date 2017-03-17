@@ -47,12 +47,12 @@ public class AccountFaker {
             .setRealname(NAME_PAIRS.get(index).first)
             .setAvatarUrl(NAME_PAIRS.get(index).second)
             .setLevel(random.nextInt(4))
-            .setBounties(random.nextInt(30))
-            .setPosts(random.nextInt(40))
-            .setFollowers(random.nextInt(100))
-            .setFollowings(random.nextInt(100))
-            .setAchievements(random.nextInt(5))
-            .setPoints(random.nextInt(120))
+            .setBountyCount(random.nextInt(30))
+            .setPostCount(random.nextInt(40))
+            .setFollowerCount(random.nextInt(100))
+            .setFollowingCount(random.nextInt(100))
+            .setAchievementCount(random.nextInt(5))
+            .setPointCount(random.nextInt(120))
             .setMe(false);
 
         accounts.add(account);
@@ -71,12 +71,12 @@ public class AccountFaker {
         .setLevel(2)
         .setRealname("Yasin Sinan Kayacan")
         .setAvatarUrl(FakerUtil.getAvatarRandomUrl())
-        .setBounties(35)
-        .setPosts(56)
-        .setFollowers(123)
-        .setFollowings(13)
-        .setAchievements(3)
-        .setPoints(88)
+        .setBountyCount(35)
+        .setPostCount(56)
+        .setFollowerCount(123)
+        .setFollowingCount(13)
+        .setAchievementCount(3)
+        .setPointCount(88)
         .setMe(true);
   }
 
@@ -91,12 +91,12 @@ public class AccountFaker {
         .setLevel(random.nextInt(4))
         .setRealname(NAME_PAIRS.get(random.nextInt(size)).first)
         .setAvatarUrl(NAME_PAIRS.get(random.nextInt(size)).second)
-        .setBounties(random.nextInt(30))
-        .setPosts(random.nextInt(40))
-        .setFollowers(random.nextInt(100))
-        .setFollowings(random.nextInt(100))
-        .setAchievements(random.nextInt(5))
-        .setPoints(random.nextInt(120))
+        .setBountyCount(random.nextInt(30))
+        .setPostCount(random.nextInt(40))
+        .setFollowerCount(random.nextInt(100))
+        .setFollowingCount(random.nextInt(100))
+        .setAchievementCount(random.nextInt(5))
+        .setPointCount(random.nextInt(120))
         .setMe(false);
   }
 
@@ -111,12 +111,12 @@ public class AccountFaker {
           .setAvatarUrl(
               "https://image.ibb.co/dHzfwF/berna.jpg")
           .setLevel(1)
-          .setBounties(30)
-          .setPosts(4)
-          .setFollowers(12)
-          .setFollowings(6)
-          .setAchievements(1)
-          .setPoints(25)
+          .setBountyCount(30)
+          .setPostCount(4)
+          .setFollowerCount(12)
+          .setFollowingCount(6)
+          .setAchievementCount(1)
+          .setPointCount(25)
           .setMe(true);
 
       tx.insertOrUpdate(account);
@@ -138,12 +138,12 @@ public class AccountFaker {
                   + "1158514590938754_637495211_n.jpg?oh=f1ca8d90ac7db9b77834"
                   + "f9f6cc74bd6a&oe=58AB309A")
           .setLevel(2)
-          .setBounties(20)
-          .setPosts(8)
-          .setFollowers(5)
-          .setFollowings(14)
-          .setAchievements(1)
-          .setPoints(20)
+          .setBountyCount(20)
+          .setPostCount(8)
+          .setFollowerCount(5)
+          .setFollowingCount(14)
+          .setAchievementCount(1)
+          .setPointCount(20)
           .setMe(true);
 
       tx.insertOrUpdate(account);

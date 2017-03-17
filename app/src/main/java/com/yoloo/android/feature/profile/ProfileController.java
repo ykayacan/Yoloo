@@ -8,26 +8,21 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.design.widget.TabLayout;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
-import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
+import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import butterknife.BindColor;
-import butterknife.BindView;
-import butterknife.OnClick;
+
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.Router;
@@ -36,27 +31,31 @@ import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bluelinelabs.conductor.support.RouterPagerAdapter;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
-import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.PostRealm;
-import com.yoloo.android.data.repository.post.PostRepository;
-import com.yoloo.android.data.repository.post.datasource.PostDiskDataStore;
-import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.feed.globalfeed.GlobalFeedController;
+import com.yoloo.android.feature.feed.global.FeedGlobalController;
 import com.yoloo.android.feature.follow.FollowController;
-import com.yoloo.android.feature.notification.NotificationController;
-import com.yoloo.android.feature.search.SearchController;
+import com.yoloo.android.feature.profile.photos.PhotosController;
+import com.yoloo.android.feature.profile.profileedit.ProfileEditController;
 import com.yoloo.android.framework.MvpController;
-import com.yoloo.android.ui.widget.materialbadge.MenuItemBadge;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.DrawableHelper;
-import com.yoloo.android.util.ViewUtil;
+import com.yoloo.android.util.Pair;
+import com.yoloo.android.util.VersionUtil;
+import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
+
+import java.util.ArrayList;
 import java.util.List;
+
+import butterknife.BindColor;
+import butterknife.BindString;
+import butterknife.BindView;
+import butterknife.OnClick;
+import timber.log.Timber;
 
 public class ProfileController extends MvpController<ProfileView, ProfilePresenter>
     implements ProfileView {
@@ -64,7 +63,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   private static final String KEY_USER_ID = "USER_ID";
 
   @BindView(R.id.toolbar_profile) Toolbar toolbar;
-  @BindView(R.id.tv_profile_title) TextView tvTitle;
+  @BindView(R.id.iv_profile_edit) ImageView ivEdit;
   @BindView(R.id.iv_profile_avatar) ImageView ivProfileAvatar;
   @BindView(R.id.iv_profile_bg) ImageView ivProfileBg;
   @BindView(R.id.tv_profile_realname) TextView tvRealname;
@@ -83,15 +82,21 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   @BindColor(R.color.primary_dark) int primaryDarkColor;
   @BindColor(R.color.primary_blue) int primaryBlueColor;
 
+  @BindString(R.string.label_profile_tab_posts) String profilePostsTabString;
+  @BindString(R.string.label_profile_tab_photos) String profilePhotosTabString;
+  @BindString(R.string.label_profile_tab_countries) String profileCountriesTabString;
+  @BindString(R.string.label_profile_tab_interests) String profileInterestsTabString;
+
   private String userId;
 
   private AccountRealm account;
 
   public ProfileController(@Nullable Bundle args) {
     super(args);
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
   }
 
-  public static ProfileController create(String userId) {
+  public static ProfileController create(@NonNull String userId) {
     final Bundle bundle = new BundleBuilder()
         .putString(KEY_USER_ID, userId)
         .build();
@@ -104,16 +109,21 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     return inflater.inflate(R.layout.controller_profile, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
-    super.onViewCreated(view);
-    ViewUtil.setStatusBarColor(getActivity(), Color.BLACK);
+  @Override protected void onViewBound(@NonNull View view) {
+    super.onViewBound(view);
+    ViewUtils.setStatusBarColor(getActivity(), Color.BLACK);
     setHasOptionsMenu(true);
     setupToolbar();
 
     userId = getArgs().getString(KEY_USER_ID);
 
-    final RouterPagerAdapter pagerAdapter =
-        new ProfilePagerAdapter(this, getResources(), userId);
+    List<Pair<String, Controller>> pairs = new ArrayList<>(4);
+    pairs.add(Pair.create(profilePostsTabString, FeedGlobalController.ofUser(userId, false)));
+    pairs.add(Pair.create(profilePhotosTabString, PhotosController.create()));
+    pairs.add(Pair.create(profileCountriesTabString, PhotosController.create()));
+    pairs.add(Pair.create(profileInterestsTabString, PhotosController.create()));
+
+    final RouterPagerAdapter pagerAdapter = new ProfilePagerAdapter(this, pairs);
 
     viewPager.setAdapter(pagerAdapter);
     tabLayout.setupWithViewPager(viewPager);
@@ -131,52 +141,24 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
   @Override protected void onDestroy() {
     super.onDestroy();
-    ViewUtil.setStatusBarColor(getActivity(), primaryDarkColor);
-  }
-
-  @Override public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-    inflater.inflate(R.menu.menu_feed_user, menu);
-
-    DrawableHelper.withContext(getActivity()).withColor(android.R.color.white).applyTo(menu);
-
-    MenuItem menuMessage = menu.findItem(R.id.action_feed_message);
-    MenuItemBadge.update(getActivity(), menuMessage, new MenuItemBadge.Builder());
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     final int itemId = item.getItemId();
-
-    switch (itemId) {
-      case android.R.id.home:
-        getRouter().handleBack();
-        return true;
-      case R.id.action_feed_search:
-        startTransaction(SearchController.create(), new VerticalChangeHandler());
-        return true;
-      case R.id.action_feed_message:
-        MenuItemBadge.update(getActivity(), item, new MenuItemBadge.Builder()
-            .iconDrawable(AppCompatResources.getDrawable(getApplicationContext(),
-                R.drawable.ic_email_black_24dp))
-            .textBackgroundColor(primaryBlueColor));
-
-        MenuItemBadge.getBadgeTextView(item).setBadgeCount(23, true);
-        return true;
-      case R.id.action_feed_notification:
-        startTransaction(new NotificationController(), new VerticalChangeHandler());
-        return true;
-      default:
-        return super.onOptionsItemSelected(item);
+    if (itemId == android.R.id.home) {
+      getRouter().handleBack();
+      return true;
     }
+    return super.onOptionsItemSelected(item);
   }
 
   @NonNull @Override public ProfilePresenter createPresenter() {
     return new ProfilePresenter(
         UserRepository.getInstance(
             UserRemoteDataStore.getInstance(),
-            UserDiskDataStore.getInstance()),
-        PostRepository.getInstance(
-            PostRemoteDataStore.getInstance(),
-            PostDiskDataStore.getInstance()));
+            UserDiskDataStore.getInstance())
+    );
   }
 
   @Override public void onProfileLoaded(AccountRealm account) {
@@ -184,12 +166,8 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     setupProfileInfo(account);
   }
 
-  @Override public void onPostsLoaded(Response<List<PostRealm>> response) {
-
-  }
-
   @Override public void onError(Throwable t) {
-
+    Timber.e(t);
   }
 
   @OnClick(R.id.btn_profile_follow) void onFollowClick() {
@@ -223,13 +201,16 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
         new VerticalChangeHandler());
   }
 
+  @OnClick(R.id.iv_profile_edit) void openProfileEdit() {
+    startTransaction(ProfileEditController.create(), new VerticalChangeHandler());
+  }
+
   private void setupToolbar() {
     setSupportActionBar(toolbar);
 
-    // addPostToBeginning back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
     if (ab != null) {
-      ab.setDisplayShowTitleEnabled(false);
+      ab.setDisplayShowTitleEnabled(true);
       ab.setDisplayHomeAsUpEnabled(true);
       ab.setDisplayShowHomeEnabled(true);
     }
@@ -238,33 +219,48 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   private void setupProfileInfo(AccountRealm account) {
     final Resources res = getResources();
 
-    tvTitle.setText(account.getUsername());
+    Timber.d("Username: %s", account.getUsername());
+
+    getSupportActionBar().setTitle(account.getUsername());
 
     Glide.with(getActivity())
-        .load(account.getAvatarUrl())
+        .load(account.getAvatarUrl().replace("s96-c", "s80-c-rw"))
         .bitmapTransform(new CropCircleTransformation(getActivity()))
         .into(ivProfileAvatar);
 
+    if (VersionUtil.hasL()) {
+      ivProfileAvatar.setTransitionName(
+          getResources().getString(R.string.transition_avatar));
+    }
+
     tvRealname.setText(account.getRealname());
     tvLevel.setText(res.getString(R.string.label_profile_level, account.getLevel()));
-    DrawableHelper.withContext(getActivity())
+    DrawableHelper.create()
         .withDrawable(tvLevel.getCompoundDrawables()[0])
-        .withColor(R.color.primary_yellow)
+        .withColor(getActivity(), R.color.primary_yellow)
         .tint();
 
-    formatCounterText(tvPosts, account.getPosts(), R.string.label_profile_posts);
-    formatCounterText(tvFollowers, account.getFollowers(), R.string.label_profile_followers);
-    formatCounterText(tvFollowing, account.getFollowings(), R.string.label_profile_following);
+    formatCounterText(tvPosts, account.getPostCount(), R.string.label_profile_posts);
+    formatCounterText(tvFollowers, account.getFollowerCount(), R.string.label_profile_followers);
+    formatCounterText(tvFollowing, account.getFollowingCount(), R.string.label_profile_following);
 
     tvPoints.setText(
-        res.getString(R.string.label_profile_points, CountUtil.format(account.getPoints())));
-    tvBounties.setText(res.getString(R.string.label_profile_bounties, account.getBounties()));
+        res.getString(R.string.label_profile_points,
+            CountUtil.formatCount(account.getPointCount())));
+    tvBounties.setText(res.getString(R.string.label_profile_bounties, account.getBountyCount()));
     tvAchievements.setText(
-        res.getString(R.string.label_profile_achievements, account.getAchievements()));
+        res.getString(R.string.label_profile_countries, account.getAchievementCount()));
 
     btnFollow.setVisibility(account.isMe() ? View.GONE : View.VISIBLE);
-    btnFollow.setText(
-        account.isFollowing() ? R.string.action_profile_unfollow : R.string.action_profile_follow);
+    btnFollow.setText(account.isFollowing()
+        ? R.string.action_profile_unfollow
+        : R.string.action_profile_follow);
+
+    ivEdit.setVisibility(account.isMe() ? View.VISIBLE : View.GONE);
+
+    ivProfileBg.getLayoutParams().height = TextUtils.isEmpty(account.getBio())
+        ? getResources().getDimensionPixelSize(R.dimen._152asdp)
+        : getResources().getDimensionPixelSize(R.dimen._216asdp);
   }
 
   private void startTransaction(Controller to, ControllerChangeHandler handler) {
@@ -273,9 +269,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   }
 
   private void formatCounterText(TextView view, long value, @StringRes int stringRes) {
-    final int color = ContextCompat.getColor(getActivity(), R.color.editor_icon);
-
-    String original = getResources().getString(stringRes, CountUtil.format(value));
+    String original = getResources().getString(stringRes, CountUtil.formatCount(value));
 
     final int i = original.indexOf("\n") + 1;
 
@@ -289,37 +283,24 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   }
 
   private static class ProfilePagerAdapter extends RouterPagerAdapter {
+    private final List<Pair<String, Controller>> pairs;
 
-    private final Resources resources;
-    private final String userId;
-
-    ProfilePagerAdapter(@NonNull Controller host, Resources resources, String userId) {
+    ProfilePagerAdapter(@NonNull Controller host, List<Pair<String, Controller>> pairs) {
       super(host);
-      this.resources = resources;
-      this.userId = userId;
+      this.pairs = pairs;
     }
 
     @Override public int getCount() {
-      return 2;
+      return pairs.size();
     }
 
     @Override public CharSequence getPageTitle(int position) {
-      switch (position) {
-        case 0:
-          return resources.getString(R.string.label_profile_questions);
-        case 1:
-          return resources.getString(R.string.label_profile_commented);
-        default:
-          return null;
-      }
+      return pairs.get(position).first;
     }
 
     @Override public void configureRouter(@NonNull Router router, int position) {
-      final boolean commented = position != 0;
-
       if (!router.hasRootController()) {
-        GlobalFeedController page = GlobalFeedController.ofUser(userId, commented);
-        router.setRoot(RouterTransaction.with(page));
+        router.setRoot(RouterTransaction.with(pairs.get(position).second));
       }
     }
   }

@@ -31,20 +31,15 @@ public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
     this.inflater = LayoutInflater.from(context);
   }
 
-  @Nullable
-  @Override
-  public TagRealm getItem(int position) {
+  @Nullable @Override public TagRealm getItem(int position) {
     return items.get(position);
   }
 
-  @Override
-  public int getCount() {
+  @Override public int getCount() {
     return items.size();
   }
 
-  @NonNull
-  @Override
-  public Filter getFilter() {
+  @NonNull @Override public Filter getFilter() {
     return new TagFilter(items, this, subject);
   }
 
@@ -66,8 +61,10 @@ public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
       holder = (TagViewHolder) convertView.getTag();
     }
 
-    final String tag = "# " + item.getName();
-    holder.tvTag.setText(tag);
+    if (item != null) {
+      final String tag = "# " + item.getName();
+      holder.tvTag.setText(tag);
+    }
 
     return convertView;
   }
@@ -114,8 +111,7 @@ public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
       }
     }
 
-    @Override
-    public CharSequence convertResultToString(Object resultValue) {
+    @Override public CharSequence convertResultToString(Object resultValue) {
       if (resultValue instanceof TagRealm) {
         return ((TagRealm) resultValue).getName();
       }

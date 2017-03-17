@@ -9,6 +9,7 @@ import lombok.Value;
 public class CommentDTO {
   private String id;
   private String ownerId;
+  private String postId;
   private String username;
   private String avatarUrl;
   private String content;

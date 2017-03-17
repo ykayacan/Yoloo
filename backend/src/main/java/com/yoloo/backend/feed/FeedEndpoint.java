@@ -13,7 +13,9 @@ import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
 import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
 import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
 import com.yoloo.backend.post.Post;
+
 import java.util.logging.Logger;
+
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
@@ -22,17 +24,14 @@ import javax.inject.Named;
     version = "v1",
     namespace = @ApiNamespace(
         ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER,
-        packagePath = Constants.API_PACKAGE_PATH
-    )
+        ownerName = Constants.API_OWNER)
 )
 @ApiClass(
-    resource = "postCount",
     clientIds = {
         Constants.ANDROID_CLIENT_ID,
         Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID},
-    audiences = {Constants.AUDIENCE_ID,},
+        Constants.WEB_CLIENT_ID },
+    audiences = { Constants.AUDIENCE_ID, },
     authenticators = {
         FirebaseAuthenticator.class
     }

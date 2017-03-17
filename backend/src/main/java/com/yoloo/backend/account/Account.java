@@ -17,7 +17,13 @@ import com.yoloo.backend.account.condition.IfNotAdmin;
 import com.yoloo.backend.account.transformer.AccountTransformer;
 import com.yoloo.backend.category.Category;
 import com.yoloo.backend.util.Deref;
+
+import org.joda.time.DateTime;
+
+import java.util.Collections;
 import java.util.List;
+
+import ix.Ix;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,7 +32,6 @@ import lombok.NoArgsConstructor;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 import lombok.experimental.Wither;
-import org.joda.time.DateTime;
 
 @Entity
 @Cache
@@ -68,6 +73,15 @@ public class Account {
   @NonFinal
   private Link avatarUrl;
 
+  @Wither
+  @NonFinal
+  private String bio;
+
+  @Wither
+  @IgnoreSave(value = IfNull.class)
+  @NonFinal
+  private Link websiteUrl;
+
   @Load(ShardGroup.class)
   @NonFinal
   private List<Ref<AccountShard>> shardRefs;
@@ -79,6 +93,7 @@ public class Account {
   @NonFinal
   private String locale;
 
+  @Wither
   @NonFinal
   private Gender gender;
 
@@ -87,7 +102,7 @@ public class Account {
 
   @NonFinal
   @Index
-  private List<Key<Category>> categoryKeys;
+  private List<Key<Category>> interestedCategoryKeys;
 
   // Extra fields
 
@@ -116,6 +131,12 @@ public class Account {
 
   public List<AccountShard> getShards() {
     return Deref.deref(getShardRefs());
+  }
+
+  public List<String> getInterestedCategoryIds() {
+    return interestedCategoryKeys == null
+        ? Collections.emptyList()
+        : Ix.from(interestedCategoryKeys).map(Key::toWebSafeString).toList();
   }
 
   public enum Gender {

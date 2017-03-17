@@ -1,12 +1,18 @@
 package com.yoloo.android.data.repository.user.datasource;
 
+import com.annimon.stream.Optional;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.AccountRealmFields;
+
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.realm.Realm;
-import java.util.Collections;
-import java.util.List;
+import io.realm.Sort;
 
 public class UserDiskDataStore {
 
@@ -22,23 +28,26 @@ public class UserDiskDataStore {
     return instance;
   }
 
-  public Observable<AccountRealm> get(String userId) {
-    return Observable.fromCallable(() -> {
+  public Single<Optional<AccountRealm>> get(@Nonnull String userId) {
+    return Single.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 
-      AccountRealm account = realm.copyFromRealm(
-          realm.where(AccountRealm.class)
-              .equalTo(AccountRealmFields.ID, userId)
-              .findFirst());
+      AccountRealm account;
+
+      AccountRealm result = realm.where(AccountRealm.class)
+          .equalTo(AccountRealmFields.ID, userId)
+          .findFirst();
+
+      account = result == null ? null : realm.copyFromRealm(result);
 
       realm.close();
 
-      return account;
+      return Optional.ofNullable(account);
     });
   }
 
-  public Observable<AccountRealm> getMe() {
-    return Observable.fromCallable(() -> {
+  public Single<AccountRealm> getMe() {
+    return Single.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 
       AccountRealm account = realm.copyFromRealm(
@@ -52,17 +61,39 @@ public class UserDiskDataStore {
     });
   }
 
-  public void add(AccountRealm account) {
-    addAll(Collections.singletonList(account));
-  }
-
-  public void addAll(List<AccountRealm> accounts) {
+  public void add(@Nonnull AccountRealm account) {
     Realm realm = Realm.getDefaultInstance();
-    realm.executeTransaction(tx -> tx.insertOrUpdate(accounts));
+    realm.executeTransaction(tx -> {
+      // Clear previous user account.
+      if (account.isMe()) {
+        AccountRealm me = tx.where(AccountRealm.class)
+            .equalTo(AccountRealmFields.ME, true)
+            .findFirst();
+
+        if (me != null) {
+          me.deleteFromRealm();
+        }
+      } else {
+        final int size = tx.where(AccountRealm.class).findAll().size();
+
+        if (size == 10) {
+          AccountRealm oldest = tx.where(AccountRealm.class)
+              .notEqualTo(AccountRealmFields.ME, true)
+              .findAllSorted(AccountRealmFields.LOCAL_SAVE_DATE, Sort.ASCENDING)
+              .first();
+
+          if (oldest != null) {
+            oldest.deleteFromRealm();
+          }
+        }
+      }
+
+      tx.insertOrUpdate(account);
+    });
     realm.close();
   }
 
-  public Completable delete(String userId) {
+  public Completable delete(@Nonnull String userId) {
     return Completable.fromAction(() -> {
       Realm realm = Realm.getDefaultInstance();
 

@@ -1,7 +1,14 @@
 package com.yoloo.android.data.model;
 
-import io.reactivex.Observable;
-import io.realm.RealmList;
+import com.annimon.stream.Collectors;
+import com.annimon.stream.Stream;
+import com.yoloo.backend.yolooApi.model.AccountDTO;
+
+import java.util.Date;
+import java.util.Objects;
+
+import javax.annotation.Nullable;
+
 import io.realm.RealmObject;
 import io.realm.annotations.Ignore;
 import io.realm.annotations.Index;
@@ -17,27 +24,28 @@ public class AccountRealm extends RealmObject {
   private String realname;
   private String email;
   private String avatarUrl;
-  private String provider;
+  private String bio;
   private String locale;
   private String gender;
+  private String websiteUrl;
   private boolean following;
 
-  private RealmList<CategoryRealm> categories;
+  private long followingCount;
+  private long followerCount;
+  private long postCount;
 
-  private long followings;
-  private long followers;
-  private long posts;
-
+  private int achievementCount;
   private int level;
-  private int points;
-  private int bounties;
-  private int achievements;
+  private int pointCount;
+  private int bountyCount;
 
   @Index
   private boolean recent;
   private boolean pending;
+  @Index
+  private Date localSaveDate;
 
-  @Ignore
+  private String idToken;
   private String categoryIds;
 
   @Ignore
@@ -47,18 +55,26 @@ public class AccountRealm extends RealmObject {
     // Empty constructor.
   }
 
-  /*public AccountRealm(Account account) {
-    this.id = account.getId();
-    this.username = account.getUsername();
-    this.realname = account.getRealname();
-    this.avatarUrl = account.getAvatarUrl().getValue();
-    this.email = account.getEmail().getEmail();
-    this.me = true;
-    this.locale = account.getLocale();
-    this.followerCount = account.getCounts().getFollowers();
-    this.followingCount = account.getCounts().getFollowings();
-    this.postCount = account.getCounts().getPosts();
-  }*/
+  public AccountRealm(AccountDTO dto) {
+    id = dto.getId();
+    username = dto.getUsername();
+    realname = dto.getRealname();
+    email = dto.getEmail();
+    bio = dto.getBio();
+    gender = dto.getGender();
+    websiteUrl = dto.getWebsiteUrl();
+    avatarUrl = dto.getAvatarUrl();
+    locale = dto.getLocale();
+    following = dto.getFollowing();
+    followingCount = dto.getFollowingCount();
+    followerCount = dto.getFollowerCount();
+    postCount = dto.getPostCount();
+    level = dto.getLevel();
+    pointCount = dto.getPointCount();
+    bountyCount = dto.getBountyCount();
+    categoryIds = Stream.of(dto.getInterestedCategoryIds()).collect(Collectors.joining(","));
+    localSaveDate = new Date();
+  }
 
   public String getId() {
     return id;
@@ -114,15 +130,6 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
-  public String getProvider() {
-    return provider;
-  }
-
-  public AccountRealm setProvider(String provider) {
-    this.provider = provider;
-    return this;
-  }
-
   public String getLocale() {
     return locale;
   }
@@ -150,39 +157,39 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
-  public RealmList<CategoryRealm> getCategories() {
-    return categories;
+  public long getFollowingCount() {
+    return followingCount;
   }
 
-  public AccountRealm setCategories(RealmList<CategoryRealm> categories) {
-    this.categories = categories;
+  public AccountRealm setFollowingCount(long followingCount) {
+    this.followingCount = followingCount;
     return this;
   }
 
-  public long getFollowings() {
-    return followings;
+  public long getFollowerCount() {
+    return followerCount;
   }
 
-  public AccountRealm setFollowings(long followings) {
-    this.followings = followings;
+  public AccountRealm setFollowerCount(long followerCount) {
+    this.followerCount = followerCount;
     return this;
   }
 
-  public long getFollowers() {
-    return followers;
+  public long getPostCount() {
+    return postCount;
   }
 
-  public AccountRealm setFollowers(long followers) {
-    this.followers = followers;
+  public AccountRealm setPostCount(long postCount) {
+    this.postCount = postCount;
     return this;
   }
 
-  public long getPosts() {
-    return posts;
+  public int getAchievementCount() {
+    return achievementCount;
   }
 
-  public AccountRealm setPosts(long posts) {
-    this.posts = posts;
+  public AccountRealm setAchievementCount(int achievementCount) {
+    this.achievementCount = achievementCount;
     return this;
   }
 
@@ -195,30 +202,21 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
-  public int getPoints() {
-    return points;
+  public int getPointCount() {
+    return pointCount;
   }
 
-  public AccountRealm setPoints(int points) {
-    this.points = points;
+  public AccountRealm setPointCount(int pointCount) {
+    this.pointCount = pointCount;
     return this;
   }
 
-  public int getBounties() {
-    return bounties;
+  public int getBountyCount() {
+    return bountyCount;
   }
 
-  public AccountRealm setBounties(int bounties) {
-    this.bounties = bounties;
-    return this;
-  }
-
-  public int getAchievements() {
-    return achievements;
-  }
-
-  public AccountRealm setAchievements(int achievements) {
-    this.achievements = achievements;
+  public AccountRealm setBountyCount(int bountyCount) {
+    this.bountyCount = bountyCount;
     return this;
   }
 
@@ -231,11 +229,6 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
-  public AccountRealm setCategoryIds(String categoryIds) {
-    this.categoryIds = categoryIds;
-    return this;
-  }
-
   public String getPassword() {
     return password;
   }
@@ -245,12 +238,49 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
-  public String getCategoryIds() {
-    return Observable.fromIterable(categories)
-        .map(CategoryRealm::getName)
-        .reduce((s, s2) -> s + "," + s2)
-        .map(s -> s.substring(0, s.length() - 1))
-        .blockingGet();
+  @Nullable public String getCategoryIds() {
+    return categoryIds;
+  }
+
+  public AccountRealm setCategoryIds(String categoryIds) {
+    this.categoryIds = categoryIds;
+    return this;
+  }
+
+  public String getIdToken() {
+    return idToken;
+  }
+
+  public AccountRealm setIdToken(String idToken) {
+    this.idToken = idToken;
+    return this;
+  }
+
+  public String getBio() {
+    return bio;
+  }
+
+  public AccountRealm setBio(String bio) {
+    this.bio = bio;
+    return this;
+  }
+
+  public String getWebsiteUrl() {
+    return websiteUrl;
+  }
+
+  public AccountRealm setWebsiteUrl(String websiteUrl) {
+    this.websiteUrl = websiteUrl;
+    return this;
+  }
+
+  public Date getLocalSaveDate() {
+    return localSaveDate;
+  }
+
+  public AccountRealm setLocalSaveDate(Date localSaveDate) {
+    this.localSaveDate = localSaveDate;
+    return this;
   }
 
   public String toMention() {
@@ -258,8 +288,48 @@ public class AccountRealm extends RealmObject {
   }
 
   public AccountRealm decreaseBounties(int bounties) {
-    this.bounties -= bounties;
+    this.bountyCount -= bounties;
     return this;
+  }
+
+  @Override public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    AccountRealm that = (AccountRealm) o;
+    return me == that.me &&
+        following == that.following &&
+        followingCount == that.followingCount &&
+        followerCount == that.followerCount &&
+        postCount == that.postCount &&
+        achievementCount == that.achievementCount &&
+        level == that.level &&
+        pointCount == that.pointCount &&
+        bountyCount == that.bountyCount &&
+        recent == that.recent &&
+        pending == that.pending &&
+        Objects.equals(id, that.id) &&
+        Objects.equals(username, that.username) &&
+        Objects.equals(realname, that.realname) &&
+        Objects.equals(email, that.email) &&
+        Objects.equals(avatarUrl, that.avatarUrl) &&
+        Objects.equals(bio, that.bio) &&
+        Objects.equals(locale, that.locale) &&
+        Objects.equals(gender, that.gender) &&
+        Objects.equals(websiteUrl, that.websiteUrl) &&
+        Objects.equals(localSaveDate, that.localSaveDate) &&
+        Objects.equals(idToken, that.idToken) &&
+        Objects.equals(categoryIds, that.categoryIds);
+  }
+
+  @Override public int hashCode() {
+    return Objects.hash(id, me, username, realname, email, avatarUrl, bio, locale, gender,
+        websiteUrl,
+        following, followingCount, followerCount, postCount, achievementCount, level, pointCount,
+        bountyCount, recent, pending, localSaveDate, idToken, categoryIds);
   }
 
   @Override public String toString() {
@@ -270,20 +340,22 @@ public class AccountRealm extends RealmObject {
         ", realname='" + realname + '\'' +
         ", email='" + email + '\'' +
         ", avatarUrl='" + avatarUrl + '\'' +
-        ", provider='" + provider + '\'' +
+        ", bio='" + bio + '\'' +
         ", locale='" + locale + '\'' +
         ", gender='" + gender + '\'' +
+        ", websiteUrl='" + websiteUrl + '\'' +
         ", following=" + following +
-        ", categories=" + categories +
-        ", followingCount=" + followings +
-        ", followerCount=" + followers +
-        ", postCount=" + posts +
+        ", followingCount=" + followingCount +
+        ", followerCount=" + followerCount +
+        ", postCount=" + postCount +
+        ", achievementCount=" + achievementCount +
         ", level=" + level +
-        ", points=" + points +
-        ", bounties=" + bounties +
-        ", achievements=" + achievements +
+        ", pointCount=" + pointCount +
+        ", bountyCount=" + bountyCount +
         ", recent=" + recent +
         ", pending=" + pending +
+        ", localSaveDate=" + localSaveDate +
+        ", idToken='" + idToken + '\'' +
         ", categoryIds='" + categoryIds + '\'' +
         ", password='" + password + '\'' +
         '}';

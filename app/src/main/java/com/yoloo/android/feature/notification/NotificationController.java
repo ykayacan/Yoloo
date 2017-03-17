@@ -16,10 +16,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import butterknife.BindColor;
 import butterknife.BindView;
+import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
-import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.NotificationRealm;
 import com.yoloo.android.data.repository.notification.NotificationRepository;
 import com.yoloo.android.data.repository.notification.datasource.NotificationDiskDataSource;
@@ -27,10 +27,10 @@ import com.yoloo.android.data.repository.notification.datasource.NotificationRem
 import com.yoloo.android.feature.base.LceAnimator;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.profile.ProfileController;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
-import com.yoloo.android.framework.MvpController;
 import java.util.List;
 import timber.log.Timber;
 
@@ -48,9 +48,6 @@ public class NotificationController extends MvpController<NotificationView, Noti
 
   private NotificationAdapter adapter;
 
-  private String cursor;
-  private String eTag;
-
   private EndlessRecyclerViewScrollListener endlessRecyclerViewScrollListener;
 
   public NotificationController() {
@@ -62,8 +59,8 @@ public class NotificationController extends MvpController<NotificationView, Noti
     return inflater.inflate(R.layout.controller_notification, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
-    super.onViewCreated(view);
+  @Override protected void onViewBound(@NonNull View view) {
+    super.onViewBound(view);
     setupPullToRefresh();
     setupRecyclerView();
     setupToolbar();
@@ -98,11 +95,8 @@ public class NotificationController extends MvpController<NotificationView, Noti
     }
   }
 
-  @Override public void onLoaded(Response<List<NotificationRealm>> value) {
-    cursor = value.getCursor();
-    eTag = value.geteTag();
-
-    adapter.addAll(value.getData());
+  @Override public void onLoaded(List<NotificationRealm> notifications) {
+    adapter.addAll(notifications);
   }
 
   @Override public void showContent() {
@@ -134,11 +128,11 @@ public class NotificationController extends MvpController<NotificationView, Noti
     endlessRecyclerViewScrollListener.resetState();
     adapter.clear();
 
-    getPresenter().loadNotifications(true, cursor, 20);
+    getPresenter().loadNotifications(true, 20);
   }
 
-  @Override public void onProfileClick(View v, String ownerId) {
-    getRouter().pushController(RouterTransaction.with(ProfileController.create(ownerId))
+  @Override public void onProfileClick(View v, EpoxyModel<?> model, String userId) {
+    getRouter().pushController(RouterTransaction.with(ProfileController.create(userId))
         .pushChangeHandler(new VerticalChangeHandler())
         .popChangeHandler(new VerticalChangeHandler()));
   }

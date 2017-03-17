@@ -10,6 +10,10 @@ import java.net.UnknownHostException;
 
 public final class NetworkUtil {
 
+  private NetworkUtil() {
+    // empty constructor
+  }
+
   public static boolean isNetworkAvailable(Context context) {
     ConnectivityManager cm =
         (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);

@@ -1,5 +1,6 @@
 package com.yoloo.backend.category;
 
+import com.google.appengine.api.images.ImagesServiceFactory;
 import com.yoloo.backend.base.ControllerFactory;
 import lombok.NoArgsConstructor;
 
@@ -8,6 +9,7 @@ public class CategoryControllerFactory implements ControllerFactory<CategoryCont
 
   @Override
   public CategoryController create() {
-    return CategoryController.create(CategoryShardService.create());
+    return CategoryController.create(CategoryShardService.create(),
+        ImagesServiceFactory.getImagesService());
   }
 }

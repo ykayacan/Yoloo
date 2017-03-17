@@ -8,7 +8,6 @@ import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
-import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
 import java.util.List;
 import lombok.NoArgsConstructor;
@@ -28,10 +27,8 @@ public class NotificationController extends Controller {
       Optional<Integer> limit,
       User user) {
 
-    final Key<Account> authKey = Key.create(user.getUserId());
-
     Query<Notification> query = ofy().load().type(Notification.class)
-        .ancestor(authKey)
+        .ancestor(Key.create(user.getUserId()))
         .order("-" + Notification.FIELD_CREATED);
 
     query = cursor.isPresent()

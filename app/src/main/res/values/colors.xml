@@ -8,8 +8,14 @@
   <color name="primary_blue">#03A9F4</color>
   <color name="primary_yellow">#ffc107</color>
   <color name="ripple_light">#99FF5722</color>
+  <color name="secondary">#8A000000</color>
+
+  <color name="title">#313446</color>
+  <color name="link">#CFD0D1</color>
 
   <color name="content_placeholder">#ffe0e0e0</color>
+  
+  <color name="grey_700">#616161</color>
 
   <color name="accepted">#5CB85C</color>
 
@@ -29,6 +35,8 @@
   <color name="background_light">#fafafa</color> <!-- grey 50 -->
   <color name="background_lightish">#e0e0e0</color> <!-- grey 300 -->
   <color name="background_lightish_2">#EEEEEE</color>
+  <color name="background_lightish_3">#f9f9f9</color>
+  <color name="immersive_bars">#99000000</color>
 
   <color name="editor_icon">#7C7C7C</color>
 

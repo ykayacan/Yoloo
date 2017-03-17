@@ -5,11 +5,11 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:layout_gravity="center"
-  android:paddingBottom="4dp"
+  android:paddingBottom="6dp"
   android:paddingEnd="8dp"
   android:paddingLeft="8dp"
   android:paddingRight="8dp"
   android:paddingStart="8dp"
-  android:paddingTop="4dp"
+  android:paddingTop="6dp"
   android:textAppearance="@style/TextAppearance.AppCompat.Medium"
   tools:text="@string/app_name" />

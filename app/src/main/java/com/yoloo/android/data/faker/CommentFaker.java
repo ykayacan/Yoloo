@@ -30,8 +30,8 @@ public class CommentFaker {
           .setAvatarUrl(account.getAvatarUrl())
           .setContent(FakerUtil.getContent())
           .setCreated(FakerUtil.getRandomDate())
-          .setDir(1)
-          .setVotes(FakerUtil.generateNumber())
+          .setVoteDir(1)
+          .setVoteCount(FakerUtil.generateNumber())
           .setPostId("p1")
           .setAccepted(true);
 
@@ -42,8 +42,8 @@ public class CommentFaker {
           .setAvatarUrl(account.getAvatarUrl())
           .setContent(FakerUtil.getContent())
           .setCreated(FakerUtil.getRandomDate())
-          .setDir(-1)
-          .setVotes(FakerUtil.generateNumber())
+          .setVoteDir(-1)
+          .setVoteCount(FakerUtil.generateNumber())
           .setPostId("p1")
           .setAccepted(false);
 
@@ -54,8 +54,8 @@ public class CommentFaker {
           .setAvatarUrl(account.getAvatarUrl())
           .setContent(FakerUtil.getContent())
           .setCreated(FakerUtil.getRandomDate())
-          .setDir(-1)
-          .setVotes(FakerUtil.generateNumber())
+          .setVoteDir(-1)
+          .setVoteCount(FakerUtil.generateNumber())
           .setPostId("p1")
           .setAccepted(false);
 

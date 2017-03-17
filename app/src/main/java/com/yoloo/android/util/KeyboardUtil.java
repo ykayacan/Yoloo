@@ -5,32 +5,29 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
+import android.support.v4.util.ArrayMap;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
-import io.reactivex.Observable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import butterknife.ButterKnife;
 
 public final class KeyboardUtil implements ViewTreeObserver.OnGlobalLayoutListener {
 
-  private static Map<SoftKeyboardToggleListener, KeyboardUtil> sListenerMap = new HashMap<>();
-  private SoftKeyboardToggleListener mCallback;
-  private View mRootView;
-  private float mScreenDensity = 1;
-  private Rect r = new Rect();
+  private static ArrayMap<SoftKeyboardToggleListener, KeyboardUtil> listeners = new ArrayMap<>();
+  private SoftKeyboardToggleListener listener;
+  private View rootView;
+  private float screenDensity;
+  private Rect rect = new Rect();
 
-  private KeyboardUtil(Activity act, SoftKeyboardToggleListener listener) {
-    mCallback = listener;
-
-    mRootView = ((ViewGroup) act.findViewById(android.R.id.content)).getChildAt(0);
-    if (mRootView != null) {
-      mRootView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+  private KeyboardUtil(Activity activity, SoftKeyboardToggleListener listener) {
+    this.listener = listener;
+    rootView = ((ViewGroup) ButterKnife.findById(activity, android.R.id.content)).getChildAt(0);
+    if (rootView != null) {
+      rootView.getViewTreeObserver().addOnGlobalLayoutListener(this);
     }
 
-    mScreenDensity = Resources.getSystem().getDisplayMetrics().density;
+    screenDensity = Resources.getSystem().getDisplayMetrics().density;
   }
 
   /**
@@ -67,52 +64,51 @@ public final class KeyboardUtil implements ViewTreeObserver.OnGlobalLayoutListen
   public static void showDelayedKeyboard(@NonNull View view, int delay) {
     InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(
         Context.INPUT_METHOD_SERVICE);
-    Observable.just(imm)
-        .delay(delay, TimeUnit.MILLISECONDS)
-        .subscribe(inputMethodManager -> inputMethodManager.showSoftInput(view,
-            InputMethodManager.SHOW_IMPLICIT));
+    new WeakHandler().postDelayed(() ->
+        imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT), delay);
   }
 
-  public static void addKeyboardToggleListener(Activity act, SoftKeyboardToggleListener listener) {
+  public static void addKeyboardToggleListener(Activity activity,
+      SoftKeyboardToggleListener listener) {
     removeKeyboardToggleListener(listener);
 
-    sListenerMap.put(listener, new KeyboardUtil(act, listener));
+    listeners.put(listener, new KeyboardUtil(activity, listener));
   }
 
   public static void removeKeyboardToggleListener(SoftKeyboardToggleListener listener) {
-    if (sListenerMap.containsKey(listener)) {
-      KeyboardUtil k = sListenerMap.get(listener);
-      k.removeListener();
+    if (listeners.containsKey(listener)) {
+      KeyboardUtil util = listeners.get(listener);
+      util.removeListener();
 
-      sListenerMap.remove(listener);
+      listeners.remove(listener);
     }
   }
 
   public static void removeAllKeyboardToggleListeners() {
-    for (SoftKeyboardToggleListener l : sListenerMap.keySet()) {
-      sListenerMap.get(l).removeListener();
+    for (SoftKeyboardToggleListener l : listeners.keySet()) {
+      listeners.get(l).removeListener();
     }
 
-    sListenerMap.clear();
+    listeners.clear();
   }
 
   @Override
   public void onGlobalLayout() {
-    //r will be populated with the coordinates getPost your view that area still visible.
-    mRootView.getWindowVisibleDisplayFrame(r);
+    //rect will be populated with the coordinates getPost your view that area still visible.
+    rootView.getWindowVisibleDisplayFrame(rect);
 
-    int heightDiff = mRootView.getRootView().getHeight() - (r.bottom - r.top);
-    float dp = heightDiff / mScreenDensity;
+    final int heightDiff = rootView.getRootView().getHeight() - (rect.bottom - rect.top);
+    final float dp = heightDiff / screenDensity;
 
-    if (mCallback != null) {
-      mCallback.onToggleSoftKeyboard(dp > 200);
+    if (listener != null) {
+      listener.onToggleSoftKeyboard(dp > 200);
     }
   }
 
   private void removeListener() {
-    mCallback = null;
+    listener = null;
 
-    mRootView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+    rootView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
   }
 
   public interface SoftKeyboardToggleListener {

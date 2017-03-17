@@ -9,6 +9,7 @@ import static android.content.res.Resources.getSystem;
 public final class DisplayUtil {
 
   private DisplayUtil() {
+    // empty constructor
   }
 
   public static int dpToPx(int dp) {

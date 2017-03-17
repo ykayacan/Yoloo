@@ -1,79 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
-  android:layout_height="match_parent">
+  android:layout_height="match_parent"
+  android:layout_marginTop="@dimen/_48asdp"
+  android:paddingBottom="@dimen/_48asdp">
 
-  <android.support.constraint.ConstraintLayout
-    android:layout_width="match_parent"
+  <ImageView
+    android:id="@+id/iv_login_yoloo_logo"
+    android:layout_width="0dp"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/_48sdp"
-    android:paddingBottom="@dimen/_48sdp">
+    app:layout_constraintDimensionRatio="1:1"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:srcCompat="@drawable/ic_yoloo_logo_white" />
 
-    <ImageView
-      android:id="@+id/iv_login_yoloo_logo"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      app:layout_constraintDimensionRatio="1:1"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toTopOf="parent"
-      app:srcCompat="@drawable/ic_yoloo_logo_white" />
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_login_welcome_title"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/_8asdp"
+    android:text="@string/label_login_welcome_title"
+    android:textAppearance="@style/TextAppearance.AppCompat.Title.Inverse"
+    android:textSize="30sp"
+    app:fontPath="fonts/OpenSans-Semibold.ttf"
+    app:layout_constraintLeft_toLeftOf="@+id/iv_login_yoloo_logo"
+    app:layout_constraintRight_toRightOf="@+id/iv_login_yoloo_logo"
+    app:layout_constraintTop_toBottomOf="@+id/iv_login_yoloo_logo"
+    tools:ignore="MissingPrefix" />
 
-    <com.yoloo.android.ui.widget.BaselineGridTextView
-      android:id="@+id/tv_login_welcome_title"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="@dimen/_8sdp"
-      android:text="@string/label_login_welcome_title"
-      android:textAppearance="@style/TextAppearance.AppCompat.Title.Inverse"
-      android:textSize="30sp"
-      app:fontPath="fonts/OpenSans-Semibold.ttf"
-      app:layout_constraintLeft_toLeftOf="@+id/iv_login_yoloo_logo"
-      app:layout_constraintRight_toRightOf="@+id/iv_login_yoloo_logo"
-      app:layout_constraintTop_toBottomOf="@+id/iv_login_yoloo_logo"
-      tools:ignore="MissingPrefix" />
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_login_welcome_desc"
+    android:layout_width="@dimen/_295asdp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/_16asdp"
+    android:text="@string/label_login_welcome_description"
+    android:textAlignment="center"
+    android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+    android:textColor="@android:color/white"
+    android:textSize="16sp"
+    app:fontPath="fonts/OpenSans-Semibold.ttf"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/tv_login_welcome_title"
+    tools:ignore="MissingPrefix" />
 
-    <com.yoloo.android.ui.widget.BaselineGridTextView
-      android:id="@+id/tv_login_welcome_desc"
-      android:layout_width="@dimen/_295sdp"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="@dimen/_16sdp"
-      android:text="@string/label_login_welcome_description"
-      android:textAlignment="center"
-      android:textAppearance="@style/TextAppearance.AppCompat.Body2"
-      android:textColor="@android:color/white"
-      android:textSize="16sp"
-      app:fontPath="fonts/OpenSans-Semibold.ttf"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/tv_login_welcome_title"
-      tools:ignore="MissingPrefix" />
+  <Button
+    android:id="@+id/btn_login_start_using"
+    style="@style/Yoloo.Button.StartUsing"
+    android:layout_width="168dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/_16asdp"
+    android:text="@string/action_login_start_using"
+    app:layout_constraintLeft_toLeftOf="@+id/tv_login_welcome_desc"
+    app:layout_constraintRight_toRightOf="@+id/tv_login_welcome_desc"
+    app:layout_constraintTop_toBottomOf="@+id/tv_login_welcome_desc" />
 
-    <Button
-      android:id="@+id/btn_login_start_using"
-      style="@style/Yoloo.Button.StartUsing"
-      android:layout_width="168dp"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="@dimen/_16sdp"
-      android:text="@string/action_login_start_using"
-      app:layout_constraintLeft_toLeftOf="@+id/tv_login_welcome_desc"
-      app:layout_constraintRight_toRightOf="@+id/tv_login_welcome_desc"
-      app:layout_constraintTop_toBottomOf="@+id/tv_login_welcome_desc" />
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_login_action_login"
+    style="@style/TextAppearance.AppCompat.Subhead.Inverse"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/_4asdp"
+    android:padding="4dp"
+    app:layout_constraintLeft_toLeftOf="@+id/btn_login_start_using"
+    app:layout_constraintRight_toRightOf="@+id/btn_login_start_using"
+    app:layout_constraintTop_toBottomOf="@+id/btn_login_start_using"
+    tools:text="@string/action_login_already_have_account" />
 
-    <com.yoloo.android.ui.widget.BaselineGridTextView
-      android:id="@+id/tv_login_action_login"
-      style="@style/TextAppearance.AppCompat.Subhead.Inverse"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="@dimen/_4sdp"
-      android:padding="4dp"
-      app:layout_constraintLeft_toLeftOf="@+id/btn_login_start_using"
-      app:layout_constraintRight_toRightOf="@+id/btn_login_start_using"
-      app:layout_constraintTop_toBottomOf="@+id/btn_login_start_using"
-      tools:text="@string/action_login_already_have_account" />
-
-  </android.support.constraint.ConstraintLayout>
-
-</ScrollView>
+</android.support.constraint.ConstraintLayout>

@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "175355244637-q54egim6867p13ef58b6laspplr0eh85.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.yoloo.android",
+            "certificate_hash": "4df762525e62ec0961403e7929e8689e34e16994"
+          }
+        },
+        {
           "client_id": "175355244637-cnod9pcii71rsqpjj17mp24v95uul63o.apps.googleusercontent.com",
           "client_type": 3
         }

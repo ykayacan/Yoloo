@@ -1,13 +1,19 @@
 package com.yoloo.android.data.repository.comment.datasource;
 
-import com.yoloo.android.data.ApiManager;
+import com.google.api.client.http.HttpHeaders;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.faker.FakerUtil;
 import com.yoloo.android.data.model.CommentRealm;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
 import java.util.Date;
 import java.util.List;
+import javax.annotation.Nonnull;
+
+import static com.yoloo.android.data.ApiManager.INSTANCE;
+import static com.yoloo.android.data.ApiManager.getIdToken;
 
 public class CommentRemoteDataStore {
 
@@ -23,18 +29,25 @@ public class CommentRemoteDataStore {
     return instance;
   }
 
-  public Observable<CommentRealm> get(String commentId) {
-    return ApiManager.getIdToken()
-        .toObservable()
-        .flatMap(s -> Observable.empty());
+  public Single<CommentRealm> get(@Nonnull String postId, @Nonnull String commentId) {
+    return getIdToken()
+        .flatMap(idToken ->
+            Single.fromCallable(() ->
+                INSTANCE.getApi().posts()
+                    .comments()
+                    .get(postId, commentId)
+                    .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + idToken))
+                    .execute())
+                .subscribeOn(Schedulers.io()))
+        .map(CommentRealm::new);
   }
 
-  public Observable<CommentRealm> add(CommentRealm comment) {
+  public Observable<CommentRealm> add(@Nonnull CommentRealm comment) {
     return Observable.just(comment);
   }
 
-  public Completable delete(CommentRealm comment) {
-    ApiManager.getIdToken()
+  public Completable delete(@Nonnull CommentRealm comment) {
+    getIdToken()
         .toObservable()
         .flatMap(s -> Observable.empty());
 
@@ -43,13 +56,13 @@ public class CommentRemoteDataStore {
 
   public Observable<Response<List<CommentRealm>>> list(String postId, String cursor, String eTag,
       int limit) {
-    return ApiManager.getIdToken()
+    return getIdToken()
         .toObservable()
         .flatMap(s -> Observable.empty());
   }
 
   public Observable<CommentRealm> accept(CommentRealm comment) {
-    return ApiManager.getIdToken()
+    return getIdToken()
         .toObservable()
         .flatMap(s -> Observable.just(
             new CommentRealm()

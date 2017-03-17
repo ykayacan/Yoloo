@@ -9,7 +9,7 @@ public class CategoryDTO {
 
   private String id;
   private String name;
+  private String imageUrl;
   private long postCount;
-  private String type;
   private double rank;
 }

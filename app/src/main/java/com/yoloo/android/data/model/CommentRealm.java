@@ -1,9 +1,11 @@
 package com.yoloo.android.data.model;
 
+import com.yoloo.backend.yolooApi.model.CommentDTO;
 import io.realm.RealmObject;
 import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
 import java.util.Date;
+import java.util.Objects;
 
 public class CommentRealm extends RealmObject {
 
@@ -17,10 +19,26 @@ public class CommentRealm extends RealmObject {
   private String content;
   @Index
   private Date created;
-  private int dir;
+  private int voteDir;
   @Index
   private boolean accepted;
-  private long votes;
+  private long voteCount;
+
+  public CommentRealm() {
+  }
+
+  public CommentRealm(CommentDTO dto) {
+    id = dto.getId();
+    ownerId = dto.getOwnerId();
+    username = dto.getUsername();
+    avatarUrl = dto.getAvatarUrl();
+    postId = dto.getPostId();
+    content = dto.getContent();
+    created = new Date(dto.getCreated().getValue());
+    voteDir = dto.getDirection();
+    accepted = dto.getAccepted();
+    voteCount = dto.getVoteCount();
+  }
 
   public String getId() {
     return id;
@@ -85,12 +103,12 @@ public class CommentRealm extends RealmObject {
     return this;
   }
 
-  public int getDir() {
-    return dir;
+  public int getVoteDir() {
+    return voteDir;
   }
 
-  public CommentRealm setDir(int dir) {
-    this.dir = dir;
+  public CommentRealm setVoteDir(int voteDir) {
+    this.voteDir = voteDir;
     return this;
   }
 
@@ -103,21 +121,42 @@ public class CommentRealm extends RealmObject {
     return this;
   }
 
-  public long getVotes() {
-    return votes;
+  public long getVoteCount() {
+    return voteCount;
   }
 
-  public CommentRealm setVotes(long votes) {
-    this.votes = votes;
+  public CommentRealm setVoteCount(long voteCount) {
+    this.voteCount = voteCount;
     return this;
   }
 
   public void increaseVotes() {
-    ++this.votes;
+    ++this.voteCount;
   }
 
   public void decreaseVotes() {
-    --this.votes;
+    --this.voteCount;
+  }
+
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    CommentRealm that = (CommentRealm) o;
+    return voteDir == that.voteDir &&
+        accepted == that.accepted &&
+        voteCount == that.voteCount &&
+        Objects.equals(id, that.id) &&
+        Objects.equals(ownerId, that.ownerId) &&
+        Objects.equals(username, that.username) &&
+        Objects.equals(avatarUrl, that.avatarUrl) &&
+        Objects.equals(postId, that.postId) &&
+        Objects.equals(content, that.content) &&
+        Objects.equals(created, that.created);
+  }
+
+  @Override public int hashCode() {
+    return Objects.hash(id, ownerId, username, avatarUrl, postId, content, created, voteDir,
+        accepted, voteCount);
   }
 
   @Override public String toString() {
@@ -129,9 +168,9 @@ public class CommentRealm extends RealmObject {
         ", postId='" + postId + '\'' +
         ", content='" + content + '\'' +
         ", created=" + created +
-        ", dir=" + dir +
+        ", voteDir=" + voteDir +
         ", accepted=" + accepted +
-        ", votes=" + votes +
+        ", voteCount=" + voteCount +
         '}';
   }
 }

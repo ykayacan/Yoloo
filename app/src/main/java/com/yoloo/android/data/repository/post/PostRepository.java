@@ -1,15 +1,19 @@
 package com.yoloo.android.data.repository.post;
 
+import com.annimon.stream.Optional;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.post.datasource.PostDiskDataStore;
 import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.sorter.PostSorter;
-import com.yoloo.android.util.Preconditions;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import timber.log.Timber;
 
 public class PostRepository {
 
@@ -31,38 +35,37 @@ public class PostRepository {
     return instance;
   }
 
-  public Observable<PostRealm> getPost(String postId) {
-    Preconditions.checkNotNull(postId, "postId can not be null.");
-
-    // TODO: 16.02.2017 Fix data.
-    //return diskDataStore.get(postId).subscribeOn(Schedulers.io());
-
+  public Observable<Optional<PostRealm>> getPost(@Nonnull String postId) {
     return Observable.mergeDelayError(
-        diskDataStore.get(postId).subscribeOn(Schedulers.io()),
+        diskDataStore.get(postId).subscribeOn(Schedulers.io()).toObservable(),
         remoteDataStore.get(postId)
-            .doOnNext(diskDataStore::add)
+            .doOnSuccess(diskDataStore::add)
+            .map(Optional::of)
+            .toObservable()
             .subscribeOn(Schedulers.io()));
   }
 
-  public void addPost(PostRealm post) {
-    Preconditions.checkNotNull(post, "post can not be null.");
-
-    diskDataStore.add(post);
+  public Single<PostRealm> addPost(@Nonnull PostRealm post) {
+    return remoteDataStore.add(post)
+        .doOnSuccess(diskDataStore::add)
+        .subscribeOn(Schedulers.io());
   }
 
-  public Completable deletePost(String postId) {
-    Preconditions.checkNotNull(postId, "postId can not be null.");
-
+  public Completable deletePost(@Nonnull String postId) {
     return remoteDataStore.delete(postId)
         .andThen(diskDataStore.delete(postId))
         .subscribeOn(Schedulers.io());
   }
 
-  public Observable<PostRealm> getDraft() {
-    return diskDataStore.get("draft").subscribeOn(Schedulers.io());
+  public Single<PostRealm> getDraft() {
+    return diskDataStore.get("draft")
+        .subscribeOn(Schedulers.io())
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .toSingle();
   }
 
-  public Completable addDraft(PostRealm draft) {
+  public Completable addDraft(@Nonnull PostRealm draft) {
     return Completable.fromAction(() -> diskDataStore.add(draft)).subscribeOn(Schedulers.io());
   }
 
@@ -70,70 +73,65 @@ public class PostRepository {
     return diskDataStore.delete("draft").subscribeOn(Schedulers.io());
   }
 
-  public Observable<Response<List<PostRealm>>> listByFeed(String cursor, String eTag, int limit) {
-    return diskDataStore.listByFeed().subscribeOn(Schedulers.io());
-  }
-
-  public Observable<Response<List<PostRealm>>> listByBounty(String cursor, String eTag, int limit) {
-    return Observable.mergeDelayError(
-        diskDataStore.listByBounty().subscribeOn(Schedulers.io()),
-        remoteDataStore.listByBounty(cursor, eTag, limit)
+  public Observable<Response<List<PostRealm>>> listByFeed(@Nullable String cursor, int limit) {
+    Timber.d("listByFeed()");
+    Observable<Response<List<PostRealm>>> remoteObservable =
+        remoteDataStore.listByFeed(cursor, limit)
             .doOnNext(response -> diskDataStore.addAll(response.getData()))
-            .subscribeOn(Schedulers.io()));
+            .subscribeOn(Schedulers.io())
+            .doOnNext(response -> Timber.d("Response: %s", response.getData()));
+
+    Observable<Response<List<PostRealm>>> diskObservable =
+        diskDataStore.listByFeed().subscribeOn(Schedulers.io());
+
+    return diskObservable;
   }
 
-  public Observable<Response<List<PostRealm>>> listByCategory(String categoryName,
-      PostSorter sorter, String cursor, String eTag, int limit) {
-    Preconditions.checkNotNull(categoryName, "categoryName can not be null.");
-
-    return Observable.mergeDelayError(
-        diskDataStore.listByCategory(categoryName, sorter).subscribeOn(Schedulers.io()),
-        remoteDataStore.listByCategory(categoryName, sorter, cursor, eTag, limit)
-            .doOnNext(response -> diskDataStore.addAll(response.getData()))
-            .subscribeOn(Schedulers.io()));
+  public Observable<Response<List<PostRealm>>> listByBounty(@Nullable String cursor, int limit) {
+    //return remoteDataStore.listByBounty(cursor, limit).subscribeOn(Schedulers.io());
+    return diskDataStore.listByBounty().subscribeOn(Schedulers.io());
   }
 
-  public Observable<Response<List<PostRealm>>> listByTags(String tagNames, PostSorter sorter,
-      String cursor, String eTag, int limit) {
-    Preconditions.checkNotNull(tagNames, "tagNames can not be null.");
-
-    return diskDataStore.listByTag(tagNames)
-        .doOnNext(response -> diskDataStore.addAll(response.getData()))
+  public Observable<Response<List<PostRealm>>> listByCategory(@Nonnull String categoryName,
+      @Nonnull PostSorter sorter, @Nullable String cursor, int limit) {
+    return remoteDataStore.listByCategory(categoryName, sorter, cursor, limit)
         .subscribeOn(Schedulers.io());
   }
 
-  public Observable<Response<List<PostRealm>>> listByUser(String userId, boolean commented,
-      String cursor, String eTag, int limit) {
-    Preconditions.checkNotNull(userId, "userId can not be null.");
+  public Observable<Response<List<PostRealm>>> listByTags(@Nonnull String tagNames,
+      @Nonnull PostSorter sorter, @Nullable String cursor, int limit) {
+    return remoteDataStore.listByTags(tagNames, sorter, cursor, limit).subscribeOn(Schedulers.io());
+  }
 
-    return remoteDataStore.listByUser(userId, commented, cursor, eTag, limit)
+  public Observable<Response<List<PostRealm>>> listByUser(@Nonnull String userId, boolean commented,
+      @Nullable String cursor, int limit) {
+    return remoteDataStore.listByUser(userId, commented, cursor, limit)
         .subscribeOn(Schedulers.io());
   }
 
-  public Observable<Response<List<PostRealm>>> listByBookmarked(String cursor, String eTag,
+  public Observable<Response<List<PostRealm>>> listByBookmarked(@Nullable String cursor,
       int limit) {
     return Observable.mergeDelayError(
         diskDataStore.listBookmarkedPosts().subscribeOn(Schedulers.io()),
-        remoteDataStore.listByBookmarked(cursor, eTag, limit)
+        remoteDataStore.listByBookmarked(cursor, limit)
             .doOnNext(response -> diskDataStore.addAll(response.getData()))
             .subscribeOn(Schedulers.io()));
   }
 
-  public Completable votePost(String postId, int direction) {
-    Preconditions.checkNotNull(postId, "postId can not be null.");
-
-    return diskDataStore.vote(postId, direction).subscribeOn(Schedulers.io());
+  public Completable votePost(@Nonnull String postId, int direction) {
+    return remoteDataStore.vote(postId, direction)
+        .andThen(diskDataStore.vote(postId, direction).subscribeOn(Schedulers.io()));
   }
 
-  public Completable bookmarkPost(String postId) {
-    Preconditions.checkNotNull(postId, "postId can not be null.");
-
-    return diskDataStore.bookmark(postId).subscribeOn(Schedulers.io());
+  public Completable bookmarkPost(@Nonnull String postId) {
+    return remoteDataStore.bookmark(postId)
+        .andThen(diskDataStore.bookmark(postId).subscribeOn(Schedulers.io()));
   }
 
-  public Completable unBookmarkPost(String postId) {
-    Preconditions.checkNotNull(postId, "postId can not be null.");
+  public Completable unBookmarkPost(@Nonnull String postId) {
 
-    return diskDataStore.unBookmark(postId).subscribeOn(Schedulers.io());
+    return remoteDataStore.unbookmark(postId)
+        .andThen(diskDataStore.unBookmark(postId))
+        .subscribeOn(Schedulers.io());
   }
 }

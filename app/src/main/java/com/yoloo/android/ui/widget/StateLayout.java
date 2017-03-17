@@ -1,7 +1,5 @@
 package com.yoloo.android.ui.widget;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.support.annotation.IntDef;
@@ -11,8 +9,9 @@ import android.support.design.widget.CoordinatorLayout;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import butterknife.ButterKnife;
 import com.yoloo.android.R;
-import com.yoloo.android.util.Preconditions;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -25,10 +24,6 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class StateLayout extends CoordinatorLayout {
 
-  /**
-   * The constant VIEW_STATE_UNKNOWN.
-   */
-  public static final int VIEW_STATE_UNKNOWN = -1;
   /**
    * The constant VIEW_STATE_CONTENT.
    */
@@ -46,21 +41,24 @@ public class StateLayout extends CoordinatorLayout {
    */
   public static final int VIEW_STATE_LOADING = 3;
 
+  private static final int ANIMATION_DURATION = 250;
+
   private int loadingViewRes;
   private int emptyViewRes;
   private int errorViewRes;
+
+  private int contentViewId;
 
   private View contentView;
   private View loadingView;
   private View errorView;
   private View emptyView;
 
-  private boolean animateStateChanges = false;
+  private boolean animateStateChange = false;
 
   @Nullable private OnStateChangedListener onStateChangedListener;
 
-  @ViewState private int currentViewState;
-  @ViewState private int previousViewState;
+  private int currentViewState;
 
   private LayoutInflater inflater;
 
@@ -79,6 +77,7 @@ public class StateLayout extends CoordinatorLayout {
     init(context, attrs, defStyle);
   }
 
+
   private void init(Context context, AttributeSet attrs, int defStyle) {
     inflater = LayoutInflater.from(getContext());
 
@@ -88,12 +87,36 @@ public class StateLayout extends CoordinatorLayout {
     emptyViewRes = a.getResourceId(R.styleable.StateLayout_emptyLayout, 0);
     errorViewRes = a.getResourceId(R.styleable.StateLayout_errorLayout, 0);
 
+    contentViewId = a.getResourceId(R.styleable.StateLayout_contentViewId, NO_ID);
+
     final int viewState = a.getInt(R.styleable.StateLayout_initialViewState, VIEW_STATE_CONTENT);
-    animateStateChanges = a.getBoolean(R.styleable.StateLayout_animateStateChanges, false);
+    animateStateChange = a.getBoolean(R.styleable.StateLayout_animateStateChanges, false);
 
     a.recycle();
 
     setDefaultViewState(viewState);
+
+    if (contentViewId == NO_ID) {
+      throw new NullPointerException("app:contentViewId is null.");
+    }
+
+    loadingView = inflater.inflate(loadingViewRes, this, false);
+    addView(loadingView);
+    hideView(loadingView);
+
+    errorView = inflater.inflate(errorViewRes, this, false);
+    addView(errorView);
+    hideView(errorView);
+
+    emptyView = inflater.inflate(emptyViewRes, this, false);
+    addView(emptyView);
+    hideView(emptyView);
+  }
+
+  @Override protected void onFinishInflate() {
+    super.onFinishInflate();
+    contentView = ButterKnife.findById(this, contentViewId);
+    hideView(contentView);
   }
 
   private void setDefaultViewState(int viewState) {
@@ -109,10 +132,6 @@ public class StateLayout extends CoordinatorLayout {
         break;
       case VIEW_STATE_LOADING:
         this.currentViewState = VIEW_STATE_LOADING;
-        break;
-      case VIEW_STATE_UNKNOWN:
-      default:
-        this.currentViewState = VIEW_STATE_UNKNOWN;
         break;
     }
   }
@@ -205,7 +224,7 @@ public class StateLayout extends CoordinatorLayout {
     return this;
   }
 
-  public void setViewForState(View view, @ViewState int viewState) {
+  private void setViewForState(View view, @ViewState int viewState) {
     switch (viewState) {
       case VIEW_STATE_CONTENT:
         contentView = view;
@@ -222,129 +241,10 @@ public class StateLayout extends CoordinatorLayout {
         replaceView(loadingView, view);
         loadingView = view;
         break;
-      case VIEW_STATE_UNKNOWN:
-        break;
     }
   }
 
-  public void setState(@ViewState int viewState) {
-    if (currentViewState == viewState) {
-      return;
-    }
-
-    switch (viewState) {
-      case VIEW_STATE_CONTENT:
-        changeStates(viewState);
-        showContentView();
-        break;
-      case VIEW_STATE_EMPTY:
-        changeStates(viewState);
-        showEmptyView();
-        break;
-      case VIEW_STATE_ERROR:
-        changeStates(viewState);
-        showErrorView();
-        break;
-      case VIEW_STATE_LOADING:
-        changeStates(viewState);
-        showLoadingView();
-        break;
-      case VIEW_STATE_UNKNOWN:
-        break;
-    }
-  }
-
-  private void changeStates(@ViewState int viewState) {
-    previousViewState = currentViewState;
-    currentViewState = viewState;
-  }
-
-  private void ensureLoadingView() {
-    if (loadingView == null && loadingViewRes != 0) {
-      loadingView = inflater.inflate(loadingViewRes, this, false);
-      addView(loadingView, loadingView.getLayoutParams());
-    }
-  }
-
-  private void ensureContentView() {
-    Preconditions.checkNotNull(contentView, "ContentView can not be empty!");
-  }
-
-  private void ensureErrorView() {
-    if (errorView == null && errorViewRes != 0) {
-      errorView = inflater.inflate(errorViewRes, this, false);
-      addView(errorView, errorView.getLayoutParams());
-    }
-  }
-
-  private void ensureEmptyView() {
-    if (emptyView == null && emptyViewRes != 0) {
-      emptyView = inflater.inflate(emptyViewRes, this, false);
-      addView(emptyView, emptyView.getLayoutParams());
-    }
-  }
-
-  private void showContentView() {
-    ensureContentView();
-
-    if (animateStateChanges) {
-      animateLayoutChange(getView(previousViewState));
-    } else {
-      showView(contentView);
-      hideView(emptyView);
-      hideView(errorView);
-      hideView(loadingView);
-    }
-
-    checkStateChangeListener(contentView, VIEW_STATE_CONTENT);
-  }
-
-  private void showEmptyView() {
-    ensureEmptyView();
-
-    if (animateStateChanges) {
-      animateLayoutChange(getView(previousViewState));
-    } else {
-      showView(emptyView);
-      hideView(contentView);
-      hideView(errorView);
-      hideView(loadingView);
-    }
-
-    checkStateChangeListener(emptyView, VIEW_STATE_EMPTY);
-  }
-
-  private void showErrorView() {
-    ensureErrorView();
-
-    if (animateStateChanges) {
-      animateLayoutChange(getView(previousViewState));
-    } else {
-      showView(errorView);
-      hideView(contentView);
-      hideView(emptyView);
-      hideView(loadingView);
-    }
-
-    checkStateChangeListener(errorView, VIEW_STATE_ERROR);
-  }
-
-  private void showLoadingView() {
-    ensureLoadingView();
-
-    if (animateStateChanges) {
-      animateLayoutChange(getView(previousViewState));
-    } else {
-      showView(loadingView);
-      hideView(contentView);
-      hideView(emptyView);
-      hideView(errorView);
-    }
-
-    checkStateChangeListener(loadingView, VIEW_STATE_LOADING);
-  }
-
-  private void checkStateChangeListener(View view, @ViewState int viewState) {
+  private void dispatchStateChangeListener(View view, @ViewState int viewState) {
     if (onStateChangedListener != null) {
       onStateChangedListener.onStatedChange(view, viewState);
     }
@@ -359,58 +259,24 @@ public class StateLayout extends CoordinatorLayout {
     this.onStateChangedListener = onStateChangedListener;
   }
 
-  /**
-   * Animates the layout changes between {@link ViewState}
-   *
-   * @param previousView The view that it was currently on
-   */
-  private void animateLayoutChange(@Nullable final View previousView) {
-    if (previousView == null) {
-      getView(currentViewState).setVisibility(View.VISIBLE);
-      return;
-    }
-
-    previousView.setVisibility(View.VISIBLE);
-    previousView.animate()
-        .alpha(0.0f)
-        .setDuration(250L)
-        .setListener(new AnimatorListenerAdapter() {
-          @Override public void onAnimationEnd(Animator animation) {
-            previousView.setVisibility(View.GONE);
-            View current = getView(currentViewState);
-            current.setVisibility(VISIBLE);
-            current.animate()
-                .alpha(1.0f)
-                .setDuration(250L);
-          }
-        });
-  }
-
-  /**
-   * first init and call one of
-   * {@link #setContentView(View)}
-   * {@link #setEmptyView(View)}
-   * {@link #setErrorView(View)}
-   * {@link #setLoadingView(View)} ,you must call it to init state.
-   */
-  public void initWithState(@ViewState int state) {
-    if (state == currentViewState) { // default view state
-      showContentView();
-    } else {
-      setState(state);
-    }
-  }
-
   private void showView(View view) {
-    if (view != null) {
-      view.setVisibility(VISIBLE);
+    if (view instanceof ViewGroup) {
+      final int childCount = ((ViewGroup) view).getChildCount();
+      for (int i = 0; i < childCount; i++) {
+        ((ViewGroup) view).getChildAt(i).setVisibility(VISIBLE);
+      }
     }
+    view.setVisibility(VISIBLE);
   }
 
   private void hideView(View view) {
-    if (view != null) {
-      view.setVisibility(GONE);
+    if (view instanceof ViewGroup) {
+      final int childCount = ((ViewGroup) view).getChildCount();
+      for (int i = 0; i < childCount; i++) {
+        ((ViewGroup) view).getChildAt(i).setVisibility(GONE);
+      }
     }
+    view.setVisibility(GONE);
   }
 
   private void replaceView(View oldView, View newView) {
@@ -418,7 +284,7 @@ public class StateLayout extends CoordinatorLayout {
       removeView(oldView);
     }
 
-    addView(newView, newView.getLayoutParams());
+    addView(newView);
   }
 
   @Nullable private View getView(@ViewState int viewState) {
@@ -431,10 +297,13 @@ public class StateLayout extends CoordinatorLayout {
         return errorView;
       case VIEW_STATE_LOADING:
         return loadingView;
-      case VIEW_STATE_UNKNOWN:
       default:
         return null;
     }
+  }
+
+  public boolean isAnimateLayoutChanges() {
+    return animateStateChange;
   }
 
   /**
@@ -443,14 +312,42 @@ public class StateLayout extends CoordinatorLayout {
    * @param animate the animate
    */
   public void setAnimateLayoutChanges(boolean animate) {
-    animateStateChanges = animate;
+    animateStateChange = animate;
+  }
+
+  public void setState(@ViewState int toViewState) {
+    final View currentView = getView(currentViewState);
+    final View toView = getView(toViewState);
+
+    showView(currentView);
+
+    currentViewState = toViewState;
+
+    if (animateStateChange) {
+      currentView.animate()
+          .alpha(0.0f)
+          .setDuration(ANIMATION_DURATION)
+          .withEndAction(() -> {
+            hideView(currentView);
+            removeView(currentView);
+
+            showView(toView);
+            toView.animate()
+                .alpha(1.0f)
+                .setDuration(ANIMATION_DURATION);
+          });
+    } else {
+      hideView(currentView);
+      showView(toView);
+    }
+
+    dispatchStateChangeListener(toView, toViewState);
   }
 
   /**
    * The interface View state.
    */
   @IntDef({
-      VIEW_STATE_UNKNOWN,
       VIEW_STATE_CONTENT,
       VIEW_STATE_ERROR,
       VIEW_STATE_EMPTY,

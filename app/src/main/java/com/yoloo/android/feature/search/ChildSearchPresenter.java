@@ -9,51 +9,65 @@ import com.yoloo.android.framework.MvpPresenter;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import timber.log.Timber;
 
-public class ChildSearchPresenter extends MvpPresenter<ChildSearchView> {
+class ChildSearchPresenter extends MvpPresenter<ChildSearchView> {
 
   private final TagRepository tagRepository;
   private final UserRepository userRepository;
 
-  public ChildSearchPresenter(TagRepository tagRepository, UserRepository userRepository) {
+  private String userCursor;
+  private String tagCursor;
+
+  ChildSearchPresenter(TagRepository tagRepository, UserRepository userRepository) {
     this.userRepository = userRepository;
     this.tagRepository = tagRepository;
   }
 
-  public void loadRecentTags() {
+  void loadRecentTags() {
     Disposable d = tagRepository.listRecentTags()
+        .delay(250, TimeUnit.MILLISECONDS)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showRecentTags);
 
     getDisposable().add(d);
   }
 
-  public void loadTags(String name, String cursor) {
-    Disposable d = tagRepository.listTags2(name, cursor, 20)
+  void searchTags(String name, boolean resetCursor) {
+    if (resetCursor) {
+      tagCursor = null;
+    }
+
+    Disposable d = tagRepository.listTags2(name, tagCursor, 20)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showTags, Timber::e);
 
     getDisposable().add(d);
   }
 
-  public void loadRecentUsers() {
+  void loadRecentUsers() {
     Disposable d = userRepository.listRecentSearchedUsers()
+        .delay(250, TimeUnit.MILLISECONDS)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showRecentUsers);
 
     getDisposable().add(d);
   }
 
-  public void loadUsers(String name, String cursor) {
-    Disposable d = userRepository.searchUser(name, cursor, 20)
+  void searchUsers(String query, boolean resetCursor) {
+    if (resetCursor) {
+      userCursor = null;
+    }
+
+    Disposable d = userRepository.searchUser(query, userCursor, 20)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(this::showUsers, Timber::e);
 
     getDisposable().add(d);
   }
 
-  public void follow(String userId, int direction) {
+  void follow(String userId, int direction) {
     Disposable d = userRepository.follow(userId, direction)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe();
@@ -66,7 +80,9 @@ public class ChildSearchPresenter extends MvpPresenter<ChildSearchView> {
   }
 
   private void showTags(Response<List<TagRealm>> response) {
-    getView().onTagsLoaded(response);
+    tagCursor = response.getCursor();
+
+    getView().onTagsLoaded(response.getData());
   }
 
   private void showRecentUsers(List<AccountRealm> accounts) {
@@ -74,6 +90,7 @@ public class ChildSearchPresenter extends MvpPresenter<ChildSearchView> {
   }
 
   private void showUsers(Response<List<AccountRealm>> response) {
-    getView().onUsersLoaded(response);
+    userCursor = response.getCursor();
+    getView().onUsersLoaded(response.getData());
   }
 }

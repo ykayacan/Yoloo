@@ -53,12 +53,12 @@ public class AppFaker {
             .setRealname(NAME_PAIRS.get(index).first)
             .setAvatarUrl(NAME_PAIRS.get(index).second)
             .setLevel(random.nextInt(4))
-            .setBounties(random.nextInt(30))
-            .setPosts(random.nextInt(40))
-            .setFollowers(random.nextInt(100))
-            .setFollowings(random.nextInt(100))
-            .setAchievements(random.nextInt(5))
-            .setPoints(random.nextInt(120))
+            .setBountyCount(random.nextInt(30))
+            .setPostCount(random.nextInt(40))
+            .setFollowerCount(random.nextInt(100))
+            .setFollowingCount(random.nextInt(100))
+            .setAchievementCount(random.nextInt(5))
+            .setPointCount(random.nextInt(120))
             .setMe(false);
 
         accounts.add(account);

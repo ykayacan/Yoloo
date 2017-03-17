@@ -1,0 +1,30 @@
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:orientation="vertical">
+
+  <EditText
+    android:id="@id/messageInput"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_centerVertical="true"
+    android:layout_toLeftOf="@+id/buttonSpace"
+    android:layout_toStartOf="@+id/buttonSpace"
+    android:inputType="textAutoCorrect|textAutoComplete|textMultiLine|textCapSentences" />
+
+  <android.support.v4.widget.Space
+    android:id="@+id/buttonSpace"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:layout_toLeftOf="@id/messageSendButton"
+    android:layout_toStartOf="@id/messageSendButton" />
+
+  <ImageButton
+    android:id="@id/messageSendButton"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentEnd="true"
+    android:layout_alignParentRight="true"
+    android:layout_centerVertical="true" />
+
+</merge>

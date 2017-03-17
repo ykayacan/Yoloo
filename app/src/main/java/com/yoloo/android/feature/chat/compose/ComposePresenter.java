@@ -35,7 +35,7 @@ public class ComposePresenter extends MvpPresenter<ComposeView> {
     List<AccountRealm> list = new ArrayList<>();
     list.add(AccountFaker.generateOne());
 
-    Response<List<AccountRealm>> response = Response.create(list, null, null);
+    Response<List<AccountRealm>> response = Response.create(list, null);
 
     getView().onLoaded(response);
   }

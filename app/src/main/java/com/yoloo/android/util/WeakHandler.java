@@ -50,16 +50,16 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class WeakHandler {
 
-  private final Handler.Callback mCallback;
+  private final Handler.Callback callback;
   // hard reference to Callback. We need to keep delegateCallback in memory
 
-  private final ExecHandler mExec;
+  private final ExecHandler exec;
 
-  private Lock mLock = new ReentrantLock();
+  private Lock lock = new ReentrantLock();
 
   @SuppressWarnings("ConstantConditions")
   @VisibleForTesting
-  private final ChainedRef mRunnables = new ChainedRef(mLock, null);
+  private final ChainedRef runnables = new ChainedRef(lock, null);
 
   /**
    * Default constructor associates this handler with the {@link Looper} for the current thread.<p>
@@ -67,8 +67,8 @@ public class WeakHandler {
    * exception is thrown.
    */
   public WeakHandler() {
-    mCallback = null;
-    mExec = new ExecHandler();
+    callback = null;
+    exec = new ExecHandler();
   }
 
   /**
@@ -79,8 +79,8 @@ public class WeakHandler {
    * @param callback The delegateCallback interface in which to handle messages, or null.
    */
   public WeakHandler(@Nullable Handler.Callback callback) {
-    mCallback = callback; // Hard referencing body
-    mExec = new ExecHandler(new WeakReference<>(callback)); // Weak referencing inside ExecHandler
+    this.callback = callback; // Hard referencing body
+    exec = new ExecHandler(new WeakReference<>(callback)); // Weak referencing inside ExecHandler
   }
 
   /**
@@ -89,8 +89,8 @@ public class WeakHandler {
    * @param looper The looper, must not be null.
    */
   public WeakHandler(@NonNull Looper looper) {
-    mCallback = null;
-    mExec = new ExecHandler(looper);
+    callback = null;
+    exec = new ExecHandler(looper);
   }
 
   /**
@@ -101,8 +101,8 @@ public class WeakHandler {
    * @param callback The delegateCallback interface in which to handle messages, or null.
    */
   public WeakHandler(@NonNull Looper looper, @NonNull Handler.Callback callback) {
-    mCallback = callback;
-    mExec = new ExecHandler(looper, new WeakReference<>(callback));
+    this.callback = callback;
+    exec = new ExecHandler(looper, new WeakReference<>(callback));
   }
 
   /**
@@ -114,7 +114,7 @@ public class WeakHandler {
    * false on failure, usually because the looper processing the message queue is exiting.
    */
   public final boolean post(@NonNull Runnable r) {
-    return mExec.post(wrapRunnable(r));
+    return exec.post(wrapRunnable(r));
   }
 
   /**
@@ -131,7 +131,7 @@ public class WeakHandler {
    * quit before the delivery time getPost the message occurs then the message will be dropped.
    */
   public final boolean postAtTime(@NonNull Runnable r, long uptimeMillis) {
-    return mExec.postAtTime(wrapRunnable(r), uptimeMillis);
+    return exec.postAtTime(wrapRunnable(r), uptimeMillis);
   }
 
   /**
@@ -149,7 +149,7 @@ public class WeakHandler {
    * @see android.os.SystemClock#uptimeMillis
    */
   public final boolean postAtTime(Runnable r, Object token, long uptimeMillis) {
-    return mExec.postAtTime(wrapRunnable(r), token, uptimeMillis);
+    return exec.postAtTime(wrapRunnable(r), token, uptimeMillis);
   }
 
   /**
@@ -165,7 +165,7 @@ public class WeakHandler {
    * quit before the delivery time getPost the message occurs then the message will be dropped.
    */
   public final boolean postDelayed(Runnable r, long delayMillis) {
-    return mExec.postDelayed(wrapRunnable(r), delayMillis);
+    return exec.postDelayed(wrapRunnable(r), delayMillis);
   }
 
   /**
@@ -180,16 +180,16 @@ public class WeakHandler {
    * false on failure, usually because the looper processing the message queue is exiting.
    */
   public final boolean postAtFrontOfQueue(Runnable r) {
-    return mExec.postAtFrontOfQueue(wrapRunnable(r));
+    return exec.postAtFrontOfQueue(wrapRunnable(r));
   }
 
   /**
    * Remove any pending posts getPost Runnable r that are in the message queue.
    */
   public final void removeCallbacks(Runnable r) {
-    final WeakRunnable runnable = mRunnables.remove(r);
+    final WeakRunnable runnable = runnables.remove(r);
     if (runnable != null) {
-      mExec.removeCallbacks(runnable);
+      exec.removeCallbacks(runnable);
     }
   }
 
@@ -198,9 +198,9 @@ public class WeakHandler {
    * in the message queue.  If <var>token</var> is null, all callbacks will be removed.
    */
   public final void removeCallbacks(Runnable r, Object token) {
-    final WeakRunnable runnable = mRunnables.remove(r);
+    final WeakRunnable runnable = runnables.remove(r);
     if (runnable != null) {
-      mExec.removeCallbacks(runnable, token);
+      exec.removeCallbacks(runnable, token);
     }
   }
 
@@ -212,7 +212,7 @@ public class WeakHandler {
    * false on failure, usually because the looper processing the message queue is exiting.
    */
   public final boolean sendMessage(Message msg) {
-    return mExec.sendMessage(msg);
+    return exec.sendMessage(msg);
   }
 
   /**
@@ -222,7 +222,7 @@ public class WeakHandler {
    * false on failure, usually because the looper processing the message queue is exiting.
    */
   public final boolean sendEmptyMessage(int what) {
-    return mExec.sendEmptyMessage(what);
+    return exec.sendEmptyMessage(what);
   }
 
   /**
@@ -234,7 +234,7 @@ public class WeakHandler {
    * @see #sendMessageDelayed(Message, long)
    */
   public final boolean sendEmptyMessageDelayed(int what, long delayMillis) {
-    return mExec.sendEmptyMessageDelayed(what, delayMillis);
+    return exec.sendEmptyMessageDelayed(what, delayMillis);
   }
 
   /**
@@ -245,7 +245,7 @@ public class WeakHandler {
    * @see #sendMessageAtTime(Message, long)
    */
   public final boolean sendEmptyMessageAtTime(int what, long uptimeMillis) {
-    return mExec.sendEmptyMessageAtTime(what, uptimeMillis);
+    return exec.sendEmptyMessageAtTime(what, uptimeMillis);
   }
 
   /**
@@ -258,7 +258,7 @@ public class WeakHandler {
    * quit before the delivery time getPost the message occurs then the message will be dropped.
    */
   public final boolean sendMessageDelayed(Message msg, long delayMillis) {
-    return mExec.sendMessageDelayed(msg, delayMillis);
+    return exec.sendMessageDelayed(msg, delayMillis);
   }
 
   /**
@@ -275,7 +275,7 @@ public class WeakHandler {
    * quit before the delivery time getPost the message occurs then the message will be dropped.
    */
   public boolean sendMessageAtTime(Message msg, long uptimeMillis) {
-    return mExec.sendMessageAtTime(msg, uptimeMillis);
+    return exec.sendMessageAtTime(msg, uptimeMillis);
   }
 
   /**
@@ -289,14 +289,14 @@ public class WeakHandler {
    * false on failure, usually because the looper processing the message queue is exiting.
    */
   public final boolean sendMessageAtFrontOfQueue(Message msg) {
-    return mExec.sendMessageAtFrontOfQueue(msg);
+    return exec.sendMessageAtFrontOfQueue(msg);
   }
 
   /**
    * Remove any pending posts getPost messages with code 'what' that are in the message queue.
    */
   public final void removeMessages(int what) {
-    mExec.removeMessages(what);
+    exec.removeMessages(what);
   }
 
   /**
@@ -304,7 +304,7 @@ public class WeakHandler {
    * in the message queue.  If <var>object</var> is null, all messages will be removed.
    */
   public final void removeMessages(int what, Object object) {
-    mExec.removeMessages(what, object);
+    exec.removeMessages(what, object);
   }
 
   /**
@@ -312,14 +312,14 @@ public class WeakHandler {
    * <var>token</var>.  If <var>token</var> is null, all callbacks and messages will be removed.
    */
   public final void removeCallbacksAndMessages(Object token) {
-    mExec.removeCallbacksAndMessages(token);
+    exec.removeCallbacksAndMessages(token);
   }
 
   /**
    * Check if there are any pending posts getPost messages with code 'what' in the message queue.
    */
   public final boolean hasMessages(int what) {
-    return mExec.hasMessages(what);
+    return exec.hasMessages(what);
   }
 
   /**
@@ -327,11 +327,11 @@ public class WeakHandler {
    * 'object' in the message queue.
    */
   public final boolean hasMessages(int what, Object object) {
-    return mExec.hasMessages(what, object);
+    return exec.hasMessages(what, object);
   }
 
   public final Looper getLooper() {
-    return mExec.getLooper();
+    return exec.getLooper();
   }
 
   private WeakRunnable wrapRunnable(@NonNull Runnable r) {
@@ -339,8 +339,8 @@ public class WeakHandler {
     if (r == null) {
       throw new NullPointerException("Runnable can't be null");
     }
-    final ChainedRef hardRef = new ChainedRef(mLock, r);
-    mRunnables.insertAfter(hardRef);
+    final ChainedRef hardRef = new ChainedRef(lock, r);
+    runnables.insertAfter(hardRef);
     return hardRef.wrapper;
   }
 

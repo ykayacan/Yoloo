@@ -1,17 +1,19 @@
 package com.yoloo.android.data.repository.comment;
 
+import com.annimon.stream.Optional;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.AccountRealmFields;
 import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.data.repository.comment.datasource.CommentDiskDataStore;
 import com.yoloo.android.data.repository.comment.datasource.CommentRemoteDataStore;
-import com.yoloo.android.util.Preconditions;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 import io.realm.Realm;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class CommentRepository {
 
@@ -34,18 +36,18 @@ public class CommentRepository {
     return instance;
   }
 
-  public Observable<CommentRealm> getComment(String commentId) {
-    Preconditions.checkNotNull(commentId, "commentId can not be null.");
-
+  public Observable<Optional<CommentRealm>> getComment(@Nonnull String postId,
+      @Nonnull String commentId) {
     return Observable.mergeDelayError(
-        diskDataStore.get(commentId).subscribeOn(Schedulers.io())
-            .onErrorReturnItem(new CommentRealm()),
-        remoteDataStore.get(commentId).doOnNext(diskDataStore::add).subscribeOn(Schedulers.io()));
+        diskDataStore.get(commentId).subscribeOn(Schedulers.io()).toObservable(),
+        remoteDataStore.get(postId, commentId)
+            .doOnSuccess(diskDataStore::add)
+            .map(Optional::of)
+            .subscribeOn(Schedulers.io())
+            .toObservable());
   }
 
-  public Observable<CommentRealm> addComment(CommentRealm comment) {
-    Preconditions.checkNotNull(comment, "comment can not be null.");
-
+  public Observable<CommentRealm> addComment(@Nonnull CommentRealm comment) {
     Realm realm = Realm.getDefaultInstance();
     AccountRealm account = realm.copyFromRealm(
         realm.where(AccountRealm.class).equalTo(AccountRealmFields.ME, true).findFirst());
@@ -58,33 +60,29 @@ public class CommentRepository {
     return remoteDataStore.add(comment).doOnNext(diskDataStore::add).subscribeOn(Schedulers.io());
   }
 
-  public Completable deleteComment(CommentRealm comment) {
-    Preconditions.checkNotNull(comment, "comment can not be null.");
-
+  public Completable deleteComment(@Nonnull CommentRealm comment) {
     return remoteDataStore.delete(comment)
         .andThen(diskDataStore.delete(comment))
         .subscribeOn(Schedulers.io());
   }
 
-  public Observable<Response<List<CommentRealm>>> listComments(String postId, String cursor,
-      String eTag, int limit) {
-    Preconditions.checkNotNull(postId, "postId can not be null.");
-
+  public Observable<Response<List<CommentRealm>>> listComments(@Nonnull String postId,
+      @Nullable String cursor, int limit) {
     // TODO: 18.02.2017 Change structure
     return diskDataStore.list(postId).subscribeOn(Schedulers.io());
 
     /*return Observable.mergeDelayError(
-        diskDataStore.list(postId).subscribeOn(Schedulers.io()),
-        remoteDataStore.list(postId, cursor, eTag, limit)
+        diskDataStore.listNotifications(postId).subscribeOn(Schedulers.io()),
+        remoteDataStore.listNotifications(postId, cursor, eTag, limit)
             .doOnNext(response -> diskDataStore.addAll(response.getData()))
             .subscribeOn(Schedulers.io()));*/
   }
 
-  public Completable voteComment(String commentId, int direction) {
+  public Completable voteComment(@Nonnull String commentId, int direction) {
     return diskDataStore.vote(commentId, direction).subscribeOn(Schedulers.io());
   }
 
-  public Observable<CommentRealm> acceptComment(CommentRealm comment) {
+  public Observable<CommentRealm> acceptComment(@Nonnull CommentRealm comment) {
     return remoteDataStore.accept(comment)
         .doOnNext(diskDataStore::accept)
         .subscribeOn(Schedulers.io());

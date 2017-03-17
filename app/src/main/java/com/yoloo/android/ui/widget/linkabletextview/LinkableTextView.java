@@ -13,9 +13,6 @@ import android.util.AttributeSet;
 import android.util.Patterns;
 import com.yoloo.android.R;
 import com.yoloo.android.ui.widget.BaselineGridTextView;
-import com.yoloo.android.ui.widget.linkabletextview.method.LinkableMovementMethod;
-import com.yoloo.android.ui.widget.linkabletextview.view.LinkableCallback;
-import com.yoloo.android.ui.widget.linkabletextview.view.OnLinkClickListener;
 import java.util.regex.Pattern;
 
 public class LinkableTextView extends BaselineGridTextView {

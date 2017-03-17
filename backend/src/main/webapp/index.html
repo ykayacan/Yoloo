@@ -57,11 +57,11 @@
           Cloud Messaging to all registered devices.</p>
         <form>
           <div class="input-group">
-            <input type="text" class="form-control input-lg" placeholder="Message text"
+            <input postType="text" class="form-control input-lg" placeholder="Message text"
                    id="messageTextInput"/>
             <span class="input-group-btn">
                              <button class="btn btn-default btn-primary btn-group btn-lg"
-                                     type="submit"
+                                     postType="submit"
                                      id="sendMessageButton">Send Message &raquo;</button>
                           </span>
           </div>
@@ -91,7 +91,7 @@
   </div>
 </div>
 
-<script type="text/javascript">
+<script postType="text/javascript">
     // A function that attaches a "Send Message" button click handler
     function enableClick() {
       document.getElementById('sendMessageButton').onclick = function() {

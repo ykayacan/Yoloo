@@ -88,20 +88,17 @@ public class BaselineGridTextView extends CompatTextView {
     requestLayout();
   }
 
-  @Override
-  public int getCompoundPaddingTop() {
+  @Override public int getCompoundPaddingTop() {
     // include extra padding to place the first line's baseline on the grid
     return super.getCompoundPaddingTop() + extraTopPadding;
   }
 
-  @Override
-  public int getCompoundPaddingBottom() {
+  @Override public int getCompoundPaddingBottom() {
     // include extra padding to make the height a multiple of 4dp
     return super.getCompoundPaddingBottom() + extraBottomPadding;
   }
 
-  @Override
-  protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+  @Override protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
     extraTopPadding = 0;
     extraBottomPadding = 0;
     super.onMeasure(widthMeasureSpec, heightMeasureSpec);

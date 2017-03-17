@@ -5,6 +5,7 @@
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
   android:background="@android:color/white"
+  android:elevation="@dimen/cardview_default_elevation"
   android:paddingBottom="@dimen/padding_micro"
   android:paddingTop="@dimen/padding_normal">
 
@@ -22,7 +23,7 @@
     app:layout_constraintTop_toBottomOf="@+id/iv_item_feed_user_avatar"
     tools:src="@drawable/profile_bg_1x" />
 
-  <TextView
+  <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_item_blog_title"
     style="@style/TextAppearance.BlogTitle"
     android:layout_width="0dp"
@@ -37,14 +38,13 @@
     app:layout_constraintTop_toBottomOf="@+id/iv_item_blog_cover"
     tools:text="Test" />
 
-  <TextView
+  <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_item_blog_content"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:layout_marginTop="8dp"
-    android:lineSpacingMultiplier="1.1"
     android:paddingBottom="@dimen/padding_micro"
-    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+    android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
     app:layout_constraintLeft_toLeftOf="@+id/tv_item_blog_title"
     app:layout_constraintRight_toRightOf="@+id/tv_item_blog_title"
     app:layout_constraintTop_toBottomOf="@+id/tv_item_blog_title"

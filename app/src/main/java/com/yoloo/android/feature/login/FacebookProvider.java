@@ -100,7 +100,6 @@ public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResu
   }
 
   @Override public void onSuccess(final LoginResult loginResult) {
-    Timber.d("onSuccess(): %s", loginResult.getAccessToken());
     GraphRequest request = GraphRequest.newMeRequest(
         loginResult.getAccessToken(),
         (object, response) -> {

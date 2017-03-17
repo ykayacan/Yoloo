@@ -9,7 +9,7 @@ public class CategoryTransformer implements Transformer<Category, CategoryDTO> {
     return CategoryDTO.builder()
         .id(in.getWebsafeId())
         .name(in.getName())
-        .type(in.getType().name())
+        .imageUrl(in.getImageUrl().getValue())
         .postCount(in.getPosts())
         .rank(in.getRank())
         .build();

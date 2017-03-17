@@ -12,19 +12,17 @@ import com.yoloo.backend.post.Post;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.joda.time.Hours;
 
 import static com.yoloo.backend.game.level.Level.findLevelForPoint;
 
+@Log
 @RequiredArgsConstructor(staticName = "create")
 public class GamificationService {
-
-  private static final Logger LOG =
-      Logger.getLogger(GamificationService.class.getName());
 
   public Tracker createTracker(Key<Account> accountKey) {
     return Tracker.builder()

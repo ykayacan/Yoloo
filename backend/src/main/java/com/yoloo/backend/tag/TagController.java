@@ -13,6 +13,7 @@ import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.util.KeyUtil;
 import io.reactivex.Observable;
 import io.reactivex.Single;
+import ix.Ix;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,7 +53,7 @@ public class TagController extends Controller {
         .langCode(langCode)
         .type(Tag.Type.NORMAL)
         .shardRefs(Lists.newArrayList(shardMap.keySet()))
-        .groupKeys(KeyUtil.extractKeysFromIds2(groupIds, ","))
+        .groupKeys(KeyUtil.extractKeysFromIds(groupIds, ","))
         .build();
 
     ImmutableSet<Object> saveList = ImmutableSet.builder()
@@ -73,10 +74,10 @@ public class TagController extends Controller {
    * @return the hash tag
    */
   public Tag updateTag(String tagId, Optional<String> name) {
-    return Single.just(ofy().load().key(Key.<Tag>create(tagId)).now())
+    return Ix.just(ofy().load().key(Key.<Tag>create(tagId)).now())
         .map(tag -> name.isPresent() ? tag.withName(name.get()) : tag)
-        .doOnSuccess(tag -> ofy().save().entity(tag).now())
-        .blockingGet();
+        .doOnNext(tag -> ofy().save().entity(tag).now())
+        .single();
   }
 
   /**
@@ -168,7 +169,7 @@ public class TagController extends Controller {
    *
    * @return the list
    */
-  public List<Tag> recommendedTags() {
+  public List<Tag> getRecommendedTags() {
     return ofy().load().type(Tag.class).order("-" + Tag.FIELD_QUESTIONS).limit(12).list();
   }
 

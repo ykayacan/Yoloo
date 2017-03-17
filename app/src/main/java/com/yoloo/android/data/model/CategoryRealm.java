@@ -1,20 +1,31 @@
 package com.yoloo.android.data.model;
 
+import com.yoloo.backend.yolooApi.model.CategoryDTO;
 import io.realm.RealmObject;
 import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
+import java.util.Objects;
 
-public class CategoryRealm extends RealmObject {
+public class CategoryRealm extends RealmObject implements Chipable {
 
   @PrimaryKey
   private String id;
   @Index
   private String name;
   private String backgroundUrl;
-  private long posts;
+  private long postCount;
   private double rank;
-  @Index
-  private String type;
+
+  public CategoryRealm() {
+  }
+
+  public CategoryRealm(CategoryDTO dto) {
+    id = dto.getId();
+    name = dto.getName();
+    backgroundUrl = dto.getImageUrl();
+    postCount = dto.getPostCount();
+    rank = dto.getRank().doubleValue();
+  }
 
   public String getId() {
     return id;
@@ -43,12 +54,12 @@ public class CategoryRealm extends RealmObject {
     return this;
   }
 
-  public long getPosts() {
-    return posts;
+  public long getPostCount() {
+    return postCount;
   }
 
-  public CategoryRealm setPosts(long posts) {
-    this.posts = posts;
+  public CategoryRealm setPostCount(long postCount) {
+    this.postCount = postCount;
     return this;
   }
 
@@ -61,13 +72,19 @@ public class CategoryRealm extends RealmObject {
     return this;
   }
 
-  public String getType() {
-    return type;
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    CategoryRealm that = (CategoryRealm) o;
+    return postCount == that.postCount &&
+        Double.compare(that.rank, rank) == 0 &&
+        Objects.equals(id, that.id) &&
+        Objects.equals(name, that.name) &&
+        Objects.equals(backgroundUrl, that.backgroundUrl);
   }
 
-  public CategoryRealm setType(String type) {
-    this.type = type;
-    return this;
+  @Override public int hashCode() {
+    return Objects.hash(id, name, backgroundUrl, postCount, rank);
   }
 
   @Override public String toString() {
@@ -75,9 +92,8 @@ public class CategoryRealm extends RealmObject {
         "id='" + id + '\'' +
         ", name='" + name + '\'' +
         ", backgroundUrl='" + backgroundUrl + '\'' +
-        ", postCount=" + posts +
+        ", postCount=" + postCount +
         ", rank=" + rank +
-        ", type='" + type + '\'' +
         '}';
   }
 }

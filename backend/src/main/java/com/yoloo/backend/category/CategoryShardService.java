@@ -69,7 +69,7 @@ public class CategoryShardService implements Shardable<CategoryShard, Category> 
     return CategoryShard.createKey(entityKey, shardNum);
   }
 
-  @Override public Observable<List<Category>> mergeShards(Collection<Category> entities) {
+  @Override public Observable<List<Category>> mergeShards(Collection<? extends Category> entities) {
     return Observable.fromIterable(entities)
         .flatMap(this::mergeShards)
         .toList(entities.size() == 0 ? 1 : entities.size())
@@ -85,7 +85,7 @@ public class CategoryShardService implements Shardable<CategoryShard, Category> 
   }
 
   public Collection<CategoryShard> updateShards(String categoryIds) {
-    List<Key<Category>> categoryKeys = KeyUtil.extractKeysFromIds2(categoryIds, ",");
+    List<Key<Category>> categoryKeys = KeyUtil.extractKeysFromIds(categoryIds, ",");
 
     List<Key<CategoryShard>> categoryShardKeys =
         Lists.newArrayListWithCapacity(categoryKeys.size());

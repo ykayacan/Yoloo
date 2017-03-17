@@ -50,7 +50,7 @@ public class PostShardService implements Shardable<PostShard, Post> {
     return PostShard.createKey(entityKey, shardNum);
   }
 
-  @Override public Observable<List<Post>> mergeShards(Collection<Post> entities) {
+  @Override public Observable<List<Post>> mergeShards(Collection<? extends Post> entities) {
     return Observable.fromIterable(entities)
         .flatMap(this::mergeShards)
         .toList(entities.size() == 0 ? 1 : entities.size())

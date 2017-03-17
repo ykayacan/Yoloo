@@ -1,21 +1,29 @@
 package com.yoloo.android.feature.login.signup;
 
+import com.annimon.stream.Collectors;
+import com.annimon.stream.Stream;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.yoloo.android.data.model.AccountRealm;
+import com.yoloo.android.data.model.FcmRealm;
+import com.yoloo.android.data.repository.notification.NotificationRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.framework.MvpPresenter;
-import io.reactivex.Observable;
+
+import java.util.List;
+
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import java.util.List;
 import timber.log.Timber;
 
 class SignUpPresenter extends MvpPresenter<SignUpView> {
 
   private final UserRepository userRepository;
+  private final NotificationRepository notificationRepository;
 
-  SignUpPresenter(UserRepository userRepository) {
+  SignUpPresenter(UserRepository userRepository, NotificationRepository notificationRepository) {
     this.userRepository = userRepository;
+    this.notificationRepository = notificationRepository;
   }
 
   @Override public void onDetachView() {
@@ -23,41 +31,51 @@ class SignUpPresenter extends MvpPresenter<SignUpView> {
     super.onDetachView();
   }
 
-  void signUp(String email, String password, List<String> categoryIds, String locale) {
+  void signUp(String fullname, String email, String password, List<String> categoryIds,
+      String locale) {
     getView().onShowLoading();
 
-    processFirebase(email, password, convertTopicIdsToString(categoryIds), locale);
+    final String categoryIdsAsString = Stream.of(categoryIds).collect(Collectors.joining(","));
+
+    processFirebase(fullname, email, password, categoryIdsAsString, locale);
   }
 
-  private void processFirebase(String email, String password, String categoryIds, String locale) {
-    FirebaseAuth.getInstance()
-        .createUserWithEmailAndPassword(email, password)
+  private void processFirebase(String fullname, String email, String password, String categoryIds,
+      String locale) {
+    FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
         .addOnCompleteListener(task -> {
           Timber.d("createUserWithEmail:onComplete %s", task.isSuccessful());
 
           // If sign in fails, display a message to the user. If sign in succeeds
           // the auth state listener will be notified and logic to handle the
           // signed in user can be handled in the listener.
-          if (!task.isSuccessful()) {
+          if (task.isSuccessful()) {
+            registerUser(fullname, categoryIds, locale);
+          } else {
             getView().onHideLoading();
             getView().onError(task.getException());
-          } else {
-            registerUserOnServer(email, password, categoryIds, locale);
           }
         });
   }
 
-  private void registerUserOnServer(String email, String password, String categoryIds,
-      String locale) {
-    AccountRealm newAccount = new AccountRealm().setMe(true)
-        .setEmail(email)
-        .setPassword(password)
+  private void registerUser(String fullname, String categoryIds, String locale) {
+    AccountRealm newAccount = new AccountRealm()
+        .setMe(true)
+        .setRealname(fullname)
+        .setGender("MALE")
         .setLocale(locale)
         .setCategoryIds(categoryIds);
 
     Disposable d = userRepository.addUser(newAccount)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(account -> {
+        .flatMapCompletable(accountRealm -> {
+          String fcmToken = FirebaseInstanceId.getInstance().getToken();
+          FcmRealm fcm = new FcmRealm();
+          fcm.setToken(fcmToken);
+          return notificationRepository.registerFcmToken(fcm);
+        })
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(() -> {
           getView().onHideLoading();
           getView().onSignedUp();
         }, throwable -> {
@@ -66,12 +84,5 @@ class SignUpPresenter extends MvpPresenter<SignUpView> {
         });
 
     getDisposable().add(d);
-  }
-
-  private String convertTopicIdsToString(List<String> topicIds) {
-    return Observable.fromIterable(topicIds)
-        .reduce((s, s2) -> s + "," + s2)
-        .map(s -> s.substring(0, s.length() - 1))
-        .blockingGet();
   }
 }

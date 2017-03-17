@@ -1,6 +1,5 @@
 package com.yoloo.backend.bookmark;
 
-import com.annimon.stream.Stream;
 import com.google.api.server.spi.response.CollectionResponse;
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.QueryResultIterator;
@@ -16,6 +15,7 @@ import com.yoloo.backend.post.PostShardService;
 import com.yoloo.backend.post.dto.PostDTO;
 import com.yoloo.backend.post.transformer.PostTransformer;
 import com.yoloo.backend.vote.VoteService;
+import ix.Ix;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
@@ -107,18 +107,15 @@ public class BookmarkController extends Controller {
     List<Key<Post>> postKeys = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
 
     while (qi.hasNext()) {
-      // Add fetched objects to map. Because cursor iteration needs to be iterated.
       postKeys.add(qi.next().getSavedPostKey());
     }
 
     Collection<Post> posts = ofy().load().keys(postKeys).values();
 
-    posts = postShardService.mergeShards(posts)
-        .flatMap(posts1 -> voteService.checkPostVote(posts1, authKey))
+    List<PostDTO> postDTOs = postShardService.mergeShards(posts)
+        .flatMap(__ -> voteService.checkPostVote(__, authKey))
+        .map(__ -> Ix.from(__).map(post -> postTransformer.transformTo(post)).toList())
         .blockingSingle();
-
-    List<PostDTO> postDTOs =
-        Stream.of(posts).map(post -> postTransformer.transformTo(post)).toList();
 
     return CollectionResponse.<PostDTO>builder()
         .setItems(postDTOs)

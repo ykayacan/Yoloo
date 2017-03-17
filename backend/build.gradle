@@ -1,19 +1,17 @@
-// If you would like more information on the gradle-appengine-plugin please refer to the github page
-// https://github.com/GoogleCloudPlatform/gradle-appengine-plugin
-
 buildscript {
   repositories {
     jcenter()
   }
   dependencies {
-    classpath 'me.tatarka:gradle-retrolambda:3.5.0'
-    classpath 'com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0-beta3'
+    classpath 'me.tatarka:gradle-retrolambda:3.6.0'
+    classpath 'com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0-beta6'
     classpath 'com.google.cloud.tools:appengine-gradle-plugin:1.1.0'
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.14.0'
   }
 }
 
 repositories {
-  jcenter();
+  jcenter()
 }
 
 apply plugin: 'java'
@@ -21,42 +19,42 @@ apply plugin: 'war'
 apply plugin: 'com.google.cloud.tools.appengine'
 apply plugin: 'com.google.cloud.tools.endpoints-framework-server'
 apply plugin: 'me.tatarka.retrolambda'
+apply plugin: 'com.github.ben-manes.versions'
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
-final APP_ENGINE_VERSION = '1.9.49'
+final APP_ENGINE_VERSION = '1.9.50'
+final JACKSON_VERSION = '2.9.0.pr1'
 
 dependencies {
   // App Engine
   compile "com.google.appengine:appengine-api-1.0-sdk:$APP_ENGINE_VERSION"
 
-  compile 'com.google.cloud:google-cloud:0.9.2-alpha'
+  compile 'com.google.cloud:google-cloud:0.10.0-alpha'
 
   // Endpoints
-  compile 'com.google.endpoints:endpoints-framework:2.0.3'
+  compile 'com.google.endpoints:endpoints-framework:2.0.4'
   compile 'javax.inject:javax.inject:1'
   providedCompile 'javax.servlet:servlet-api:2.5'
 
-  compile 'com.google.firebase:firebase-admin:4.1.2'
+  compile 'com.google.firebase:firebase-admin:4.1.3'
   compile 'com.google.firebase:firebase-server-sdk:3.0.3'
 
-  compile 'com.googlecode.objectify:objectify:5.1.15'
+  compile 'com.googlecode.objectify:objectify:5.1.16'
   compile 'commons-fileupload:commons-fileupload:1.3.2'
-  compile 'com.google.code.gson:gson:2.8.0'
   compile 'joda-time:joda-time:2.9.7'
-  compileOnly 'org.projectlombok:lombok:1.16.12'
-  compile 'io.reactivex.rxjava2:rxjava:2.0.6'
+  compileOnly 'org.projectlombok:lombok:1.16.14'
+  compile 'io.reactivex.rxjava2:rxjava:2.0.7'
   compile 'com.github.akarnokd:ixjava:1.0.0-RC5'
   compile 'com.twitter:twitter-text:1.14.3'
   compile 'com.google.guava:guava:20.0'
-  compile 'com.annimon:stream:1.1.5'
-  //compile 'org.apache.httpcomponents:httpclient:4.5.3'
+  compile 'com.annimon:stream:1.1.6'
   //compile 'org.magicwerk:brownies-collections:0.9.13'
   //compile 'com.drewnoakes:metadata-extractor:2.10.1'
 
-  compile 'com.fasterxml.jackson.core:jackson-core:2.8.7'
-  compile 'com.fasterxml.jackson.core:jackson-annotations:2.8.7'
+  compile "com.fasterxml.jackson.core:jackson-core:$JACKSON_VERSION"
+  compile "com.fasterxml.jackson.core:jackson-annotations:$JACKSON_VERSION"
 
   testCompile 'junit:junit:4.12'
   compile "com.google.appengine:appengine-api-labs:$APP_ENGINE_VERSION"
@@ -65,12 +63,15 @@ dependencies {
   testCompile 'org.mockito:mockito-all:2.0.2-beta'
 }
 
-appengine {  // App Engine tasks configuration
-  run {      // local (dev_appserver) configuration (standard environments only)
+appengine {
+  // App Engine tasks configuration
+  run {
+    // local (dev_appserver) configuration (standard environments only)
 
   }
 
-  deploy {   // deploy configuration
+  deploy {
+    // deploy configuration
 
   }
 }

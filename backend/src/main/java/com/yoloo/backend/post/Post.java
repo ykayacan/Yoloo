@@ -23,9 +23,14 @@ import com.yoloo.backend.post.transformer.PostTransformer;
 import com.yoloo.backend.util.Deref;
 import com.yoloo.backend.vote.Votable;
 import com.yoloo.backend.vote.Vote;
+
+import org.joda.time.DateTime;
+
 import java.util.List;
 import java.util.Set;
+
 import javax.annotation.Nullable;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,7 +39,6 @@ import lombok.Singular;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 import lombok.experimental.Wither;
-import org.joda.time.DateTime;
 
 @Entity
 @Cache
@@ -224,8 +228,7 @@ public class Post implements Votable {
   }
 
   public enum PostType {
-    QUESTION,
-    BLOG
+    QUESTION, BLOG
   }
 
   @NoArgsConstructor

@@ -45,8 +45,8 @@ public class SearchController extends BaseController {
     return inflater.inflate(R.layout.controller_search, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
-    super.onViewCreated(view);
+  @Override protected void onViewBound(@NonNull View view) {
+    super.onViewBound(view);
 
     final RouterPagerAdapter pagerAdapter =
         new SearchPagerAdapter(this, getResources());

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cronentries>
   <!--<cron>
-    <url>/tasks/updateQuestion/categories/rank</url>
-    <description>Merge categories shards in every 1 hour</description>
+    <url>/tasks/updateQuestion/news/rank</url>
+    <description>Merge news shards in every 1 hour</description>
     <schedule>every 1 hours</schedule>
   </cron>-->
 </cronentries>

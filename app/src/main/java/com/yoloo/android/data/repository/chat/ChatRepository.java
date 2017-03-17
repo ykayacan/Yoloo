@@ -9,7 +9,6 @@ import com.yoloo.android.data.model.firebase.ChatMessage;
 import com.yoloo.android.data.model.firebase.ChatUser;
 import com.yoloo.android.rxfirebase.FirebaseChildEvent;
 import com.yoloo.android.rxfirebase.RxFirebaseDatabase;
-import com.yoloo.android.util.ReadMoreUtil;
 import io.reactivex.Observable;
 import java.util.HashMap;
 import java.util.List;
@@ -65,10 +64,10 @@ public class ChatRepository {
 
     update.put("messages/" + chat.getId(), message);
 
-    update.put("chats/" + message.getChatId(), chat
+    /*update.put("chats/" + message.getChatId(), chat
         .setLastMessage(ReadMoreUtil.readMoreContent(message, 40))
         .increaseMissedMessages()
-        .updateTimestamp());
+        .updateTimestamp());*/
 
     rootRef.updateChildren(update);
   }

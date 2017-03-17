@@ -41,6 +41,6 @@ public class TagRemoteDataStore {
     list.add(t1);
     list.add(t2);
 
-    return Observable.just(Response.create(list, null, null));
+    return Observable.just(Response.create(list, null));
   }
 }

@@ -9,11 +9,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import butterknife.ButterKnife;
-import butterknife.Unbinder;
+
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.ControllerChangeType;
+
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 public abstract class BaseController extends Controller {
 
@@ -34,11 +36,11 @@ public abstract class BaseController extends Controller {
   protected View onCreateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
     final View view = inflateView(inflater, container);
     unbinder = ButterKnife.bind(this, view);
-    onViewCreated(view);
+    onViewBound(view);
     return view;
   }
 
-  protected void onViewCreated(@NonNull View view) {
+  protected void onViewBound(@NonNull View view) {
   }
 
   @Override protected void onDestroyView(@NonNull View view) {

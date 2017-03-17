@@ -5,7 +5,6 @@ import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.Ref;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.feed.Feed;
 import com.yoloo.backend.follow.Follow;
@@ -20,7 +19,7 @@ import static com.yoloo.backend.OfyService.ofy;
 
 public class UpdateFeedServlet extends HttpServlet {
 
-  private static final String UPDATE_FEED_QUEUE = "update-feed-queue";
+  public static final String UPDATE_FEED_QUEUE = "update-feed-queue";
   private static final String URL = "/tasks/update/feed";
 
   private static final String ACCOUNT_ID = "accountId";
@@ -29,7 +28,7 @@ public class UpdateFeedServlet extends HttpServlet {
 
   public static void addToQueue(String accountId, String postId) {
     Queue queue = QueueFactory.getQueue(UPDATE_FEED_QUEUE);
-    queue.addAsync(TaskOptions.Builder
+    queue.add(TaskOptions.Builder
         .withUrl(URL)
         .param(ACCOUNT_ID, accountId)
         .param(POST_ID, postId));
@@ -68,8 +67,8 @@ public class UpdateFeedServlet extends HttpServlet {
 
   private Feed createFeed(Key<Account> followerKey, Key<Post> postKey) {
     return Feed.builder()
+        .id(Feed.createId(postKey))
         .parent(followerKey)
-        .postRef(Ref.create(postKey))
         .build();
   }
 }

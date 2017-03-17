@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -14,6 +15,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,10 +25,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import butterknife.BindColor;
+import butterknife.BindDimen;
+import butterknife.BindDrawable;
 import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.OnTextChanged;
 import butterknife.Optional;
+import com.annimon.stream.Collectors;
+import com.annimon.stream.Stream;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
@@ -50,25 +56,25 @@ import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.repository.tag.TagRepository;
 import com.yoloo.android.data.repository.tag.datasource.TagDiskDataStore;
 import com.yoloo.android.data.repository.tag.datasource.TagRemoteDataStore;
-import com.yoloo.android.ui.widget.PhotoThumbnail;
-import com.yoloo.android.ui.widget.ThumbView;
-import com.yoloo.android.feature.editor.CreatePostService;
 import com.yoloo.android.feature.editor.EditorType;
+import com.yoloo.android.feature.editor.SendPostService;
 import com.yoloo.android.feature.editor.bountyoverview.BountyController;
-import com.yoloo.android.feature.editor.tagoverview.TagOverviewDialog;
+import com.yoloo.android.feature.editor.tagselectdialog.TagSelectDialog;
 import com.yoloo.android.framework.MvpController;
+import com.yoloo.android.ui.widget.ThumbView;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.KeyboardUtil;
-import io.reactivex.annotations.Beta;
+import com.yoloo.android.util.TextViewUtil;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import timber.log.Timber;
 
 public class ComposeController extends MvpController<ComposeView, ComposePresenter>
-    implements ComposeView {
+    implements ComposeView, TagSelectDialog.OnTagsSelectedListener {
 
   private static final String KEY_EDITOR_TYPE = "EDITOR_TYPE";
 
@@ -78,14 +84,19 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
   @BindView(R.id.toolbar_editor) Toolbar toolbar;
   @BindView(R.id.et_editor) EditText etEditor;
   @BindView(R.id.tv_editor_post) TextView tvPost;
+  @BindView(R.id.editor_tag_container) ViewGroup tagContainer;
 
-  @Nullable @BindView(R.id.image_area_layout) ViewGroup imageArea;
+  @Nullable @BindView(R.id.image_area_container) ViewGroup imageContainer;
   @Nullable @BindView(R.id.tv_ask_bounty) TextView tvAskBounty;
   @Nullable @BindView(R.id.iv_blogeditor_cover) ImageView ivBlogCover;
   @Nullable @BindView(R.id.et_blogeditor_title) EditText etBlogTitle;
 
   @BindColor(R.color.primary) int primaryColor;
   @BindColor(R.color.primary_dark) int primaryDarkColor;
+
+  @BindDrawable(R.drawable.dialog_tag_bg) Drawable tagBgDrawable;
+
+  @BindDimen(R.dimen.spacing_normal) int normalSpaceDimen;
 
   private PostRealm draft;
 
@@ -109,17 +120,16 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
     editorType = getArgs().getInt(KEY_EDITOR_TYPE);
 
     final int layoutRes = editorType == EditorType.ASK_QUESTION
-            ? R.layout.controller_questioneditor
-            : R.layout.controller_blogeditor;
+        ? R.layout.controller_questioneditor
+        : R.layout.controller_blogeditor2;
 
     return inflater.inflate(layoutRes, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
-    super.onViewCreated(view);
+  @Override protected void onViewBound(@NonNull View view) {
+    super.onViewBound(view);
     setupToolbar();
     setHasOptionsMenu(true);
-    setupTagDialog();
 
     tvPost.setEnabled(false);
     KeyboardUtil.showDelayedKeyboard(etEditor);
@@ -134,17 +144,15 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
   }
 
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    // handle arrow click here
     final int itemId = item.getItemId();
-    switch (itemId) {
-      case android.R.id.home:
-        KeyboardUtil.hideKeyboard(etEditor);
-        setTempDraft();
-        getPresenter().updateDraft(draft, ComposePresenter.NAV_BACK);
-        return false;
-      default:
-        return super.onOptionsItemSelected(item);
+    if (itemId == android.R.id.home) {
+      KeyboardUtil.hideKeyboard(etEditor);
+      setTempDraft();
+      getPresenter().updateDraft(draft, ComposePresenter.NAV_BACK);
+      return false;
     }
+
+    return super.onOptionsItemSelected(item);
   }
 
   @Override public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -172,7 +180,8 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
             TagDiskDataStore.getInstance()),
         PostRepository.getInstance(
             PostRemoteDataStore.getInstance(),
-            PostDiskDataStore.getInstance()));
+            PostDiskDataStore.getInstance()
+        ));
   }
 
   @Override public void onDraftLoaded(PostRealm draft) {
@@ -189,22 +198,30 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
           .pushChangeHandler(new VerticalChangeHandler())
           .popChangeHandler(new VerticalChangeHandler()));
     } else if (navigation == ComposePresenter.NAV_POST) {
-      Intent intent = new Intent(getActivity(), CreatePostService.class);
+      Intent intent = new Intent(getActivity(), SendPostService.class);
       getActivity().startService(intent);
+
       getRouter().popToRoot();
     }
   }
 
   @Override public void onError(Throwable t) {
-
+    Timber.e(t);
   }
 
-  @OnTextChanged(R.id.et_editor) void listenInputChanges(CharSequence text) {
-    tvPost.setEnabled(!TextUtils.isEmpty(text.toString().trim()));
+  @Optional @OnTextChanged({
+      R.id.et_editor,
+      R.id.et_blogeditor_title
+  }) void listenInputChanges(CharSequence content) {
+    if (editorType == EditorType.ASK_QUESTION) {
+      tvPost.setEnabled(!TextUtils.isEmpty(content.toString().trim()));
+    } else if (editorType == EditorType.BLOG) {
+      tvPost.setEnabled(!TextUtils.isEmpty(content.toString().trim())
+          && !TextUtils.isEmpty(etBlogTitle.getText()));
+    }
   }
 
-  @Optional
-  @OnClick(R.id.tv_ask_bounty) void showBounties() {
+  @Optional @OnClick(R.id.tv_ask_bounty) void showBounties() {
     KeyboardUtil.hideKeyboard(etEditor);
     setTempDraft();
 
@@ -212,32 +229,35 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
   }
 
   @OnClick(R.id.ib_add_tag) void showTagDialog() {
-    TagOverviewDialog dialog = new TagOverviewDialog(getActivity());
+    TagSelectDialog dialog = new TagSelectDialog(getActivity());
+    dialog.setOnTagsSelectedListener(this);
+    dialog.setInitialTags(getUsedTags());
     dialog.show();
   }
 
-  @OnClick(R.id.ib_add_photo) void showAddPhotoDialog() {
+  @Optional @OnClick(R.id.ib_add_photo) void showAddPhotoDialog() {
     new AlertDialog.Builder(getActivity()).setTitle(R.string.label_editor_select_media_source_title)
         .setItems(R.array.action_editor_list_media_source, (dialog, which) -> {
           KeyboardUtil.hideKeyboard(etEditor);
 
-          switch (which) {
-            case 0:
-              checkGalleryPermissions();
-              break;
-            case 1:
-              checkCameraPermissions();
-              break;
+          if (which == 0) {
+            checkGalleryPermissions();
+          } else if (which == 1) {
+            checkCameraPermissions();
           }
         })
         .show();
   }
 
   @OnClick(R.id.tv_editor_post) void createNewPost() {
-    setTempDraft();
-
-    getPresenter().updateDraft(draft, ComposePresenter.NAV_POST);
     KeyboardUtil.hideKeyboard(etEditor);
+
+    if (getUsedTags().isEmpty()) {
+      showTagDialog();
+    } else {
+      setTempDraft();
+      getPresenter().updateDraft(draft, ComposePresenter.NAV_POST);
+    }
   }
 
   @Optional @OnClick(R.id.iv_blogeditor_cover) void removeCover() {
@@ -251,8 +271,25 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
         .show();
   }
 
+  @Override public void onTagsSelected(List<String> tagNames) {
+    tagContainer.setVisibility(View.VISIBLE);
+    tagContainer.removeAllViews();
+
+    Stream.of(tagNames).forEach(tagName -> {
+      final TextView tag = new TextView(getApplicationContext());
+      tag.setText(getActivity().getString(R.string.label_tag, tagName));
+      tag.setGravity(Gravity.CENTER);
+      tag.setPadding(16, 10, 16, 10);
+      tag.setBackground(tagBgDrawable);
+      TextViewUtil.setTextAppearance(tag, getActivity(), R.style.TextAppearance_AppCompat);
+
+      tagContainer.addView(tag);
+    });
+  }
+
   private void setTempDraft() {
     draft.setContent(etEditor.getText().toString())
+        .setTagsAsString(Stream.of(getUsedTags()).collect(Collectors.joining(",")))
         .setCreated(new Date());
 
     if (etBlogTitle != null) {
@@ -260,9 +297,9 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
     }
 
     if (editorType == EditorType.ASK_QUESTION) {
-      draft.setType(draft.getMediaUrl() == null ? 0 : 1);
-    } else if (editorType == EditorType.SHARE_TRIP) {
-      draft.setType(2);
+      draft.setPostType(draft.getMediaUrl() == null ? 0 : 1);
+    } else if (editorType == EditorType.BLOG) {
+      draft.setPostType(2);
     }
   }
 
@@ -315,6 +352,8 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
   private void handleCameraResult(Intent data) {
     final String path = data.getStringExtra(CameraConfiguration.Arguments.FILE_PATH);
     if (path != null) {
+      addPhotoToGallery(path);
+
       startCropActivity(Uri.fromFile(new File(path)));
     }
   }
@@ -336,7 +375,7 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
     if (uri != null) {
       if (editorType == EditorType.ASK_QUESTION) {
         addThumbView(uri);
-      } else if (editorType == EditorType.SHARE_TRIP) {
+      } else if (editorType == EditorType.BLOG) {
         addCoverView(uri);
       }
     } else {
@@ -349,7 +388,7 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
   }
 
   private void addThumbView(Uri uri) {
-    imageArea.setVisibility(View.VISIBLE);
+    imageContainer.setVisibility(View.VISIBLE);
 
     final ThumbView thumbView = new ThumbView(getApplicationContext());
 
@@ -364,37 +403,18 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
         });
 
     thumbView.setListener(view -> {
-      imageArea.removeView(view);
+      imageContainer.removeView(view);
 
-      if (imageArea.getChildCount() == 0) {
-        imageArea.setVisibility(View.GONE);
+      if (imageContainer.getChildCount() == 0) {
+        imageContainer.setVisibility(View.GONE);
       }
     });
 
     // Clear container before adding an image.
-    imageArea.removeAllViews();
-    imageArea.addView(thumbView);
+    imageContainer.removeAllViews();
+    imageContainer.addView(thumbView);
 
     draft.setMediaUrl(uri.getPath());
-  }
-
-  @Beta
-  private void addThumbView2(Uri uri) {
-    imageArea.setVisibility(View.VISIBLE);
-
-    final PhotoThumbnail thumbnail = new PhotoThumbnail(getApplicationContext());
-    Glide.with(getActivity())
-        .load(uri)
-        .override(90, 90)
-        .into(thumbnail);
-
-    thumbnail.setCloseIcon(R.drawable.layer_remove);
-
-    // Clear container before adding an image.
-    imageArea.removeAllViews();
-    imageArea.addView(thumbnail);
-
-    //draft.setMediaUrl(uri.getPath());
   }
 
   private void addCoverView(Uri uri) {
@@ -438,16 +458,6 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
         .execute(getActivity());
   }
 
-  private void setupTagDialog() {
-    /*tagView.getSelectedItemsObservable()
-        .flatMap(Observable::fromIterable)
-        .cast(TagRealm.class)
-        .map(TagRealm::getName)
-        .toList()
-        .doOnSuccess(tvTagAutoComplete::setTags)
-        .subscribe();*/
-  }
-
   private void setEditorContentFromDraft(PostRealm draft) {
     if (editorType == EditorType.ASK_QUESTION) {
       tvAskBounty.setText(draft.getBounty() == 0
@@ -457,7 +467,7 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
       if (!TextUtils.isEmpty(draft.getMediaUrl())) {
         addThumbView(Uri.fromFile(new File(draft.getMediaUrl())));
       }
-    } else if (editorType == EditorType.SHARE_TRIP) {
+    } else if (editorType == EditorType.BLOG) {
       if (!TextUtils.isEmpty(draft.getTitle())) {
         etBlogTitle.setText(draft.getTitle());
         etBlogTitle.setSelection(draft.getTitle().length());
@@ -472,5 +482,37 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
       etEditor.setText(draft.getContent());
       etEditor.setSelection(draft.getContent().length());
     }
+
+    if (!TextUtils.isEmpty(draft.getTagsAsString())) {
+      tagContainer.setVisibility(View.VISIBLE);
+      tagContainer.removeAllViews();
+
+      Stream.of(draft.getTagsAsString().split(",")).forEach(tagName -> {
+        final TextView tag = new TextView(getApplicationContext());
+        tag.setText(getActivity().getString(R.string.label_tag, tagName));
+        tag.setGravity(Gravity.CENTER);
+        tag.setPadding(16, 10, 16, 10);
+        tag.setBackground(tagBgDrawable);
+        TextViewUtil.setTextAppearance(tag, getActivity(), R.style.TextAppearance_AppCompat);
+
+        tagContainer.addView(tag);
+      });
+    }
+  }
+
+  private void addPhotoToGallery(String photoPath) {
+    Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+    File f = new File(photoPath);
+    Uri contentUri = Uri.fromFile(f);
+    mediaScanIntent.setData(contentUri);
+    getActivity().sendBroadcast(mediaScanIntent);
+  }
+
+  private List<String> getUsedTags() {
+    return Stream.rangeClosed(0, tagContainer.getChildCount())
+        .map(index -> tagContainer.getChildAt(index))
+        .select(TextView.class)
+        .map(textView -> textView.getText().toString().replace("#", ""))
+        .toList();
   }
 }

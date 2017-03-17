@@ -51,8 +51,8 @@ public class VoteEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "postCount.vote",
-      path = "postCount/{postId}/votes",
+      name = "posts.vote",
+      path = "posts/{postId}/votes",
       httpMethod = ApiMethod.HttpMethod.POST)
   public void votePost(
       @Named("postId") String postId,

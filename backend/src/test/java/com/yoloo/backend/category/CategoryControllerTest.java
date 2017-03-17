@@ -27,10 +27,9 @@ public class CategoryControllerTest extends TestBase {
   public void testAddCategory_continent() throws Exception {
     CategoryController categoryController = CategoryControllerFactory.of().create();
 
-    Category category = categoryController.insertCategory("Europe", Category.Type.CONTINENT);
+    Category category = categoryController.insertCategory("Camping", null);
 
-    assertEquals("Europe", category.getName());
-    assertEquals(Category.Type.CONTINENT, category.getType());
+    assertEquals("Camping", category.getName());
     assertEquals(0, category.getPosts());
     assertEquals(0.0, category.getRank(), 0);
     assertEquals(ShardConfig.CATEGORY_SHARD_COUNTER, category.getShards().size());
@@ -40,10 +39,9 @@ public class CategoryControllerTest extends TestBase {
   public void testAddCategory_theme() throws Exception {
     CategoryController categoryController = CategoryControllerFactory.of().create();
 
-    Category category = categoryController.insertCategory("Budget Travel", Category.Type.THEME);
+    Category category = categoryController.insertCategory("Budget Travel", null);
 
     assertEquals("Budget Travel", category.getName());
-    assertEquals(Category.Type.THEME, category.getType());
     assertEquals(0, category.getPosts());
     assertEquals(0.0, category.getRank(), 0);
     assertEquals(ShardConfig.CATEGORY_SHARD_COUNTER, category.getShards().size());
@@ -53,19 +51,17 @@ public class CategoryControllerTest extends TestBase {
   public void testUpdateCategory_continent() throws Exception {
     CategoryController categoryController = CategoryControllerFactory.of().create();
 
-    Category original = categoryController.insertCategory("Budget Travel", Category.Type.THEME);
+    Category original = categoryController.insertCategory("Budget Travel", null);
 
     assertEquals("Budget Travel", original.getName());
-    assertEquals(Category.Type.THEME, original.getType());
     assertEquals(0, original.getPosts());
     assertEquals(0.0, original.getRank(), 0);
     assertEquals(ShardConfig.CATEGORY_SHARD_COUNTER, original.getShards().size());
 
     Category updated = categoryController.updateCategory(original.getWebsafeId(),
-        Optional.of("Female Travel"), Optional.absent());
+        Optional.of("Female Travel"));
 
     assertEquals("Female Travel", updated.getName());
-    assertEquals(Category.Type.THEME, updated.getType());
     assertEquals(0, updated.getPosts());
     assertEquals(0.0, updated.getRank(), 0);
     assertEquals(ShardConfig.CATEGORY_SHARD_COUNTER, updated.getShards().size());
@@ -75,9 +71,9 @@ public class CategoryControllerTest extends TestBase {
   public void testListCategories_default() throws Exception {
     CategoryController categoryController = CategoryControllerFactory.of().create();
 
-    categoryController.insertCategory("Budget Travel", Category.Type.THEME);
-    categoryController.insertCategory("America", Category.Type.CONTINENT);
-    categoryController.insertCategory("Female Travel", Category.Type.THEME);
+    categoryController.insertCategory("Budget Travel", null);
+    categoryController.insertCategory("America", null);
+    categoryController.insertCategory("Female Travel", null);
 
     CollectionResponse<Category> response =
         categoryController.listCategories(Optional.absent(), Optional.absent(), Optional.absent());

@@ -32,6 +32,7 @@ import com.yoloo.backend.post.sort_strategy.PostSorter;
 import com.yoloo.backend.tag.TagShard;
 import com.yoloo.backend.tag.TagShardService;
 import com.yoloo.backend.util.CollectionTransformer;
+import com.yoloo.backend.util.ServerConfig;
 import com.yoloo.backend.vote.VoteService;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -44,7 +45,6 @@ import lombok.extern.java.Log;
 
 import static com.yoloo.backend.OfyService.ofy;
 import static com.yoloo.backend.util.StringUtil.split;
-import static com.yoloo.backend.util.StringUtil.splitToSet;
 
 @Log
 @AllArgsConstructor(staticName = "create")
@@ -196,7 +196,7 @@ public final class PostController extends Controller {
     Collection<CategoryShard> categoryShards = categoryShardService.updateShards(categoryIds);
 
     // Start gamification check.
-    List<NotificationBundle> notificationBundles = Lists.newArrayList();
+    List<NotificationBundle> notificationBundles = Lists.newArrayListWithCapacity(5);
     gameService.addFirstQuestionBonus(record, tracker, notificationBundles::addAll);
     gameService.addAskQuestionPerDayBonus(record, tracker, notificationBundles::addAll);
 
@@ -221,7 +221,9 @@ public final class PostController extends Controller {
       }
     });
 
-    UpdateFeedServlet.addToQueue(user.getUserId(), post.getWebsafeId());
+    if (!ServerConfig.isTest()) {
+      UpdateFeedServlet.addToQueue(user.getUserId(), post.getWebsafeId());
+    }
 
     return post;
   }
@@ -279,21 +281,17 @@ public final class PostController extends Controller {
   }
 
   /**
-   * Remove question.
+   * Delete post.
    *
-   * @param postId the websafe question id
-   * @throws NotFoundException the not found exception
+   * @param postId the post id
    */
-  public void deletePost(String postId) throws NotFoundException {
+  public void deletePost(String postId) {
     // Create post key from websafe id.
     final Key<Post> postKey = Key.create(postId);
 
     AccountShard shard = ofy().load()
-        .key(accountShardService.getRandomShardKey(postKey.getParent()))
-        .now();
-    shard.decreaseQuestions();
-
-    postService.getCommentKeysObservable(postKey);
+        .key(accountShardService.getRandomShardKey(postKey.getParent())).now();
+    shard.decreasePostCount();
 
     List<Key<Comment>> commentKeys = postService.getCommentKeys(postKey);
 
@@ -332,15 +330,16 @@ public final class PostController extends Controller {
       Optional<String> tags,
       Optional<Integer> limit,
       Optional<String> cursor,
-      Post.PostType postType,
+      Optional<Post.PostType> postType,
       User user) {
 
     return Observable
         .fromCallable(() -> {
-          Query<Post> query = ofy().load()
-              .group(Post.ShardGroup.class)
-              .type(Post.class)
-              .filter(Post.FIELD_POST_TYPE + " =", postType);
+          Query<Post> query = ofy().load().group(Post.ShardGroup.class).type(Post.class);
+
+          if (postType.isPresent()) {
+            query = query.filter(Post.FIELD_POST_TYPE + " =", postType.get());
+          }
 
           query = accountId.isPresent()
               ? query.ancestor(Key.<Account>create(accountId.get()))
@@ -355,10 +354,10 @@ public final class PostController extends Controller {
           }
 
           if (tags.isPresent()) {
-            Set<String> tagSet = splitToSet(tags.get(), ",");
+            Set<String> tagSet = split(tags.get(), ",");
 
             for (String tagName : tagSet) {
-              query = query.filter(Post.FIELD_TAGS + " =", tagName);
+              query = query.filter(Post.FIELD_TAGS + " =", tagName.trim().toLowerCase());
             }
           }
 
@@ -369,71 +368,13 @@ public final class PostController extends Controller {
           return query.limit(limit.or(DEFAULT_LIST_LIMIT));
         })
         .map(QueryResultIterable::iterator)
-        .flatMap(qi -> Observable.fromIterable(Stream.of(qi).toList())
-            .toList()
-            .flatMapObservable(postShardService::mergeShards)
-            .flatMap(__ -> voteService.checkPostVote(__, Key.create(user.getUserId())))
-            .compose(CollectionTransformer.create(qi)))
+        .flatMap(qi ->
+            Observable.fromIterable(Stream.of(qi).toList())
+                .toList()
+                .flatMapObservable(postShardService::mergeShards)
+                .flatMap(__ -> voteService.checkPostVote(__, Key.create(user.getUserId())))
+                .compose(CollectionTransformer.create(qi.getCursor().toString())))
         .blockingSingle();
-
-    // Init query fetch request.
-    /*Query<Post> query = ofy().load()
-        .group(Post.ShardGroup.class)
-        .type(Post.class)
-        .filter(Post.FIELD_POST_TYPE + " =", postType);*/
-
-    /*if (accountId.isPresent()) {
-      query = query.ancestor(Key.<Account>create(accountId.get()));
-    }
-
-    if (categories.isPresent()) {
-      Set<String> categoryNames = split(categories.get(), ",");
-
-      for (String categoryName : categoryNames) {
-        query = query.filter(Post.FIELD_CATEGORIES + " =", categoryName);
-      }
-    }
-
-    if (tags.isPresent()) {
-      Set<String> tagSet = splitToSet(tags.get(), ",");
-
-      for (String tagName : tagSet) {
-        query = query.filter(Post.FIELD_TAGS + " =", tagName);
-      }
-    }
-
-    // Sort query.
-    query = PostSorter.sort(query, sorter.or(PostSorter.NEWEST));
-
-    // Fetch items from beginning from cursor.
-    query = cursor.isPresent()
-        ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
-        : query;
-
-    // Limit items.
-    query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
-
-    final QueryResultIterator<Post> qi = query.iterator();
-
-    //List<Post> postCount = Stream.of(qi).toList();
-
-    return Observable.fromIterable(Stream.of(qi).toList())
-        .toList()
-        .flatMapObservable(postShardService::mergeShards)
-        .flatMap(__ -> voteService.checkPostVote(__, Key.create(user.getUserId())))
-        .compose(CollectionTransformer.create(qi))
-        .blockingSingle();*/
-
-    /*if (!postCount.isEmpty()) {
-      postCount = postShardService.mergeShards(postCount)
-          .flatMap(__ -> voteService.checkPostVote(__, accountKey))
-          .blockingFirst();
-    }
-
-    return CollectionResponse.<Post>builder()
-        .setItems(postCount)
-        .setNextPageToken(qi.getCursor().toWebSafeString())
-        .build();*/
   }
 
   /**

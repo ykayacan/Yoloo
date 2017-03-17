@@ -19,7 +19,6 @@ import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
-import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.TagRealm;
 import com.yoloo.android.data.repository.tag.TagRepository;
@@ -29,7 +28,7 @@ import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
-import com.yoloo.android.feature.feed.globalfeed.GlobalFeedController;
+import com.yoloo.android.feature.feed.global.FeedGlobalController;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
@@ -66,9 +65,6 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
 
   private int searchType;
 
-  private String tagCursor;
-  private String userCursor;
-
   private EditText etSearch;
   private ViewPager viewPager;
 
@@ -94,8 +90,8 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
     return inflater.inflate(R.layout.controller_child_search, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
-    super.onViewCreated(view);
+  @Override protected void onViewBound(@NonNull View view) {
+    super.onViewBound(view);
 
     searchType = getArgs().getInt(KEY_SEARCH_TYPE);
 
@@ -119,8 +115,9 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
 
     etSearch.addTextChangedListener(watcher);
 
-    searchSubject.filter(s -> !s.isEmpty()).debounce(350, TimeUnit.MILLISECONDS)
-        .subscribe(this::loadBySearchType);
+    searchSubject.filter(s -> !s.isEmpty())
+        .debounce(400, TimeUnit.MILLISECONDS)
+        .subscribe(query -> loadBySearchType(query, false));
   }
 
   @Override protected void onDetach(@NonNull View view) {
@@ -131,8 +128,11 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
 
   @NonNull @Override public ChildSearchPresenter createPresenter() {
     return new ChildSearchPresenter(
-        TagRepository.getInstance(TagRemoteDataStore.getInstance(), TagDiskDataStore.getInstance()),
-        UserRepository.getInstance(UserRemoteDataStore.getInstance(),
+        TagRepository.getInstance(
+            TagRemoteDataStore.getInstance(),
+            TagDiskDataStore.getInstance()),
+        UserRepository.getInstance(
+            UserRemoteDataStore.getInstance(),
             UserDiskDataStore.getInstance()));
   }
 
@@ -140,42 +140,39 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
     adapter.replaceTags(tags);
   }
 
-  @Override public void onTagsLoaded(Response<List<TagRealm>> response) {
-    tagCursor = response.getCursor();
-
-    adapter.replaceTags(response.getData());
+  @Override public void onTagsLoaded(List<TagRealm> tags) {
+    adapter.replaceTags(tags);
   }
 
   @Override public void onRecentUsersLoaded(List<AccountRealm> accounts) {
     adapter.replaceUsers(accounts);
   }
 
-  @Override public void onUsersLoaded(Response<List<AccountRealm>> response) {
-    userCursor = response.getCursor();
-
-    adapter.replaceUsers(response.getData());
+  @Override public void onUsersLoaded(List<AccountRealm> accounts) {
+    adapter.replaceUsers(accounts);
   }
 
   @Override public void onItemClick(View v, EpoxyModel<?> model, TagRealm item) {
     KeyboardUtil.hideKeyboard(etSearch);
 
     getParentController().getRouter()
-        .pushController(RouterTransaction.with(GlobalFeedController.ofTag(item.getName()))
+        .pushController(RouterTransaction.with(FeedGlobalController.ofTag(item.getName()))
             .pushChangeHandler(new VerticalChangeHandler())
             .popChangeHandler(new VerticalChangeHandler()));
   }
 
-  @Override public void onProfileClick(View v, String ownerId) {
+  @Override public void onProfileClick(View v, EpoxyModel<?> model, String userId) {
     KeyboardUtil.hideKeyboard(etSearch);
 
     getParentController().getRouter()
-        .pushController(RouterTransaction.with(ProfileController.create(ownerId))
+        .pushController(RouterTransaction.with(ProfileController.create(userId))
             .pushChangeHandler(new VerticalChangeHandler())
             .popChangeHandler(new VerticalChangeHandler()));
   }
 
-  @Override public void onFollowClick(View v, String userId, int direction) {
-    getPresenter().follow(userId, direction);
+  @Override
+  public void onFollowClick(View v, EpoxyModel<?> model, AccountRealm account, int direction) {
+    getPresenter().follow(account.getId(), direction);
   }
 
   private void setupRecyclerView() {
@@ -187,11 +184,11 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
     rvChildSearch.setAdapter(adapter);
   }
 
-  private void loadBySearchType(String s) {
+  private void loadBySearchType(String query, boolean resetCursor) {
     if (searchType == SearchType.TAG) {
-      getPresenter().loadTags(s, tagCursor);
+      getPresenter().searchTags(query, resetCursor);
     } else if (searchType == SearchType.USER) {
-      getPresenter().loadUsers(s, userCursor);
+      getPresenter().searchUsers(query, resetCursor);
     }
   }
 }

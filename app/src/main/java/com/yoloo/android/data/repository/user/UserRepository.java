@@ -1,15 +1,23 @@
 package com.yoloo.android.data.repository.user;
 
+import com.annimon.stream.Stream;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.yoloo.android.data.Response;
+import com.yoloo.android.data.faker.AccountFaker;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.util.Preconditions;
+
+import java.util.List;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
-import java.util.List;
 
 public class UserRepository {
 
@@ -31,59 +39,64 @@ public class UserRepository {
     return instance;
   }
 
-  public Observable<AccountRealm> getUser(String userId) {
-    Preconditions.checkNotNull(userId, "userId can not be null.");
+  public Single<AccountRealm> getUser(@Nonnull String userId) {
+    return remoteDataStore.get(userId)
+        .subscribeOn(Schedulers.io())
+        .map(account -> {
+          FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+          if (user != null && user.getEmail() != null) {
+            account.setMe(user.getEmail().equals(account.getEmail()));
+          }
 
-    // TODO: 24.01.2017 Convert it to remote.
-    return diskDataStore.get(userId).subscribeOn(Schedulers.io());
-    /*return remoteDataStore.getPost(userId)
-        .subscribeOn(Schedulers.io());*/
+          return account;
+        });
   }
 
-  public Observable<AccountRealm> getMe() {
-    return remoteDataStore.getMe().doOnNext(diskDataStore::add).subscribeOn(Schedulers.io());
+  public Single<AccountRealm> getMe() {
+    return remoteDataStore.getMe().doOnSuccess(diskDataStore::add).subscribeOn(Schedulers.io());
   }
 
-  public Observable<AccountRealm> getLocalMe() {
-    return diskDataStore.getMe().subscribeOn(Schedulers.io()).cache();
+  public Single<AccountRealm> getLocalMe() {
+    return diskDataStore.getMe().subscribeOn(Schedulers.io());
   }
 
-  public Single<AccountRealm> addUser(AccountRealm account) {
-    Preconditions.checkNotNull(account, "account can not be null.");
-
+  public Single<AccountRealm> addUser(@Nonnull AccountRealm account) {
     return remoteDataStore.add(account)
         .doOnSuccess(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }
 
-  public Observable<Response<List<AccountRealm>>> searchUser(String query, String cursor,
-      int limit) {
-    Preconditions.checkNotNull(query, "query can not be null.");
+  public Single<AccountRealm> updateUser(@Nonnull AccountRealm account) {
+    return remoteDataStore.add(account)
+        .doOnSuccess(diskDataStore::add)
+        .subscribeOn(Schedulers.io());
+  }
 
+  public Observable<Response<List<AccountRealm>>> searchUser(@Nonnull String query,
+      @Nullable String cursor, int limit) {
     return remoteDataStore.list(query, cursor, limit).subscribeOn(Schedulers.io());
+  }
+
+  public Observable<Response<List<AccountRealm>>> listNewUsers(@Nullable String cursor, int limit) {
+    return Observable.just(Response.create(Stream.range(0, 6)
+        .map(__ -> AccountFaker.generateOne()).toList(), null));
   }
 
   public Observable<List<AccountRealm>> listRecentSearchedUsers() {
     return diskDataStore.listRecentSearches().subscribeOn(Schedulers.io());
   }
 
-  public Observable<Response<List<AccountRealm>>> listFollowers(String userId, String cursor,
-      String eTag, int limit) {
-    Preconditions.checkNotNull(userId, "userId can not be null.");
-
-    return remoteDataStore.listFollowers(userId, cursor, eTag, limit).subscribeOn(Schedulers.io());
+  public Observable<Response<List<AccountRealm>>> listFollowers(@Nonnull String userId,
+      @Nullable String cursor, int limit) {
+    return remoteDataStore.listFollowers(userId, cursor, limit).subscribeOn(Schedulers.io());
   }
 
-  public Observable<Response<List<AccountRealm>>> listFollowings(String userId, String cursor,
-      String eTag, int limit) {
-    Preconditions.checkNotNull(userId, "userId can not be null.");
-
-    return remoteDataStore.listFollowings(userId, cursor, eTag, limit).subscribeOn(Schedulers.io());
+  public Observable<Response<List<AccountRealm>>> listFollowings(@Nonnull String userId,
+      @Nullable String cursor, int limit) {
+    return remoteDataStore.listFollowings(userId, cursor, limit).subscribeOn(Schedulers.io());
   }
 
-  public Completable follow(String userId, int direction) {
-    Preconditions.checkNotNull(userId, "userId can not be null.");
-
-    return remoteDataStore.follow(userId, direction);
+  public Completable follow(@Nonnull String userId, int direction) {
+    return direction == 1 ? remoteDataStore.follow(userId) : remoteDataStore.unfollow(userId);
   }
 }

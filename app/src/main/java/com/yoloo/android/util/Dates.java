@@ -24,8 +24,6 @@ import com.yoloo.android.R;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import org.joda.time.DateTime;
-import org.joda.time.Days;
 
 /**
  * Collection of date utilities.
@@ -254,6 +252,6 @@ public final class Dates {
   }
 
   private static synchronized long getNumberOfDaysPassed(final long date1, final long date2) {
-    return Days.daysBetween(new DateTime(date1), new DateTime(date2)).getDays();
+    return 1; /*Days.daysBetween(new DateTime(date1), new DateTime(date2)).getDays();*/
   }
 }

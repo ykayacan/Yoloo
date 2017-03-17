@@ -8,6 +8,7 @@ import com.yoloo.android.YolooApp;
 public final class NotificationUtil {
 
   private NotificationUtil() {
+    // empty constructor
   }
 
   public static void show(Notification notification, int id) {

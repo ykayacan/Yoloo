@@ -1,7 +1,7 @@
 package com.yoloo.android.data.sorter;
 
 public enum CategorySorter {
-  TRENDING("hot"),
+  TRENDING("trending"),
   DEFAULT("default");
 
   private String title;

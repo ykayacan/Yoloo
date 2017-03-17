@@ -26,10 +26,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:foreground="?android:attr/selectableItemBackgroundBorderless"
+        android:foreground="?attr/selectableItemBackground"
         android:padding="16dp"
         android:text="@string/action_editor_post"
-        android:textAppearance="@style/TextAppearance.AppCompat.Menu" />
+        android:textAppearance="@style/TextAppearance.ToolbarMenu"
+        android:textStyle="bold" />
 
     </android.support.v7.widget.Toolbar>
 
@@ -38,6 +39,7 @@
   <ScrollView
     android:layout_width="0dp"
     android:layout_height="0dp"
+    android:fillViewport="true"
     app:layout_constraintBottom_toTopOf="@+id/layout_editor_action"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
@@ -58,7 +60,7 @@
         android:padding="16dp" />
 
       <LinearLayout
-        android:id="@+id/image_area_layout"
+        android:id="@+id/image_area_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
@@ -66,6 +68,19 @@
         android:animateLayoutChanges="true"
         android:orientation="horizontal"
         android:visibility="gone" />
+
+      <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/editor_tag_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingEnd="@dimen/padding_normal"
+        android:paddingLeft="@dimen/padding_normal"
+        android:paddingRight="@dimen/padding_normal"
+        android:paddingStart="@dimen/padding_normal"
+        android:visibility="gone"
+        app:dividerDrawable="@drawable/tag_divider"
+        app:flexWrap="wrap"
+        app:showDivider="end|middle" />
 
     </LinearLayout>
 
@@ -81,7 +96,7 @@
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent">
 
-    <com.yoloo.android.ui.widget.CompatTextView
+    <com.yoloo.android.ui.widget.BaselineGridTextView
       android:id="@+id/tv_ask_bounty"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"

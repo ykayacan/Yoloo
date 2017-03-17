@@ -1,7 +1,6 @@
 package com.yoloo.backend;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.experimental.UtilityClass;
 
 /**
  * API Keys, Client Ids and Audience Ids for accessing APIs and configuring
@@ -9,7 +8,7 @@ import lombok.NoArgsConstructor;
  * When you deploy your solution, you need to use your own API Keys and IDs.
  * Please refer to the documentation for this sample for more details.
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@UtilityClass
 public final class Constants {
 
   public static final String ADMIN_EMAIL = "admin@yolooapp.com";
@@ -67,6 +66,4 @@ public final class Constants {
    * API package path.
    */
   public static final String API_PACKAGE_PATH = "";
-
-  public static final long TOKEN_EXPIRES_IN = 1814400; // 24 hours in seconds.
 }

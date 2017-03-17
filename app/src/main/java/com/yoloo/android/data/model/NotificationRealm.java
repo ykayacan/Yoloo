@@ -1,5 +1,7 @@
 package com.yoloo.android.data.model;
 
+import com.yoloo.backend.yolooApi.model.JsonMap;
+import com.yoloo.backend.yolooApi.model.NotificationDTO;
 import io.realm.RealmObject;
 import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
@@ -27,23 +29,23 @@ public class NotificationRealm extends RealmObject {
   public NotificationRealm() {
   }
 
-  /*public NotificationRealm(Notification notification) {
-    this.id = notification.getId();
-    this.senderId = notification.getSenderId();
-    this.senderUsername = notification.getSenderUsername();
-    this.senderAvatarUrl = notification.getSenderAvatarUrl().getValue();
-    this.action = notification.getAction();
-    this.created = new Date(notification.getCreated().getMillis());
+  public NotificationRealm(NotificationDTO dto) {
+    id = dto.getId();
+    senderId = dto.getSenderId();
+    senderUsername = dto.getSenderUsername();
+    senderAvatarUrl = dto.getSenderAvatarUrl();
+    action = dto.getAction();
+    created = new Date(dto.getCreated().getValue());
 
-    final JsonMap map = notification.getObjects();
+    final JsonMap map = dto.getPayload();
     if (map.containsKey("questionId")) {
-      this.questionId = (String) map.get("questionId");
+      questionId = (String) map.get("questionId");
     }
 
     if (map.containsKey("message")) {
-      this.message = (String) map.get("message");
+      message = (String) map.get("message");
     }
-  }*/
+  }
 
   public String getId() {
     return id;

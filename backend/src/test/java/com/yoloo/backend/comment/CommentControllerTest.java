@@ -100,7 +100,7 @@ public class CommentControllerTest extends TestBase {
     User user = new User(USER_EMAIL, USER_AUTH_DOMAIN, owner.getWebsafeId());
 
     try {
-      europe = categoryController.insertCategory("europe", Category.Type.CONTINENT);
+      europe = categoryController.insertCategory("europe", null);
     } catch (ConflictException e) {
       e.printStackTrace();
     }

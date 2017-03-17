@@ -1,5 +1,6 @@
 package com.yoloo.backend.account;
 
+import com.google.appengine.api.images.ImagesServiceFactory;
 import com.yoloo.backend.base.ControllerFactory;
 import com.yoloo.backend.game.GamificationService;
 import lombok.NoArgsConstructor;
@@ -7,6 +8,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(staticName = "of")
 public class AccountControllerProvider implements ControllerFactory<AccountController> {
   @Override public AccountController create() {
-    return AccountController.create(AccountShardService.create(), GamificationService.create());
+    return AccountController.create(
+        AccountShardService.create(),
+        GamificationService.create(),
+        ImagesServiceFactory.getImagesService());
   }
 }

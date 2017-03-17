@@ -9,6 +9,7 @@ public class CommentTransformer implements Transformer<Comment, CommentDTO> {
     return CommentDTO.builder()
         .id(in.getWebsafeId())
         .ownerId(in.getWebsafeOwnerId())
+        .postId(in.getPostKey().toWebSafeString())
         .username(in.getUsername())
         .avatarUrl(in.getAvatarUrl().getValue())
         .content(in.getContent())

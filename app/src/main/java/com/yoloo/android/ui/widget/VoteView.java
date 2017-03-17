@@ -26,22 +26,24 @@ public class VoteView extends BaselineGridTextView {
 
   private long votes = 0L;
 
+  private int direction;
+
   public VoteView(Context context) {
     super(context);
-    init(context, null, 0);
+    init();
   }
 
   public VoteView(Context context, AttributeSet attrs) {
     super(context, attrs);
-    init(context, attrs, 0);
+    init();
   }
 
   public VoteView(Context context, AttributeSet attrs, int defStyleAttr) {
     super(context, attrs, defStyleAttr);
-    init(context, attrs, defStyleAttr);
+    init();
   }
 
-  private void init(Context context, AttributeSet attrs, int defStyleAttr) {
+  private void init() {
     if (!isInEditMode()) {
       setDefaultTint(LEFT_DRAWABLE);
       setDefaultTint(RIGHT_DRAWABLE);
@@ -50,22 +52,21 @@ public class VoteView extends BaselineGridTextView {
     setGravity(Gravity.CENTER);
   }
 
-  @Override
-  public boolean onTouchEvent(MotionEvent event) {
+  @Override public boolean onTouchEvent(MotionEvent event) {
     Preconditions.checkNotNull(onVoteEventListener,
         "Vote listener is not implemented. Please implement OnVoteEventListener");
 
     if (event.getAction() == MotionEvent.ACTION_UP) {
       if (isUpDrawableClick(event)) {
         if (upConsumed) {
-          setText(CountUtil.format(--votes));
+          setText(CountUtil.formatCount(--votes));
           setDefaultTint(LEFT_DRAWABLE);
           upConsumed = false;
 
           onVoteEventListener.onVoteEvent(DIRECTION_DEFAULT);
         } else if (downConsumed) {
           votes += 2;
-          setText(CountUtil.format(votes));
+          setText(CountUtil.formatCount(votes));
           setDefaultTint(RIGHT_DRAWABLE);
           setUpTint();
           downConsumed = false;
@@ -73,7 +74,7 @@ public class VoteView extends BaselineGridTextView {
 
           onVoteEventListener.onVoteEvent(DIRECTION_UP);
         } else {
-          setText(CountUtil.format(++votes));
+          setText(CountUtil.formatCount(++votes));
           setUpTint();
           upConsumed = true;
 
@@ -81,13 +82,13 @@ public class VoteView extends BaselineGridTextView {
         }
       } else if (isDownDrawableClick(event)) {
         if (downConsumed) {
-          setText(CountUtil.format(++votes));
+          setText(CountUtil.formatCount(++votes));
           setDefaultTint(RIGHT_DRAWABLE);
           onVoteEventListener.onVoteEvent(DIRECTION_DEFAULT);
           downConsumed = false;
         } else if (upConsumed) {
           votes -= 2;
-          setText(CountUtil.format(votes));
+          setText(CountUtil.formatCount(votes));
           setDefaultTint(LEFT_DRAWABLE);
           setDownTint();
           upConsumed = false;
@@ -95,7 +96,7 @@ public class VoteView extends BaselineGridTextView {
 
           onVoteEventListener.onVoteEvent(DIRECTION_DOWN);
         } else {
-          setText(CountUtil.format(--votes));
+          setText(CountUtil.formatCount(--votes));
           setDownTint();
           downConsumed = true;
 
@@ -127,9 +128,9 @@ public class VoteView extends BaselineGridTextView {
   }
 
   private void setTint(@ColorRes int color, int compoundIndex) {
-    DrawableHelper.withContext(getContext())
-        .withColor(color)
+    DrawableHelper.create()
         .withDrawable(getCompoundDrawables()[compoundIndex])
+        .withColor(getContext(), color)
         .tint();
   }
 
@@ -137,8 +138,13 @@ public class VoteView extends BaselineGridTextView {
     this.onVoteEventListener = onVoteEventListener;
   }
 
-  public void setCurrentStatus(int dir) {
-    switch (dir) {
+  public int getDirection() {
+    return direction;
+  }
+
+  public void setVoteDirection(int direction) {
+    this.direction = direction;
+    switch (direction) {
       case -1:
         upConsumed = false;
         downConsumed = true;
@@ -166,7 +172,7 @@ public class VoteView extends BaselineGridTextView {
 
   public void setVotes(long votes) {
     this.votes = votes;
-    setText(CountUtil.format(this.votes));
+    setText(CountUtil.formatCount(this.votes));
   }
 
   public interface OnVoteEventListener {

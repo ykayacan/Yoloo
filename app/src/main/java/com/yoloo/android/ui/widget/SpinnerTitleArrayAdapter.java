@@ -29,8 +29,7 @@ public class SpinnerTitleArrayAdapter extends ArrayAdapter<String> {
     this.subtitle = subtitle;
   }
 
-  @Override
-  public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent) {
+  @Override public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent) {
     return getDropdownView(position, convertView, parent);
   }
 
@@ -40,8 +39,7 @@ public class SpinnerTitleArrayAdapter extends ArrayAdapter<String> {
     return getHeaderView(position, convertView, parent);
   }
 
-  @NonNull
-  private View getHeaderView(int position, View convertView, ViewGroup parent) {
+  @NonNull private View getHeaderView(int position, View convertView, ViewGroup parent) {
     HeaderViewHolder holder;
     if (convertView == null) {
       convertView = inflater.inflate(R.layout.spinner_row_head, parent, false);
@@ -65,8 +63,7 @@ public class SpinnerTitleArrayAdapter extends ArrayAdapter<String> {
     return convertView;
   }
 
-  @NonNull
-  private View getDropdownView(int position, View convertView, ViewGroup parent) {
+  @NonNull private View getDropdownView(int position, View convertView, ViewGroup parent) {
     final ItemViewHolder holder;
     if (convertView == null) {
       convertView = inflater.inflate(R.layout.support_simple_spinner_dropdown_item, parent, false);
@@ -84,34 +81,27 @@ public class SpinnerTitleArrayAdapter extends ArrayAdapter<String> {
     return convertView;
   }
 
-  @Override
-  public int getCount() {
+  @Override public int getCount() {
     return super.getCount() + EXTRA;
   }
 
-  @Nullable
-  @Override
-  public String getItem(int position) {
+  @Nullable @Override public String getItem(int position) {
     return position == 0 ? null : super.getItem(position - EXTRA);
   }
 
-  @Override
-  public int getItemViewType(int position) {
+  @Override public int getItemViewType(int position) {
     return 0;
   }
 
-  @Override
-  public int getViewTypeCount() {
+  @Override public int getViewTypeCount() {
     return 1;
   }
 
-  @Override
-  public long getItemId(int position) {
+  @Override public long getItemId(int position) {
     return position >= EXTRA ? super.getItemId(position - EXTRA) : position - EXTRA;
   }
 
-  @Override
-  public boolean isEnabled(int position) {
+  @Override public boolean isEnabled(int position) {
     return position != 0;
   }
 

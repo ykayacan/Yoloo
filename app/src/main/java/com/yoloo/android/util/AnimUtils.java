@@ -17,22 +17,27 @@
 package com.yoloo.android.util;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
 import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
-import android.annotation.TargetApi;
 import android.os.Build;
 import android.support.v4.util.ArrayMap;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v4.view.animation.LinearOutSlowInInterpolator;
+import android.util.FloatProperty;
+import android.util.IntProperty;
 import android.util.Property;
-import android.view.animation.Animation;
+import android.view.ViewAnimationUtils;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.AnticipateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.OvershootInterpolator;
+import com.yoloo.android.ui.widget.RevealFrameLayout;
 import java.util.ArrayList;
 
 /**
@@ -47,10 +52,12 @@ public final class AnimUtils {
   private static Interpolator linear;
   private static Interpolator overshoot;
   private static Interpolator anticipate;
+  private static Interpolator accelerateDecelerate;
 
-  private static ArgbEvaluator sArgbEvaluator;
+  private static ArgbEvaluator argbEvaluator;
 
   private AnimUtils() {
+    // empty constructor
   }
 
   public static Interpolator getLinearInterpolator() {
@@ -102,11 +109,18 @@ public final class AnimUtils {
     return anticipate;
   }
 
-  public static ArgbEvaluator getArgbEvaluator() {
-    if (sArgbEvaluator == null) {
-      sArgbEvaluator = new ArgbEvaluator();
+  public static Interpolator getAccelerateDecelerateInterpolator() {
+    if (accelerateDecelerate == null) {
+      accelerateDecelerate = new AccelerateDecelerateInterpolator();
     }
-    return sArgbEvaluator;
+    return accelerateDecelerate;
+  }
+
+  public static ArgbEvaluator getArgbEvaluator() {
+    if (argbEvaluator == null) {
+      argbEvaluator = new ArgbEvaluator();
+    }
+    return argbEvaluator;
   }
 
   /**
@@ -128,54 +142,117 @@ public final class AnimUtils {
   }
 
   /**
-   * An implementation of {@link Property} to be used specifically with fields of type
-   * <code>float</code>. This type-specific subclass enables performance benefit by allowing calls
-   * to a {@link #set(Object, Float) set()} function that takes the primitive <code>float</code>
-   * type and avoids autoboxing and other overhead associated with the <code>Float</code> class.
-   *
-   * @param <T> The class on which the Property is declared.
-   **/
-  public abstract static class FloatProperty<T> extends Property<T, Float> {
-    public FloatProperty(String name) {
-      super(Float.class, name);
-    }
+   * The animation framework has an optimization for <code>Properties</code> of type
+   * <code>int</code> but it was only made public in API24, so wrap the impl in our own type
+   * and conditionally create the appropriate type, delegating the implementation.
+   */
+  public static <T> Property<T, Integer> createIntProperty(final IntProp<T> impl) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+      return new IntProperty<T>(impl.name) {
+        @Override
+        public Integer get(T object) {
+          return impl.get(object);
+        }
 
-    /**
-     * A type-specific override of the {@link #set(Object, Float)} that is faster when dealing with
-     * fields of type <code>float</code>.
-     */
-    public abstract void setValue(T object, float value);
+        @Override
+        public void setValue(T object, int value) {
+          impl.set(object, value);
+        }
+      };
+    } else {
+      return new Property<T, Integer>(Integer.class, impl.name) {
+        @Override
+        public Integer get(T object) {
+          return impl.get(object);
+        }
 
-    @Override
-    public final void set(T object, Float value) {
-      setValue(object, value);
+        @Override
+        public void set(T object, Integer value) {
+          impl.set(object, value);
+        }
+      };
     }
   }
 
   /**
-   * An implementation of {@link Property} to be used specifically with fields of type
-   * <code>int</code>. This type-specific subclass enables performance benefit by allowing calls to
-   * a {@link #set(Object, Integer) set()} function that takes the primitive <code>int</code> type
-   * and avoids autoboxing and other overhead associated with the <code>Integer</code> class.
-   *
-   * @param <T> The class on which the Property is declared.
+   * The animation framework has an optimization for <code>Properties</code> of type
+   * <code>float</code> but it was only made public in API24, so wrap the impl in our own type
+   * and conditionally create the appropriate type, delegating the implementation.
    */
-  public abstract static class IntProperty<T> extends Property<T, Integer> {
+  public static <T> Property<T, Float> createFloatProperty(final FloatProp<T> impl) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+      return new FloatProperty<T>(impl.name) {
+        @Override
+        public Float get(T object) {
+          return impl.get(object);
+        }
 
-    public IntProperty(String name) {
-      super(Integer.class, name);
+        @Override
+        public void setValue(T object, float value) {
+          impl.set(object, value);
+        }
+      };
+    } else {
+      return new Property<T, Float>(Float.class, impl.name) {
+        @Override
+        public Float get(T object) {
+          return impl.get(object);
+        }
+
+        @Override
+        public void set(T object, Float value) {
+          impl.set(object, value);
+        }
+      };
+    }
+  }
+
+  public static Animator createCircularReveal(RevealFrameLayout view, int x, int y,
+      float startRadius, float endRadius) {
+    if (VersionUtil.hasL()) {
+      return ViewAnimationUtils.createCircularReveal(view, x, y, startRadius, endRadius);
+    } else {
+      view.setClipOutLines(true);
+      view.setClipCenter(x, y);
+      final Animator reveal = ObjectAnimator.ofFloat(view, "ClipRadius", startRadius, endRadius);
+      reveal.addListener(new AnimatorListenerAdapter() {
+        @Override public void onAnimationEnd(Animator animation) {
+          view.setClipOutLines(false);
+        }
+      });
+
+      return reveal;
+    }
+  }
+
+  /**
+   * A delegate for creating a {@link Property} of <code>int</code> type.
+   */
+  public static abstract class IntProp<T> {
+    public final String name;
+
+    public IntProp(String name) {
+      this.name = name;
     }
 
-    /**
-     * A type-specific override of the {@link #set(Object, Integer)} that is faster when dealing
-     * with fields of type <code>int</code>.
-     */
-    public abstract void setValue(T object, int value);
+    public abstract void set(T object, int value);
 
-    @Override
-    public final void set(T object, Integer value) {
-      setValue(object, value);
+    public abstract int get(T object);
+  }
+
+  /**
+   * A delegate for creating a {@link Property} of <code>float</code> type.
+   */
+  public static abstract class FloatProp<T> {
+    public final String name;
+
+    protected FloatProp(String name) {
+      this.name = name;
     }
+
+    public abstract void set(T object, float value);
+
+    public abstract float get(T object);
   }
 
   /**
@@ -216,7 +293,6 @@ public final class AnimUtils {
       return mAnimator.getDuration();
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     public TimeInterpolator getInterpolator() {
       return mAnimator.getInterpolator();
@@ -229,7 +305,7 @@ public final class AnimUtils {
 
     @Override
     public ArrayList<AnimatorListener> getListeners() {
-      return new ArrayList<AnimatorListener>(mListeners.keySet());
+      return new ArrayList<>(mListeners.keySet());
     }
 
     @Override
@@ -242,7 +318,6 @@ public final class AnimUtils {
       mAnimator.setStartDelay(delayMS);
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     @Override
     public boolean isPaused() {
       return mAnimator.isPaused();
@@ -258,16 +333,13 @@ public final class AnimUtils {
       return mAnimator.isStarted();
     }
 
-        /* We don't want to override pause or resume methods because we don't want them
-         * to affect mAnimator.
-        public void pause();
-
-        public void resume();
-
-        public void addPauseListener(AnimatorPauseListener mListener);
-
-        public void removePauseListener(AnimatorPauseListener mListener);
-        */
+    /* We don't want to override pause or resume methods because we don't want them
+     * to affect animator.
+    public void pause();
+    public void resume();
+    public void addPauseListener(AnimatorPauseListener listener);
+    public void removePauseListener(AnimatorPauseListener listener);
+    */
 
     @Override
     public void removeAllListeners() {
@@ -312,46 +384,32 @@ public final class AnimUtils {
   }
 
   private static class AnimatorListenerWrapper implements Animator.AnimatorListener {
-    private final Animator mAnimator;
-    private final Animator.AnimatorListener mListener;
+    private final Animator animator;
+    private final Animator.AnimatorListener listener;
 
-    public AnimatorListenerWrapper(Animator animator, Animator.AnimatorListener listener) {
-      mAnimator = animator;
-      mListener = listener;
+    AnimatorListenerWrapper(Animator animator, Animator.AnimatorListener listener) {
+      this.animator = animator;
+      this.listener = listener;
     }
 
     @Override
     public void onAnimationStart(Animator animator) {
-      mListener.onAnimationStart(mAnimator);
+      listener.onAnimationStart(this.animator);
     }
 
     @Override
     public void onAnimationEnd(Animator animator) {
-      mListener.onAnimationEnd(mAnimator);
+      listener.onAnimationEnd(this.animator);
     }
 
     @Override
     public void onAnimationCancel(Animator animator) {
-      mListener.onAnimationCancel(mAnimator);
+      listener.onAnimationCancel(this.animator);
     }
 
     @Override
     public void onAnimationRepeat(Animator animator) {
-      mListener.onAnimationRepeat(mAnimator);
-    }
-  }
-
-  public static class AnimationListenerAdapter implements Animation.AnimationListener {
-    @Override
-    public void onAnimationStart(Animation animation) {
-    }
-
-    @Override
-    public void onAnimationEnd(Animation animation) {
-    }
-
-    @Override
-    public void onAnimationRepeat(Animation animation) {
+      listener.onAnimationRepeat(this.animator);
     }
   }
 }

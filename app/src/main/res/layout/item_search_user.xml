@@ -20,7 +20,7 @@
 
   <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_item_search_username"
-    style="@style/TextAppearance.Username"
+    style="@style/Widget.Yoloo.Username"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center_vertical"

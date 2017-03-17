@@ -1,5 +1,6 @@
 package com.yoloo.backend.tag;
 
+import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.cmd.Query;
@@ -8,7 +9,6 @@ import com.yoloo.backend.shard.ShardUtil;
 import com.yoloo.backend.shard.Shardable;
 import io.reactivex.Observable;
 import ix.Ix;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -68,7 +68,7 @@ public class TagShardService implements Shardable<TagShard, Tag> {
     return TagShard.createKey(entityKey, shardNum);
   }
 
-  @Override public Observable<List<Tag>> mergeShards(Collection<Tag> entities) {
+  @Override public Observable<List<Tag>> mergeShards(Collection<? extends Tag> entities) {
     return Observable.fromIterable(entities)
         .flatMap(this::mergeShards)
         .toList(entities.size() == 0 ? 1 : entities.size())
@@ -92,7 +92,7 @@ public class TagShardService implements Shardable<TagShard, Tag> {
 
     List<Key<Tag>> tagKeys = query.keys().list();
 
-    List<Key<TagShard>> tagShardKeys = new ArrayList<>(tagKeys.size());
+    List<Key<TagShard>> tagShardKeys = Lists.newArrayListWithCapacity(tagKeys.size());
     tagShardKeys.addAll(Ix.from(tagKeys).map(this::getRandomShardKey).toList());
 
     Map<Key<TagShard>, TagShard> tagShardMap = ofy().load().keys(tagShardKeys);

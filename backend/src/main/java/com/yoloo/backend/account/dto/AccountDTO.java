@@ -1,26 +1,31 @@
 package com.yoloo.backend.account.dto;
 
 import java.util.Date;
+import java.util.List;
+
 import lombok.Builder;
 import lombok.Value;
-import lombok.experimental.Wither;
 
 @Value
 @Builder
 public class AccountDTO {
 
   private String id;
-  @Wither private String username;
-  @Wither private String realname;
-  @Wither private String email;
-  @Wither private String avatarUrl;
+  private String username;
+  private String realname;
+  private String email;
+  private String gender;
+  private String avatarUrl;
+  private String bio;
+  private String websiteUrl;
+  private List<String> interestedCategoryIds;
   private Date created;
   private String locale;
-  @Wither private boolean isFollowing;
-  @Wither private long followingCount;
-  @Wither private long followerCount;
-  @Wither private long postCount;
-  @Wither private int level;
-  @Wither private int pointCount;
-  @Wither private int bountyCount;
+  private boolean isFollowing;
+  private long followingCount;
+  private long followerCount;
+  private long postCount;
+  private int level;
+  private int pointCount;
+  private int bountyCount;
 }

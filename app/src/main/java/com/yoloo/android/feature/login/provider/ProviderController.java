@@ -1,7 +1,9 @@
 package com.yoloo.android.feature.login.provider;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,28 +12,31 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import butterknife.BindDrawable;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.BindViews;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.airbnb.epoxy.EpoxyModel;
+import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.beloo.widget.chipslayoutmanager.ChipsLayoutManager;
-import com.beloo.widget.chipslayoutmanager.SpacingItemDecoration;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
-import com.google.android.gms.common.Scopes;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CategoryRealm;
 import com.yoloo.android.data.repository.category.CategoryRepository;
 import com.yoloo.android.data.repository.category.datasource.CategoryDiskDataStore;
 import com.yoloo.android.data.repository.category.datasource.CategoryRemoteDataStore;
+import com.yoloo.android.data.repository.notification.NotificationRepository;
+import com.yoloo.android.data.repository.notification.datasource.NotificationDiskDataSource;
+import com.yoloo.android.data.repository.notification.datasource.NotificationRemoteDataSource;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.category.CategoryChipAdapter;
-import com.yoloo.android.feature.feed.mainfeed.MainFeedController;
+import com.yoloo.android.feature.category.ChipAdapter;
+import com.yoloo.android.feature.feed.home.FeedHomeController;
 import com.yoloo.android.feature.login.AuthUI;
 import com.yoloo.android.feature.login.FacebookProvider;
 import com.yoloo.android.feature.login.GoogleProvider;
@@ -39,25 +44,25 @@ import com.yoloo.android.feature.login.IdpProvider;
 import com.yoloo.android.feature.login.IdpResponse;
 import com.yoloo.android.feature.login.signup.SignUpController;
 import com.yoloo.android.framework.MvpController;
-import com.yoloo.android.ui.recyclerview.OnItemClickListener;
+import com.yoloo.android.ui.recyclerview.decoration.SpacingItemDecoration;
 import com.yoloo.android.util.DisplayUtil;
 import com.yoloo.android.util.LocaleUtil;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import timber.log.Timber;
 
 public class ProviderController extends MvpController<ProviderView, ProviderPresenter>
-    implements ProviderView, IdpProvider.IdpCallback, OnItemClickListener<CategoryRealm> {
+    implements ProviderView, IdpProvider.IdpCallback,
+    ChipAdapter.OnItemSelectListener<CategoryRealm> {
 
-  private static final ButterKnife.Setter<View, Boolean> DEFAULT_VISIBILITY =
+  private final ButterKnife.Setter<View, Boolean> visibility =
       (view, value, index) -> view.setVisibility(value ? View.VISIBLE : View.GONE);
 
   @BindView(R.id.rv_login_categories) RecyclerView rvLoginCategories;
   @BindViews({
-      R.id.btn_facebook_sign_in,
-      R.id.btn_google_sign_in,
-      R.id.tv_login_or,
-      R.id.btn_login_sign_up
+      R.id.btn_facebook_sign_in, R.id.btn_google_sign_in, R.id.tv_login_or, R.id.btn_login_sign_up
   }) View[] views;
 
   @BindString(R.string.error_auth_failed) String errorAuthFailedString;
@@ -65,8 +70,11 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
   @BindString(R.string.error_server_down) String errorServerDownString;
   @BindString(R.string.error_already_registered) String errorAlreadyRegisteredString;
   @BindString(R.string.label_loading) String loadingString;
+  @BindString(R.string.error_unknownhost) String unknownhostString;
 
-  private CategoryChipAdapter adapter;
+  @BindDrawable(R.drawable.tag_divider) Drawable tagDivider;
+
+  private ChipAdapter<CategoryRealm> adapter;
 
   private ProgressDialog progressDialog;
 
@@ -76,15 +84,18 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
     setRetainViewMode(RetainViewMode.RETAIN_DETACH);
   }
 
+  public static ProviderController create() {
+    return new ProviderController();
+  }
+
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
     return inflater.inflate(R.layout.controller_provider, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
-    super.onViewCreated(view);
-    ButterKnife.apply(views, DEFAULT_VISIBILITY, false);
-    setupRecyclerView();
+  @Override protected void onViewBound(@NonNull View view) {
+    ButterKnife.apply(views, visibility, false);
+    setupRecyclerView(view.getContext());
   }
 
   @Override protected void onAttach(@NonNull View view) {
@@ -94,8 +105,8 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
     }
   }
 
-  @Override protected void onDetach(@NonNull View view) {
-    super.onDetach(view);
+  @Override protected void onDestroy() {
+    super.onDestroy();
     if (idpProvider instanceof GoogleProvider) {
       ((GoogleProvider) idpProvider).disconnect();
     }
@@ -106,13 +117,12 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
   }
 
   @NonNull @Override public ProviderPresenter createPresenter() {
-    return new ProviderPresenter(
-        UserRepository.getInstance(
-            UserRemoteDataStore.getInstance(),
-            UserDiskDataStore.getInstance()),
-        CategoryRepository.getInstance(
-            CategoryRemoteDataStore.getInstance(),
-            CategoryDiskDataStore.getInstance()));
+    return new ProviderPresenter(UserRepository.getInstance(UserRemoteDataStore.getInstance(),
+        UserDiskDataStore.getInstance()),
+        CategoryRepository.getInstance(CategoryRemoteDataStore.getInstance(),
+            CategoryDiskDataStore.getInstance()),
+        NotificationRepository.getInstance(NotificationRemoteDataSource.getInstance(),
+            NotificationDiskDataSource.getInstance()));
   }
 
   @Override public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -134,29 +144,35 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
   }
 
   @OnClick(R.id.btn_login_sign_up) void signUp() {
-    List<String> categoryIds = Stream.of(adapter.getSelectedCategories())
+    ArrayList<String> categoryIds = Stream.of(adapter.getSelectedItems())
+        .select(ChipAdapter.ChipModel.class)
+        .map(chipModel -> ((CategoryRealm) chipModel.getChipItem()))
         .map(CategoryRealm::getId)
-        .toList();
+        .collect(Collectors.toCollection(ArrayList::new));
 
-    getRouter().pushController(
-        RouterTransaction.with(SignUpController.create(new ArrayList<>(categoryIds)))
-            .pushChangeHandler(new HorizontalChangeHandler())
-            .popChangeHandler(new HorizontalChangeHandler()));
+    getRouter().pushController(RouterTransaction.with(SignUpController.create(categoryIds))
+        .pushChangeHandler(new HorizontalChangeHandler())
+        .popChangeHandler(new HorizontalChangeHandler()));
   }
 
   @Override public void onCategoriesLoaded(List<CategoryRealm> categories) {
-    adapter.addCategories(categories);
+    adapter.addChipItems(categories);
   }
 
   @Override public void onSignedUp() {
-    getParentController().getRouter().setRoot(RouterTransaction.with(MainFeedController.create()));
+    getParentController().getRouter().setRoot(RouterTransaction.with(FeedHomeController.create()));
   }
 
   @Override public void onError(Throwable t) {
+    Timber.e(t);
     Snackbar.make(getView(), errorAuthFailedString, Snackbar.LENGTH_SHORT).show();
 
     if (t instanceof SocketTimeoutException) {
-      Snackbar.make(getView(), errorServerDownString, Snackbar.LENGTH_SHORT).show();
+      Snackbar.make(getView(), errorServerDownString, Snackbar.LENGTH_LONG).show();
+    }
+
+    if (t instanceof UnknownHostException) {
+      Snackbar.make(getView(), unknownhostString, Snackbar.LENGTH_LONG).show();
     }
 
     if (t.getMessage().contains("409")) {
@@ -184,12 +200,13 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
   }
 
   @Override public void onSuccess(IdpResponse idpResponse) {
-    final String categoryIds = Stream.of(adapter.getSelectedCategories())
+    final String categoryIds = Stream.of(adapter.getSelectedItems())
+        .select(ChipAdapter.ChipModel.class)
+        .map(chipModel -> ((CategoryRealm) chipModel.getChipItem()))
         .map(CategoryRealm::getId)
-        .reduce((s1, s2) -> s1 + "," + s2)
-        .get();
+        .collect(Collectors.joining(","));
 
-    final String locale = LocaleUtil.getCurrentLocale(getActivity()).getDisplayCountry();
+    final String locale = LocaleUtil.getCurrentLocale(getActivity()).getISO3Country();
 
     getPresenter().signUp(idpResponse, categoryIds, locale);
   }
@@ -198,16 +215,12 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
     //Snackbar.make(getView(), extra.getString("error", null), Snackbar.LENGTH_SHORT).show();
   }
 
-  @Override public void onItemClick(View v, EpoxyModel<?> model, CategoryRealm item) {
+  @Override
+  public void onItemSelect(View v, EpoxyModel<?> model, CategoryRealm item, boolean selected) {
     int size = adapter.getSelectedItemCount();
 
-    if (size >= 3) {
-      ButterKnife.apply(views, DEFAULT_VISIBILITY, true);
-    } else {
-      if (size < 3) {
-        ButterKnife.apply(views, DEFAULT_VISIBILITY, false);
-      }
-    }
+    final boolean showAuthButtons = size >= 3;
+    ButterKnife.apply(views, visibility, showAuthButtons);
   }
 
   private IdpProvider getIdpProvider(String providerId) {
@@ -215,7 +228,6 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
 
     switch (providerId) {
       case AuthUI.GOOGLE_PROVIDER:
-        config.addScope(Scopes.PLUS_LOGIN);
         return new GoogleProvider(this, config);
       case AuthUI.FACEBOOK_PROVIDER:
         return new FacebookProvider(config);
@@ -224,17 +236,19 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
     }
   }
 
-  private void setupRecyclerView() {
-    adapter = new CategoryChipAdapter(this);
+  private void setupRecyclerView(Context context) {
+    adapter = new ChipAdapter<>(this);
 
-    ChipsLayoutManager lm = ChipsLayoutManager.newBuilder(getActivity())
-        .setMaxViewsInRow(4)
+    ChipsLayoutManager lm = ChipsLayoutManager.newBuilder(context)
+        .setScrollingEnabled(false)
+        .setOrientation(ChipsLayoutManager.HORIZONTAL)
         .setRowStrategy(ChipsLayoutManager.STRATEGY_CENTER_DENSE)
         .withLastRow(true)
         .build();
 
-    rvLoginCategories.addItemDecoration(
-        new SpacingItemDecoration(DisplayUtil.dpToPx(8), DisplayUtil.dpToPx(8)));
+    rvLoginCategories.setLayoutManager(lm);
+    final int spacing = DisplayUtil.dpToPx(6);
+    rvLoginCategories.addItemDecoration(new SpacingItemDecoration(spacing, spacing));
     rvLoginCategories.setLayoutManager(lm);
     rvLoginCategories.setHasFixedSize(true);
     rvLoginCategories.setAdapter(adapter);

@@ -6,8 +6,6 @@ import com.yoloo.android.data.repository.category.datasource.CategoryRemoteDataS
 import com.yoloo.android.data.sorter.CategorySorter;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
-import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 
 public class CategoryRepository {
@@ -31,24 +29,16 @@ public class CategoryRepository {
     return instance;
   }
 
-  public void addCategory(CategoryRealm category) throws IOException {
-   /*ApiManager.INSTANCE.getApi()
-        .categories()
-        .insert()
-        .execute();*/
+  public Observable<List<CategoryRealm>> listCategories(CategorySorter sorter, int limit) {
+    Observable<List<CategoryRealm>> diskObservable = diskDataStore.list(sorter, limit)
+        .subscribeOn(Schedulers.io());
 
-    addCategories(Collections.singletonList(category));
-  }
+    Observable<List<CategoryRealm>> remoteObservable = remoteDataStore.list(sorter, limit)
+        .subscribeOn(Schedulers.io())
+        .doOnNext(diskDataStore::addAll);
 
-  public void addCategories(List<CategoryRealm> categories) {
-    diskDataStore.addAll(categories);
-  }
-
-  public Observable<List<CategoryRealm>> listCategories(int limit, CategorySorter sorter) {
-    return Observable.mergeDelayError(
-        diskDataStore.list(sorter).subscribeOn(Schedulers.io()),
-        remoteDataStore.list(sorter, limit)
-            .doOnNext(diskDataStore::addAll)
-            .subscribeOn(Schedulers.io()));
+    return Observable.mergeDelayError(diskObservable, remoteObservable)
+        .filter(categories -> !categories.isEmpty())
+        .distinct();
   }
 }

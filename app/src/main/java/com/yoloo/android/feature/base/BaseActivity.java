@@ -4,7 +4,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,7 +11,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -25,19 +23,12 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.RemoteMessage;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.FcmRealm;
-import com.yoloo.android.data.repository.notification.NotificationRepository;
-import com.yoloo.android.data.repository.notification.datasource.NotificationDiskDataSource;
-import com.yoloo.android.data.repository.notification.datasource.NotificationRemoteDataSource;
-import com.yoloo.android.feature.fcm.FCMListener;
-import com.yoloo.android.feature.fcm.FCMManager;
-import com.yoloo.android.feature.feed.mainfeed.MainFeedController;
+import com.yoloo.android.fcm.FCMListener;
+import com.yoloo.android.fcm.FCMManager;
+import com.yoloo.android.feature.feed.home.FeedHomeController;
 import com.yoloo.android.feature.login.AuthController;
 import com.yoloo.android.util.NotificationHelper;
 import com.yoloo.android.util.Preconditions;
-import com.yoloo.android.util.ViewUtil;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 import java.util.HashMap;
 import java.util.Map;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
@@ -50,10 +41,6 @@ public class BaseActivity extends AppCompatActivity implements FCMListener {
   @BindView(R.id.controller_container) ViewGroup container;
 
   private Router router;
-
-  private NotificationRepository notificationRepository;
-
-  private Disposable disposable;
 
   private int defaultSystemVisibility;
 
@@ -72,18 +59,9 @@ public class BaseActivity extends AppCompatActivity implements FCMListener {
     if (!router.hasRootController()) {
       FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-      if (user == null) {
-        setStatusAndNavBarTransparent();
-        router.setRoot(RouterTransaction.with(AuthController.create()));
-      } else {
-        router.setRoot(RouterTransaction.with(MainFeedController.create()));
-      }
+      Controller controller = user == null ? AuthController.create() : FeedHomeController.create();
+      router.setRoot(RouterTransaction.with(controller));
     }
-
-    notificationRepository =
-        NotificationRepository.getInstance(
-            NotificationRemoteDataSource.getInstance(),
-            NotificationDiskDataSource.getInstance());
 
     setOptionsMenuVisibility();
   }
@@ -109,11 +87,6 @@ public class BaseActivity extends AppCompatActivity implements FCMListener {
   @Override protected void onStop() {
     super.onStop();
     FCMManager.getInstance(this).unRegister();
-  }
-
-  @Override protected void onDestroy() {
-    super.onDestroy();
-    disposable.dispose();
   }
 
   @Override public void onBackPressed() {
@@ -158,10 +131,8 @@ public class BaseActivity extends AppCompatActivity implements FCMListener {
         }
 
         if (to != null) {
-          if (to instanceof MainFeedController) {
+          if (to instanceof FeedHomeController) {
             getWindow().getDecorView().setSystemUiVisibility(defaultSystemVisibility);
-          } else if (to instanceof AuthController) {
-            setStatusAndNavBarTransparent();
           }
         }
       }
@@ -176,17 +147,8 @@ public class BaseActivity extends AppCompatActivity implements FCMListener {
     });
   }
 
-  private void setStatusAndNavBarTransparent() {
-    ViewUtil.setStatusBarColor(this, Color.TRANSPARENT);
-    getWindow().getDecorView().setSystemUiVisibility(
-        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-  }
-
   @Override public void onDeviceRegistered(String deviceToken) {
-    disposable = notificationRepository.registerFcmToken(new FcmRealm(deviceToken))
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe();
+
   }
 
   @Override public void onMessage(RemoteMessage remoteMessage) {
@@ -215,7 +177,8 @@ public class BaseActivity extends AppCompatActivity implements FCMListener {
 
     Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
     NotificationCompat.Builder notificationBuilder =
-        new NotificationCompat.Builder(this).setSmallIcon(R.mipmap.ic_launcher)
+        new NotificationCompat.Builder(this)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("Yoloo")
             .setContentText(contentText)
             .setAutoCancel(true)

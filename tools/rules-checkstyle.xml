@@ -20,7 +20,7 @@ page at http://checkstyle.sourceforge.net/config.html -->
   </module>
 
   <module name="RegexpSingleline">
-    <!-- Checks that FIXME is not used in comments.  TODO is preferred.
+    <!-- Checks that FIXME is not used in commentCount.  TODO is preferred.
     -->
     <property name="format" value="((//.*)|(\*.*))FIXME" />
     <property name="message"
@@ -117,7 +117,7 @@ page at http://checkstyle.sourceforge.net/config.html -->
     <!--
       The default ignore pattern exempts the following elements:
         - import statements
-        - long URLs inside comments
+        - long URLs inside commentCount
     -->
 
     <property name="ignorePattern"

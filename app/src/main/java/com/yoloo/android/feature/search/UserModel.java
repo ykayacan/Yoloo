@@ -2,7 +2,6 @@ package com.yoloo.android.feature.search;
 
 import android.content.Context;
 import android.support.design.widget.Snackbar;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -36,16 +35,20 @@ public abstract class UserModel extends EpoxyModelWithHolder<UserModel.UserHolde
 
     holder.tvUsername.setText(account.getUsername());
 
-    holder.btnFollow.setVisibility(account.isFollowing() ? View.GONE : View.VISIBLE);
-
     holder.btnFollow.setOnClickListener(v -> {
-      Snackbar.make(v, context.getString(R.string.label_search_followed, account.getUsername()),
+      v.setTag(v.getTag() == null);
+      account.setFollowing(v.getTag() != null);
+
+      final int textResId = v.getTag() == null
+          ? R.string.label_search_followed
+          : R.string.label_search_unfollowed;
+
+      Snackbar.make(v, context.getString(textResId, account.getUsername()),
           Snackbar.LENGTH_SHORT).show();
-      holder.btnFollow.setVisibility(View.GONE);
-      onFollowClickListener.onFollowClick(v, account.getId(), 1);
+      onFollowClickListener.onFollowClick(v, this, account, 1);
     });
     holder.itemView.setOnClickListener(
-        v -> onProfileClickListener.onProfileClick(v, account.getId()));
+        v -> onProfileClickListener.onProfileClick(v, this, account.getId()));
   }
 
   @Override public void unbind(UserHolder holder) {

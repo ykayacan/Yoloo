@@ -7,57 +7,6 @@
     <attr name="maxLinesByHeight" format="boolean" />
   </declare-styleable>
 
-  <declare-styleable name="TagView">
-    <attr name="tagTextColor" format="color|reference" />
-    <attr name="tagTextSize" format="dimension" />
-    <attr name="tagTextGravity" format="enum">
-      <enum name="left" value="3" />
-      <enum name="right" value="5" />
-      <enum name="center" value="17" />
-    </attr>
-    <attr name="tagEllipsize" format="enum">
-      <enum name="start" value="0" />
-      <enum name="middle" value="1" />
-      <enum name="end" value="2" />
-      <enum name="marquee" value="3" />
-    </attr>
-    <attr name="tagBackground" format="color|reference" />
-    <attr name="tagForeground" format="color|reference" />
-    <attr name="tagDrawableLeft" format="reference" />
-    <attr name="tagSelectedDrawableLeft" format="reference" />
-    <attr name="tagDrawableRight" format="reference" />
-    <attr name="tagSelectedDrawableRight" format="reference" />
-    <attr name="tagDrawablePadding" format="dimension" />
-    <attr name="tagMargin" format="dimension" />
-    <attr name="tagPaddingLeft" format="dimension" />
-    <attr name="tagPaddingRight" format="dimension" />
-    <attr name="tagPaddingTop" format="dimension" />
-    <attr name="tagPaddingBottom" format="dimension" />
-    <attr name="tagMinWidth" format="dimension" />
-    <attr name="tagMaxWidth" format="dimension" />
-    <attr name="rowMargin" format="dimension" />
-    <attr name="rowGravity" format="enum">
-      <enum name="left" value="3" />
-      <enum name="right" value="5" />
-      <enum name="center" value="17" />
-    </attr>
-    <attr name="rowDistribution" format="enum">
-      <enum name="none" value="-1" />
-      <enum name="left" value="0" />
-      <enum name="middle" value="1" />
-      <enum name="right" value="2" />
-      <enum name="random" value="3" />
-    </attr>
-    <attr name="rowMode" format="enum">
-      <enum name="wrap" value="0" />
-      <enum name="stretch" value="1" />
-      <enum name="equal" value="2" />
-    </attr>
-    <attr name="rowsQuantity" format="integer" />
-    <attr name="selectionMode" format="boolean" />
-    <attr name="dynamicMode" format="boolean" />
-  </declare-styleable>
-
   <declare-styleable name="CompatTextView">
     <attr name="drawableStart" format="reference" />
     <attr name="drawableTop" format="reference" />
@@ -74,24 +23,6 @@
       <enum name="shadow_gradual" value="1" />
       <enum name="shadow_alpha" value="2" />
     </attr>
-  </declare-styleable>
-
-  <!-- FloatingActionMenu -->
-  <declare-styleable name="FloatingActionMenu">
-    <attr name="fabMenuExpandDirection" format="enum">
-      <enum name="up" value="0" />
-      <enum name="down" value="1" />
-      <enum name="left" value="2" />
-      <enum name="right" value="3" />
-    </attr>
-    <attr name="fabMenuLabelPosition" format="enum">
-      <enum name="left" value="0" />
-      <enum name="right" value="1" />
-    </attr>
-    <attr name="fabMenuLabelStyle" format="reference" />
-    <attr name="fabMenuCloseIconSrc" format="reference" />
-    <attr name="fabMenuCloseIconAngle" format="float" />
-    <attr name="fabMenuSpacing" format="dimension" />
   </declare-styleable>
 
   <declare-styleable name="LabelView">
@@ -122,43 +53,6 @@
     <attr name="enabledIp_addressUnderline" format="boolean" />
   </declare-styleable>
 
-  <declare-styleable name="chipLayout">
-    <attr name="android:gravity" />
-  </declare-styleable>
-  <declare-styleable name="chipLayout_Layout">
-    <attr name="android:layout_gravity" />
-  </declare-styleable>
-
-  <declare-styleable name="chip_layout">
-    <attr name="textSize_" format="dimension" />
-    <attr name="chipPadding_" format="dimension" />
-    <attr name="chipPaddingLeft_" format="dimension" />
-    <attr name="chipPaddingRight_" format="dimension" />
-    <attr name="chipPaddingTop_" format="dimension" />
-    <attr name="chipPaddingBottom_" format="dimension" />
-    <attr name="chipTextPadding_" format="dimension" />
-    <attr name="chipTextPaddingLeft_" format="dimension" />
-    <attr name="chipTextPaddingRight_" format="dimension" />
-    <attr name="chipTextPaddingTop_" format="dimension" />
-    <attr name="chipTextPaddingBottom_" format="dimension" />
-    <attr name="textColor_" format="color" />
-    <attr name="chipColor_" format="color" />
-    <attr name="showText_" format="boolean" />
-    <attr name="showDeleteButton_" format="boolean" />
-    <attr name="deleteIcon_" format="reference" />
-    <attr name="chipDrawable_" format="reference" />
-    <attr name="chipLayoutDrawable_" format="reference" />
-    <attr name="labelPosition_" format="enum">
-      <enum name="left" value="0" />
-      <enum name="right" value="1" />
-    </attr>
-  </declare-styleable>
-
-  <declare-styleable name="VideoThumbnail">
-    <attr name="playIcon" format="reference" />
-    <attr name="playedTint" format="color" />
-  </declare-styleable>
-
   <declare-styleable name="SpannedGridLayoutManager">
     <attr name="android:orientation" />
     <attr name="spanCount" />
@@ -175,6 +69,7 @@
       <enum name="empty" value="2" />
       <enum name="loading" value="3" />
     </attr>
+    <attr name="contentViewId" format="reference" />
     <attr name="animateStateChanges" format="boolean" />
   </declare-styleable>
 

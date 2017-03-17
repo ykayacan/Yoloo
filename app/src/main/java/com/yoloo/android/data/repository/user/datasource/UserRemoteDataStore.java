@@ -1,19 +1,23 @@
 package com.yoloo.android.data.repository.user.datasource;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.yoloo.android.data.ApiManager;
+import com.annimon.stream.Stream;
+import com.google.api.client.http.HttpHeaders;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.faker.AccountFaker;
-import com.yoloo.android.data.faker.FakerUtil;
 import com.yoloo.android.data.model.AccountRealm;
+
+import java.util.List;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
+
+import static com.yoloo.android.data.ApiManager.INSTANCE;
+import static com.yoloo.android.data.ApiManager.getIdToken;
 
 public class UserRemoteDataStore {
 
@@ -29,92 +33,124 @@ public class UserRemoteDataStore {
     return instance;
   }
 
-  public Observable<AccountRealm> get(String userId) {
-    return ApiManager.getIdToken()
-        .doOnSuccess(s -> Timber.d("Token: %s", s))
-        .toObservable()
-        .flatMap(s -> Observable.just(new AccountRealm()));
+  public Single<AccountRealm> getMe() {
+    return getIdToken().doOnSuccess(s -> Timber.d("Token: %s", s))
+        .flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+            .accounts()
+            .me()
+            .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + idToken))
+            .execute()).subscribeOn(Schedulers.io()))
+        .map(AccountRealm::new)
+        .map(account -> account.setMe(true));
   }
 
-  public Observable<AccountRealm> getMe() {
-    return Observable.just(AccountFaker.generateMe());
+  public Single<AccountRealm> get(@Nonnull String userId) {
+    return getIdToken().doOnSuccess(s -> Timber.d("Token: %s", s))
+        .flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+            .accounts()
+            .get(userId)
+            .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + idToken))
+            .execute()).subscribeOn(Schedulers.io()))
+        .map(AccountRealm::new);
   }
 
-  public Single<AccountRealm> add(AccountRealm account) {
-    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-    account.setId(user.getUid())
-        .setAvatarUrl(user.getPhotoUrl().getPath())
-        .setUsername(user.getDisplayName())
-        .setLevel(2)
-        .setRealname(user.getDisplayName())
-        .setBounties(35)
-        .setPosts(56)
-        .setFollowers(123)
-        .setFollowings(13)
-        .setAchievements(3)
-        .setPoints(88);
-
-    return ApiManager.getIdToken()
-        .doOnSuccess(s -> Timber.d("Token: %s", s))
-        .flatMap(s -> Single.just(account));
-    /*return Single
-        .fromCallable(() ->
-            ApiManager.instance.getApi().accounts()
-                .register(account.getGender(), account.getLocale(), account.getCategoryIds())
-                .setRequestHeaders(new HttpHeaders().setAuthorization(getIdToken()))
-                .execute())
-        .map(AccountRealm::new);*/
+  public Single<AccountRealm> add(@Nonnull AccountRealm account) {
+    return getIdToken().doOnSuccess(s -> Timber.d("IdToken: %s", s))
+        .flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+            .accounts()
+            .register(account.getLocale(), account.getGender(), account.getRealname(),
+                account.getCategoryIds())
+            .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + idToken))
+            .execute()).subscribeOn(Schedulers.io()))
+        .map(AccountRealm::new)
+        .map(__ -> __.setMe(true))
+        .map(__ -> __.setCategoryIds(account.getCategoryIds()));
   }
 
-  public Single<AccountRealm> update(AccountRealm account) {
-    return ApiManager.getIdToken()
-        .doOnSuccess(s -> Timber.d("Token: %s", s))
-        .flatMap(s -> Single.just(account));
+  public Single<AccountRealm> update(@Nonnull AccountRealm account) {
+    return getIdToken().doOnSuccess(idToken -> Timber.d("Token: %s", idToken))
+        .flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+            .accounts()
+            .update(account.getId())
+            .setMediaId(account.getAvatarUrl())
+            .setUsername(account.getUsername())
+            .setName(account.getRealname())
+            .setGender(account.getGender().toUpperCase())
+            .setWebsiteUrl(account.getWebsiteUrl())
+            .setBio(account.getBio())
+            .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + idToken))
+            .execute()).subscribeOn(Schedulers.io()))
+        .map(AccountRealm::new)
+        .map(__ -> __.setMe(account.isMe()))
+        .map(__ -> __.setCategoryIds(account.getCategoryIds()));
   }
 
-  public Observable<Response<List<AccountRealm>>> list(String name, String cursor, int limit) {
-    AccountRealm a1 = new AccountRealm()
-        .setId(UUID.randomUUID().toString())
-        .setUsername("sia")
-        .setAvatarUrl(FakerUtil.getAvatarRandomUrl());
-
-    AccountRealm a2 = new AccountRealm()
-        .setId(UUID.randomUUID().toString())
-        .setUsername("sinan")
-        .setAvatarUrl(FakerUtil.getAvatarRandomUrl());
-
-    AccountRealm a3 = new AccountRealm()
-        .setId(UUID.randomUUID().toString())
-        .setUsername("sinay")
-        .setAvatarUrl(FakerUtil.getAvatarRandomUrl());
-
-    List<AccountRealm> accounts = new ArrayList<>(3);
-    accounts.add(a1);
-    accounts.add(a2);
-    accounts.add(a3);
-
-    return Observable.just(Response.create(accounts, null, null));
+  public Observable<Response<List<AccountRealm>>> list(@Nonnull String name,
+      @Nullable String cursor, int limit) {
+    return getIdToken().doOnSuccess(idToken -> Timber.d("Token: %s", idToken))
+        .flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+            .accounts()
+            .search(name)
+            .setCursor(cursor)
+            .setLimit(limit)
+            .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + idToken))
+            .execute()).subscribeOn(Schedulers.io()))
+        .filter(response -> response.getItems() != null)
+        .map(response -> Response.create(
+            Stream.of(response.getItems()).map(AccountRealm::new).toList(),
+            response.getNextPageToken()))
+        .toObservable();
   }
 
-  public Observable<Response<List<AccountRealm>>> listFollowers(String userId, String cursor,
-      String eTag, int limit) {
-    return ApiManager.getIdToken()
-        .doOnSuccess(s -> Timber.d("Token: %s", s))
-        .toObservable()
-        .flatMap(s -> Observable.empty());
+  public Observable<Response<List<AccountRealm>>> listFollowers(@Nonnull String userId,
+      @Nullable String cursor, int limit) {
+    return getIdToken().doOnSuccess(idToken -> Timber.d("Token: %s", idToken))
+        .flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+            .accounts()
+            .followers(userId)
+            .setCursor(cursor)
+            .setLimit(limit)
+            .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + idToken))
+            .execute()).subscribeOn(Schedulers.io()))
+        .map(response -> Response.create(
+            Stream.of(response.getItems()).map(AccountRealm::new).toList(),
+            response.getNextPageToken()))
+        .toObservable();
   }
 
-  public Observable<Response<List<AccountRealm>>> listFollowings(String userId, String cursor,
-      String eTag, int limit) {
-    return ApiManager.getIdToken()
-        .doOnSuccess(s -> Timber.d("Token: %s", s))
-        .toObservable()
-        .flatMap(s -> Observable.empty());
+  public Observable<Response<List<AccountRealm>>> listFollowings(@Nonnull String userId,
+      @Nullable String cursor, int limit) {
+    return getIdToken().doOnSuccess(idToken -> Timber.d("Token: %s", idToken))
+        .flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+            .accounts()
+            .followings(userId)
+            .setCursor(cursor)
+            .setLimit(limit)
+            .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + idToken))
+            .execute()).subscribeOn(Schedulers.io()))
+        .map(response -> Response.create(
+            Stream.of(response.getItems()).map(AccountRealm::new).toList(),
+            response.getNextPageToken()))
+        .toObservable();
   }
 
-  public Completable follow(String userId, int direction) {
-    return ApiManager.getIdToken()
-        .doOnSuccess(s -> Timber.d("Token: %s", s))
+  public Completable follow(@Nonnull String userId) {
+    return getIdToken().doOnSuccess(idToken -> Timber.d("Token: %s", idToken))
+        .flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+            .follows()
+            .follow(userId)
+            .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + idToken))
+            .execute()).subscribeOn(Schedulers.io()))
+        .toCompletable();
+  }
+
+  public Completable unfollow(@Nonnull String userId) {
+    return getIdToken().doOnSuccess(idToken -> Timber.d("Token: %s", idToken))
+        .flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+            .follows()
+            .unfollow(userId)
+            .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + idToken))
+            .execute()).subscribeOn(Schedulers.io()))
         .toCompletable();
   }
 }

@@ -10,11 +10,11 @@ import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.AdminAuthenticator;
-import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
 import com.yoloo.backend.category.sort_strategy.CategorySorter;
 import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
 import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
 import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
+
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
@@ -32,8 +32,9 @@ import javax.inject.Named;
     clientIds = {
         Constants.ANDROID_CLIENT_ID,
         Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID},
-    audiences = {Constants.AUDIENCE_ID}
+        Constants.WEB_CLIENT_ID
+    },
+    audiences = { Constants.AUDIENCE_ID }
 )
 public class CategoryEndpoint {
 
@@ -42,8 +43,8 @@ public class CategoryEndpoint {
   /**
    * Inserts a new {@code Category}.
    *
-   * @param name the name
-   * @param type the type
+   * @param displayName the name
+   * @param imageName the image name
    * @param user the user
    * @return the category
    * @throws ServiceException the service exception
@@ -54,24 +55,25 @@ public class CategoryEndpoint {
       httpMethod = ApiMethod.HttpMethod.POST,
       authenticators = AdminAuthenticator.class)
   public Category insert(
-      @Named("name") String name,
-      @Named("type") Category.Type type,
-      User user) throws ServiceException {
+      @Named("displayName") String displayName,
+      @Named("imageName") String imageName,
+      User user)
+      throws ServiceException {
 
     EndpointsValidator.create()
-        .on(BadRequestValidator.create(name, "name is required."))
+        .on(BadRequestValidator.create(displayName, "displayName is required."))
+        .on(BadRequestValidator.create(imageName, "imageName is required."))
         .on(AuthValidator.create(user))
         .validate();
 
-    return categoryController.insertCategory(name, type);
+    return categoryController.insertCategory(displayName, imageName);
   }
 
   /**
    * Updates an existing {@code Category}.
    *
    * @param categoryId the websafe category id
-   * @param name the name
-   * @param type the type
+   * @param displayName the name
    * @param user the user
    * @return the updated version from the entity
    * @throws ServiceException the service exception
@@ -83,18 +85,14 @@ public class CategoryEndpoint {
       authenticators = AdminAuthenticator.class)
   public Category update(
       @Named("categoryId") String categoryId,
-      @Nullable @Named("name") String name,
-      @Nullable @Named("type") Category.Type type,
+      @Nullable @Named("displayName") String displayName,
       User user) throws ServiceException {
 
     EndpointsValidator.create()
         .on(AuthValidator.create(user))
         .validate();
 
-    return categoryController.updateCategory(
-        categoryId,
-        Optional.fromNullable(name),
-        Optional.fromNullable(type));
+    return categoryController.updateCategory(categoryId, Optional.fromNullable(displayName));
   }
 
   /**
@@ -109,18 +107,16 @@ public class CategoryEndpoint {
   @ApiMethod(
       name = "categories.list",
       path = "categories",
-      httpMethod = ApiMethod.HttpMethod.GET,
-      authenticators = {
-          FirebaseAuthenticator.class,
-          AdminAuthenticator.class
-      })
+      httpMethod = ApiMethod.HttpMethod.GET)
   public CollectionResponse<Category> list(
+      @Nullable @Named("categoryIds") String categoryIds,
       @Nullable @Named("sort") CategorySorter sorter,
       @Nullable @Named("cursor") String cursor,
       @Nullable @Named("limit") Integer limit)
       throws ServiceException {
 
     return categoryController.listCategories(
+        Optional.fromNullable(categoryIds),
         Optional.fromNullable(sorter),
         Optional.fromNullable(limit),
         Optional.fromNullable(cursor));

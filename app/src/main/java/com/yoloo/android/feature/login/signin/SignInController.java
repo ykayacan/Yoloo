@@ -11,18 +11,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
+import butterknife.OnEditorAction;
+import butterknife.OnFocusChange;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.yoloo.android.R;
-import com.yoloo.android.data.faker.AccountFaker;
-import com.yoloo.android.data.faker.PostFaker;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.feed.mainfeed.MainFeedController;
+import com.yoloo.android.feature.feed.home.FeedHomeController;
 import com.yoloo.android.feature.login.AuthUI;
 import com.yoloo.android.feature.login.FacebookProvider;
 import com.yoloo.android.feature.login.GoogleProvider;
@@ -37,13 +39,7 @@ import timber.log.Timber;
 public class SignInController extends MvpController<SignInView, SignInPresenter>
     implements SignInView, IdpProvider.IdpCallback {
 
-  static {
-    AccountFaker.generateAll();
-
-    PostFaker.fakePosts();
-  }
-
-  @BindView(R.id.et_login_email) EditText etEmail;
+  @BindView(R.id.et_login_email) AutoCompleteTextView etEmail;
   @BindView(R.id.et_login_password) EditText etPassword;
 
   @BindString(R.string.error_google_play_services) String errorGooglePlayServicesString;
@@ -67,8 +63,8 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
     return inflater.inflate(R.layout.controller_sign_in, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
-    super.onViewCreated(view);
+  @Override protected void onViewBound(@NonNull View view) {
+    super.onViewBound(view);
 
     getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
   }
@@ -80,8 +76,8 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
     }
   }
 
-  @Override protected void onDetach(@NonNull View view) {
-    super.onDetach(view);
+  @Override protected void onDestroy() {
+    super.onDestroy();
     if (idpProvider instanceof GoogleProvider) {
       ((GoogleProvider) idpProvider).disconnect();
     }
@@ -131,11 +127,11 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
       etEmail.setError(errorFieldRequiredString);
       focusView = etEmail;
       cancel = true;
-    } /*else if (!FormUtil.isEmailValid(email)) {
+    } else if (!FormUtil.isEmailAddress(email)) {
       etEmail.setError(errorInvalidEmail);
       focusView = etEmail;
       cancel = true;
-    }*/
+    }
 
     // Check for a valid password, if the user entered one.
     if (TextUtils.isEmpty(password)) {
@@ -159,8 +155,22 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
     }
   }
 
+  @OnFocusChange(R.id.et_login_email) void onEmailFocusChanged(boolean hasFocus) {
+    if (hasFocus) {
+      FormUtil.populateEmail(getActivity(), etEmail);
+    }
+  }
+
+  @OnEditorAction(R.id.et_login_password) boolean onEditorAction(int actionId) {
+    if (actionId == R.id.sign_up || actionId == EditorInfo.IME_NULL) {
+      signInWithEmail();
+      return true;
+    }
+    return false;
+  }
+
   @Override public void onSignedIn() {
-    getParentController().getRouter().setRoot(RouterTransaction.with(MainFeedController.create()));
+    getParentController().getRouter().setRoot(RouterTransaction.with(FeedHomeController.create()));
   }
 
   @Override public void onError(Throwable t) {
@@ -204,7 +214,6 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
 
     switch (providerId) {
       case AuthUI.GOOGLE_PROVIDER:
-        //config.addScope(Scopes.PLUS_LOGIN);
         return new GoogleProvider(this, config);
       case AuthUI.FACEBOOK_PROVIDER:
         return new FacebookProvider(config);

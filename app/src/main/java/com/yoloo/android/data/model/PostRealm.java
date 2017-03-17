@@ -1,21 +1,43 @@
 package com.yoloo.android.data.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import com.annimon.stream.Stream;
+import com.yoloo.backend.yolooApi.model.PostDTO;
+
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
-public class PostRealm extends RealmObject {
+public class PostRealm extends RealmObject implements Parcelable {
 
-  public static final int POST_NORMAL = 0;
+  public static final int POST_TEXT = 0;
   public static final int POST_RICH = 1;
   public static final int POST_BLOG = 2;
 
-  @PrimaryKey private String id;
-  @Index private String ownerId;
+  public static final Creator<PostRealm> CREATOR = new Creator<PostRealm>() {
+    @Override
+    public PostRealm createFromParcel(Parcel in) {
+      return new PostRealm(in);
+    }
+
+    @Override
+    public PostRealm[] newArray(int size) {
+      return new PostRealm[size];
+    }
+  };
+
+  @PrimaryKey
+  private String id;
+  @Index
+  private String ownerId;
   private String avatarUrl;
   private String username;
   private String content;
@@ -23,26 +45,71 @@ public class PostRealm extends RealmObject {
   private String mediaUrl;
   private RealmList<TagRealm> tags;
   private RealmList<CategoryRealm> categories;
-  @Index private boolean commented;
-  @Index private String acceptedCommentId;
-  @Index private Date created;
-  private int dir;
-  private long votes;
-  private long comments;
-  private int reports;
-  private int type;
+  @Index
+  private String acceptedCommentId;
+  @Index
+  private Date created;
+  private int voteDir;
+  private long voteCount;
+  private long commentCount;
+  private int reportCount;
+  private int postType;
   private String title;
   private double rank;
+  @Index
+  private boolean isFeedItem;
+  @Index
+  private boolean pending;
+  @Index
+  private boolean bookmarked;
   private String categoriesAsString;
-  @Index private boolean isFeedItem;
-  @Index private boolean pending;
-  @Index private boolean bookmarked;
-
-  /*public PostRealm(FeedItem feedItem) {
-  }*/
+  private String tagsAsString;
 
   public PostRealm() {
     tags = new RealmList<>();
+  }
+
+  public PostRealm(PostDTO dto) {
+    id = dto.getId();
+    ownerId = dto.getOwnerId();
+    avatarUrl = dto.getAvatarUrl();
+    username = dto.getUsername();
+    content = dto.getContent();
+    bounty = dto.getBounty();
+    if (dto.getMedia() != null) {
+      mediaUrl = dto.getMedia().getSizes().get(0).getUrl();
+    }
+    acceptedCommentId = dto.getAcceptedCommentId();
+    created = new Date(dto.getCreated().getValue());
+    voteDir = dto.getDirection();
+    voteCount = dto.getVoteCount();
+    commentCount = dto.getCommentCount();
+    reportCount = dto.getReportCount();
+    title = dto.getTitle();
+    rank = dto.getRank().doubleValue();
+  }
+
+  protected PostRealm(Parcel in) {
+    id = in.readString();
+    ownerId = in.readString();
+    avatarUrl = in.readString();
+    username = in.readString();
+    content = in.readString();
+    bounty = in.readInt();
+    mediaUrl = in.readString();
+    acceptedCommentId = in.readString();
+    voteDir = in.readInt();
+    voteCount = in.readLong();
+    commentCount = in.readLong();
+    reportCount = in.readInt();
+    postType = in.readInt();
+    title = in.readString();
+    rank = in.readDouble();
+    categoriesAsString = in.readString();
+    tagsAsString = in.readString();
+    isFeedItem = in.readByte() != 0;
+    pending = in.readByte() != 0;
+    bookmarked = in.readByte() != 0;
   }
 
   public String getId() {
@@ -99,7 +166,7 @@ public class PostRealm extends RealmObject {
     return this;
   }
 
-  public String getMediaUrl() {
+  @Nullable public String getMediaUrl() {
     return mediaUrl;
   }
 
@@ -112,23 +179,18 @@ public class PostRealm extends RealmObject {
     return tags;
   }
 
-  public PostRealm addTag(TagRealm tag) {
-    this.tags.add(tag);
-    return this;
-  }
-
   public PostRealm setTags(RealmList<TagRealm> tags) {
     this.tags = tags;
     return this;
   }
 
-  public List<String> getTagNames() {
-    List<String> names = new ArrayList<>(3);
-    for (TagRealm tag : tags) {
-      names.add(tag.getName());
-    }
+  public PostRealm addTag(TagRealm tag) {
+    this.tags.add(tag);
+    return this;
+  }
 
-    return names;
+  public List<String> getTagNames() {
+    return Stream.of(tags).map(TagRealm::getName).toList();
   }
 
   public RealmList<CategoryRealm> getCategories() {
@@ -141,12 +203,7 @@ public class PostRealm extends RealmObject {
   }
 
   public List<String> getCategoryNames() {
-    List<String> names = new ArrayList<>(3);
-    for (CategoryRealm category : categories) {
-      names.add(category.getName());
-    }
-
-    return names;
+    return Stream.of(categories).map(CategoryRealm::getName).toList();
   }
 
   public PostRealm addCategory(CategoryRealm categoryRealm) {
@@ -155,12 +212,7 @@ public class PostRealm extends RealmObject {
   }
 
   public boolean isCommented() {
-    return commented;
-  }
-
-  public PostRealm setCommented(boolean commented) {
-    this.commented = commented;
-    return this;
+    return commentCount != 0L;
   }
 
   public String getAcceptedCommentId() {
@@ -181,48 +233,48 @@ public class PostRealm extends RealmObject {
     return this;
   }
 
-  public int getDir() {
-    return dir;
+  public int getVoteDir() {
+    return voteDir;
   }
 
-  public PostRealm setDir(int dir) {
-    this.dir = dir;
+  public PostRealm setVoteDir(int voteDir) {
+    this.voteDir = voteDir;
     return this;
   }
 
-  public long getVotes() {
-    return votes;
+  public long getVoteCount() {
+    return voteCount;
   }
 
-  public PostRealm setVotes(long votes) {
-    this.votes = votes;
+  public PostRealm setVoteCount(long voteCount) {
+    this.voteCount = voteCount;
     return this;
   }
 
-  public long getComments() {
-    return comments;
+  public long getCommentCount() {
+    return commentCount;
   }
 
-  public PostRealm setComments(long comments) {
-    this.comments = comments;
+  public PostRealm setCommentCount(long commentCount) {
+    this.commentCount = commentCount;
     return this;
   }
 
-  public int getReports() {
-    return reports;
+  public int getReportCount() {
+    return reportCount;
   }
 
-  public PostRealm setReports(int reports) {
-    this.reports = reports;
+  public PostRealm setReportCount(int reportCount) {
+    this.reportCount = reportCount;
     return this;
   }
 
-  public int getType() {
-    return type;
+  public int getPostType() {
+    return postType;
   }
 
-  public PostRealm setType(int type) {
-    this.type = type;
+  public PostRealm setPostType(int postType) {
+    this.postType = postType;
     return this;
   }
 
@@ -253,6 +305,15 @@ public class PostRealm extends RealmObject {
     return this;
   }
 
+  public String getTagsAsString() {
+    return tagsAsString;
+  }
+
+  public PostRealm setTagsAsString(String tagsAsString) {
+    this.tagsAsString = tagsAsString;
+    return this;
+  }
+
   public boolean isFeedItem() {
     return isFeedItem;
   }
@@ -280,83 +341,82 @@ public class PostRealm extends RealmObject {
     return this;
   }
 
-  public void increaseVotes() {
-    ++this.votes;
+  public PostRealm increaseVoteCount() {
+    ++this.voteCount;
+    return this;
   }
 
-  public void decreaseVotes() {
-    --this.votes;
+  public PostRealm decreaseVoteCount() {
+    --this.voteCount;
+    return this;
   }
 
-  public void increaseComments() {
-    ++this.comments;
+  public PostRealm increaseCommentCount() {
+    ++this.commentCount;
+    return this;
   }
 
-  public void decreaseComments() {
-    --this.comments;
+  public PostRealm decreaseCommentCount() {
+    --this.commentCount;
+    return this;
   }
 
-  public boolean hasReadMore() {
+  public boolean shouldShowReadMore() {
     return content.length() >= 200;
   }
 
   @Override public String toString() {
-    return "PostRealm{"
-        + "id='"
-        + id
-        + '\''
-        + ", ownerId='"
-        + ownerId
-        + '\''
-        + ", avatarUrl='"
-        + avatarUrl
-        + '\''
-        + ", username='"
-        + username
-        + '\''
-        + ", content='"
-        + content
-        + '\''
-        + ", bounty="
-        + bounty
-        + ", mediaUrl='"
-        + mediaUrl
-        + '\''
-        + ", tags="
-        + tags
-        + ", categories="
-        + categories
-        + ", commented="
-        + commented
-        + ", acceptedCommentId='"
-        + acceptedCommentId
-        + '\''
-        + ", created="
-        + created
-        + ", dir="
-        + dir
-        + ", votes="
-        + votes
-        + ", comments="
-        + comments
-        + ", reports="
-        + reports
-        + ", type="
-        + type
-        + ", title='"
-        + title
-        + '\''
-        + ", rank="
-        + rank
-        + ", categoriesAsString='"
-        + categoriesAsString
-        + '\''
-        + ", isFeedItem="
-        + isFeedItem
-        + ", pending="
-        + pending
-        + ", bookmarked="
-        + bookmarked
-        + '}';
+    return "PostRealm{" +
+        "id='" + id + '\'' +
+        ", ownerId='" + ownerId + '\'' +
+        ", avatarUrl='" + avatarUrl + '\'' +
+        ", username='" + username + '\'' +
+        ", content='" + content + '\'' +
+        ", bounty=" + bounty +
+        ", mediaUrl='" + mediaUrl + '\'' +
+        ", tags=" + tags +
+        ", categories=" + categories +
+        ", acceptedCommentId='" + acceptedCommentId + '\'' +
+        ", created=" + created +
+        ", voteDir=" + voteDir +
+        ", voteCount=" + voteCount +
+        ", commentCount=" + commentCount +
+        ", reportCount=" + reportCount +
+        ", postType=" + postType +
+        ", title='" + title + '\'' +
+        ", rank=" + rank +
+        ", isFeedItem=" + isFeedItem +
+        ", pending=" + pending +
+        ", bookmarked=" + bookmarked +
+        ", categoriesAsString='" + categoriesAsString + '\'' +
+        ", tagsAsString='" + tagsAsString + '\'' +
+        '}';
+  }
+
+  @Override public int describeContents() {
+    return 0;
+  }
+
+  @Override public void writeToParcel(Parcel dest, int flags) {
+    dest.writeString(id);
+    dest.writeString(ownerId);
+    dest.writeString(avatarUrl);
+    dest.writeString(username);
+    dest.writeString(content);
+    dest.writeInt(bounty);
+    dest.writeString(mediaUrl);
+    dest.writeString(acceptedCommentId);
+    dest.writeInt(voteDir);
+    dest.writeLong(voteCount);
+    dest.writeLong(commentCount);
+    dest.writeInt(reportCount);
+    dest.writeInt(postType);
+    dest.writeString(title);
+    dest.writeDouble(rank);
+    dest.writeString(categoriesAsString);
+    dest.writeString(tagsAsString);
+    dest.writeByte((byte) (isFeedItem ? 1 : 0));
+    dest.writeByte((byte) (pending ? 1 : 0));
+    dest.writeByte((byte) (bookmarked ? 1 : 0));
   }
 }

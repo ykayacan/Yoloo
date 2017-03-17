@@ -12,7 +12,7 @@ import java.util.TimeZone;
 import org.junit.After;
 import org.junit.Before;
 
-public abstract class GAETestBase {
+abstract class GAETestBase {
 
   protected LocalServiceTestHelper helper =
       new LocalServiceTestHelper(
@@ -22,7 +22,6 @@ public abstract class GAETestBase {
           new LocalUserServiceTestConfig(),
           new LocalURLFetchServiceTestConfig(),
           new LocalTaskQueueTestConfig()
-              .setDisableAutoTaskExecution(false)
               .setQueueXmlPath("src/main/webapp/WEB-INF/queue.xml"),
           new LocalSearchServiceTestConfig(),
           new LocalMemcacheServiceTestConfig()
@@ -32,13 +31,11 @@ public abstract class GAETestBase {
               "com.google.appengine.api.users.UserService.user_id_key",
               "agR0ZXN0cg0LEgdBY2NvdW50GAEM"));
 
-  @Before
-  public void setUpGAE() {
+  @Before public void setUpGAE() {
     this.helper.setUp();
   }
 
-  @After
-  public void tearDownGAE() {
+  @After public void tearDownGAE() {
     this.helper.tearDown();
   }
 }

@@ -9,52 +9,47 @@ import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyModel;
-import com.bluelinelabs.conductor.Controller;
-import com.bluelinelabs.conductor.RouterTransaction;
-import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CategoryRealm;
 import com.yoloo.android.data.repository.category.CategoryRepository;
 import com.yoloo.android.data.repository.category.datasource.CategoryDiskDataStore;
 import com.yoloo.android.data.repository.category.datasource.CategoryRemoteDataStore;
-import com.yoloo.android.feature.feed.globalfeed.GlobalFeedController;
-import com.yoloo.android.ui.recyclerview.decoration.GridInsetItemDecoration;
+import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.OnMaxSelectionReachedListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
-import com.yoloo.android.feature.editor.catalog.CatalogController;
-import com.yoloo.android.framework.MvpController;
+import com.yoloo.android.ui.recyclerview.decoration.GridInsetItemDecoration;
 import com.yoloo.android.util.BundleBuilder;
+import com.yoloo.android.util.DisplayUtil;
 import java.util.List;
 import timber.log.Timber;
 
 public class CategoryController extends MvpController<CategoryView, CategoryPresenter>
     implements CategoryView, OnItemClickListener<CategoryRealm>, OnMaxSelectionReachedListener {
 
-  private static final String KEY_CATEGORY_TYPE = "CATEGORY_TYPE";
-  private static final String KEY_MULTI_SELECTION = "MULTI_SELECTION";
+  private static final String KEY_MAX_SELECTION = "MAX_SELECTION";
 
   @BindView(R.id.rv_catalog) RecyclerView rvCatalog;
 
-  private String categoryType;
-  private boolean multiSelection;
+  private int maxSelection;
 
   private CategoryAdapter adapter;
 
+  private SelectedCategoriesListener selectedCategoriesListener;
+  private OnCategoryClickListener onCategoryClickListener;
+
   public CategoryController(Bundle args) {
     super(args);
-    categoryType = getArgs().getString(KEY_CATEGORY_TYPE);
-    multiSelection = getArgs().getBoolean(KEY_MULTI_SELECTION);
+    maxSelection = getArgs().getInt(KEY_MAX_SELECTION);
 
-    if (multiSelection) {
+    if (isMultiSelection()) {
       setRetainViewMode(RetainViewMode.RETAIN_DETACH);
     }
   }
 
-  public static CategoryController create(@CategoryType String categoryType,
-      boolean multiSelection) {
-    final Bundle bundle = new BundleBuilder().putString(KEY_CATEGORY_TYPE, categoryType)
-        .putBoolean(KEY_MULTI_SELECTION, multiSelection)
+  public static CategoryController create(int maxSelection) {
+    final Bundle bundle = new BundleBuilder()
+        .putInt(KEY_MAX_SELECTION, maxSelection)
         .build();
 
     return new CategoryController(bundle);
@@ -65,8 +60,7 @@ public class CategoryController extends MvpController<CategoryView, CategoryPres
     return inflater.inflate(R.layout.controller_child_catalog, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
-    super.onViewCreated(view);
+  @Override protected void onViewBound(@NonNull View view) {
     setupRecyclerView();
   }
 
@@ -75,7 +69,7 @@ public class CategoryController extends MvpController<CategoryView, CategoryPres
   }
 
   @Override public void onError(Throwable throwable) {
-
+    Timber.e(throwable);
   }
 
   @NonNull @Override public CategoryPresenter createPresenter() {
@@ -86,40 +80,53 @@ public class CategoryController extends MvpController<CategoryView, CategoryPres
   }
 
   @Override public void onItemClick(View v, EpoxyModel<?> model, CategoryRealm item) {
-    if (multiSelection) {
-      final Controller parent = getParentController();
-      if (parent instanceof CatalogController) {
-        ((CatalogController) parent).updateSelectedCategories(categoryType,
-            adapter.getSelectedCategories());
+    if (isMultiSelection()) {
+      if (selectedCategoriesListener != null) {
+        selectedCategoriesListener.selectedCategories(adapter.getSelectedCategories());
       }
     } else {
-      getParentController().getRouter()
-          .pushController(RouterTransaction.with(GlobalFeedController.ofCategory(item.getName()))
-              .pushChangeHandler(new VerticalChangeHandler())
-              .popChangeHandler(new VerticalChangeHandler()));
+      if (onCategoryClickListener != null) {
+        onCategoryClickListener.onCategoryClick(v, item);
+      }
     }
-  }
-
-  private void setupRecyclerView() {
-    adapter = new CategoryAdapter(categoryType, this);
-
-    final int maxSelection =
-        multiSelection ? (categoryType.equals(CategoryType.TYPE_DESTINATION) ? 1 : 3) : 0;
-    adapter.setMaxSelection(maxSelection);
-    adapter.setOnMaxSelectionReachedListener(this);
-
-    rvCatalog.setLayoutManager(new GridLayoutManager(getActivity(), 2));
-    rvCatalog.addItemDecoration(new GridInsetItemDecoration(2, 8, true));
-
-    final SlideInItemAnimator animator = new SlideInItemAnimator();
-    animator.setSupportsChangeAnimations(false);
-    rvCatalog.setItemAnimator(animator);
-
-    rvCatalog.setHasFixedSize(true);
-    rvCatalog.setAdapter(adapter);
   }
 
   @Override public void onMaxSelectionReached() {
     Timber.d("onMaxSelectionReached()");
+  }
+
+  private void setupRecyclerView() {
+    adapter = new CategoryAdapter(this);
+
+    adapter.setMaxSelection(maxSelection);
+    adapter.setOnMaxSelectionReachedListener(this);
+
+    rvCatalog.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+    rvCatalog.addItemDecoration(new GridInsetItemDecoration(2, DisplayUtil.dpToPx(2), true));
+    SlideInItemAnimator animator = new SlideInItemAnimator();
+    animator.setSupportsChangeAnimations(false);
+    rvCatalog.setItemAnimator(animator);
+    rvCatalog.setHasFixedSize(true);
+    rvCatalog.setAdapter(adapter);
+  }
+
+  private boolean isMultiSelection() {
+    return maxSelection != 0;
+  }
+
+  public void setSelectedCategoriesListener(SelectedCategoriesListener selectedCategoriesListener) {
+    this.selectedCategoriesListener = selectedCategoriesListener;
+  }
+
+  public void setOnCategoryClickListener(OnCategoryClickListener onCategoryClickListener) {
+    this.onCategoryClickListener = onCategoryClickListener;
+  }
+
+  public interface SelectedCategoriesListener {
+    void selectedCategories(List<CategoryRealm> selected);
+  }
+
+  public interface OnCategoryClickListener {
+    void onCategoryClick(View v, CategoryRealm category);
   }
 }

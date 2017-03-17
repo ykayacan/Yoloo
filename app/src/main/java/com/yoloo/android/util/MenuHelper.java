@@ -8,6 +8,10 @@ import android.view.View;
 
 public final class MenuHelper {
 
+  private MenuHelper() {
+    // empty constructor
+  }
+
   public static PopupMenu createMenu(Context context, View view, @MenuRes int menuRes) {
     final PopupMenu popupMenu = new PopupMenu(context, view);
     final MenuInflater inflater = popupMenu.getMenuInflater();

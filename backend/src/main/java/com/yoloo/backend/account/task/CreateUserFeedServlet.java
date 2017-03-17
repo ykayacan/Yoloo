@@ -5,7 +5,6 @@ import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.category.Category;
 import com.yoloo.backend.feed.Feed;
@@ -54,7 +53,7 @@ public class CreateUserFeedServlet extends HttpServlet {
     LOG.info("accountId: " + accountId);
     LOG.info("CategoryIds: " + categoryIds);
 
-    List<Key<Category>> keys = KeyUtil.extractKeysFromIds2(categoryIds, ",");
+    List<Key<Category>> keys = KeyUtil.extractKeysFromIds(categoryIds, ",");
 
     Query<Post> query = ofy().load().type(Post.class);
 
@@ -67,10 +66,9 @@ public class CreateUserFeedServlet extends HttpServlet {
         .keys().list();
 
     List<Feed> feeds = Stream.of(postKeys)
-        .map(Ref::create)
-        .map(postRef -> Feed.builder()
+        .map(postKey -> Feed.builder()
+            .id(Feed.createId(postKey))
             .parent(Key.create(accountId))
-            .postRef(postRef)
             .build())
         .toList();
 

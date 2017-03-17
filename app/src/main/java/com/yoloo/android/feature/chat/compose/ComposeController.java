@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindView;
+import com.airbnb.epoxy.EpoxyModel;
 import com.google.firebase.database.FirebaseDatabase;
 import com.yoloo.android.R;
 import com.yoloo.android.data.Response;
@@ -62,7 +63,7 @@ public class ComposeController
     return inflater.inflate(R.layout.controller_createconversation, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
+  @Override protected void onViewBound(@NonNull View view) {
     setupToolbar();
     setHasOptionsMenu(true);
     setupRecyclerView();
@@ -96,13 +97,12 @@ public class ComposeController
 
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     final int itemId = item.getItemId();
-    switch (itemId) {
-      case android.R.id.home:
-        getRouter().handleBack();
-        return true;
-      default:
-        return super.onOptionsItemSelected(item);
+    if (itemId == android.R.id.home) {
+      getRouter().handleBack();
+      return true;
     }
+
+    return super.onOptionsItemSelected(item);
   }
 
   @Override public void onLoading(boolean pullToRefresh) {
@@ -133,7 +133,7 @@ public class ComposeController
         FirebaseDatabase.getInstance().getReference());
   }
 
-  @Override public void onProfileClick(View v, String ownerId) {
+  @Override public void onProfileClick(View v, EpoxyModel<?> model, String userId) {
     getPresenter().createConversation("a1", AccountFaker.generateOne());
   }
 
@@ -147,9 +147,9 @@ public class ComposeController
   private void setupRecyclerView() {
     adapter = new ComposeAdapter(getActivity(), this);
 
-    final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+    final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
 
-    rvCreateConversation.setLayoutManager(layoutManager);
+    rvCreateConversation.setLayoutManager(lm);
 
     final SlideInItemAnimator animator = new SlideInItemAnimator();
     animator.setSupportsChangeAnimations(false);
@@ -158,6 +158,6 @@ public class ComposeController
     rvCreateConversation.setHasFixedSize(true);
     rvCreateConversation.setAdapter(adapter);
 
-    endlessRecyclerViewScrollListener = new EndlessRecyclerViewScrollListener(layoutManager, this);
+    endlessRecyclerViewScrollListener = new EndlessRecyclerViewScrollListener(lm, this);
   }
 }

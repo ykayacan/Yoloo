@@ -5,12 +5,15 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.ServingUrlOptions;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.Bucket;
 import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
+import com.google.cloud.storage.StorageOptions;
 import com.google.common.base.Preconditions;
 import com.googlecode.objectify.Key;
+import com.yoloo.backend.Constants;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.config.MediaConfig;
 import com.yoloo.backend.util.RandomGenerator;
@@ -19,10 +22,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Collection;
-import java.util.logging.Logger;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import lombok.extern.java.Log;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
@@ -30,25 +33,22 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import static com.yoloo.backend.OfyService.ofy;
 
+@Log
 public class UploadServlet extends HttpServlet {
 
-  private static final Logger LOG =
-      Logger.getLogger(UploadServlet.class.getName());
-
-  private static final ObjectWriter ow =
+  private static final ObjectWriter OW =
       new ObjectMapper().writer().withDefaultPrettyPrinter();
 
   private static final String PARAM_ACCOUNT_ID = "accountId";
 
   private static final ServletFileUpload FILE_UPLOAD = new ServletFileUpload();
 
-  private static final ImagesService IMAGES_SERVICE = ImagesServiceFactory.getImagesService();
-
   private static final Storage.BucketTargetOption BUCKET_OPTION =
       Storage.BucketTargetOption.predefinedAcl(Storage.PredefinedAcl.PUBLIC_READ);
 
-  @Override
-  public void doPost(HttpServletRequest req, HttpServletResponse resp)
+  private final ImagesService imagesService = ImagesServiceFactory.getImagesService();
+
+  @Override public void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws IOException {
 
     setResponse(resp);
@@ -86,15 +86,38 @@ public class UploadServlet extends HttpServlet {
           }
         })
         .cast(FileItemStream.class)
-        .filter(this::filterFileStream)
+        //.filter(this::filterFileStream)
         .map(fileItemStream -> {
           final InputStream is = fileItemStream.openStream();
           final String mime = fileItemStream.getContentType();
 
-          String bucketName = MediaConfig.MEDIA_BUCKET + "/" + accountId;
+          String bucketName = MediaConfig.MEDIA_BUCKET;
+          log.info("Bucket Name: " + bucketName);
 
-          Bucket bucket = MediaService.STORAGE.create(BucketInfo.of(bucketName), BUCKET_OPTION);
+          Storage storage = StorageOptions.newBuilder()
+              .setCredentials(
+                  ServiceAccountCredentials.fromStream(getServletContext().getResourceAsStream(
+                      Constants.FIREBASE_SECRET_JSON_PATH)))
+              .build()
+              .getService();
+
+          /*Iterable<Blob> it = storage.list("yoloo-151719.appspot.com").getValues();
+
+          for (Blob blob : it) {
+            System.out.println(blob.getName());
+          }*/
+
+          /*BlobId blobId = BlobId.of(bucketName, RandomGenerator.INSTANCE.generate());
+          BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(mime).build();
+          Blob blob = storage.create(blobInfo, is, BUCKET_OPTION);*/
+
+          Bucket bucket = storage.create(BucketInfo.of(bucketName), BUCKET_OPTION);
           Blob blob = bucket.create(RandomGenerator.INSTANCE.generate(), is, mime);
+
+          /*Bucket bucket = MediaService.STORAGE.create(BucketInfo.of(bucketName), BUCKET_OPTION);
+          Blob blob = bucket.create(RandomGenerator.INSTANCE.generate(), is, mime);*/
+
+          log.info("Bucket:" + blob.toString());
 
           ServingUrlOptions options = ServingUrlOptions.Builder
               .withGoogleStorageFileName("/gs/" + blob.getBucket() + "/" + blob.getName());
@@ -103,21 +126,25 @@ public class UploadServlet extends HttpServlet {
               .id(blob.getBucket() + "/" + blob.getName())
               .parent(accountKey)
               .mime(mime)
-              .url(IMAGES_SERVICE.getServingUrl(options))
+              .url(imagesService.getServingUrl(options))
               .build();
         })
+        .doOnNext(media -> log.info("Media: " + media.toString()))
         .toList(2)
         .subscribe(medias -> {
           ofy().save().entities(medias).now();
 
           printSuccessResponse(medias, out);
-        }, throwable -> printErrorResponse(throwable.getMessage(), out));
+        }, throwable -> {
+          System.out.println(throwable);
+          printErrorResponse(throwable.getMessage(), out);
+        });
   }
 
   private boolean filterFileStream(FileItemStream fileItemStream) {
     return !fileItemStream.isFormField() &&
-        !MimeUtil.isValidMime(fileItemStream.getContentType()) &&
-        fileItemStream.getName().length() <= 0;
+        !MimeUtil.isValidMime(fileItemStream.getContentType()) /*&&
+        fileItemStream.getName().length() <= 0*/;
   }
 
   private void setResponse(HttpServletResponse resp) {
@@ -128,7 +155,7 @@ public class UploadServlet extends HttpServlet {
 
   private void printSuccessResponse(final Collection<Media> collection, final PrintWriter out)
       throws IOException {
-    final String json = ow.writeValueAsString(
+    final String json = OW.writeValueAsString(
         WrappedCollectionResponse.<Media>builder()
             .setItems(collection)
             .build());
@@ -138,7 +165,7 @@ public class UploadServlet extends HttpServlet {
 
   private void printErrorResponse(final String message, final PrintWriter out)
       throws IOException {
-    final String json = ow.writeValueAsString(WrappedErrorResponse.builder()
+    final String json = OW.writeValueAsString(WrappedErrorResponse.builder()
         .code(HttpServletResponse.SC_BAD_REQUEST)
         .message(message)
         .build());

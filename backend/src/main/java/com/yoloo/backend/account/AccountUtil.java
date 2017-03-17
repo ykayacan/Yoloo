@@ -1,5 +1,6 @@
 package com.yoloo.backend.account;
 
+import com.google.api.client.util.Strings;
 import com.google.firebase.auth.FirebaseToken;
 import lombok.experimental.UtilityClass;
 
@@ -15,11 +16,20 @@ public final class AccountUtil {
   }
 
   public static String generateUsername(FirebaseToken token) {
+    if (Strings.isNullOrEmpty(token.getName())) {
+      final String email = token.getEmail();
+      final int index = email.indexOf('@');
+      return token.getEmail()
+          .substring(0, index)
+          .toLowerCase()
+          .concat(String.valueOf(System.currentTimeMillis()).substring(5));
+    }
+
     return token.getName()
         .trim()
         .replaceAll("\\s+", "")
+        .substring(0, token.getName().length() > 10 ? 10 : token.getName().length())
         .toLowerCase()
-        .substring(0, 10)
         .concat(String.valueOf(System.currentTimeMillis()).substring(5));
   }
 }

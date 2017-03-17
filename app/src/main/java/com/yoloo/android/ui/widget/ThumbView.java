@@ -15,8 +15,7 @@ import com.yoloo.android.util.Preconditions;
 
 public class ThumbView extends FrameLayout {
 
-  @BindView(R.id.image_thumb_preview)
-  ImageView ivThumbPreview;
+  @BindView(R.id.image_thumb_preview) ImageView ivThumbPreview;
 
   private OnDismissListener listener;
 
@@ -47,8 +46,7 @@ public class ThumbView extends FrameLayout {
     this.listener = listener;
   }
 
-  @OnClick(R.id.image_btn_cancel)
-  void dismiss() {
+  @OnClick(R.id.image_btn_cancel) void dismiss() {
     Preconditions.checkNotNull(listener, "OnDismissListener can not be empty!");
     listener.onDismiss(this);
   }

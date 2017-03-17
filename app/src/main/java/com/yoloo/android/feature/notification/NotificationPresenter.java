@@ -8,22 +8,26 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import java.util.List;
 
-public class NotificationPresenter extends MvpPresenter<NotificationView> {
+class NotificationPresenter extends MvpPresenter<NotificationView> {
 
   private final NotificationRepository notificationRepository;
 
-  public NotificationPresenter(NotificationRepository notificationRepository) {
+  private String cursor;
+
+  NotificationPresenter(NotificationRepository notificationRepository) {
     this.notificationRepository = notificationRepository;
   }
 
   @Override public void onAttachView(NotificationView view) {
     super.onAttachView(view);
-    loadNotifications(false, null, 20);
+    loadNotifications(false, 20);
   }
 
-  public void loadNotifications(boolean pullToRefresh, String cursor, int limit) {
-    Disposable d = notificationRepository.list(cursor, null, limit)
-        .observeOn(AndroidSchedulers.mainThread())
+  void loadNotifications(boolean pullToRefresh, int limit) {
+    shouldResetCursor(pullToRefresh);
+
+    Disposable d = notificationRepository.listNotifications(cursor, limit)
+        .observeOn(AndroidSchedulers.mainThread(), true)
         .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
         .subscribe(this::showNotifications, this::showError);
 
@@ -31,11 +35,22 @@ public class NotificationPresenter extends MvpPresenter<NotificationView> {
   }
 
   private void showNotifications(Response<List<NotificationRealm>> response) {
-    getView().onLoaded(response);
-    getView().showContent();
+    if (response.getData().isEmpty()) {
+      getView().onEmpty();
+    } else {
+      cursor = response.getCursor();
+      getView().onLoaded(response.getData());
+      getView().showContent();
+    }
   }
 
   private void showError(Throwable throwable) {
     getView().onError(throwable);
+  }
+
+  private void shouldResetCursor(boolean pullToRefresh) {
+    if (pullToRefresh) {
+      cursor = null;
+    }
   }
 }

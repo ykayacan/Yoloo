@@ -15,15 +15,13 @@
  */
 package com.yoloo.backend.util;
 
+import lombok.experimental.UtilityClass;
+
 /**
  * They do not extend each other on purpose.
  */
+@UtilityClass
 public final class Group {
-
-  // Suppress default constructor for noninstantiability
-  private Group() {
-    throw new AssertionError();
-  }
 
   public static final class OfTwo<First, Second> {
     public First first;

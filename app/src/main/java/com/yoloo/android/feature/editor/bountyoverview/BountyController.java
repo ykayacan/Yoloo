@@ -30,7 +30,7 @@ import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.decoration.GridInsetItemDecoration;
 import com.yoloo.android.util.ControllerUtil;
 import com.yoloo.android.util.DrawableHelper;
-import com.yoloo.android.util.ViewUtil;
+import com.yoloo.android.util.ViewUtils;
 import java.util.ArrayList;
 import java.util.List;
 import timber.log.Timber;
@@ -59,17 +59,17 @@ public class BountyController extends MvpController<BountyView, BountyPresenter>
     return inflater.inflate(R.layout.controller_bounty, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
-    super.onViewCreated(view);
-    ViewUtil.setStatusBarColor(getActivity(), primaryBlueColor);
+  @Override protected void onViewBound(@NonNull View view) {
+    super.onViewBound(view);
+    ViewUtils.setStatusBarColor(getActivity(), primaryBlueColor);
 
     setHasOptionsMenu(true);
     setupRecyclerView();
     setupToolbar();
 
-    DrawableHelper.withContext(getActivity())
-        .withColor(android.R.color.white)
+    DrawableHelper.create()
         .withDrawable(tvTotalBounty.getCompoundDrawables()[0])
+        .withColor(getActivity(), android.R.color.white)
         .tint();
 
     final String[] bountyValues = getResources().getStringArray(R.array.label_editor_bounties);
@@ -88,7 +88,7 @@ public class BountyController extends MvpController<BountyView, BountyPresenter>
 
   @Override protected void onDestroy() {
     super.onDestroy();
-    ViewUtil.setStatusBarColor(getActivity(), primaryDarkColor);
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -110,7 +110,8 @@ public class BountyController extends MvpController<BountyView, BountyPresenter>
             UserDiskDataStore.getInstance()),
         PostRepository.getInstance(
             PostRemoteDataStore.getInstance(),
-            PostDiskDataStore.getInstance()));
+            PostDiskDataStore.getInstance()
+        ));
   }
 
   @Override public void onDraftAndAccountLoaded(PostRealm draft, AccountRealm account) {
@@ -118,7 +119,7 @@ public class BountyController extends MvpController<BountyView, BountyPresenter>
     this.account = account;
 
     adapter.selectBountyItem(draft.getBounty());
-    tvTotalBounty.setText(String.valueOf(this.account.getBounties() - this.draft.getBounty()));
+    tvTotalBounty.setText(String.valueOf(this.account.getBountyCount() - this.draft.getBounty()));
   }
 
   @Override public void onDraftSaved() {
@@ -155,7 +156,7 @@ public class BountyController extends MvpController<BountyView, BountyPresenter>
   }
 
   private boolean isBountyQuantityValid(int value) {
-    if (value > account.getBounties()) {
+    if (value > account.getBountyCount()) {
       Snackbar.make(getView(), R.string.error_editor_not_enough_bounty, Snackbar.LENGTH_SHORT)
           .show();
       return false;

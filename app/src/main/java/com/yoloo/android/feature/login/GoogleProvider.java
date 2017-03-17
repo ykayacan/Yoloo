@@ -20,7 +20,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
 import com.bluelinelabs.conductor.Controller;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -34,10 +33,11 @@ import com.google.android.gms.common.api.Status;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.yoloo.android.R;
+import com.yoloo.android.YolooApp;
 import com.yoloo.android.feature.login.AuthUI.IdpConfig;
+import timber.log.Timber;
 
 public class GoogleProvider implements IdpProvider, GoogleApiClient.OnConnectionFailedListener {
-  private static final String TAG = "GoogleProvider";
   private static final int RC_SIGN_IN = 20;
   private static final String ERROR_KEY = "error";
 
@@ -54,7 +54,7 @@ public class GoogleProvider implements IdpProvider, GoogleApiClient.OnConnection
     this.controller = controller;
     this.idpConfig = idpConfig;
 
-    googleApiClient = new GoogleApiClient.Builder(controller.getActivity())
+    googleApiClient = new GoogleApiClient.Builder(YolooApp.getAppContext())
         .addApi(Auth.GOOGLE_SIGN_IN_API, getSignInOptions(email))
         .build();
   }
@@ -64,7 +64,7 @@ public class GoogleProvider implements IdpProvider, GoogleApiClient.OnConnection
   }
 
   private GoogleSignInOptions getSignInOptions(@Nullable String email) {
-    final String clientId = controller.getActivity().getString(R.string.default_web_client_id);
+    final String clientId = controller.getResources().getString(R.string.default_web_client_id);
 
     GoogleSignInOptions.Builder builder =
         new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -149,14 +149,14 @@ public class GoogleProvider implements IdpProvider, GoogleApiClient.OnConnection
   }
 
   private void onError(String errorMessage) {
-    Log.e(TAG, "Error logging in with Google. " + errorMessage);
+    Timber.e("Error logging in with Google. %s", errorMessage);
     Bundle extra = new Bundle();
     extra.putString(ERROR_KEY, errorMessage);
     idpCallback.onFailure(extra);
   }
 
   @Override public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-    Log.w(TAG, "onConnectionFailed:" + connectionResult);
+    Timber.w("onConnectionFailed: %s", connectionResult);
     Bundle extra = new Bundle();
     extra.putString(ERROR_KEY, connectionResult.getErrorMessage());
     idpCallback.onFailure(extra);

@@ -79,7 +79,7 @@ public class VoteControllerTest extends TestBase {
 
     Category europe = null;
     try {
-      europe = categoryController.insertCategory("europe", Category.Type.THEME);
+      europe = categoryController.insertCategory("europe", null);
     } catch (ConflictException e) {
       e.printStackTrace();
     }

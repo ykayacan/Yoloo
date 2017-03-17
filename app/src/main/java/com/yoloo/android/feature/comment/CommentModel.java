@@ -58,8 +58,8 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
     holder.tvUsername.setText(comment.getUsername());
     holder.tvTime.setTimeStamp(comment.getCreated().getTime() / 1000);
     holder.tvContent.setText(comment.getContent());
-    holder.voteView.setVotes(comment.getVotes());
-    holder.voteView.setCurrentStatus(comment.getDir());
+    holder.voteView.setVotes(comment.getVoteCount());
+    holder.voteView.setVoteDirection(comment.getVoteDir());
 
     holder.tvAcceptedMark.setVisibility(comment.isAccepted() ? View.VISIBLE : View.GONE);
     holder.tvAccept.setVisibility(isPostOwner
@@ -68,14 +68,14 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
         && postType != PostRealm.POST_BLOG
         ? View.VISIBLE : View.GONE);
 
-    DrawableHelper.withContext(context)
+    DrawableHelper.create()
         .withDrawable(holder.tvAccept.getCompoundDrawables()[0])
-        .withColor(android.R.color.secondary_text_dark)
+        .withColor(context, android.R.color.secondary_text_dark)
         .tint();
 
-    DrawableHelper.withContext(context)
+    DrawableHelper.create()
         .withDrawable(holder.tvAcceptedMark.getCompoundDrawables()[1])
-        .withColor(R.color.accepted)
+        .withColor(context, R.color.accepted)
         .tint();
 
     setupClickListeners(holder);
@@ -89,9 +89,9 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
       });
     }
     holder.ivUserAvatar.setOnClickListener(
-        v -> onProfileClickListener.onProfileClick(v, comment.getOwnerId()));
+        v -> onProfileClickListener.onProfileClick(v, this, comment.getOwnerId()));
     holder.tvUsername.setOnClickListener(
-        v -> onProfileClickListener.onProfileClick(v, comment.getOwnerId()));
+        v -> onProfileClickListener.onProfileClick(v, this, comment.getOwnerId()));
     holder.tvContent.setOnLinkClickListener((type, value) -> {
       if (type == LinkableTextView.Link.MENTION) {
         onMentionClickListener.onMentionClick(value);
@@ -102,15 +102,15 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
       comment.setAccepted(true);
       holder.tvAccept.setVisibility(View.GONE);
       holder.tvAcceptedMark.setVisibility(View.VISIBLE);
-      DrawableHelper.withContext(v.getContext())
+      DrawableHelper.create()
           .withDrawable(holder.tvAcceptedMark.getCompoundDrawables()[1])
-          .withColor(R.color.accepted)
+          .withColor(v.getContext(), R.color.accepted)
           .tint();
 
       onMarkAsAcceptedClickListener.onMarkAsAccepted(v, comment);
     });
     holder.voteView.setOnVoteEventListener(direction -> {
-      comment.setDir(direction);
+      comment.setVoteDir(direction);
       onVoteClickListener.onVoteClick(comment.getId(), direction, OnVoteClickListener.Type.COMMENT);
     });
   }

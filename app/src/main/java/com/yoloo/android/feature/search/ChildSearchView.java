@@ -10,9 +10,9 @@ public interface ChildSearchView extends MvpView {
 
   void onRecentTagsLoaded(List<TagRealm> tags);
 
-  void onTagsLoaded(Response<List<TagRealm>> response);
+  void onTagsLoaded(List<TagRealm> tags);
 
   void onRecentUsersLoaded(List<AccountRealm> accounts);
 
-  void onUsersLoaded(Response<List<AccountRealm>> response);
+  void onUsersLoaded(List<AccountRealm> accounts);
 }

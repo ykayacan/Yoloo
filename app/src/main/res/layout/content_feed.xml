@@ -4,9 +4,10 @@
   android:id="@+id/root_view"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  app:animateStateChanges="true"
+  app:contentViewId="@+id/swipe_feed"
   app:emptyLayout="@layout/layout_empty_view"
   app:errorLayout="@layout/layout_error_view"
+  app:initialViewState="loading"
   app:loadingLayout="@layout/layout_feed_loading_view">
 
   <android.support.design.widget.AppBarLayout
@@ -37,46 +38,73 @@
 
   </android.support.v4.widget.SwipeRefreshLayout>
 
-  <!--<View
-    android:id="@+id/dimming_view"
+  <com.yoloo.android.ui.widget.RevealFrameLayout
+    android:id="@+id/menu_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior" />-->
+    android:background="@color/grey_700"
+    android:elevation="6dp"
+    android:visibility="gone">
+
+    <com.ogaclejapan.arclayout.ArcLayout
+      android:id="@+id/menu_arc_layout"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      app:arc_axisRadius="@dimen/layout_arc_child_offset"
+      app:arc_origin="center"
+      app:arc_radius="@dimen/layout_arc_radius">
+
+      <android.support.design.widget.FloatingActionButton
+        android:id="@+id/arc_menu_ask_question"
+        android:layout_width="@dimen/spacing_huge"
+        android:layout_height="@dimen/spacing_huge"
+        android:clickable="true"
+        android:tint="@color/accent"
+        app:backgroundTint="@android:color/white"
+        app:srcCompat="@drawable/ic_edit_white_18dp" />
+
+      <android.support.design.widget.FloatingActionButton
+        android:id="@+id/arc_menu_write_memory"
+        android:layout_width="@dimen/spacing_huge"
+        android:layout_height="@dimen/spacing_huge"
+        android:clickable="true"
+        android:tint="@color/accent"
+        app:backgroundTint="@android:color/white"
+        app:srcCompat="@drawable/ic_edit_white_18dp" />
+
+      <android.support.design.widget.FloatingActionButton
+        android:id="@+id/arc_menu_share_photo"
+        android:layout_width="@dimen/spacing_huge"
+        android:layout_height="@dimen/spacing_huge"
+        android:clickable="true"
+        android:tint="@color/accent"
+        app:backgroundTint="@android:color/white"
+        app:srcCompat="@drawable/ic_add_a_photo_black_24dp" />
+
+      <android.support.design.widget.FloatingActionButton
+        android:id="@+id/arc_menu_checkin"
+        android:layout_width="@dimen/spacing_huge"
+        android:layout_height="@dimen/spacing_huge"
+        android:clickable="true"
+        android:tint="@color/accent"
+        app:backgroundTint="@android:color/white"
+        app:srcCompat="@drawable/ic_add_location_black_24dp" />
+
+    </com.ogaclejapan.arclayout.ArcLayout>
+
+  </com.yoloo.android.ui.widget.RevealFrameLayout>
 
   <android.support.design.widget.FloatingActionButton
-    android:id="@+id/fab_ask_question"
+    android:id="@+id/fab_show_menu"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="end|bottom"
     android:layout_margin="@dimen/fab_margin"
     android:contentDescription="@string/action_feed_fab_ask_question"
-    app:srcCompat="@drawable/ic_edit_white_18dp" />
-
-  <!--<com.yoloo.android.ui.widget.fabmenu.FloatingActionsMenu
-    android:id="@+id/fab_menu_feed"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="end|bottom"
-    android:layout_margin="@dimen/fab_margin"
-    app:fab_labelStyle="@style/Yoloo.LightLabel">
-
-    <android.support.design.widget.FloatingActionButton
-      android:id="@+id/fab_ask_question"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:contentDescription="@string/action_feed_fab_ask_question"
-      app:fabSize="mini"
-      app:srcCompat="@drawable/ic_edit_white_18dp" />
-
-    <android.support.design.widget.FloatingActionButton
-      android:id="@+id/fab_share_trip"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:contentDescription="@string/action_feed_fab_share_trip"
-      app:fabSize="mini"
-      app:srcCompat="@drawable/ic_edit_white_18dp" />
-
-  </com.yoloo.android.ui.widget.fabmenu.FloatingActionsMenu>-->
+    android:elevation="6dp"
+    android:tint="@android:color/white"
+    android:transitionName="@string/transition_test"
+    app:pressedTranslationZ="12dp"
+    app:srcCompat="@drawable/ic_add_black_24dp" />
 
 </com.yoloo.android.ui.widget.StateLayout>

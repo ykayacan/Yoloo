@@ -26,8 +26,6 @@ import android.view.TouchDelegate;
 import android.view.View;
 import android.view.ViewGroup;
 import com.yoloo.android.R;
-import com.yoloo.android.ui.widget.floatingactionmenu.drawable.ColorTransitionDrawable;
-import com.yoloo.android.ui.widget.floatingactionmenu.widget.LabelView;
 import com.yoloo.android.util.AnimUtils;
 import timber.log.Timber;
 

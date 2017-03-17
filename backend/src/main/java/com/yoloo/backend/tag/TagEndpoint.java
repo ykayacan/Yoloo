@@ -163,7 +163,7 @@ public class TagEndpoint {
         .on(AuthValidator.create(user))
         .validate();
 
-    return tagController.recommendedTags();
+    return tagController.getRecommendedTags();
   }
 
   /**

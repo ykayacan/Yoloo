@@ -1,15 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.yoloo.android.ui.widget.ElasticDragDismissFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
-  android:layout_height="match_parent">
+  android:layout_height="match_parent"
+  android:background="@android:color/black"
+  android:transitionGroup="false"
+  app:dragDismissDistance="@dimen/drag_dismiss_distance"
+  app:dragDismissScale="0.95">
 
-  <uk.co.senab.photoview.PhotoView
-    android:id="@+id/iv_photo"
+  <android.support.v4.widget.NestedScrollView
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:transitionName="@string/transition_content_photo"
-    android:background="@android:color/black" />
+    android:clipToPadding="false"
+    android:fillViewport="true"
+    android:overScrollFooter="@android:color/transparent"
+    android:overScrollMode="never">
+
+    <uk.co.senab.photoview.PhotoView
+      android:id="@+id/iv_photo"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_gravity="center"
+      android:transitionName="@string/transition_content_photo" />
+
+  </android.support.v4.widget.NestedScrollView>
 
   <android.support.design.widget.AppBarLayout
     android:layout_width="match_parent"
@@ -22,9 +36,8 @@
       android:id="@+id/toolbar_photo"
       android:layout_width="match_parent"
       android:layout_height="?attr/actionBarSize"
-      android:background="@android:color/transparent"
       app:popupTheme="@style/Yoloo.PopupOverlay" />
 
   </android.support.design.widget.AppBarLayout>
 
-</android.support.design.widget.CoordinatorLayout>
+</com.yoloo.android.ui.widget.ElasticDragDismissFrameLayout>

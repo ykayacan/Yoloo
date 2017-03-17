@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:orientation="vertical">
@@ -30,25 +29,14 @@
     android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
     android:textColor="@color/primary_blue" />
 
-  <com.yoloo.android.ui.widget.tagview.TagView
-    android:id="@+id/tagview_overlay_recommended_tags"
+  <android.support.v7.widget.RecyclerView
+    android:id="@+id/rv_tags"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginEnd="24dp"
     android:layout_marginLeft="24dp"
     android:layout_marginRight="24dp"
     android:layout_marginStart="24dp"
-    app:rowGravity="left"
-    app:rowMargin="4dp"
-    app:rowMode="wrap"
-    app:selectionMode="true"
-    app:tagBackground="@drawable/editor_tag_bg"
-    app:tagMargin="4dp"
-    app:tagPaddingBottom="4dp"
-    app:tagPaddingLeft="12dp"
-    app:tagPaddingRight="12dp"
-    app:tagPaddingTop="4dp"
-    app:tagTextColor="@color/category_text"
-    app:tagTextGravity="center" />
+    android:nestedScrollingEnabled="false" />
 
 </LinearLayout>

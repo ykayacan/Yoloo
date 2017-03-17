@@ -49,7 +49,7 @@ public class CommentShardService implements Shardable<CommentShard, Comment> {
     return CommentShard.createKey(entityKey, shardNum);
   }
 
-  @Override public Observable<List<Comment>> mergeShards(Collection<Comment> entities) {
+  @Override public Observable<List<Comment>> mergeShards(Collection<? extends Comment> entities) {
     return Observable.fromIterable(entities)
         .flatMap(this::mergeShards)
         .toList(entities.size() == 0 ? 1 : entities.size())

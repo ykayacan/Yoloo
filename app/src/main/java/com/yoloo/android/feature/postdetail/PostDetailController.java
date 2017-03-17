@@ -21,10 +21,8 @@ import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.RouterTransaction;
-import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
-import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.data.model.PostRealm;
@@ -38,28 +36,27 @@ import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.feature.comment.OnMarkAsAcceptedClickListener;
-import com.yoloo.android.feature.writecommentbox.WriteCommentBox;
-import com.yoloo.android.feature.feed.common.event.PostDeleteEvent;
-import com.yoloo.android.feature.feed.common.event.UpdateEvent;
+import com.yoloo.android.feature.feed.common.annotation.FeedAction;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
+import com.yoloo.android.feature.feed.common.listener.OnModelUpdateEvent;
 import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.feature.photo.PhotoController;
 import com.yoloo.android.feature.profile.ProfileController;
+import com.yoloo.android.feature.writecommentbox.CommentAutocomplete;
 import com.yoloo.android.framework.MvpController;
+import com.yoloo.android.ui.changehandler.ArcFadeMoveChangeHandlerCompat;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
 import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.InsetDividerDecoration;
 import com.yoloo.android.util.BundleBuilder;
-import com.yoloo.android.util.ControllerUtil;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.MenuHelper;
-import com.yoloo.android.util.RxBus;
 import com.yoloo.android.util.ShareUtil;
 import java.util.List;
 import timber.log.Timber;
@@ -68,40 +65,43 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     implements PostDetailView, SwipeRefreshLayout.OnRefreshListener,
     EndlessRecyclerViewScrollListener.OnLoadMoreListener, OnProfileClickListener,
     OnPostOptionsClickListener, OnShareClickListener, OnCommentClickListener,
-    OnVoteClickListener, OnContentImageClickListener, WriteCommentBox.NewCommentListener,
+    OnVoteClickListener, OnContentImageClickListener, CommentAutocomplete.NewCommentListener,
     OnMarkAsAcceptedClickListener, OnItemLongClickListener<CommentRealm>,
     OnMentionClickListener {
 
   private static final String KEY_POST_ID = "POST_ID";
+  private static final String KEY_ACCEPTED_COMMENT_ID = "ACCEPTED_COMMENT_ID";
 
   @BindView(R.id.toolbar_post_detail) Toolbar toolbar;
   @BindView(R.id.rv_post_detail) RecyclerView rvFeed;
   @BindView(R.id.swipe_post_detail) SwipeRefreshLayout swipeRefreshLayout;
-  @BindView(R.id.layout_compose) WriteCommentBox composeLayout;
+  @BindView(R.id.layout_compose) CommentAutocomplete composeLayout;
 
   @BindColor(R.color.primary) int primaryColor;
   @BindColor(R.color.divider) int dividerColor;
 
   private PostDetailAdapter adapter;
 
-  private String cursor;
-  private String eTag;
-
   private String postId;
+  private String acceptedCommentId;
 
   private PostRealm post;
   private AccountRealm account;
 
   private boolean reEnter;
 
+  private OnModelUpdateEvent modelUpdateEvent;
+
   public PostDetailController(@Nullable Bundle args) {
     super(args);
     setRetainViewMode(RetainViewMode.RETAIN_DETACH);
   }
 
-  public static PostDetailController create(String postId) {
+  public static PostDetailController create(@NonNull String postId,
+      @Nullable String acceptedCommentId) {
     final Bundle bundle = new BundleBuilder()
         .putString(KEY_POST_ID, postId)
+        .putString(KEY_ACCEPTED_COMMENT_ID, acceptedCommentId)
         .build();
 
     return new PostDetailController(bundle);
@@ -112,11 +112,12 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     return inflater.inflate(R.layout.controller_post_detail, container, false);
   }
 
-  @Override protected void onViewCreated(@NonNull View view) {
-    super.onViewCreated(view);
+  @Override protected void onViewBound(@NonNull View view) {
+    super.onViewBound(view);
 
     final Bundle args = getArgs();
     postId = args.getString(KEY_POST_ID);
+    acceptedCommentId = args.getString(KEY_ACCEPTED_COMMENT_ID);
 
     setupPullToRefresh();
     setupToolbar();
@@ -130,20 +131,18 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
     if (!reEnter) {
-      getPresenter().loadData(false, postId, cursor, eTag, 20);
+      getPresenter().loadData(false, postId, acceptedCommentId, 20);
       reEnter = true;
     }
   }
 
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     final int itemId = item.getItemId();
-    switch (itemId) {
-      case android.R.id.home:
-        getRouter().handleBack();
-        return true;
-      default:
-        return super.onOptionsItemSelected(item);
+    if (itemId == android.R.id.home) {
+      getRouter().handleBack();
+      return true;
     }
+    return super.onOptionsItemSelected(item);
   }
 
   @Override public boolean handleBack() {
@@ -152,17 +151,11 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   }
 
   @Override public void onLoading(boolean pullToRefresh) {
-    if (!pullToRefresh) {
-      //LceAnimator.showLoading(loadingView, swipeRefreshLayout, errorView);
-    }
+
   }
 
-  @Override public void onLoaded(Response<List<CommentRealm>> value) {
-    cursor = value.getCursor();
-    eTag = value.geteTag();
-
-    adapter.showCommentsHeader(true);
-    adapter.addComments(value.getData(), account, post);
+  @Override public void onLoaded(List<CommentRealm> comments) {
+    adapter.addComments(comments, account, post);
     swipeRefreshLayout.setRefreshing(false);
   }
 
@@ -180,7 +173,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   }
 
   @Override public void onPostUpdated(PostRealm post) {
-    RxBus.get().sendEvent(new UpdateEvent(post), ControllerUtil.getPreviousControllerClass(this));
+    modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, post);
   }
 
   @Override public void onNewAccept(String commentId) {
@@ -193,7 +186,6 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   }
 
   @Override public void onEmpty() {
-    adapter.showCommentsHeader(false);
     swipeRefreshLayout.setRefreshing(false);
   }
 
@@ -204,7 +196,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   @Override public void onRefresh() {
     adapter.clear();
 
-    getPresenter().loadData(true, postId, cursor, eTag, 20);
+    getPresenter().loadData(true, postId, acceptedCommentId, 20);
   }
 
   @NonNull @Override public PostDetailPresenter createPresenter() {
@@ -214,7 +206,8 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
             CommentDiskDataStore.getInstance()),
         PostRepository.getInstance(
             PostRemoteDataStore.getInstance(),
-            PostDiskDataStore.getInstance()),
+            PostDiskDataStore.getInstance()
+        ),
         UserRepository.getInstance(
             UserRemoteDataStore.getInstance(),
             UserDiskDataStore.getInstance()));
@@ -232,24 +225,26 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
     optionsMenu.setOnMenuItemClickListener(item -> {
       final int itemId = item.getItemId();
-      switch (itemId) {
-        case R.id.action_feed_popup_delete:
-          getPresenter().deletePost(post.getId());
-          RxBus.get().sendEvent(new PostDeleteEvent(post),
-              ControllerUtil.getPreviousControllerClass(this));
-          getRouter().handleBack();
-          return true;
+      if (itemId == R.id.action_feed_popup_delete) {
+        processPostDelete(post);
+        return true;
       }
       return false;
     });
   }
 
-  @Override public void onContentImageClick(View v, String url) {
-    startTransaction(PhotoController.create(url), new FadeChangeHandler());
+  private void processPostDelete(PostRealm post) {
+    getPresenter().deletePost(post.getId());
+    modelUpdateEvent.onModelUpdateEvent(FeedAction.DELETE, post);
+    getRouter().handleBack();
   }
 
-  @Override public void onProfileClick(View v, String ownerId) {
-    startTransaction(ProfileController.create(ownerId), new VerticalChangeHandler());
+  @Override public void onContentImageClick(View v, String url) {
+    startTransaction(PhotoController.create(url), new ArcFadeMoveChangeHandlerCompat());
+  }
+
+  @Override public void onProfileClick(View v, EpoxyModel<?> model, String userId) {
+    startTransaction(ProfileController.create(userId), new VerticalChangeHandler());
   }
 
   @Override public void onShareClick(View v, PostRealm post) {
@@ -268,7 +263,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     adapter.addComment(comment, account, post);
     adapter.scrollToEnd(rvFeed);
 
-    RxBus.get().sendEvent(new UpdateEvent(post), ControllerUtil.getPreviousControllerClass(this));
+    modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, post.increaseCommentCount());
   }
 
   @Override public void onMarkAsAccepted(View v, CommentRealm comment) {
@@ -279,20 +274,16 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   @Override public void onItemLongClick(View v, EpoxyModel<?> model, CommentRealm item) {
     new AlertDialog.Builder(getActivity())
         .setItems(R.array.action_comment_dialog, (dialog, which) -> {
-          switch (which) {
-            case 0:
-              getPresenter().deleteComment(item);
-              adapter.delete(model);
-              break;
-            default:
-              break;
+          if (which == 0) {
+            getPresenter().deleteComment(item);
+            adapter.delete(model);
           }
         })
         .show();
   }
 
-  @Override public void onMentionClick(String mention) {
-    Timber.d("Mentions: %s", mention);
+  @Override public void onMentionClick(String username) {
+    Timber.d("Mentions: %s", username);
   }
 
   private void setupRecyclerView() {
@@ -345,5 +336,9 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   private void startTransaction(Controller to, ControllerChangeHandler handler) {
     getRouter().pushController(
         RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
+  }
+
+  public void setModelUpdateEvent(OnModelUpdateEvent modelUpdateEvent) {
+    this.modelUpdateEvent = modelUpdateEvent;
   }
 }

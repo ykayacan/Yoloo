@@ -1,12 +1,16 @@
 package com.yoloo.backend.util;
 
 import com.google.appengine.api.utils.SystemProperty;
-import lombok.NoArgsConstructor;
+import lombok.experimental.UtilityClass;
 
-@NoArgsConstructor
+@UtilityClass
 public final class ServerConfig {
 
   public static boolean isDev() {
     return SystemProperty.environment.value() == SystemProperty.Environment.Value.Development;
+  }
+
+  public static boolean isTest() {
+    return SystemProperty.environment.value() == null;
   }
 }

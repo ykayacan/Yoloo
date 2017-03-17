@@ -2,30 +2,26 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
-  android:layout_height="match_parent"
-  android:isScrollContainer="false">
+  android:layout_height="wrap_content">
 
-  <android.support.constraint.ConstraintLayout
+  <LinearLayout
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-
-    <android.support.constraint.Guideline
-      android:id="@+id/gl_login_top"
-      android:layout_width="0dp"
-      android:layout_height="0dp"
-      android:orientation="horizontal"
-      app:layout_constraintGuide_percent="0.2" />
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/_16asdp"
+    android:paddingTop="@dimen/_72asdp">
 
     <LinearLayout
       android:id="@+id/layout_login_input_container"
       style="@style/Widget.Yoloo.InputContainer"
-      android:layout_width="@dimen/_272sdp"
+      android:layout_width="@dimen/_272asdp"
       android:layout_height="wrap_content"
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintRight_toRightOf="parent"
       app:layout_constraintTop_toTopOf="@+id/gl_login_top">
 
-      <EditText
+      <AutoCompleteTextView
         android:id="@+id/et_login_email"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -37,6 +33,7 @@
         android:layout_marginTop="16dp"
         android:background="@drawable/edittext_login_bg"
         android:hint="@string/hint_email"
+        android:imeOptions="actionNext"
         android:inputType="textEmailAddress" />
 
       <EditText
@@ -51,7 +48,10 @@
         android:layout_marginTop="8dp"
         android:background="@drawable/edittext_login_bg"
         android:hint="@string/hint_password"
-        android:inputType="textPassword" />
+        android:imeActionLabel="@string/action_sign_in_short"
+        android:imeOptions="actionUnspecified"
+        android:inputType="textPassword"
+        android:maxLines="1" />
 
       <View
         android:layout_width="match_parent"
@@ -86,7 +86,7 @@
     <Button
       android:id="@+id/btn_facebook_sign_in"
       style="@style/Yoloo.Button.AccountChooser.FacebookButton"
-      android:layout_width="@dimen/_240sdp"
+      android:layout_width="@dimen/_240asdp"
       android:layout_height="40dp"
       android:text="@string/action_login_facebook_sing_in"
       app:layout_constraintLeft_toLeftOf="@+id/layout_login_input_container"
@@ -96,7 +96,7 @@
     <Button
       android:id="@+id/btn_google_sign_in"
       style="@style/Yoloo.Button.AccountChooser.GoogleButton"
-      android:layout_width="@dimen/_240sdp"
+      android:layout_width="@dimen/_240asdp"
       android:layout_height="40dp"
       android:layout_marginTop="8dp"
       android:text="@string/action_login_google_sign_in"
@@ -104,6 +104,6 @@
       app:layout_constraintRight_toRightOf="@+id/btn_facebook_sign_in"
       app:layout_constraintTop_toBottomOf="@+id/btn_facebook_sign_in" />
 
-  </android.support.constraint.ConstraintLayout>
+  </LinearLayout>
 
 </ScrollView>

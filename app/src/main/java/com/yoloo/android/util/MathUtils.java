@@ -22,6 +22,7 @@ package com.yoloo.android.util;
 public class MathUtils {
 
   private MathUtils() {
+    // empty constructor
   }
 
   public static float constrain(float min, float max, float v) {

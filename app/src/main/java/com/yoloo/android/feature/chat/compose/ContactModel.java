@@ -31,7 +31,7 @@ public abstract class ContactModel extends EpoxyModelWithHolder<ContactModel.Con
         .into(holder.ivAvatar);
 
     holder.itemView.setOnClickListener(
-        v -> onProfileClickListener.onProfileClick(v, account.getId()));
+        v -> onProfileClickListener.onProfileClick(v, this, account.getId()));
   }
 
   static class ContactHolder extends BaseEpoxyHolder {

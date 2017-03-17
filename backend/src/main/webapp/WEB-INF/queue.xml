@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <queue-entries>
   <queue>
-    <name>update-categories-rank-queue</name>
+    <name>update-news-rank-queue</name>
     <rate>1/h</rate>
   </queue>
   <queue>

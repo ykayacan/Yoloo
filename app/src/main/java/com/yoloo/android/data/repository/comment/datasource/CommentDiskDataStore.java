@@ -1,5 +1,6 @@
 package com.yoloo.android.data.repository.comment.datasource;
 
+import com.annimon.stream.Optional;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.data.model.CommentRealmFields;
@@ -7,9 +8,13 @@ import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.model.PostRealmFields;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.realm.Realm;
+import io.realm.RealmResults;
 import io.realm.Sort;
+import java.util.Collections;
 import java.util.List;
+import javax.annotation.Nonnull;
 
 public class CommentDiskDataStore {
 
@@ -25,13 +30,16 @@ public class CommentDiskDataStore {
     return instance;
   }
 
-  public Observable<CommentRealm> get(String commentId) {
-    return Observable.fromCallable(() -> {
+  public Single<Optional<CommentRealm>> get(@Nonnull String commentId) {
+    return Single.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 
-      CommentRealm comment = realm.copyFromRealm(realm.where(CommentRealm.class)
-          .equalTo(CommentRealmFields.ID, commentId)
-          .findFirst());
+      CommentRealm result = realm.where(CommentRealm.class)
+          .equalTo(CommentRealmFields.ID, commentId).findFirst();
+
+      Optional<CommentRealm> comment = result == null
+          ? Optional.empty()
+          : Optional.of(realm.copyFromRealm(result));
 
       realm.close();
 
@@ -39,33 +47,35 @@ public class CommentDiskDataStore {
     });
   }
 
-  public void add(CommentRealm comment) {
+  public void add(@Nonnull CommentRealm comment) {
     Realm realm = Realm.getDefaultInstance();
 
     realm.executeTransaction(tx -> {
       PostRealm post = tx.where(PostRealm.class)
-          .equalTo(PostRealmFields.ID, comment.getPostId())
-          .findFirst();
-      post.increaseComments();
+          .equalTo(PostRealmFields.ID, comment.getPostId()).findFirst();
 
-      if (comment.isAccepted()) {
-        post.setAcceptedCommentId(comment.getId());
+      if (post != null) {
+        post.increaseCommentCount();
+
+        if (comment.isAccepted()) {
+          post.setAcceptedCommentId(comment.getId());
+        }
+
+        tx.insertOrUpdate(post);
+        tx.insertOrUpdate(comment);
       }
-
-      tx.insertOrUpdate(post);
-      tx.insertOrUpdate(comment);
     });
 
     realm.close();
   }
 
-  public void addAll(List<CommentRealm> comments) {
+  public void addAll(@Nonnull List<CommentRealm> comments) {
     Realm realm = Realm.getDefaultInstance();
     realm.executeTransaction(tx -> tx.insertOrUpdate(comments));
     realm.close();
   }
 
-  public Completable delete(CommentRealm comment) {
+  public Completable delete(@Nonnull CommentRealm comment) {
     return Completable.fromAction(() -> {
       Realm realm = Realm.getDefaultInstance();
 
@@ -73,75 +83,88 @@ public class CommentDiskDataStore {
         PostRealm post = tx.where(PostRealm.class)
             .equalTo(PostRealmFields.ID, comment.getPostId())
             .findFirst();
-        post.decreaseComments();
 
-        if (comment.isAccepted()) {
-          post.setAcceptedCommentId(null);
+        if (post != null) {
+          post.decreaseCommentCount();
+
+          if (comment.isAccepted()) {
+            post.setAcceptedCommentId(null);
+          }
+          tx.insertOrUpdate(post);
         }
-        tx.insertOrUpdate(post);
 
-        tx.where(CommentRealm.class)
+        CommentRealm result = tx.where(CommentRealm.class)
             .equalTo(CommentRealmFields.ID, comment.getId())
-            .findFirst().deleteFromRealm();
+            .findFirst();
+
+        if (result != null) {
+          result.deleteFromRealm();
+        }
       });
 
       realm.close();
     });
   }
 
-  public Observable<Response<List<CommentRealm>>> list(String postId) {
+  public Observable<Response<List<CommentRealm>>> list(@Nonnull String postId) {
     return Observable.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 
-      List<CommentRealm> comments = realm.copyFromRealm(realm.where(CommentRealm.class)
+      RealmResults<CommentRealm> results = (realm.where(CommentRealm.class)
           .equalTo(CommentRealmFields.POST_ID, postId)
           .findAllSorted(CommentRealmFields.CREATED, Sort.DESCENDING));
 
+      List<CommentRealm> comments = results.isEmpty()
+          ? Collections.emptyList()
+          : realm.copyFromRealm(results);
+
       realm.close();
 
-      return Response.create(comments, null, null);
+      return Response.create(comments, null);
     });
   }
 
-  public Completable vote(String commentId, int direction) {
+  public Completable vote(@Nonnull String commentId, int direction) {
     return Completable.fromAction(() -> {
       Realm realm = Realm.getDefaultInstance();
 
-      CommentRealm comment = realm.where(CommentRealm.class)
-          .equalTo(CommentRealmFields.ID, commentId)
-          .findFirst();
-
       realm.executeTransaction(tx -> {
-        setVoteCounter(direction, comment);
-        comment.setDir(direction);
-        tx.insertOrUpdate(comment);
+        CommentRealm comment = tx.where(CommentRealm.class)
+            .equalTo(CommentRealmFields.ID, commentId).findFirst();
+
+        if (comment != null) {
+          setVoteCounter(direction, comment);
+          comment.setVoteDir(direction);
+          tx.insertOrUpdate(comment);
+        }
       });
 
       realm.close();
     });
   }
 
-  public void accept(CommentRealm comment) {
+  public void accept(@Nonnull CommentRealm comment) {
     Realm realm = Realm.getDefaultInstance();
 
     realm.executeTransaction(tx -> {
       PostRealm post = tx.where(PostRealm.class)
-          .equalTo(PostRealmFields.ID, comment.getPostId())
-          .findFirst();
+          .equalTo(PostRealmFields.ID, comment.getPostId()).findFirst();
 
-      if (comment.isAccepted()) {
-        post.setAcceptedCommentId(comment.getId());
+      if (post != null) {
+        if (comment.isAccepted()) {
+          post.setAcceptedCommentId(comment.getId());
+        }
+
+        tx.insertOrUpdate(post);
+        tx.insertOrUpdate(comment);
       }
-
-      tx.insertOrUpdate(post);
-      tx.insertOrUpdate(comment);
     });
 
     realm.close();
   }
 
   private void setVoteCounter(int direction, CommentRealm comment) {
-    switch (comment.getDir()) {
+    switch (comment.getVoteDir()) {
       case 0:
         if (direction == 1) {
           comment.increaseVotes();
