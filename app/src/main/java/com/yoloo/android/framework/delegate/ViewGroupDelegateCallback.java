@@ -21,7 +21,7 @@ import com.yoloo.android.framework.MvpPresenter;
 import com.yoloo.android.framework.MvpView;
 
 /**
- * An enhanced version of {@link MvpDelegateCallback} that adds support
+ * An enhanced version from {@link MvpDelegateCallback} that adds support
  * for
  * android.view.View like FrameLayout etc.
  *

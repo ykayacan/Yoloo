@@ -24,17 +24,17 @@ import java.util.List;
 
 public interface IDialog {
 
-    String getId();
+  String getId();
 
-    String getDialogPhoto();
+  String getDialogPhoto();
 
-    String getDialogName();
+  String getDialogName();
 
-    List<IUser> getUsers();
+  List<? extends IUser> getUsers();
 
-    IMessage getLastMessage();
+  IMessage getLastMessage();
 
-    void setLastMessage(IMessage message);
+  void setLastMessage(IMessage message);
 
-    int getUnreadCount();
+  int getUnreadCount();
 }

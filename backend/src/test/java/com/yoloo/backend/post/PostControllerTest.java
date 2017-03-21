@@ -22,8 +22,8 @@ import com.yoloo.backend.category.CategoryControllerFactory;
 import com.yoloo.backend.comment.CommentController;
 import com.yoloo.backend.comment.CommentControllerFactory;
 import com.yoloo.backend.device.DeviceRecord;
-import com.yoloo.backend.follow.FollowController;
-import com.yoloo.backend.follow.FollowControllerFactory;
+import com.yoloo.backend.relationship.RelationshipController;
+import com.yoloo.backend.relationship.RelationshipControllerFactory;
 import com.yoloo.backend.game.GamificationService;
 import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.media.Media;
@@ -79,7 +79,7 @@ public class PostControllerTest extends TestBase {
     super.setUp();
 
     postController = PostControllerFactory.of().create();
-    FollowController followController = FollowControllerFactory.of().create();
+    RelationshipController relationshipController = RelationshipControllerFactory.of().create();
     TagController tagController = TagControllerFactory.of().create();
     CategoryController categoryController = CategoryControllerFactory.of().create();
     voteController = VoteControllerFactory.of().create();
@@ -110,7 +110,7 @@ public class PostControllerTest extends TestBase {
 
     User user = new User(USER_EMAIL, USER_AUTH_DOMAIN, owner.getWebsafeId());
 
-    followController.follow(owner2.getWebsafeId(), user);
+    relationshipController.follow(owner2.getWebsafeId(), user);
 
     try {
       budgetTravel = categoryController.insertCategory("budget travel", null);

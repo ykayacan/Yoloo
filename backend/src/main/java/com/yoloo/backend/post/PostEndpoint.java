@@ -37,9 +37,8 @@ import javax.inject.Named;
         Constants.WEB_CLIENT_ID
     },
     audiences = { Constants.AUDIENCE_ID },
-    authenticators = {
-        FirebaseAuthenticator.class
-    })
+    authenticators = { FirebaseAuthenticator.class }
+)
 public class PostEndpoint {
 
   private static final Logger LOG =
@@ -63,8 +62,7 @@ public class PostEndpoint {
 
     EndpointsValidator.create()
         .on(BadRequestValidator.create(postId, "postId is required."))
-        .on(AuthValidator.create(user))
-        .validate();
+        .on(AuthValidator.create(user));
 
     return postController.getPost(postId, user);
   }
@@ -86,8 +84,7 @@ public class PostEndpoint {
         .on(BadRequestValidator.create(postId, "postId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(postId, "Invalid postId."))
-        .on(ForbiddenValidator.create(postId, user, ForbiddenValidator.Op.DELETE))
-        .validate();
+        .on(ForbiddenValidator.create(postId, user, ForbiddenValidator.Op.DELETE));
 
     postController.deletePost(postId);
   }
@@ -108,7 +105,7 @@ public class PostEndpoint {
       path = "posts",
       httpMethod = ApiMethod.HttpMethod.GET)
   public CollectionResponse<Post> list(
-      @Nullable @Named("accountId") String accountId,
+      @Nullable @Named("userId") String userId,
       @Nullable @Named("sort") PostSorter sorter,
       @Nullable @Named("category") String category,
       @Nullable @Named("tags") String tags,
@@ -116,12 +113,10 @@ public class PostEndpoint {
       @Nullable @Named("limit") Integer limit,
       User user) throws ServiceException {
 
-    EndpointsValidator.create()
-        .on(AuthValidator.create(user))
-        .validate();
+    EndpointsValidator.create().on(AuthValidator.create(user));
 
     return postController.listPosts(
-        Optional.fromNullable(accountId),
+        Optional.fromNullable(userId),
         Optional.fromNullable(sorter),
         Optional.fromNullable(category),
         Optional.fromNullable(tags),
@@ -147,8 +142,7 @@ public class PostEndpoint {
     EndpointsValidator.create()
         .on(BadRequestValidator.create(postId, "postId is required."))
         .on(AuthValidator.create(user))
-        .on(NotFoundValidator.create(postId, "Invalid postId."))
-        .validate();
+        .on(NotFoundValidator.create(postId, "Invalid postId."));
 
     postController.reportPost(postId, user);
   }

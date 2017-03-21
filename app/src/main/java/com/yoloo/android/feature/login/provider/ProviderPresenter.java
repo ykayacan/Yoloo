@@ -87,7 +87,7 @@ class ProviderPresenter extends MvpPresenter<ProviderView> {
         .setLocale(locale)
         .setCategoryIds(categoryIds);
 
-    Disposable d = userRepository.addUser(newAccount)
+    Disposable d = userRepository.registerUser(newAccount)
         .flatMapCompletable(accountRealm -> {
           String fcmToken = FirebaseInstanceId.getInstance().getToken();
           FcmRealm fcm = new FcmRealm();

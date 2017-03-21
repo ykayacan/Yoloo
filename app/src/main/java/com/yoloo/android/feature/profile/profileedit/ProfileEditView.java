@@ -6,4 +6,6 @@ import com.yoloo.android.framework.MvpDataView;
 public interface ProfileEditView extends MvpDataView<AccountRealm> {
 
   void onAccountUpdated(AccountRealm account);
+
+  void onUsernameUnavailable();
 }

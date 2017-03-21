@@ -42,7 +42,7 @@ public final class ColorUtils {
   }
 
   /**
-   * Set the alpha component of {@code color} to be {@code alpha}.
+   * Set the alpha component from {@code color} to be {@code alpha}.
    */
   @CheckResult @ColorInt public static int modifyAlpha(@ColorInt int color,
       @IntRange(from = 0, to = 255) int alpha) {
@@ -50,7 +50,7 @@ public final class ColorUtils {
   }
 
   /**
-   * Set the alpha component of {@code color} to be {@code alpha}.
+   * Set the alpha component from {@code color} to be {@code alpha}.
    */
   @CheckResult @ColorInt public static int modifyAlpha(@ColorInt int color,
       @FloatRange(from = 0f, to = 1f) float alpha) {
@@ -85,7 +85,7 @@ public final class ColorUtils {
    * Determines if a given bitmap is dark. This extracts a palette inline so should not be called
    * with a large image!!
    * <p/>
-   * Note: If palette fails then check the color of the central pixel
+   * Note: If palette fails then check the color from the central pixel
    */
   public static boolean isDark(@NonNull Bitmap bitmap) {
     return isDark(bitmap, bitmap.getWidth() / 2, bitmap.getHeight() / 2);
@@ -93,7 +93,7 @@ public final class ColorUtils {
 
   /**
    * Determines if a given bitmap is dark. This extracts a palette inline so should not be called
-   * with a large image!! If palette fails then check the color of the specified pixel
+   * with a large image!! If palette fails then check the color from the specified pixel
    */
   public static boolean isDark(@NonNull Bitmap bitmap, int backupPixelX, int backupPixelY) {
     // first try palette with a small color quant size
@@ -101,7 +101,7 @@ public final class ColorUtils {
     if (palette.getSwatches().size() > 0) {
       return isDark(palette) == IS_DARK;
     } else {
-      // if palette failed, then check the color of the specified pixel
+      // if palette failed, then check the color from the specified pixel
       return isDark(bitmap.getPixel(backupPixelX, backupPixelY));
     }
   }
@@ -123,7 +123,7 @@ public final class ColorUtils {
   }
 
   /**
-   * Calculate a variant of the color to make it more suitable for overlaying information. Light
+   * Calculate a variant from the color to make it more suitable for overlaying information. Light
    * colors will be lightened and dark colors will be darkened
    *
    * @param color the color to adjust

@@ -9,10 +9,14 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
-import io.reactivex.Observable;
-import io.reactivex.Single;
+import com.yoloo.backend.util.CollectionTransformer;
+
 import java.util.Iterator;
 import java.util.logging.Logger;
+
+import javax.annotation.Nonnull;
+
+import io.reactivex.Observable;
 import lombok.AllArgsConstructor;
 
 import static com.yoloo.backend.OfyService.ofy;
@@ -31,21 +35,36 @@ public class MediaController extends Controller {
   private MediaService mediaService;
 
   /**
+   * Gets media.
+   *
+   * @param mediaId the media id
+   * @param user the user
+   * @return the media
+   */
+  public Media getMedia(@Nonnull String mediaId, User user) {
+
+    final Key<Media> mediaKey = Key.create(mediaId);
+
+    return ofy().load().key(mediaKey).now();
+  }
+
+  /**
    * List collection response.
    *
-   * @param accountId the webssafe account id
+   * @param userId the webssafe account id
    * @param limit the limit
    * @param cursor the cursor
    * @param user the user
    * @return the collection response
    */
   public CollectionResponse<Media> listMedias(
-      String accountId, Optional<Integer> limit,
+      String userId,
+      Optional<Integer> limit,
       Optional<String> cursor,
       User user) {
 
     // Create account key from websafe id.
-    final Key<Account> authKey = Key.create(accountId);
+    final Key<Account> authKey = Key.create(userId);
 
     Query<Media> query = ofy().load().type(Media.class).ancestor(authKey);
 
@@ -59,16 +78,11 @@ public class MediaController extends Controller {
     final QueryResultIterator<Media> qi = query.iterator();
 
     return Observable.just(qi)
+        .filter(Iterator::hasNext)
         .map(Iterator::next)
         .toList(DEFAULT_LIST_LIMIT)
-        .compose(upstream -> {
-          CollectionResponse<Media> response = CollectionResponse.<Media>builder()
-              .setItems(upstream.blockingGet())
-              .setNextPageToken(qi.getCursor().toWebSafeString())
-              .build();
-
-          return Single.just(response);
-        })
-        .blockingGet();
+        .toObservable()
+        .compose(CollectionTransformer.create(qi.getCursor().toWebSafeString()))
+        .blockingSingle();
   }
 }

@@ -4,8 +4,11 @@ import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -46,6 +49,7 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
   @BindView(R.id.et_login_fullname) EditText etFullName;
   @BindView(R.id.et_login_email) AutoCompleteTextView etEmail;
   @BindView(R.id.et_login_password) EditText etPassword;
+  @BindView(R.id.toolbar_sign_up) Toolbar toolbar;
 
   @BindString(R.string.label_loading) String loadingString;
   @BindString(R.string.error_field_required) String errorFieldRequiredString;
@@ -78,9 +82,20 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
   }
 
   @Override protected void onViewBound(@NonNull View view) {
-    super.onViewBound(view);
+    setHasOptionsMenu(true);
+    setupToolbar();
 
     getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+  }
+
+  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    final int itemId = item.getItemId();
+    if (itemId == android.R.id.home) {
+      getRouter().handleBack();
+      return true;
+    }
+
+    return super.onOptionsItemSelected(item);
   }
 
   @Override public boolean handleBack() {
@@ -205,6 +220,18 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
   @Override public void onHideLoading() {
     if (progressDialog != null && progressDialog.isShowing()) {
       progressDialog.dismiss();
+    }
+  }
+
+  private void setupToolbar() {
+    setSupportActionBar(toolbar);
+
+    // addPost back arrow to toolbar
+    final ActionBar ab = getSupportActionBar();
+    if (ab != null) {
+      ab.setDisplayShowTitleEnabled(false);
+      ab.setDisplayHomeAsUpEnabled(true);
+      ab.setDisplayShowHomeEnabled(true);
     }
   }
 }

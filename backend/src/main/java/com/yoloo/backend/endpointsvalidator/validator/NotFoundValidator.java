@@ -4,6 +4,7 @@ import com.google.api.server.spi.ServiceException;
 import com.google.api.server.spi.response.NotFoundException;
 import com.googlecode.objectify.Key;
 import com.yoloo.backend.endpointsvalidator.Validator;
+
 import lombok.AllArgsConstructor;
 
 import static com.yoloo.backend.OfyService.ofy;
@@ -14,7 +15,7 @@ public class NotFoundValidator implements Validator {
   private String itemId;
   private String message;
 
-  @Override public boolean valid() {
+  @Override public boolean isValid() {
     try {
       ofy().load().key(Key.create(itemId)).safe();
     } catch (Exception e) {

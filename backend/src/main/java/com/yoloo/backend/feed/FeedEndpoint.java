@@ -30,11 +30,10 @@ import javax.inject.Named;
     clientIds = {
         Constants.ANDROID_CLIENT_ID,
         Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID },
+        Constants.WEB_CLIENT_ID
+    },
     audiences = { Constants.AUDIENCE_ID, },
-    authenticators = {
-        FirebaseAuthenticator.class
-    }
+    authenticators = { FirebaseAuthenticator.class }
 )
 public class FeedEndpoint {
 
@@ -53,17 +52,15 @@ public class FeedEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(
-      name = "accounts.feed",
-      path = "accounts/feed",
+      name = "users.me.feed",
+      path = "users/me/feed",
       httpMethod = ApiMethod.HttpMethod.GET)
   public CollectionResponse<Post> list(
       @Nullable @Named("cursor") String cursor,
       @Nullable @Named("limit") Integer limit,
       User user) throws ServiceException {
 
-    EndpointsValidator.create()
-        .on(AuthValidator.create(user))
-        .validate();
+    EndpointsValidator.create().on(AuthValidator.create(user));
 
     return feedController.listFeed(
         Optional.fromNullable(limit),

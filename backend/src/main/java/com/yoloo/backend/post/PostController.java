@@ -1,10 +1,9 @@
 package com.yoloo.backend.post;
 
-import com.annimon.stream.Stream;
 import com.google.api.server.spi.response.CollectionResponse;
 import com.google.api.server.spi.response.NotFoundException;
 import com.google.appengine.api.datastore.Cursor;
-import com.google.appengine.api.datastore.QueryResultIterable;
+import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
@@ -34,12 +33,15 @@ import com.yoloo.backend.tag.TagShardService;
 import com.yoloo.backend.util.CollectionTransformer;
 import com.yoloo.backend.util.ServerConfig;
 import com.yoloo.backend.vote.VoteService;
-import io.reactivex.Observable;
-import io.reactivex.Single;
+
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
 
@@ -313,7 +315,7 @@ public final class PostController extends Controller {
   /**
    * List collection response.
    *
-   * @param accountId the account id
+   * @param userId the account id
    * @param sorter the sorter
    * @param categories the category
    * @param tags the tags
@@ -324,7 +326,7 @@ public final class PostController extends Controller {
    * @return the collection response
    */
   public CollectionResponse<Post> listPosts(
-      Optional<String> accountId,
+      Optional<String> userId,
       Optional<PostSorter> sorter,
       Optional<String> categories,
       Optional<String> tags,
@@ -333,47 +335,50 @@ public final class PostController extends Controller {
       Optional<Post.PostType> postType,
       User user) {
 
-    return Observable
-        .fromCallable(() -> {
-          Query<Post> query = ofy().load().group(Post.ShardGroup.class).type(Post.class);
+    Query<Post> query = ofy().load().group(Post.ShardGroup.class).type(Post.class);
 
-          if (postType.isPresent()) {
-            query = query.filter(Post.FIELD_POST_TYPE + " =", postType.get());
-          }
+    if (postType.isPresent()) {
+      query = query.filter(Post.FIELD_POST_TYPE + " =", postType.get());
+    }
 
-          query = accountId.isPresent()
-              ? query.ancestor(Key.<Account>create(accountId.get()))
-              : query;
+    query = userId.isPresent()
+        ? query.ancestor(Key.<Account>create(userId.get()))
+        : query;
 
-          if (categories.isPresent()) {
-            Set<String> categoryNames = split(categories.get(), ",");
+    if (categories.isPresent()) {
+      Set<String> categoryNames = split(categories.get(), ",");
 
-            for (String categoryName : categoryNames) {
-              query = query.filter(Post.FIELD_CATEGORIES + " =", categoryName);
-            }
-          }
+      for (String categoryName : categoryNames) {
+        query = query.filter(Post.FIELD_CATEGORIES + " =", categoryName);
+      }
+    }
 
-          if (tags.isPresent()) {
-            Set<String> tagSet = split(tags.get(), ",");
+    if (tags.isPresent()) {
+      Set<String> tagSet = split(tags.get(), ",");
 
-            for (String tagName : tagSet) {
-              query = query.filter(Post.FIELD_TAGS + " =", tagName.trim().toLowerCase());
-            }
-          }
+      for (String tagName : tagSet) {
+        query = query.filter(Post.FIELD_TAGS + " =", tagName.trim().toLowerCase());
+      }
+    }
 
-          query = PostSorter.sort(query, sorter.or(PostSorter.NEWEST));
-          query = cursor.isPresent()
-              ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
-              : query;
-          return query.limit(limit.or(DEFAULT_LIST_LIMIT));
-        })
-        .map(QueryResultIterable::iterator)
-        .flatMap(qi ->
-            Observable.fromIterable(Stream.of(qi).toList())
-                .toList()
-                .flatMapObservable(postShardService::mergeShards)
-                .flatMap(__ -> voteService.checkPostVote(__, Key.create(user.getUserId())))
-                .compose(CollectionTransformer.create(qi.getCursor().toString())))
+    query = PostSorter.sort(query, sorter.or(PostSorter.NEWEST));
+    query = cursor.isPresent()
+        ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
+        : query;
+    query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
+
+    List<Post> posts = new ArrayList<>(DEFAULT_LIST_LIMIT);
+
+    QueryResultIterator<Post> qi = query.iterator();
+
+    while (qi.hasNext()) {
+      posts.add(qi.next());
+    }
+
+    return Observable.just(posts)
+        .flatMap(postShardService::mergeShards)
+        .flatMap(__ -> voteService.checkPostVote(__, Key.create(user.getUserId())))
+        .compose(CollectionTransformer.create(qi.getCursor().toWebSafeString()))
         .blockingSingle();
   }
 

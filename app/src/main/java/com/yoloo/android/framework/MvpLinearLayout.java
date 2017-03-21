@@ -30,7 +30,7 @@ public abstract class MvpLinearLayout<V extends MvpView, P extends MvpPresenter<
    * Get the mvp delegate. This is internally used for creating presenter, attaching and detaching
    * view from presenter etc.
    *
-   * <p><b>Please note that only one instance of mvp delegate should be used per android.view.View
+   * <p><b>Please note that only one instance from mvp delegate should be used per android.view.View
    * instance</b>.
    * </p>
    *

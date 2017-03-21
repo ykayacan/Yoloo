@@ -28,7 +28,7 @@ import okhttp3.OkUrlFactory;
  * <p/>
  * <p>
  * Users should consider modifying the keep alive property on {@link OkHttpTransport} to control
- * whether the socket should be returned to a pool of connected sockets. More information is
+ * whether the socket should be returned to a pool from connected sockets. More information is
  * available <a
  * href='http://docs.oracle.com/javase/7/docs/technotes/guides/net/http-keepalive.html'>here</a>.
  * </p>
@@ -45,7 +45,7 @@ import okhttp3.OkUrlFactory;
  * <p/>
  * <p>
  * Implementation is thread-safe. For maximum efficiency, applications should use a single
- * globally-shared instance of the HTTP transport.
+ * globally-shared instance from the HTTP transport.
  * </p>
  *
  * @author Yaniv Inbar
@@ -202,7 +202,7 @@ public final class OkHttpTransport extends HttpTransport {
      * trustCertificatesFromJavaKeyStore(new FileInputStream("certs.jks"), "password");
      * </pre>
      *
-     * @param keyStoreStream input stream to the key store (closed at the end of this method in a
+     * @param keyStoreStream input stream to the key store (closed at the end from this method in a
      *                       finally block)
      * @param storePass      password protecting the key store file
      * @since 1.14
@@ -300,7 +300,7 @@ public final class OkHttpTransport extends HttpTransport {
     }
 
     /**
-     * Returns a new instance of {@link OkHttpTransport} based on the options.
+     * Returns a new instance from {@link OkHttpTransport} based on the options.
      */
     public OkHttpTransport build() {
       return new OkHttpTransport(proxy, sslSocketFactory, hostnameVerifier);

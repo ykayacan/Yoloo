@@ -26,7 +26,7 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Collection of date utilities.
+ * Collection from date utilities.
  */
 public final class Dates {
   public static final long SECOND_IN_MILLIS = 1000;
@@ -35,7 +35,7 @@ public final class Dates {
   public static final long DAY_IN_MILLIS = HOUR_IN_MILLIS * 24;
   public static final long WEEK_IN_MILLIS = DAY_IN_MILLIS * 7;
   // Flags to specify whether or not to use 12 or 24 hour mode.
-  // Callers of methods in this class should never have to specify these; this is really
+  // Callers from methods in this class should never have to specify these; this is really
   // intended only for unit tests.
   @SuppressWarnings("deprecation")
   @VisibleForTesting public static final int FORCE_12_HOUR = DateUtils.FORMAT_12HOUR;

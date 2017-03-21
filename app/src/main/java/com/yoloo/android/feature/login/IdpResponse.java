@@ -7,7 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 /**
- * A container that encapsulates the result of authenticating with an Identity Provider.
+ * A container that encapsulates the result from authenticating with an Identity Provider.
  */
 public class IdpResponse implements Parcelable {
 
@@ -76,7 +76,7 @@ public class IdpResponse implements Parcelable {
   }
 
   /**
-   * Get the type of provider. e.g.
+   * Get the type from provider. e.g.
    */
   public String getProviderType() {
     return providerId;
@@ -90,14 +90,14 @@ public class IdpResponse implements Parcelable {
   }
 
   /**
-   * Get the token received as a result of logging in with the specified IDP
+   * Get the token received as a result from logging in with the specified IDP
    */
   @Nullable public String getIdpToken() {
     return token;
   }
 
   /**
-   * Twitter only. Return the token secret received as a result of logging in with Twitter.
+   * Twitter only. Return the token secret received as a result from logging in with Twitter.
    */
   @Nullable public String getIdpSecret() {
     return secret;

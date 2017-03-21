@@ -27,12 +27,12 @@ import com.yoloo.backend.authentication.oauth2.OAuth2;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.endpointsvalidator.Guard;
-import com.yoloo.backend.follow.Follow;
 import com.yoloo.backend.game.GamificationService;
 import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.media.Media;
 import com.yoloo.backend.media.Size;
 import com.yoloo.backend.media.size.ThumbSize;
+import com.yoloo.backend.relationship.Relationship;
 import com.yoloo.backend.util.KeyUtil;
 import com.yoloo.backend.util.ServerConfig;
 
@@ -156,7 +156,8 @@ public final class AccountController extends Controller {
    * @throws ConflictException the conflict exception
    */
   public Account insertAdmin() throws ConflictException {
-    Account admin = ofy().load().key(Key.create(Account.class, 1L)).now();
+    final long id = ofy().factory().allocateId(Account.class).getId();
+    Account admin = ofy().load().key(Key.create(Account.class, id)).now();
 
     Guard.checkConflictRequest(admin, "Admin is already registered.");
 
@@ -199,6 +200,7 @@ public final class AccountController extends Controller {
       Optional<String> mediaId,
       Optional<String> username,
       Optional<String> realName,
+      Optional<String> email,
       Optional<String> websiteUrl,
       Optional<String> bio,
       Optional<Account.Gender> gender) {
@@ -234,6 +236,10 @@ public final class AccountController extends Controller {
             updated = updated.withRealname(realName.get());
           }
 
+          if (email.isPresent()) {
+            updated = updated.withEmail(new Email(email.get()));
+          }
+
           if (mediaId.isPresent()) {
             Media media = (Media) fetched.get(Key.create(mediaId.get()));
             Size size = ThumbSize.of(media.getUrl());
@@ -259,15 +265,6 @@ public final class AccountController extends Controller {
             .withCounts(accountShardService.merge(updated).map(this::buildCounter).blockingFirst())
             .withDetail(buildDetail(tracker)))
         .single();
-  }
-
-  /**
-   * Delete.
-   *
-   * @param user the user
-   */
-  public void deleteAccount(User user) {
-    deleteAccount(user.getUserId());
   }
 
   public void deleteAccount(String accountId) {
@@ -304,7 +301,15 @@ public final class AccountController extends Controller {
 
     q = q.toLowerCase().trim();
 
-    Query<Account> query = setupSearchQuery(q, cursor, limit);
+    Query<Account> query = ofy().load().type(Account.class)
+        .filter(Account.FIELD_USERNAME + " >=", q)
+        .filter(Account.FIELD_USERNAME + " <", q + "\ufffd");
+
+    query = cursor.isPresent()
+        ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
+        : query;
+
+    query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
 
     final QueryResultIterator<Account> qi = query.iterator();
 
@@ -319,10 +324,10 @@ public final class AccountController extends Controller {
         .build();
   }
 
-  public WrapperBoolean checkUsername(String username) {
-    return new WrapperBoolean(ofy().load().type(Account.class)
+  public WrappedBoolean checkUsername(String username) {
+    return new WrappedBoolean(ofy().load().type(Account.class)
         .filter(Account.FIELD_USERNAME + " =", username)
-        .keys().first().now() != null);
+        .keys().first().now() == null);
   }
 
   private Task<FirebaseToken> getFirebaseTask(String idToken) {
@@ -364,23 +369,10 @@ public final class AccountController extends Controller {
   }
 
   private boolean isFollowing(Key<Account> targetAccountKey, Key<Account> currentAccountKey) {
-    return ofy().load().type(Follow.class)
+    return ofy().load().type(Relationship.class)
         .ancestor(currentAccountKey)
-        .filter(Follow.FIELD_FOLLOWING_KEY + " =", targetAccountKey)
+        .filter(Relationship.FIELD_FOLLOWING_KEY + " =", targetAccountKey)
         .keys().first().now() != null;
-  }
-
-  private Query<Account> setupSearchQuery(String q, Optional<String> cursor,
-      Optional<Integer> limit) {
-    Query<Account> query = ofy().load().type(Account.class)
-        .filter(Account.FIELD_USERNAME + " >=", q)
-        .filter(Account.FIELD_USERNAME + " <", q + "\ufffd");
-
-    query = cursor.isPresent()
-        ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
-        : query;
-
-    return query.limit(limit.or(DEFAULT_LIST_LIMIT));
   }
 
   private AccountEntity createAccountEntity(FirebaseToken token, String realname, String locale,
@@ -401,7 +393,7 @@ public final class AccountController extends Controller {
         .locale(locale)
         .gender(gender)
         .shardRefs(Lists.newArrayList(shardMap.keySet()))
-        .interestedCategoryKeys(KeyUtil.extractKeysFromIds(categoryIds, ","))
+        .interestedCategoryKeys(ImmutableSet.copyOf(KeyUtil.extractKeysFromIds(categoryIds, ",")))
         .counts(Account.Counts.builder().build())
         .detail(Account.Detail.builder().build())
         .created(DateTime.now())
@@ -442,7 +434,7 @@ public final class AccountController extends Controller {
         .locale("")
         .gender(Account.Gender.UNSPECIFIED)
         .shardRefs(Lists.newArrayList(shardMap.keySet()))
-        .interestedCategoryKeys(Collections.emptyList())
+        .interestedCategoryKeys(Collections.emptySet())
         .counts(Account.Counts.builder().build())
         .detail(Account.Detail.builder().build())
         .created(DateTime.now())

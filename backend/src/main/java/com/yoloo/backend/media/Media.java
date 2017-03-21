@@ -8,6 +8,7 @@ import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Parent;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.media.transformer.MediaTransformer;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,4 +30,16 @@ public class Media {
   @Parent @NonFinal private Key<Account> parent;
   @Wither @NonFinal private String mime;
   @Wither @NonFinal private String url;
+
+  public String getWebsafeId() {
+    return getKey().toWebSafeString();
+  }
+
+  public String getWebsafeOwnerId() {
+    return parent.toWebSafeString();
+  }
+
+  public Key<Media> getKey() {
+    return Key.create(parent, getClass(), id);
+  }
 }

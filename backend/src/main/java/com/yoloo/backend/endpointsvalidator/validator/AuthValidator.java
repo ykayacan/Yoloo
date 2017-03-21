@@ -11,7 +11,7 @@ public class AuthValidator implements Validator {
 
   private User user;
 
-  @Override public boolean valid() {
+  @Override public boolean isValid() {
     return !(user == null || user.getUserId() == null);
   }
 

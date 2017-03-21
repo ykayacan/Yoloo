@@ -7,7 +7,8 @@ import com.google.appengine.api.taskqueue.TaskOptions;
 import com.googlecode.objectify.Key;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.feed.Feed;
-import com.yoloo.backend.follow.Follow;
+import com.yoloo.backend.relationship.Relationship;
+
 import java.io.IOException;
 import java.util.List;
 import javax.servlet.ServletException;
@@ -59,9 +60,9 @@ public class UpdateFeedServlet extends HttpServlet {
     ofy().save().entities(feeds).now();
   }
 
-  private List<Key<Follow>> findFollowersOfUser(Key<Account> accountKey) {
-    return ofy().load().type(Follow.class)
-        .filter(Follow.FIELD_FOLLOWING_KEY + " =", accountKey)
+  private List<Key<Relationship>> findFollowersOfUser(Key<Account> accountKey) {
+    return ofy().load().type(Relationship.class)
+        .filter(Relationship.FIELD_FOLLOWING_KEY + " =", accountKey)
         .keys().list();
   }
 

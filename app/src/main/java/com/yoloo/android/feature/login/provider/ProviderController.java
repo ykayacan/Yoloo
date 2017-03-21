@@ -8,16 +8,14 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import butterknife.BindDrawable;
-import butterknife.BindString;
-import butterknife.BindView;
-import butterknife.BindViews;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
+
 import com.airbnb.epoxy.EpoxyModel;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
@@ -47,10 +45,18 @@ import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.decoration.SpacingItemDecoration;
 import com.yoloo.android.util.DisplayUtil;
 import com.yoloo.android.util.LocaleUtil;
+
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+
+import butterknife.BindDrawable;
+import butterknife.BindString;
+import butterknife.BindView;
+import butterknife.BindViews;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import timber.log.Timber;
 
 public class ProviderController extends MvpController<ProviderView, ProviderPresenter>
@@ -64,6 +70,8 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
   @BindViews({
       R.id.btn_facebook_sign_in, R.id.btn_google_sign_in, R.id.tv_login_or, R.id.btn_login_sign_up
   }) View[] views;
+
+  @BindView(R.id.toolbar_provider) Toolbar toolbar;
 
   @BindString(R.string.error_auth_failed) String errorAuthFailedString;
   @BindString(R.string.error_google_play_services) String errorGooglePlayServicesString;
@@ -94,6 +102,8 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
   }
 
   @Override protected void onViewBound(@NonNull View view) {
+    setHasOptionsMenu(true);
+    setupToolbar();
     ButterKnife.apply(views, visibility, false);
     setupRecyclerView(view.getContext());
   }
@@ -114,6 +124,16 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
     if (idpProvider != null) {
       idpProvider.setAuthenticationCallback(null);
     }
+  }
+
+  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    final int itemId = item.getItemId();
+    if (itemId == android.R.id.home) {
+      getRouter().handleBack();
+      return true;
+    }
+
+    return super.onOptionsItemSelected(item);
   }
 
   @NonNull @Override public ProviderPresenter createPresenter() {
@@ -160,7 +180,9 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
   }
 
   @Override public void onSignedUp() {
-    getParentController().getRouter().setRoot(RouterTransaction.with(FeedHomeController.create()));
+    //getParentController().getRouter().setRoot(RouterTransaction.with(FeedHomeController.create
+    // ()));
+    getRouter().setRoot(RouterTransaction.with(FeedHomeController.create()));
   }
 
   @Override public void onError(Throwable t) {
@@ -252,5 +274,17 @@ public class ProviderController extends MvpController<ProviderView, ProviderPres
     rvLoginCategories.setLayoutManager(lm);
     rvLoginCategories.setHasFixedSize(true);
     rvLoginCategories.setAdapter(adapter);
+  }
+
+  private void setupToolbar() {
+    setSupportActionBar(toolbar);
+
+    // addPost back arrow to toolbar
+    final ActionBar ab = getSupportActionBar();
+    if (ab != null) {
+      ab.setDisplayShowTitleEnabled(false);
+      ab.setDisplayHomeAsUpEnabled(true);
+      ab.setDisplayShowHomeEnabled(true);
+    }
   }
 }

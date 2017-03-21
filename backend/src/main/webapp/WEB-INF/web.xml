@@ -21,8 +21,8 @@
     <init-param>
       <param-name>services</param-name>
       <param-value>
-        com.yoloo.backend.account.AccountEndpoint,
-        com.yoloo.backend.follow.FollowEndpoint,
+        com.yoloo.backend.account.UserEndpoint,
+        com.yoloo.backend.relationship.RelationshipEndpoint,
         com.yoloo.backend.post.PostEndpoint,
         com.yoloo.backend.post.QuestionEndpoint,
         com.yoloo.backend.post.BlogEndpoint,

@@ -12,16 +12,19 @@ import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.IgnoreSave;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
+import com.googlecode.objectify.condition.IfNotNull;
 import com.googlecode.objectify.condition.IfNull;
 import com.yoloo.backend.account.condition.IfNotAdmin;
 import com.yoloo.backend.account.transformer.AccountTransformer;
 import com.yoloo.backend.category.Category;
+import com.yoloo.backend.country.Country;
 import com.yoloo.backend.util.Deref;
 
 import org.joda.time.DateTime;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import ix.Ix;
 import lombok.AccessLevel;
@@ -78,7 +81,6 @@ public class Account {
   private String bio;
 
   @Wither
-  @IgnoreSave(value = IfNull.class)
   @NonFinal
   private Link websiteUrl;
 
@@ -101,8 +103,12 @@ public class Account {
   private DateTime birthDate;
 
   @NonFinal
+  @Index(IfNotNull.class)
+  private Set<Country> visitedCountries;
+
+  @NonFinal
   @Index
-  private List<Key<Category>> interestedCategoryKeys;
+  private Set<Key<Category>> interestedCategoryKeys;
 
   // Extra fields
 
@@ -133,10 +139,10 @@ public class Account {
     return Deref.deref(getShardRefs());
   }
 
-  public List<String> getInterestedCategoryIds() {
+  public Set<String> getInterestedCategoryIds() {
     return interestedCategoryKeys == null
-        ? Collections.emptyList()
-        : Ix.from(interestedCategoryKeys).map(Key::toWebSafeString).toList();
+        ? Collections.emptySet()
+        : Ix.from(interestedCategoryKeys).map(Key::toWebSafeString).toSet();
   }
 
   public enum Gender {

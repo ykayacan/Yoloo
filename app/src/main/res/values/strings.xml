@@ -111,11 +111,6 @@
   <string name="label_comment_toolbar_title">Comments</string>
   <string name="label_comment_accepted">Accepted</string>
   <string name="label_comment_accepted_confirm">You accepted this comment.</string>
-  <plurals name="label_comment_comment_text">
-    <item quantity="zero">No comment is available.</item>
-    <item quantity="one">comment</item>
-    <item quantity="other">comments</item>
-  </plurals>
 
   <string name="hint_comment_write">Write a comment…</string>
 
@@ -228,9 +223,13 @@
   <string name="hint_profile_edit_email">E-mail</string>
   <string name="hint_profile_edit_password">Change Password</string>
 
-  <string name="error_profile_edit_empty_realname">Real Name is empty.</string>
-  <string name="error_profile_edit_empty_username">Username is empty.</string>
-  <string name="error_profile_edit_empty_email">Email is empty.</string>
+  <string name="error_profile_edit_empty_realname">Real Name is empty</string>
+  <string name="error_profile_edit_empty_username">Username is empty</string>
+  <string name="error_profile_edit_empty_email">Email is empty</string>
+  <string name="error_profile_edit_empty_password">Email is empty</string>
+  <string name="error_profile_edit_username_unavailable">Username is in use</string>
+  <string name="error_profile_edit_invalid_email">Invalid email format</string>
+  <string name="error_profile_edit_invalid_website">Invalid website</string>
 
   <string-array name="spinner_profile_edit_gender">
     <item>Unspecified</item>
@@ -238,6 +237,22 @@
     <item>Female</item>
   </string-array>
 
+  <!-- DIALOG LIST -->
+  <string-array name="action_dialog_list_group_options_dialog">
+    <item>Group info</item>
+    <item>Exit group</item>
+  </string-array>
+
+  <string-array name="action_dialog_list_normal_options_dialog">
+    <item>Delete</item>
+  </string-array>
+
+  <!-- DIALOG -->
+  <string name="hint_dialog_write_message">Type a message</string>
+
+  <!-- CREATE DIALOG -->
+  <string name="label_create_dialog_toolbar_title">Select contact</string>
+  <string name="label_create_dialog_create_dialog">Start conversation</string>
 
   <string-array name="label_sub_feed_list">
     <item>Questions</item>
@@ -254,17 +269,17 @@
 
   <string name="posted_just_now">"Just now"</string>
   <string name="posted_now">"Now"</string>
-  <!-- Abbreviated message to express that something occurred some number of minutes in the past (e.g., 5 minutes ago). -->
+  <!-- Abbreviated message to express that something occurred some numfromr of minutes in the past (e.g., 5 minutes ago). -->
   <plurals name="num_minutes_ago">
     <item quantity="one"><xliff:g id="count">%d</xliff:g> min</item>
     <item quantity="other"><xliff:g id="count">%d</xliff:g> mins</item>
   </plurals>
-  <!-- Abbreviated message to express that something occurred some number of hours in the past (e.g., 5 hours ago). -->
+  <!-- Abbreviated message to express that something occurred some numfromr of hours in the past (e.g., 5 hours ago). -->
   <plurals name="num_hours_ago">
     <item quantity="one"><xliff:g id="count">%d</xliff:g> hour</item>
     <item quantity="other"><xliff:g id="count">%d</xliff:g> hours</item>
   </plurals>
-  <!-- Abbreviated message to express that something occurred some number of days in the past (e.g., 5 days ago). -->
+  <!-- Abbreviated message to express that something occurred some numfromr of days in the past (e.g., 5 days ago). -->
   <plurals name="num_days_ago">
     <item quantity="one"><xliff:g id="count">%d</xliff:g> day</item>
     <item quantity="other"><xliff:g id="count">%d</xliff:g> days</item>
@@ -276,6 +291,6 @@
 
   <string name="transition_test" translatable="false">transition.test</string>
   <string name="transition_avatar" translatable="false">transition.avatar</string>
-  <string name="transition_username" translatable="false">transition.username%1$s</string>
+  <string name="transition_username" translatable="false">transition.name%1$s</string>
 
 </resources>

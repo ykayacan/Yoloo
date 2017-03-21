@@ -16,7 +16,9 @@ import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
 import com.yoloo.backend.post.dto.PostDTO;
+
 import java.util.logging.Logger;
+
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
@@ -25,20 +27,17 @@ import javax.inject.Named;
     version = "v1",
     namespace = @ApiNamespace(
         ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER,
-        packagePath = Constants.API_PACKAGE_PATH
-    )
+        ownerName = Constants.API_OWNER)
 )
 @ApiClass(
     resource = "posts",
     clientIds = {
         Constants.ANDROID_CLIENT_ID,
         Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID},
-    audiences = {Constants.AUDIENCE_ID},
-    authenticators = {
-        FirebaseAuthenticator.class
-    }
+        Constants.WEB_CLIENT_ID
+    },
+    audiences = { Constants.AUDIENCE_ID },
+    authenticators = { FirebaseAuthenticator.class }
 )
 public class BookmarkEndpoint {
 
@@ -63,8 +62,7 @@ public class BookmarkEndpoint {
     EndpointsValidator.create()
         .on(BadRequestValidator.create(postId, "postId is required."))
         .on(AuthValidator.create(user))
-        .on(NotFoundValidator.create(postId, "Invalid postId."))
-        .validate();
+        .on(NotFoundValidator.create(postId, "Invalid postId."));
 
     bookmarkController.insertBookmark(postId, user);
   }
@@ -87,8 +85,7 @@ public class BookmarkEndpoint {
         .on(BadRequestValidator.create(postId, "postId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(postId, "Invalid postId."))
-        .on(ForbiddenValidator.create(postId, user, ForbiddenValidator.Op.DELETE))
-        .validate();
+        .on(ForbiddenValidator.create(postId, user, ForbiddenValidator.Op.DELETE));
 
     bookmarkController.deleteBookmark(postId, user);
   }
@@ -109,9 +106,7 @@ public class BookmarkEndpoint {
       @Nullable @Named("limit") Integer limit,
       User user) throws ServiceException {
 
-    EndpointsValidator.create()
-        .on(AuthValidator.create(user))
-        .validate();
+    EndpointsValidator.create().on(AuthValidator.create(user));
 
     return bookmarkController.listBookmarks(
         Optional.fromNullable(limit),

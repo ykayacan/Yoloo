@@ -7,7 +7,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import butterknife.BindView;
+
 import com.bluelinelabs.conductor.Router;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
@@ -15,6 +15,8 @@ import com.yoloo.android.R;
 import com.yoloo.android.data.model.CategoryRealm;
 import com.yoloo.android.feature.base.BaseController;
 import com.yoloo.android.feature.feed.global.FeedGlobalController;
+
+import butterknife.BindView;
 
 public class CategoryDetailController extends BaseController implements
     CategoryController.OnCategoryClickListener {
@@ -42,7 +44,7 @@ public class CategoryDetailController extends BaseController implements
     final Router childRouter = getChildRouter(childContainer);
 
     if (!childRouter.hasRootController()) {
-      CategoryController controller = CategoryController.create(0);
+      CategoryController controller = CategoryController.create();
       controller.setOnCategoryClickListener(this);
       childRouter.setRoot(RouterTransaction.with(controller));
     }

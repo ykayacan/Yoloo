@@ -34,7 +34,7 @@ class FollowPresenter extends MvpPresenter<FollowView> {
   }
 
   void follow(String userId, int direction) {
-    Disposable d = userRepository.follow(userId, direction)
+    Disposable d = userRepository.relationship(userId, direction)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe();
 

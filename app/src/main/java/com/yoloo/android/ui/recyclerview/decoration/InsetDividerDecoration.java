@@ -24,7 +24,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 /**
- * A decoration which draws a horizontal divider between {@link RecyclerView.ViewHolder}s of a given
+ * A decoration which draws a horizontal divider between {@link RecyclerView.ViewHolder}s from a given
  * type; with a left inset.
  */
 public class InsetDividerDecoration extends RecyclerView.ItemDecoration {

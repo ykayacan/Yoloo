@@ -17,7 +17,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.widget.AppCompatDrawableManager;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
@@ -58,7 +58,7 @@ import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.feature.category.CategoryDetailController;
-import com.yoloo.android.feature.chat.conversationlist.ConversationListController;
+import com.yoloo.android.feature.chat.dialoglist.DialogListController;
 import com.yoloo.android.feature.comment.CommentController;
 import com.yoloo.android.feature.editor.EditorType;
 import com.yoloo.android.feature.editor.SendPostDelegate;
@@ -74,8 +74,8 @@ import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.feature.feed.component.bountybutton.BountyButtonModel;
 import com.yoloo.android.feature.feed.global.FeedGlobalController;
-import com.yoloo.android.feature.login.AuthController;
 import com.yoloo.android.feature.login.AuthUI;
+import com.yoloo.android.feature.login.welcome.WelcomeController;
 import com.yoloo.android.feature.news.NewsController;
 import com.yoloo.android.feature.notification.NotificationController;
 import com.yoloo.android.feature.photo.PhotoController;
@@ -222,7 +222,7 @@ public class FeedHomeController extends MvpController<FeedHomeView, FeedHomePres
 
           hasNotification = true;
         }*/
-        startTransaction(ConversationListController.create(), new VerticalChangeHandler());
+        startTransaction(DialogListController.create(), new VerticalChangeHandler());
         return true;
       case R.id.action_feed_notification:
         startTransaction(new NotificationController(), new VerticalChangeHandler());
@@ -289,8 +289,8 @@ public class FeedHomeController extends MvpController<FeedHomeView, FeedHomePres
         return false;
       case R.id.action_nav_settings:
         AuthUI.getInstance().signOut(getActivity());
-        handler.postDelayed(
-            () -> getRouter().setRoot(RouterTransaction.with(AuthController.create())
+        handler.postDelayed(() ->
+            getRouter().setRoot(RouterTransaction.with(WelcomeController.create())
                 .pushChangeHandler(new FadeChangeHandler())), 400);
         return false;
       default:
@@ -425,8 +425,8 @@ public class FeedHomeController extends MvpController<FeedHomeView, FeedHomePres
       @Override public void onAnimationEnd(Animator animation) {
         toolbar.setVisibility(View.INVISIBLE);
         swipeRefreshLayout.setVisibility(View.INVISIBLE);
-        fab.setImageDrawable(AppCompatDrawableManager.get()
-            .getDrawable(getActivity(), R.drawable.ic_clear_white_24dp));
+        fab.setImageDrawable(
+            AppCompatResources.getDrawable(getActivity(), R.drawable.ic_clear_white_24dp));
         ViewUtils.setStatusBarColor(getActivity(), grey300);
       }
     });
@@ -447,8 +447,8 @@ public class FeedHomeController extends MvpController<FeedHomeView, FeedHomePres
       @Override
       public void onAnimationEnd(Animator animation) {
         menuLayout.setVisibility(View.GONE);
-        fab.setImageDrawable(AppCompatDrawableManager.get()
-            .getDrawable(getActivity(), R.drawable.ic_add_black_24dp));
+        fab.setImageDrawable(
+            AppCompatResources.getDrawable(getActivity(), R.drawable.ic_add_black_24dp));
         ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
       }
     });
@@ -465,8 +465,8 @@ public class FeedHomeController extends MvpController<FeedHomeView, FeedHomePres
         swipeRefreshLayout.setVisibility(View.VISIBLE);
         toolbar.setVisibility(View.VISIBLE);
         fab.setSelected(false);
-        fab.setImageDrawable(AppCompatDrawableManager.get()
-            .getDrawable(getActivity(), R.drawable.ic_add_black_24dp));
+        fab.setImageDrawable(
+            AppCompatResources.getDrawable(getActivity(), R.drawable.ic_add_black_24dp));
         ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
       }
     });
@@ -484,8 +484,8 @@ public class FeedHomeController extends MvpController<FeedHomeView, FeedHomePres
         swipeRefreshLayout.setVisibility(View.VISIBLE);
         toolbar.setVisibility(View.VISIBLE);
         fab.setSelected(false);
-        fab.setImageDrawable(AppCompatDrawableManager.get()
-            .getDrawable(getActivity(), R.drawable.ic_add_black_24dp));
+        fab.setImageDrawable(
+            AppCompatResources.getDrawable(getActivity(), R.drawable.ic_add_black_24dp));
         ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
       }
     });
@@ -565,6 +565,9 @@ public class FeedHomeController extends MvpController<FeedHomeView, FeedHomePres
             v -> startTransaction(NewsController.create(), new CircularRevealChangeHandlerCompat()))
         .onNewsItemClickListener((v, model, item) -> {
 
+        })
+        .onNewcomersHeaderClickListener(v -> {
+          Timber.d("Clicked.");
         })
         .onNewcomersItemClickListener((v, model, item) -> {
           Timber.d("Clicked.");

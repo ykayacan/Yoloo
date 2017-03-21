@@ -5,10 +5,12 @@ import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.FcmRealm;
 import com.yoloo.android.data.model.NotificationRealm;
 import com.yoloo.android.data.repository.notification.transformer.NotificationResponseTransformer;
+
+import java.util.List;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
-import java.util.List;
 
 import static com.yoloo.android.data.ApiManager.INSTANCE;
 import static com.yoloo.android.data.ApiManager.getIdToken;
@@ -52,7 +54,9 @@ public class NotificationRemoteDataSource {
     return getIdToken()
         .flatMapObservable(idToken ->
             Observable.fromCallable(() ->
-                INSTANCE.getApi().accounts()
+                INSTANCE.getApi()
+                    .users()
+                    .me()
                     .notifications()
                     .list()
                     .setCursor(cursor)

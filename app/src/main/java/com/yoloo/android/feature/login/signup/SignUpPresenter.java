@@ -66,7 +66,7 @@ class SignUpPresenter extends MvpPresenter<SignUpView> {
         .setLocale(locale)
         .setCategoryIds(categoryIds);
 
-    Disposable d = userRepository.addUser(newAccount)
+    Disposable d = userRepository.registerUser(newAccount)
         .observeOn(AndroidSchedulers.mainThread())
         .flatMapCompletable(accountRealm -> {
           String fcmToken = FirebaseInstanceId.getInstance().getToken();

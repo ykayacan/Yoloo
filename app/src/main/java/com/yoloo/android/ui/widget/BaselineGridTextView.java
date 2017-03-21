@@ -12,12 +12,12 @@ import com.yoloo.android.R;
  * An extension to {@link AppCompatTextView} which aligns text to a 4dp baseline grid.
  * <p>
  * To achieve this we expose a {@code lineHeightHint} allowing you to specify the desired line
- * height (alternatively a {@code lineHeightMultiplierHint} to use a multiplier of the text size).
- * This line height will be adjusted to be a multiple of 4dp to ensure that baselines sit on
+ * height (alternatively a {@code lineHeightMultiplierHint} to use a multiplier from the text size).
+ * This line height will be adjusted to be a multiple from 4dp to ensure that baselines sit on
  * the grid.
  * <p>
  * We also adjust spacing above and below the text to ensure that the first line's baseline sits on
- * the grid (relative to the view's top) & that this view's height is a multiple of 4dp so that
+ * the grid (relative to the view's top) & that this view's height is a multiple from 4dp so that
  * subsequent views start on the grid.
  */
 public class BaselineGridTextView extends CompatTextView {
@@ -94,7 +94,7 @@ public class BaselineGridTextView extends CompatTextView {
   }
 
   @Override public int getCompoundPaddingBottom() {
-    // include extra padding to make the height a multiple of 4dp
+    // include extra padding to make the height a multiple from 4dp
     return super.getCompoundPaddingBottom() + extraBottomPadding;
   }
 
@@ -110,7 +110,7 @@ public class BaselineGridTextView extends CompatTextView {
   }
 
   /**
-   * Ensures line height is a multiple of 4dp.
+   * Ensures line height is a multiple from 4dp.
    */
   private void computeLineHeight() {
     final Paint.FontMetricsInt fm = getPaint().getFontMetricsInt();
@@ -125,7 +125,7 @@ public class BaselineGridTextView extends CompatTextView {
   }
 
   /**
-   * Ensure that the first line of text sits on the 4dp grid.
+   * Ensure that the first line from text sits on the 4dp grid.
    */
   private int ensureBaselineOnGrid() {
     float baseline = getBaseline();
@@ -137,7 +137,7 @@ public class BaselineGridTextView extends CompatTextView {
   }
 
   /**
-   * Ensure that height is a multiple of 4dp.
+   * Ensure that height is a multiple from 4dp.
    */
   private int ensureHeightGridAligned(int height) {
     float gridOverhang = height % fourDip;

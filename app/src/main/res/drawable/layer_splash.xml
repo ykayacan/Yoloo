@@ -3,6 +3,10 @@
   <item android:drawable="@color/primary" />
 
   <item
+    android:bottom="@dimen/_112asdp"
     android:drawable="@drawable/ic_yoloo_logo_white"
-    android:gravity="center" />
+    android:gravity="center"
+    android:left="@dimen/_112asdp"
+    android:right="@dimen/_112asdp"
+    android:top="@dimen/_112asdp" />
 </layer-list>

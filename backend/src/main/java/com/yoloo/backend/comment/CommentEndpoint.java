@@ -16,7 +16,9 @@ import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import com.yoloo.backend.endpointsvalidator.validator.CommentUpdateValidator;
 import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
+
 import java.util.logging.Logger;
+
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
@@ -25,20 +27,17 @@ import javax.inject.Named;
     version = "v1",
     namespace = @ApiNamespace(
         ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER,
-        packagePath = Constants.API_PACKAGE_PATH
-    )
+        ownerName = Constants.API_OWNER)
 )
 @ApiClass(
     resource = "comments",
     clientIds = {
         Constants.ANDROID_CLIENT_ID,
         Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID},
-    audiences = {Constants.AUDIENCE_ID},
-    authenticators = {
-        FirebaseAuthenticator.class
-    }
+        Constants.WEB_CLIENT_ID
+    },
+    audiences = { Constants.AUDIENCE_ID },
+    authenticators = { FirebaseAuthenticator.class }
 )
 public class CommentEndpoint {
 
@@ -69,8 +68,7 @@ public class CommentEndpoint {
         .on(BadRequestValidator.create(postId, "postId is required."))
         .on(BadRequestValidator.create(commentId, "commentId is required."))
         .on(AuthValidator.create(user))
-        .on(NotFoundValidator.create(postId, "Invalid postId."))
-        .validate();
+        .on(NotFoundValidator.create(postId, "Invalid postId."));
 
     return commentController.getComment(commentId, user);
   }
@@ -97,8 +95,7 @@ public class CommentEndpoint {
         .on(BadRequestValidator.create(postId, "postId is required."))
         .on(BadRequestValidator.create(content, "content is required."))
         .on(AuthValidator.create(user))
-        .on(NotFoundValidator.create(postId, "Invalid postId."))
-        .validate();
+        .on(NotFoundValidator.create(postId, "Invalid postId."));
 
     return commentController.insertComment(postId, content, user);
   }
@@ -130,20 +127,22 @@ public class CommentEndpoint {
         .on(BadRequestValidator.create(commentId, "commentId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(postId, "Invalid postId."))
-        .on(CommentUpdateValidator.create(postId, commentId, user))
-        .validate();
+        .on(CommentUpdateValidator.create(postId, commentId, user));
 
-    return commentController.updateComment(postId, commentId, Optional.fromNullable(content),
-        Optional.fromNullable(accepted), user);
+    return commentController.updateComment(
+        postId,
+        commentId,
+        Optional.fromNullable(content),
+        Optional.fromNullable(accepted),
+        user);
   }
 
   /**
-   * Deletes the specified {@code Comment}.
+   * Delete.
    *
-   * @param postId the ID from the entity to be updated
-   * @param commentId the websafe comment id
+   * @param postId the post id
+   * @param commentId the comment id
    * @param user the user
-   * @return the updated version from the entity
    * @throws ServiceException the service exception
    */
   @ApiMethod(
@@ -160,8 +159,7 @@ public class CommentEndpoint {
         .on(BadRequestValidator.create(commentId, "commentId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(postId, "Invalid postId."))
-        .on(ForbiddenValidator.create(commentId, user, ForbiddenValidator.Op.DELETE))
-        .validate();
+        .on(ForbiddenValidator.create(commentId, user, ForbiddenValidator.Op.DELETE));
 
     commentController.deleteComment(postId, commentId, user);
   }
@@ -190,10 +188,12 @@ public class CommentEndpoint {
     EndpointsValidator.create()
         .on(BadRequestValidator.create(postId, "postId is required."))
         .on(AuthValidator.create(user))
-        .on(NotFoundValidator.create(postId, "Invalid postId."))
-        .validate();
+        .on(NotFoundValidator.create(postId, "Invalid postId."));
 
-    return commentController.listComments(postId, Optional.fromNullable(cursor),
-        Optional.fromNullable(limit), user);
+    return commentController.listComments(
+        postId,
+        Optional.fromNullable(cursor),
+        Optional.fromNullable(limit),
+        user);
   }
 }

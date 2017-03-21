@@ -6,15 +6,18 @@ import android.os.StrictMode;
 import android.support.multidex.MultiDex;
 import android.support.v7.app.AppCompatDelegate;
 import android.util.Log;
+
 import com.facebook.stetho.Stetho;
 import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.database.FirebaseDatabase;
 import com.uphyca.stetho_realm.RealmInspectorModulesProvider;
 import com.yoloo.android.data.faker.AccountFaker;
 import com.yoloo.android.data.faker.PostFaker;
+
+import java.io.File;
+
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
-import java.io.File;
 import timber.log.Timber;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
@@ -42,7 +45,7 @@ public class YolooApp extends Application {
     initTimber();
     initRealm();
     initStetho();
-    FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+    FirebaseDatabase.getInstance().setPersistenceEnabled(false);
     initCalligraphy();
 
     AccountFaker.generateAll();

@@ -1,7 +1,9 @@
 package com.yoloo.backend.account.dto;
 
+import com.yoloo.backend.country.Country;
+
 import java.util.Date;
-import java.util.List;
+import java.util.Set;
 
 import lombok.Builder;
 import lombok.Value;
@@ -9,7 +11,6 @@ import lombok.Value;
 @Value
 @Builder
 public class AccountDTO {
-
   private String id;
   private String username;
   private String realname;
@@ -18,7 +19,8 @@ public class AccountDTO {
   private String avatarUrl;
   private String bio;
   private String websiteUrl;
-  private List<String> interestedCategoryIds;
+  private Set<Country> visitedCountries;
+  private Set<String> interestedCategoryIds;
   private Date created;
   private String locale;
   private boolean isFollowing;

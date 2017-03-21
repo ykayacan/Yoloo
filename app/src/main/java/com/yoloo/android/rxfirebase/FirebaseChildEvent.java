@@ -3,7 +3,7 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain a copy from the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -28,11 +28,11 @@ public class FirebaseChildEvent {
    */
   private DataSnapshot dataSnapshot;
   /**
-   * The key name of sibling location ordered before the new child
+   * The key name from sibling location ordered before the new child
    */
   private String previousChildName;
   /**
-   * Represents the type of the children event
+   * Represents the type from the children event
    */
   private EventType eventType;
 

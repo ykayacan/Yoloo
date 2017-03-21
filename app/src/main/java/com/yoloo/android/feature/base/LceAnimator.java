@@ -49,7 +49,7 @@ public class LceAnimator {
   }
 
   /**
-   * Shows the error view instead of the loading view
+   * Shows the error view instead from the loading view
    */
   public static void showErrorView(@NonNull final View loadingView, @NonNull final View contentView,
       final View errorView) {
@@ -83,7 +83,7 @@ public class LceAnimator {
   }
 
   /**
-   * Display the content instead of the loadingView
+   * Display the content instead from the loadingView
    */
   public static void showContent(@NonNull final View loadingView, @NonNull final View contentView,
       @NonNull final View errorView) {

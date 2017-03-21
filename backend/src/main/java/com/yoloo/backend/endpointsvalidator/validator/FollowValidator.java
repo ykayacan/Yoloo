@@ -13,7 +13,7 @@ public class FollowValidator implements Validator {
   private String followerId;
   private String followingId;
 
-  @Override public boolean valid() {
+  @Override public boolean isValid() {
     final Key<Account> followerKey = Key.create(followerId);
     final Key<Account> followingKey = Key.create(followingId);
 
@@ -21,6 +21,6 @@ public class FollowValidator implements Validator {
   }
 
   @Override public void onException() throws ServiceException {
-    throw new BadRequestException("You can not follow yourself.");
+    throw new BadRequestException("You can not do the action for yourself.");
   }
 }

@@ -133,7 +133,7 @@ public class CustomFloatingActionMenuBehaviour
                 /*
 
                     We have expanded menu and it needs to be collapsed,
-                    when we have scrolled to the height of the menu
+                    when we have scrolled to the height from the menu
                  */
         totalHeight -= firstFab.getHeight();
         if (mTotalDy > totalHeight && !isAnimating) {

@@ -1,271 +1,279 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="@android:color/white"
-  android:fillViewport="true">
+  android:background="@android:color/white">
 
-  <android.support.constraint.ConstraintLayout
+  <android.support.design.widget.AppBarLayout
+    android:id="@+id/appbar_profile_edit"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingBottom="@dimen/padding_large">
+    android:theme="@style/Yoloo.AppBarOverlay">
 
-    <android.support.design.widget.AppBarLayout
-      android:id="@+id/appbar_profile_edit"
-      android:layout_width="0dp"
+    <android.support.v7.widget.Toolbar
+      android:id="@+id/toolbar_profile_edit"
+      android:layout_width="match_parent"
+      android:layout_height="?attr/actionBarSize"
+      android:background="?attr/colorPrimary"
+      app:popupTheme="@style/Yoloo.PopupOverlay">
+
+      <ImageView
+        android:id="@+id/iv_profile_edit_save"
+        style="@style/Widget.AppCompat.Light.ActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        app:srcCompat="@drawable/ic_check_white_24dp" />
+
+    </android.support.v7.widget.Toolbar>
+
+  </android.support.design.widget.AppBarLayout>
+
+  <ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <android.support.constraint.ConstraintLayout
+      android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:theme="@style/Yoloo.AppBarOverlay"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toTopOf="parent">
+      android:paddingBottom="@dimen/padding_large">
 
-      <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar_profile_edit"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        app:popupTheme="@style/Yoloo.PopupOverlay">
+      <ImageView
+        android:id="@+id/iv_profile_edit_avatar"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_marginTop="16dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@drawable/login_bg" />
 
-        <ImageView
-          android:id="@+id/iv_profile_edit_save"
-          android:layout_width="wrap_content"
+      <com.yoloo.android.ui.widget.BaselineGridTextView
+        android:id="@+id/tv_profile_edit_change_photo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/label_profile_edit_change_photo"
+        android:textColor="@color/accent"
+        app:layout_constraintLeft_toLeftOf="@+id/iv_profile_edit_avatar"
+        app:layout_constraintRight_toRightOf="@+id/iv_profile_edit_avatar"
+        app:layout_constraintTop_toBottomOf="@+id/iv_profile_edit_avatar" />
+
+      <com.yoloo.android.ui.widget.BaselineGridTextView
+        android:id="@+id/tv_profile_edit_personal_info_header"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginLeft="@dimen/padding_normal"
+        android:layout_marginStart="@dimen/padding_normal"
+        android:gravity="center"
+        android:text="@string/label_profile_edit_personal_info_header"
+        android:textAppearance="@style/TextAppearance.GroupTitle"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_profile_edit_change_photo" />
+
+      <android.support.design.widget.TextInputLayout
+        android:id="@+id/til_profile_edit_realname"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/padding_normal"
+        android:layout_marginLeft="@dimen/padding_normal"
+        android:layout_marginRight="@dimen/padding_normal"
+        android:layout_marginStart="@dimen/padding_normal"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_profile_edit_personal_info_header">
+
+        <android.support.design.widget.TextInputEditText
+          android:id="@+id/et_profile_edit_realname"
+          android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_gravity="end"
-          style="@style/Widget.AppCompat.Light.ActionButton"
-          app:srcCompat="@drawable/ic_check_white_24dp" />
+          android:drawableLeft="@drawable/ic_person_black_24dp"
+          android:drawablePadding="16dp"
+          android:drawableStart="@drawable/ic_person_black_24dp"
+          android:hint="@string/hint_profile_edit_realname"
+          android:imeOptions="actionNext"
+          android:inputType="textCapSentences"
+          android:maxLines="1" />
+      </android.support.design.widget.TextInputLayout>
 
-      </android.support.v7.widget.Toolbar>
-
-    </android.support.design.widget.AppBarLayout>
-
-    <ImageView
-      android:id="@+id/iv_profile_edit_avatar"
-      android:layout_width="72dp"
-      android:layout_height="72dp"
-      android:layout_marginTop="16dp"
-      android:scaleType="centerCrop"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/appbar_profile_edit"
-      tools:src="@drawable/login_bg" />
-
-    <TextView
-      android:id="@+id/tv_profile_edit_change_photo"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="8dp"
-      android:text="@string/label_profile_edit_change_photo"
-      android:textColor="@color/accent"
-      app:layout_constraintLeft_toLeftOf="@+id/iv_profile_edit_avatar"
-      app:layout_constraintRight_toRightOf="@+id/iv_profile_edit_avatar"
-      app:layout_constraintTop_toBottomOf="@+id/iv_profile_edit_avatar" />
-
-    <com.yoloo.android.ui.widget.BaselineGridTextView
-      android:id="@+id/tv_profile_edit_personal_info_header"
-      android:layout_width="wrap_content"
-      android:layout_height="52dp"
-      android:layout_marginLeft="@dimen/padding_normal"
-      android:layout_marginStart="@dimen/padding_normal"
-      android:gravity="center"
-      android:text="@string/label_profile_edit_personal_info_header"
-      android:textAppearance="@style/TextAppearance.GroupTitle"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/tv_profile_edit_change_photo" />
-
-    <android.support.design.widget.TextInputLayout
-      android:id="@+id/til_profile_edit_realname"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginEnd="@dimen/padding_normal"
-      android:layout_marginLeft="@dimen/padding_normal"
-      android:layout_marginRight="@dimen/padding_normal"
-      android:layout_marginStart="@dimen/padding_normal"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/tv_profile_edit_personal_info_header">
-
-      <android.support.design.widget.TextInputEditText
-        android:id="@+id/et_profile_edit_realname"
-        android:layout_width="match_parent"
+      <android.support.design.widget.TextInputLayout
+        android:id="@+id/til_profile_edit_username"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/ic_person_black_24dp"
-        android:drawablePadding="16dp"
-        android:drawableStart="@drawable/ic_person_black_24dp"
-        android:hint="@string/hint_profile_edit_realname"
-        android:imeOptions="actionNext"
-        android:inputType="textCapSentences"
-        android:maxLines="1" />
-    </android.support.design.widget.TextInputLayout>
+        android:layout_marginEnd="@dimen/padding_normal"
+        android:layout_marginLeft="@dimen/padding_normal"
+        android:layout_marginRight="@dimen/padding_normal"
+        android:layout_marginStart="@dimen/padding_normal"
+        android:layout_marginTop="@dimen/padding_micro"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/til_profile_edit_realname">
 
-    <android.support.design.widget.TextInputLayout
-      android:id="@+id/til_profile_edit_username"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginEnd="@dimen/padding_normal"
-      android:layout_marginLeft="@dimen/padding_normal"
-      android:layout_marginRight="@dimen/padding_normal"
-      android:layout_marginStart="@dimen/padding_normal"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/til_profile_edit_realname">
+        <android.support.design.widget.TextInputEditText
+          android:id="@+id/et_profile_edit_username"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:drawableLeft="@drawable/ic_person_black_24dp"
+          android:drawablePadding="16dp"
+          android:drawableStart="@drawable/ic_person_black_24dp"
+          android:hint="@string/hint_profile_edit_username"
+          android:imeOptions="actionNext"
+          android:maxLines="1" />
+      </android.support.design.widget.TextInputLayout>
 
-      <android.support.design.widget.TextInputEditText
-        android:id="@+id/et_profile_edit_username"
-        android:layout_width="match_parent"
+      <android.support.design.widget.TextInputLayout
+        android:id="@+id/til_profile_edit_email"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/ic_person_black_24dp"
-        android:drawablePadding="16dp"
-        android:drawableStart="@drawable/ic_person_black_24dp"
-        android:hint="@string/hint_profile_edit_username"
-        android:imeOptions="actionNext"
-        android:inputType="textCapSentences"
-        android:maxLines="1" />
-    </android.support.design.widget.TextInputLayout>
+        android:layout_marginEnd="@dimen/padding_normal"
+        android:layout_marginLeft="@dimen/padding_normal"
+        android:layout_marginRight="@dimen/padding_normal"
+        android:layout_marginStart="@dimen/padding_normal"
+        android:layout_marginTop="@dimen/padding_micro"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/til_profile_edit_username">
 
-    <android.support.design.widget.TextInputLayout
-      android:id="@+id/til_profile_edit_email"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginEnd="@dimen/padding_normal"
-      android:layout_marginLeft="@dimen/padding_normal"
-      android:layout_marginRight="@dimen/padding_normal"
-      android:layout_marginStart="@dimen/padding_normal"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/til_profile_edit_username">
+        <android.support.design.widget.TextInputEditText
+          android:id="@+id/et_profile_edit_email"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:drawableLeft="@drawable/ic_email_black_24dp"
+          android:drawablePadding="16dp"
+          android:drawableStart="@drawable/ic_email_black_24dp"
+          android:hint="@string/hint_profile_edit_email"
+          android:imeOptions="actionNext"
+          android:inputType="textEmailAddress"
+          android:maxLines="1" />
+      </android.support.design.widget.TextInputLayout>
 
-      <android.support.design.widget.TextInputEditText
-        android:id="@+id/et_profile_edit_email"
-        android:layout_width="match_parent"
+      <android.support.design.widget.TextInputLayout
+        android:id="@+id/til_profile_edit_password"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/ic_email_black_24dp"
-        android:drawablePadding="16dp"
-        android:drawableStart="@drawable/ic_email_black_24dp"
-        android:hint="@string/hint_profile_edit_email"
-        android:imeOptions="actionNext"
-        android:inputType="textEmailAddress"
-        android:maxLines="1" />
-    </android.support.design.widget.TextInputLayout>
+        android:layout_marginEnd="@dimen/padding_normal"
+        android:layout_marginLeft="@dimen/padding_normal"
+        android:layout_marginRight="@dimen/padding_normal"
+        android:layout_marginStart="@dimen/padding_normal"
+        android:layout_marginTop="@dimen/padding_micro"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/til_profile_edit_email">
 
-    <android.support.design.widget.TextInputLayout
-      android:id="@+id/til_profile_edit_password"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginEnd="@dimen/padding_normal"
-      android:layout_marginLeft="@dimen/padding_normal"
-      android:layout_marginRight="@dimen/padding_normal"
-      android:layout_marginStart="@dimen/padding_normal"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/til_profile_edit_email">
+        <android.support.design.widget.TextInputEditText
+          android:id="@+id/et_profile_edit_password"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:drawableLeft="@drawable/ic_lock_black_24dp"
+          android:drawablePadding="16dp"
+          android:drawableStart="@drawable/ic_lock_black_24dp"
+          android:hint="@string/hint_profile_edit_password"
+          android:imeOptions="actionNext"
+          android:inputType="textPassword"
+          android:maxLines="1" />
+      </android.support.design.widget.TextInputLayout>
 
-      <android.support.design.widget.TextInputEditText
-        android:id="@+id/et_profile_edit_password"
-        android:layout_width="match_parent"
+      <ImageView
+        android:id="@+id/iv_profile_edit_gender_icon"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/ic_lock_black_24dp"
-        android:drawablePadding="16dp"
-        android:drawableStart="@drawable/ic_lock_black_24dp"
-        android:hint="@string/hint_profile_edit_password"
-        android:imeOptions="actionNext"
-        android:inputType="textPassword"
-        android:maxLines="1" />
-    </android.support.design.widget.TextInputLayout>
+        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="@dimen/padding_normal"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/til_profile_edit_password"
+        app:srcCompat="@drawable/ic_wc_black_24dp" />
 
-    <ImageView
-      android:id="@+id/iv_profile_edit_gender_icon"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginLeft="20dp"
-      android:layout_marginStart="20dp"
-      android:layout_marginTop="@dimen/padding_micro"
-      app:layout_constraintHorizontal_bias="0.0"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/til_profile_edit_password"
-      app:srcCompat="@drawable/ic_wc_black_24dp" />
-
-    <Spinner
-      android:id="@+id/spinner_profile_edit_gender"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginEnd="@dimen/padding_normal"
-      android:layout_marginLeft="10dp"
-      android:layout_marginRight="@dimen/padding_large"
-      android:layout_marginStart="10dp"
-      android:layout_marginTop="@dimen/padding_micro"
-      android:entries="@array/spinner_profile_edit_gender"
-      app:layout_constraintLeft_toRightOf="@+id/iv_profile_edit_gender_icon"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/til_profile_edit_password" />
-
-    <com.yoloo.android.ui.widget.BaselineGridTextView
-      android:id="@+id/tv_profile_edit_extra_info_header"
-      android:layout_width="wrap_content"
-      android:layout_height="52dp"
-      android:layout_marginLeft="@dimen/padding_normal"
-      android:layout_marginStart="@dimen/padding_normal"
-      android:gravity="center"
-      android:text="@string/label_profile_edit_extra_info_header"
-      android:textAppearance="@style/TextAppearance.GroupTitle"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/spinner_profile_edit_gender" />
-
-    <android.support.design.widget.TextInputLayout
-      android:id="@+id/til_profile_edit_website"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginEnd="@dimen/padding_normal"
-      android:layout_marginLeft="@dimen/padding_normal"
-      android:layout_marginRight="@dimen/padding_normal"
-      android:layout_marginStart="@dimen/padding_normal"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/tv_profile_edit_extra_info_header">
-
-      <android.support.design.widget.TextInputEditText
-        android:id="@+id/et_profile_edit_website"
-        android:layout_width="match_parent"
+      <Spinner
+        android:id="@+id/spinner_profile_edit_gender"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:autoLink="web"
-        android:drawableLeft="@drawable/ic_insert_link_black_24dp"
-        android:drawablePadding="16dp"
-        android:drawableStart="@drawable/ic_insert_link_black_24dp"
-        android:hint="@string/hint_profile_edit_website"
-        android:imeOptions="actionNext"
-        android:inputType="textWebEmailAddress"
-        android:maxLines="1" />
-    </android.support.design.widget.TextInputLayout>
+        android:layout_marginEnd="@dimen/padding_normal"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="@dimen/padding_large"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="@dimen/padding_normal"
+        android:entries="@array/spinner_profile_edit_gender"
+        app:layout_constraintLeft_toRightOf="@+id/iv_profile_edit_gender_icon"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/til_profile_edit_password" />
 
-    <android.support.design.widget.TextInputLayout
-      android:id="@+id/til_profile_edit_bio"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginEnd="@dimen/padding_normal"
-      android:layout_marginLeft="@dimen/padding_normal"
-      android:layout_marginRight="@dimen/padding_normal"
-      android:layout_marginStart="@dimen/padding_normal"
-      app:counterMaxLength="156"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/til_profile_edit_website">
+      <com.yoloo.android.ui.widget.BaselineGridTextView
+        android:id="@+id/tv_profile_edit_extra_info_header"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginLeft="@dimen/padding_normal"
+        android:layout_marginStart="@dimen/padding_normal"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="@string/label_profile_edit_extra_info_header"
+        android:textAppearance="@style/TextAppearance.GroupTitle"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/iv_profile_edit_gender_icon" />
 
-      <android.support.design.widget.TextInputEditText
-        android:id="@+id/et_profile_edit_bio"
-        android:layout_width="match_parent"
+      <android.support.design.widget.TextInputLayout
+        android:id="@+id/til_profile_edit_website"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:autoLink="web"
-        android:drawableLeft="@drawable/ic_format_quote_black_24dp"
-        android:drawablePadding="16dp"
-        android:drawableStart="@drawable/ic_format_quote_black_24dp"
-        android:hint="@string/hint_profile_edit_bio"
-        android:imeOptions="actionDone"
-        android:inputType="textCapSentences|textMultiLine"
-        android:maxLength="156" />
-    </android.support.design.widget.TextInputLayout>
+        android:layout_marginEnd="@dimen/padding_normal"
+        android:layout_marginLeft="@dimen/padding_normal"
+        android:layout_marginRight="@dimen/padding_normal"
+        android:layout_marginStart="@dimen/padding_normal"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_profile_edit_extra_info_header">
 
-  </android.support.constraint.ConstraintLayout>
+        <android.support.design.widget.TextInputEditText
+          android:id="@+id/et_profile_edit_website"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:autoLink="web"
+          android:drawableLeft="@drawable/ic_insert_link_black_24dp"
+          android:drawablePadding="16dp"
+          android:drawableStart="@drawable/ic_insert_link_black_24dp"
+          android:hint="@string/hint_profile_edit_website"
+          android:imeOptions="actionNext"
+          android:inputType="text"
+          android:linksClickable="false"
+          android:maxLines="1"
+          android:textAllCaps="false" />
+      </android.support.design.widget.TextInputLayout>
 
-</ScrollView>
+      <android.support.design.widget.TextInputLayout
+        android:id="@+id/til_profile_edit_bio"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/padding_normal"
+        android:layout_marginLeft="@dimen/padding_normal"
+        android:layout_marginRight="@dimen/padding_normal"
+        android:layout_marginStart="@dimen/padding_normal"
+        android:layout_marginTop="@dimen/padding_micro"
+        app:counterMaxLength="156"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/til_profile_edit_website">
+
+        <android.support.design.widget.TextInputEditText
+          android:id="@+id/et_profile_edit_bio"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:autoLink="web"
+          android:drawableLeft="@drawable/ic_format_quote_black_24dp"
+          android:drawablePadding="16dp"
+          android:drawableStart="@drawable/ic_format_quote_black_24dp"
+          android:hint="@string/hint_profile_edit_bio"
+          android:imeOptions="actionDone"
+          android:inputType="textCapSentences|textMultiLine"
+          android:maxLength="120" />
+      </android.support.design.widget.TextInputLayout>
+
+    </android.support.constraint.ConstraintLayout>
+
+  </ScrollView>
+
+</android.support.design.widget.CoordinatorLayout>

@@ -25,6 +25,12 @@
     <item name="fontPath">fonts/OpenSans-Bold.ttf</item>
   </style>
 
+  <style name="Yoloo.Button.White">
+    <item name="android:colorButtonNormal">@android:color/white</item>
+    <item name="android:textColor">@color/primary</item>
+    <item name="fontPath">fonts/OpenSans-Bold.ttf</item>
+  </style>
+
   <style name="Yoloo.Button.Colored" parent="@style/Widget.AppCompat.Button.Colored">
     <item name="android:textColor">@android:color/white</item>
     <item name="fontPath">fonts/OpenSans-Bold.ttf</item>
@@ -203,7 +209,7 @@
   </style>
 
   <style name="TextAppearance.CatalogCategoryTitle" parent="android:TextAppearance">
-    <item name="android:textSize">18sp</item>
+    <item name="android:textSize">17sp</item>
     <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
     <item name="android:textColor">@color/catalog_category_text</item>
   </style>

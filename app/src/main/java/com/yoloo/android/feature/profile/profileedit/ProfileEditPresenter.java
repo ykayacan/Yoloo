@@ -8,12 +8,13 @@ import javax.annotation.Nonnull;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import timber.log.Timber;
 
 public class ProfileEditPresenter extends MvpPresenter<ProfileEditView> {
 
   private final UserRepository userRepository;
 
-  public ProfileEditPresenter(UserRepository userRepository) {
+  ProfileEditPresenter(UserRepository userRepository) {
     this.userRepository = userRepository;
   }
 
@@ -31,11 +32,24 @@ public class ProfileEditPresenter extends MvpPresenter<ProfileEditView> {
     getDisposable().add(d);
   }
 
-  public void updateMe(@Nonnull AccountRealm account) {
-    Disposable d = userRepository.updateUser(account)
+  void updateMe(@Nonnull AccountRealm account) {
+    Disposable d = userRepository.updateMe(account)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(updated -> getView().onAccountUpdated(updated),
             throwable -> getView().onError(throwable));
+
+    getDisposable().add(d);
+  }
+
+  void checkUsername(@Nonnull String username) {
+    Timber.d("checkUsername(): %s", username);
+    Disposable d = userRepository.checkUsername(username)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(available -> {
+          if (!available) {
+            getView().onUsernameUnavailable();
+          }
+        }, throwable -> getView().onError(throwable));
 
     getDisposable().add(d);
   }

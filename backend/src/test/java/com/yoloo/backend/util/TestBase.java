@@ -11,7 +11,7 @@ import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentShard;
 import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.feed.Feed;
-import com.yoloo.backend.follow.Follow;
+import com.yoloo.backend.relationship.Relationship;
 import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.media.Media;
 import com.yoloo.backend.notification.Notification;
@@ -48,7 +48,7 @@ public class TestBase extends GAETestBase {
     fact().register(Comment.class);
     fact().register(CommentShard.class);
 
-    fact().register(Follow.class);
+    fact().register(Relationship.class);
     fact().register(Vote.class);
     fact().register(Feed.class);
     fact().register(Tracker.class);

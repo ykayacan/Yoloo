@@ -8,25 +8,25 @@ import javax.annotation.Nonnull;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 
-public class ProfilePresenter extends MvpPresenter<ProfileView> {
+class ProfilePresenter extends MvpPresenter<ProfileView> {
 
   private final UserRepository userRepository;
 
-  public ProfilePresenter(UserRepository userRepository) {
+  ProfilePresenter(UserRepository userRepository) {
     this.userRepository = userRepository;
   }
 
-  public void loadUserProfile(@Nonnull String userId) {
+  void loadUserProfile(@Nonnull String userId) {
     Disposable d = userRepository.getUser(userId)
-        .observeOn(AndroidSchedulers.mainThread())
+        .observeOn(AndroidSchedulers.mainThread(), true)
         .subscribe(account -> getView().onProfileLoaded(account),
             throwable -> getView().onError(throwable));
 
     getDisposable().add(d);
   }
 
-  public void follow(String userId, int direction) {
-    Disposable d = userRepository.follow(userId, direction)
+  void follow(String userId, int direction) {
+    Disposable d = userRepository.relationship(userId, direction)
         .observeOn(AndroidSchedulers.mainThread())
         .doOnError(Throwable::printStackTrace)
         .subscribe();

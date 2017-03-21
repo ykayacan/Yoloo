@@ -19,9 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Spinner;
-import butterknife.BindColor;
-import butterknife.BindView;
-import butterknife.ButterKnife;
+
 import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
@@ -67,7 +65,12 @@ import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.MenuHelper;
 import com.yoloo.android.util.ShareUtil;
 import com.yoloo.android.util.WeakHandler;
+
 import java.util.List;
+
+import butterknife.BindColor;
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import timber.log.Timber;
 
 public class FeedGlobalController extends MvpController<FeedGlobalView, FeedGlobalPresenter>
@@ -444,7 +447,7 @@ public class FeedGlobalController extends MvpController<FeedGlobalView, FeedGlob
 
   private void chooseLoadMethod(boolean pullToRefresh) {
     if (viewType == VIEW_TYPE_USER) {
-      getPresenter().loadPostsByUser(pullToRefresh, userId, isCommented, 20);
+      getPresenter().loadPostsByUser(pullToRefresh, userId, 20);
     } else if (viewType == VIEW_TYPE_TAGS) {
       getPresenter().loadPostsByTag(pullToRefresh, tagName, PostSorter.NEWEST, 20);
     } else if (viewType == VIEW_TYPE_CATEGORY) {

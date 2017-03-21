@@ -16,7 +16,7 @@ public class ForbiddenValidator implements Validator {
   private User user;
   private Op operation;
 
-  @Override public boolean valid() {
+  @Override public boolean isValid() {
     try {
       final Key<?> key = Key.create(itemId);
       final Key<Account> userKey = Key.create(user.getUserId());

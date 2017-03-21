@@ -12,7 +12,9 @@ import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
 import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
 import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
+
 import java.util.logging.Logger;
+
 import javax.inject.Named;
 
 @Api(
@@ -20,20 +22,17 @@ import javax.inject.Named;
     version = "v1",
     namespace = @ApiNamespace(
         ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER,
-        packagePath = Constants.API_PACKAGE_PATH
-    )
+        ownerName = Constants.API_OWNER)
 )
 @ApiClass(
     resource = "votes",
     clientIds = {
         Constants.ANDROID_CLIENT_ID,
         Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID},
-    audiences = {Constants.AUDIENCE_ID},
-    authenticators = {
-        FirebaseAuthenticator.class
-    }
+        Constants.WEB_CLIENT_ID
+    },
+    audiences = { Constants.AUDIENCE_ID },
+    authenticators = { FirebaseAuthenticator.class }
 )
 public class VoteEndpoint {
 
@@ -62,8 +61,7 @@ public class VoteEndpoint {
     EndpointsValidator.create()
         .on(BadRequestValidator.create(postId, "postId is required."))
         .on(AuthValidator.create(user))
-        .on(NotFoundValidator.create(postId, "Invalid postId."))
-        .validate();
+        .on(NotFoundValidator.create(postId, "Invalid postId."));
 
     voteController.vote(postId, direction, user);
   }
@@ -88,8 +86,7 @@ public class VoteEndpoint {
     EndpointsValidator.create()
         .on(BadRequestValidator.create(commentId, "commentId is required."))
         .on(AuthValidator.create(user))
-        .on(NotFoundValidator.create(commentId, "Invalid commentId."))
-        .validate();
+        .on(NotFoundValidator.create(commentId, "Invalid commentId."));
 
     voteController.vote(commentId, direction, user);
   }

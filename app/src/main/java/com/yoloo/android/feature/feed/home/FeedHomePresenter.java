@@ -2,6 +2,7 @@ package com.yoloo.android.feature.feed.home;
 
 import android.support.annotation.NonNull;
 import android.util.Pair;
+
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
@@ -24,11 +25,13 @@ import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.sorter.CategorySorter;
 import com.yoloo.android.framework.MvpPresenter;
 import com.yoloo.android.util.Group;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import java.util.ArrayList;
-import java.util.List;
 import timber.log.Timber;
 
 class FeedHomePresenter extends MvpPresenter<FeedHomeView> {
@@ -64,15 +67,15 @@ class FeedHomePresenter extends MvpPresenter<FeedHomeView> {
         .zip(
             getMeObservable().doOnNext(accountRealm -> Timber.d("Me: %s", accountRealm)),
             getTrendingCategoriesObservable()
-                .doOnNext(listOptional -> Timber.d("Trending cats: %s", listOptional.get())),
+                .doOnNext(listOptional -> Timber.d("Trending cats: %s", listOptional.get().size())),
             getTravelNewsObservable()
-                .doOnNext(listOptional -> Timber.d("Travel news: %s", listOptional.get())),
+                .doOnNext(listOptional -> Timber.d("Travel news: %s", listOptional.get().size())),
             getBountyButtonObservable()
                 .doOnNext(objectOptional -> Timber.d("Button: %s", objectOptional.get())),
             getFeedObservable()
                 .doOnNext(response -> Timber.d("Posts size: %s", response.getData().size())),
             getNewUsersObservable()
-                .doOnNext(listOptional -> Timber.d("New users: %s", listOptional.get())),
+                .doOnNext(listOptional -> Timber.d("New users: %s", listOptional.get().size())),
             Group.Of6::create)
         .doOnNext(group -> {
           getView().onAccountLoaded(group.first);

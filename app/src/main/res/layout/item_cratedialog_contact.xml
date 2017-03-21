@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="?attr/listPreferredItemHeight"
+  android:foreground="?attr/selectableItemBackground">
+
+  <ImageView
+    android:id="@+id/iv_createdialog_contact_avatar"
+    android:layout_width="@dimen/avatar_bounds"
+    android:layout_height="@dimen/avatar_bounds"
+    android:layout_gravity="center"
+    android:layout_marginLeft="16dp"
+    android:layout_marginStart="@dimen/padding_normal"
+    android:scaleType="centerCrop"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintVertical_bias="0.5"
+    tools:src="@drawable/login_bg" />
+
+  <View
+    android:id="@+id/view_createdialog_contact_checkmark"
+    android:layout_width="20dp"
+    android:layout_height="20dp"
+    android:layout_marginBottom="0dp"
+    android:layout_marginRight="8dp"
+    android:background="@drawable/layer_checkmark"
+    android:visibility="gone"
+    app:layout_constraintBottom_toBottomOf="@+id/iv_createdialog_contact_avatar"
+    app:layout_constraintRight_toLeftOf="@+id/tv_createdialog_contact_username"
+    tools:visibility="visible" />
+
+  <TextView
+    android:id="@+id/tv_createdialog_contact_username"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:layout_marginEnd="@dimen/padding_normal"
+    android:layout_marginLeft="16dp"
+    android:layout_marginStart="@dimen/padding_normal"
+    android:ellipsize="end"
+    android:maxLines="1"
+    android:textAppearance="@style/TextAppearance.AppCompat.Title"
+    app:layout_constraintBottom_toBottomOf="@+id/iv_createdialog_contact_avatar"
+    app:layout_constraintLeft_toRightOf="@+id/iv_createdialog_contact_avatar"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toTopOf="@+id/iv_createdialog_contact_avatar"
+    tools:text="@string/lorem_ipsum" />
+
+</android.support.constraint.ConstraintLayout>

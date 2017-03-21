@@ -7,7 +7,7 @@ import com.bluelinelabs.conductor.Controller;
 
 public interface IdpProvider {
   /**
-   * Retrieves the name of the IDP, for display on-screen.
+   * Retrieves the name from the IDP, for display on-screen.
    */
   String getName(Context context);
 

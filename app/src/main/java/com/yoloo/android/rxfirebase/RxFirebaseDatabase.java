@@ -3,7 +3,7 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * You may obtain a copy from the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -55,9 +55,9 @@ public class RxFirebaseDatabase {
    * This methods observes data saving with push in order to generateAll the key
    * automatically according to Firebase hashing key rules.
    *
-   * @param firebaseRef {@link Query} this is reference of a Firebase Query
+   * @param firebaseRef {@link Query} this is reference from a Firebase Query
    * @param object {@link Object} whatever object we want to save
-   * @return an {@link Observable} of the generated key after the object persistence
+   * @return an {@link Observable} from the generated key after the object persistence
    */
   public Observable<String> observeSetValuePush(final DatabaseReference firebaseRef,
       final Object object) {
@@ -80,11 +80,11 @@ public class RxFirebaseDatabase {
 
   /**
    * This methods observes a firebase query and returns back
-   * an Observable of the {@link DataSnapshot}
+   * an Observable from the {@link DataSnapshot}
    * when the firebase client uses a {@link ValueEventListener}
    *
-   * @param firebaseRef {@link Query} this is reference of a Firebase Query
-   * @return an {@link Observable<DataSnapshot>} of datasnapshot to use
+   * @param firebaseRef {@link Query} this is reference from a Firebase Query
+   * @return an {@link Observable<DataSnapshot>} from datasnapshot to use
    */
   public Observable<DataSnapshot> observeValueEvent(final Query firebaseRef) {
     return Observable.create(e -> {
@@ -106,11 +106,11 @@ public class RxFirebaseDatabase {
 
   /**
    * This methods observes a firebase query and returns back ONCE
-   * an Observable of the {@link DataSnapshot}
+   * an Observable from the {@link DataSnapshot}
    * when the firebase client uses a {@link ValueEventListener}
    *
-   * @param firebaseRef {@link Query} this is reference of a Firebase Query
-   * @return an {@link Observable} of datasnapshot to use
+   * @param firebaseRef {@link Query} this is reference from a Firebase Query
+   * @return an {@link Observable} from datasnapshot to use
    */
   public Observable<DataSnapshot> observeSingleValue(final Query firebaseRef) {
     return Observable.create(e -> {
@@ -134,11 +134,11 @@ public class RxFirebaseDatabase {
 
   /**
    * This methods observes a firebase query and returns back
-   * an Observable of the {@link DataSnapshot}
+   * an Observable from the {@link DataSnapshot}
    * when the firebase client uses a {@link ChildEventListener}
    *
-   * @param firebaseRef {@link Query} this is reference of a Firebase Query
-   * @return an {@link Observable} of {@link FirebaseChildEvent} to use
+   * @param firebaseRef {@link Query} this is reference from a Firebase Query
+   * @return an {@link Observable} from {@link FirebaseChildEvent} to use
    */
   public Observable<FirebaseChildEvent> observeChildEvent(final Query firebaseRef) {
     return Observable.create(e -> {
@@ -181,8 +181,8 @@ public class RxFirebaseDatabase {
   /**
    * Creates an observable only for the child changed method
    *
-   * @param firebaseRef {@link Query} this is reference of a Firebase Query
-   * @return an {@link Observable} of {@link FirebaseChildEvent} to use
+   * @param firebaseRef {@link Query} this is reference from a Firebase Query
+   * @return an {@link Observable} from {@link FirebaseChildEvent} to use
    */
   public Observable<FirebaseChildEvent> observeChildAdded(final Query firebaseRef) {
     return observeChildEvent(firebaseRef).filter(
@@ -192,8 +192,8 @@ public class RxFirebaseDatabase {
   /**
    * Creates an observable only for the child changed method
    *
-   * @param firebaseRef {@link Query} this is reference of a Firebase Query
-   * @return an {@link Observable} of {@link FirebaseChildEvent} to use
+   * @param firebaseRef {@link Query} this is reference from a Firebase Query
+   * @return an {@link Observable} from {@link FirebaseChildEvent} to use
    */
   public Observable<FirebaseChildEvent> observeChildChanged(final Query firebaseRef) {
     return observeChildEvent(firebaseRef).filter(
@@ -203,8 +203,8 @@ public class RxFirebaseDatabase {
   /**
    * Creates an observable only for the child removed method
    *
-   * @param firebaseRef {@link Query} this is reference of a Firebase Query
-   * @return an {@link Observable} of {@link FirebaseChildEvent} to use
+   * @param firebaseRef {@link Query} this is reference from a Firebase Query
+   * @return an {@link Observable} from {@link FirebaseChildEvent} to use
    */
   public Observable<FirebaseChildEvent> observeChildRemoved(final Query firebaseRef) {
     return observeChildEvent(firebaseRef).filter(
@@ -214,8 +214,8 @@ public class RxFirebaseDatabase {
   /**
    * Creates an observable only for the child removed method
    *
-   * @param firebaseRef {@link Query} this is reference of a Firebase Query
-   * @return an {@link Observable} of {@link FirebaseChildEvent} to use
+   * @param firebaseRef {@link Query} this is reference from a Firebase Query
+   * @return an {@link Observable} from {@link FirebaseChildEvent} to use
    */
   public Observable<FirebaseChildEvent> observeChildMoved(final Query firebaseRef) {
     return observeChildEvent(firebaseRef).filter(
@@ -223,7 +223,7 @@ public class RxFirebaseDatabase {
   }
 
   /**
-   * Functions which filters a stream of {@link Observable} according to firebase
+   * Functions which filters a stream from {@link Observable} according to firebase
    * child event type
    *
    * @param type {@link FirebaseChildEvent}

@@ -9,8 +9,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import butterknife.BindColor;
-import butterknife.BindView;
+
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.feature.base.BaseController;
@@ -18,6 +17,9 @@ import com.yoloo.android.ui.widget.ElasticDragDismissFrameLayout;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.VersionUtil;
 import com.yoloo.android.util.ViewUtils;
+
+import butterknife.BindColor;
+import butterknife.BindView;
 import uk.co.senab.photoview.PhotoView;
 
 public class PhotoController extends BaseController {
@@ -63,6 +65,10 @@ public class PhotoController extends BaseController {
     setHasOptionsMenu(true);
     setupToolbar();
 
+    if (VersionUtil.hasL()) {
+      ivPhoto.setTransitionName("image.test");
+    }
+
     Glide.with(getActivity())
         .load(getArgs().getString(KEY_PHOTO_URL))
         .into(ivPhoto);
@@ -75,20 +81,13 @@ public class PhotoController extends BaseController {
     }
   }
 
-  @Override protected void onDestroy() {
-    super.onDestroy();
-    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
-  }
-
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     final int itemId = item.getItemId();
-    switch (itemId) {
-      case android.R.id.home:
-        getRouter().handleBack();
-        return true;
-      default:
-        return super.onOptionsItemSelected(item);
+    if (itemId == android.R.id.home) {
+      getRouter().handleBack();
+      return true;
     }
+    return super.onOptionsItemSelected(item);
   }
 
   private void setupToolbar() {

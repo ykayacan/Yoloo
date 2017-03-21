@@ -1,5 +1,6 @@
 package com.yoloo.android.data.repository.user;
 
+import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -9,6 +10,7 @@ import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -39,8 +41,8 @@ public class UserRepository {
     return instance;
   }
 
-  public Single<AccountRealm> getUser(@Nonnull String userId) {
-    return remoteDataStore.get(userId)
+  public Observable<AccountRealm> getUser(@Nonnull String userId) {
+    Observable<AccountRealm> remoteObservable = remoteDataStore.get(userId)
         .subscribeOn(Schedulers.io())
         .map(account -> {
           FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -49,25 +51,53 @@ public class UserRepository {
           }
 
           return account;
-        });
+        })
+        .doOnSuccess(account -> {
+          if (account.isMe()) {
+            diskDataStore.add(account);
+          }
+        })
+        .toObservable();
+
+    Observable<AccountRealm> diskObservable = diskDataStore.get(userId)
+        .subscribeOn(Schedulers.io())
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .toObservable();
+
+    return Observable.mergeDelayError(diskObservable, remoteObservable);
   }
 
-  public Single<AccountRealm> getMe() {
-    return remoteDataStore.getMe().doOnSuccess(diskDataStore::add).subscribeOn(Schedulers.io());
+  public Observable<AccountRealm> getMe() {
+    Observable<AccountRealm> diskObservable = diskDataStore.getMe()
+        .subscribeOn(Schedulers.io())
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .toObservable();
+
+    Observable<AccountRealm> remoteObservable = remoteDataStore.getMe()
+        .doOnSuccess(diskDataStore::add)
+        .subscribeOn(Schedulers.io())
+        .toObservable();
+
+    return Observable.mergeDelayError(diskObservable, remoteObservable);
   }
 
   public Single<AccountRealm> getLocalMe() {
-    return diskDataStore.getMe().subscribeOn(Schedulers.io());
+    return diskDataStore.getMe().subscribeOn(Schedulers.io())
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .toSingle();
   }
 
-  public Single<AccountRealm> addUser(@Nonnull AccountRealm account) {
+  public Single<AccountRealm> registerUser(@Nonnull AccountRealm account) {
     return remoteDataStore.add(account)
         .doOnSuccess(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }
 
-  public Single<AccountRealm> updateUser(@Nonnull AccountRealm account) {
-    return remoteDataStore.add(account)
+  public Single<AccountRealm> updateMe(@Nonnull AccountRealm account) {
+    return remoteDataStore.update(account)
         .doOnSuccess(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }
@@ -75,6 +105,10 @@ public class UserRepository {
   public Observable<Response<List<AccountRealm>>> searchUser(@Nonnull String query,
       @Nullable String cursor, int limit) {
     return remoteDataStore.list(query, cursor, limit).subscribeOn(Schedulers.io());
+  }
+
+  public Single<Boolean> checkUsername(@Nonnull String username) {
+    return remoteDataStore.checkUsername(username);
   }
 
   public Observable<Response<List<AccountRealm>>> listNewUsers(@Nullable String cursor, int limit) {
@@ -88,7 +122,13 @@ public class UserRepository {
 
   public Observable<Response<List<AccountRealm>>> listFollowers(@Nonnull String userId,
       @Nullable String cursor, int limit) {
-    return remoteDataStore.listFollowers(userId, cursor, limit).subscribeOn(Schedulers.io());
+    List<AccountRealm> realms = new ArrayList<>();
+    for (int i = 0; i < 5; i++) {
+      realms.add(AccountFaker.generateOne());
+    }
+    return Observable.just(Response.create(realms, null));
+
+    //return remoteDataStore.listFollowers(userId, cursor, limit).subscribeOn(Schedulers.io());
   }
 
   public Observable<Response<List<AccountRealm>>> listFollowings(@Nonnull String userId,
@@ -96,7 +136,7 @@ public class UserRepository {
     return remoteDataStore.listFollowings(userId, cursor, limit).subscribeOn(Schedulers.io());
   }
 
-  public Completable follow(@Nonnull String userId, int direction) {
-    return direction == 1 ? remoteDataStore.follow(userId) : remoteDataStore.unfollow(userId);
+  public Completable relationship(@Nonnull String userId, int direction) {
+    return remoteDataStore.relationship(userId, direction == 1 ? "FOLLOW" : "UNFOLLOW");
   }
 }

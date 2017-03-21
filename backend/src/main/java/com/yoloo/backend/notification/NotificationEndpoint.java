@@ -12,6 +12,7 @@ import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
 import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
 import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
+
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
@@ -20,37 +21,32 @@ import javax.inject.Named;
     version = "v1",
     namespace = @ApiNamespace(
         ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER,
-        packagePath = Constants.API_PACKAGE_PATH
-    )
+        ownerName = Constants.API_OWNER)
 )
 @ApiClass(
     resource = "notifications",
     clientIds = {
         Constants.ANDROID_CLIENT_ID,
         Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID},
-    audiences = {Constants.AUDIENCE_ID,},
-    authenticators = {
-        FirebaseAuthenticator.class
-    }
+        Constants.WEB_CLIENT_ID
+    },
+    audiences = { Constants.AUDIENCE_ID, },
+    authenticators = { FirebaseAuthenticator.class }
 )
 public class NotificationEndpoint {
 
   private final NotificationController notificationController = NotificationController.create();
 
   @ApiMethod(
-      name = "accounts.notifications.list",
-      path = "accounts/notifications",
+      name = "users.me.notifications.list",
+      path = "users/me/notifications",
       httpMethod = ApiMethod.HttpMethod.GET)
   public CollectionResponse<Notification> list(
       @Nullable @Named("cursor") String cursor,
       @Nullable @Named("limit") Integer limit,
       User user) throws ServiceException {
 
-    EndpointsValidator.create()
-        .on(AuthValidator.create(user))
-        .validate();
+    EndpointsValidator.create().on(AuthValidator.create(user));
 
     return notificationController.listNotifications(
         Optional.fromNullable(cursor),

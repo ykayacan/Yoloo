@@ -10,10 +10,13 @@ import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.AdminAuthenticator;
+import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
 import com.yoloo.backend.category.sort_strategy.CategorySorter;
 import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
 import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
 import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
+
+import java.util.Collection;
 
 import javax.annotation.Nullable;
 import javax.inject.Named;
@@ -23,9 +26,7 @@ import javax.inject.Named;
     version = "v1",
     namespace = @ApiNamespace(
         ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER,
-        packagePath = Constants.API_PACKAGE_PATH
-    )
+        ownerName = Constants.API_OWNER)
 )
 @ApiClass(
     resource = "categories",
@@ -63,8 +64,7 @@ public class CategoryEndpoint {
     EndpointsValidator.create()
         .on(BadRequestValidator.create(displayName, "displayName is required."))
         .on(BadRequestValidator.create(imageName, "imageName is required."))
-        .on(AuthValidator.create(user))
-        .validate();
+        .on(AuthValidator.create(user));
 
     return categoryController.insertCategory(displayName, imageName);
   }
@@ -89,8 +89,8 @@ public class CategoryEndpoint {
       User user) throws ServiceException {
 
     EndpointsValidator.create()
-        .on(AuthValidator.create(user))
-        .validate();
+        .on(BadRequestValidator.create(categoryId, "categoryId is required."))
+        .on(AuthValidator.create(user));
 
     return categoryController.updateCategory(categoryId, Optional.fromNullable(displayName));
   }
@@ -120,5 +120,26 @@ public class CategoryEndpoint {
         Optional.fromNullable(sorter),
         Optional.fromNullable(limit),
         Optional.fromNullable(cursor));
+  }
+
+  /**
+   * List interested categories collection.
+   *
+   * @param userId the user id
+   * @param user the user
+   * @return the collection
+   * @throws ServiceException the service exception
+   */
+  @ApiMethod(
+      name = "categories.interestedCategories",
+      path = "categories/{userId}/interestedCategories",
+      httpMethod = ApiMethod.HttpMethod.GET,
+      authenticators = FirebaseAuthenticator.class)
+  public Collection<Category> listInterestedCategories(@Named("userId") String userId, User user)
+      throws ServiceException {
+
+    EndpointsValidator.create().on(AuthValidator.create(user));
+
+    return categoryController.listInterestedCategories(userId);
   }
 }

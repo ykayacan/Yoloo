@@ -2,34 +2,40 @@ package com.yoloo.backend.media;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.api.server.spi.response.CollectionResponse;
 import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.ServingUrlOptions;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.storage.Blob;
-import com.google.cloud.storage.Bucket;
-import com.google.cloud.storage.BucketInfo;
+import com.google.cloud.storage.BlobId;
+import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
-import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.googlecode.objectify.Key;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.config.MediaConfig;
-import com.yoloo.backend.util.RandomGenerator;
-import io.reactivex.Observable;
+import com.yoloo.backend.media.dto.MediaDTO;
+import com.yoloo.backend.media.transformer.MediaTransformer;
+import com.yoloo.backend.util.ServerConfig;
+
+import org.apache.commons.fileupload.FileItemIterator;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.UUID;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import io.reactivex.Observable;
+import ix.Ix;
 import lombok.extern.java.Log;
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import static com.yoloo.backend.OfyService.ofy;
 
@@ -39,12 +45,9 @@ public class UploadServlet extends HttpServlet {
   private static final ObjectWriter OW =
       new ObjectMapper().writer().withDefaultPrettyPrinter();
 
-  private static final String PARAM_ACCOUNT_ID = "accountId";
+  private static final String PARAM_USER_ID = "userId";
 
-  private static final ServletFileUpload FILE_UPLOAD = new ServletFileUpload();
-
-  private static final Storage.BucketTargetOption BUCKET_OPTION =
-      Storage.BucketTargetOption.predefinedAcl(Storage.PredefinedAcl.PUBLIC_READ);
+  private static final MediaTransformer TRANSFORMER = new MediaTransformer();
 
   private final ImagesService imagesService = ImagesServiceFactory.getImagesService();
 
@@ -58,105 +61,106 @@ public class UploadServlet extends HttpServlet {
 
   private void parseRequest(final HttpServletRequest req, HttpServletResponse resp)
       throws IOException {
-
-    final String accountId = req.getParameter(PARAM_ACCOUNT_ID);
-
     final PrintWriter out = resp.getWriter();
 
-    // Check if the request is actually a multipart/form-data request.
-    Preconditions.checkArgument(ServletFileUpload.isMultipartContent(req),
-        "This isn't a multipart request.");
+    final String userId = req.getParameter(PARAM_USER_ID);
 
-    final Key<Account> accountKey =
-        Preconditions.checkNotNull(ofy().load().type(Account.class)
-                .filterKey(Key.<Account>create(accountId)).keys().first().now(),
-            "Account id is invalid: %s", accountId);
+    if (Strings.isNullOrEmpty(userId)) {
+      printErrorResponse("userId can not be null.", out);
+      return;
+    }
 
-    Observable
-        .create(e -> {
-          try {
-            FileItemIterator it = FILE_UPLOAD.getItemIterator(req);
+    if (!ServletFileUpload.isMultipartContent(req)) {
+      printErrorResponse("Request must be multipart/form-data.", out);
+      return;
+    }
 
-            while (it.hasNext()) {
-              e.onNext(it.next());
-            }
-            e.onComplete();
-          } catch (FileUploadException t) {
-            e.onError(t);
-          }
-        })
-        .cast(FileItemStream.class)
-        //.filter(this::filterFileStream)
-        .map(fileItemStream -> {
-          final InputStream is = fileItemStream.openStream();
-          final String mime = fileItemStream.getContentType();
+    try {
+      Key.<Account>create(userId);
+    } catch (Exception e) {
+      printErrorResponse("Invalid userId.", out);
+      return;
+    }
 
-          String bucketName = MediaConfig.MEDIA_BUCKET;
-          log.info("Bucket Name: " + bucketName);
+    final Key<Account> accountKey = ofy().load().type(Account.class)
+        .filterKey(Key.<Account>create(userId))
+        .keys()
+        .first()
+        .now();
 
-          Storage storage = StorageOptions.newBuilder()
-              .setCredentials(
-                  ServiceAccountCredentials.fromStream(getServletContext().getResourceAsStream(
-                      Constants.FIREBASE_SECRET_JSON_PATH)))
+    if (accountKey == null) {
+      printErrorResponse("Invalid userId.", out);
+      return;
+    }
+
+    final ServletFileUpload upload = new ServletFileUpload();
+
+    Observable.fromCallable(() -> upload.getItemIterator(req))
+        .filter(FileItemIterator::hasNext)
+        .map(FileItemIterator::next)
+        .filter(file -> MimeUtil.isPhoto(file.getContentType())
+            && !file.isFormField()
+            && !Strings.isNullOrEmpty(file.getName()))
+        .flatMap(file -> {
+          final String mime = file.getContentType();
+
+          final ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(
+              getServletContext().getResourceAsStream(Constants.FIREBASE_SECRET_JSON_PATH));
+
+          final Storage storage = StorageOptions.newBuilder()
+              .setCredentials(credentials)
               .build()
               .getService();
 
-          /*Iterable<Blob> it = storage.list("yoloo-151719.appspot.com").getValues();
+          final String extension = MediaUtil.extractExtension(mime);
 
-          for (Blob blob : it) {
-            System.out.println(blob.getName());
-          }*/
+          final String filePath = MediaConfig.USER_MEDIA_BUCKET
+              + "/"
+              + accountKey.toWebSafeString()
+              + "/"
+              + UUID.randomUUID().toString()
+              + "."
+              + extension;
 
-          /*BlobId blobId = BlobId.of(bucketName, RandomGenerator.INSTANCE.generate());
-          BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(mime).build();
-          Blob blob = storage.create(blobInfo, is, BUCKET_OPTION);*/
+          BlobId blobId = BlobId.of(MediaConfig.BASE_URL, filePath);
+          BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+              .setContentType(mime)
+              .build();
 
-          Bucket bucket = storage.create(BucketInfo.of(bucketName), BUCKET_OPTION);
-          Blob blob = bucket.create(RandomGenerator.INSTANCE.generate(), is, mime);
+          Blob blob = storage.create(blobInfo, file.openStream());
 
-          /*Bucket bucket = MediaService.STORAGE.create(BucketInfo.of(bucketName), BUCKET_OPTION);
-          Blob blob = bucket.create(RandomGenerator.INSTANCE.generate(), is, mime);*/
-
-          log.info("Bucket:" + blob.toString());
+          final String path = MediaConfig.STORAGE_PREFIX + blob.getBucket() + "/" + blob.getName();
 
           ServingUrlOptions options = ServingUrlOptions.Builder
-              .withGoogleStorageFileName("/gs/" + blob.getBucket() + "/" + blob.getName());
+              .withGoogleStorageFileName(path)
+              .secureUrl(true);
 
-          return Media.builder()
+          Media media = Media.builder()
               .id(blob.getBucket() + "/" + blob.getName())
               .parent(accountKey)
               .mime(mime)
-              .url(imagesService.getServingUrl(options))
+              .url(ServerConfig.isDev() ? "" : imagesService.getServingUrl(options))
               .build();
+
+          return Observable.just(media);
         })
-        .doOnNext(media -> log.info("Media: " + media.toString()))
-        .toList(2)
-        .subscribe(medias -> {
-          ofy().save().entities(medias).now();
-
-          printSuccessResponse(medias, out);
-        }, throwable -> {
-          System.out.println(throwable);
-          printErrorResponse(throwable.getMessage(), out);
-        });
-  }
-
-  private boolean filterFileStream(FileItemStream fileItemStream) {
-    return !fileItemStream.isFormField() &&
-        !MimeUtil.isValidMime(fileItemStream.getContentType()) /*&&
-        fileItemStream.getName().length() <= 0*/;
+        .toList()
+        .doOnSuccess(medias -> ofy().transact(() -> ofy().save().entities(medias).now()))
+        .map(medias -> Ix.from(medias).map(TRANSFORMER::transformTo).toList())
+        .subscribe(mediaDTOS -> printSuccessResponse(mediaDTOS, out),
+            throwable -> printErrorResponse(throwable.getMessage(), out));
   }
 
   private void setResponse(HttpServletResponse resp) {
     resp.setContentType("application/json");
-    resp.setHeader("Cache-Control", "nocache");
+    resp.setHeader("Cache-Control", "no-cache");
     resp.setCharacterEncoding("UTF-8");
   }
 
-  private void printSuccessResponse(final Collection<Media> collection, final PrintWriter out)
+  private void printSuccessResponse(final Collection<MediaDTO> collection, final PrintWriter out)
       throws IOException {
     final String json = OW.writeValueAsString(
-        WrappedCollectionResponse.<Media>builder()
+        CollectionResponse.<MediaDTO>builder()
             .setItems(collection)
             .build());
 
@@ -165,10 +169,11 @@ public class UploadServlet extends HttpServlet {
 
   private void printErrorResponse(final String message, final PrintWriter out)
       throws IOException {
-    final String json = OW.writeValueAsString(WrappedErrorResponse.builder()
-        .code(HttpServletResponse.SC_BAD_REQUEST)
-        .message(message)
-        .build());
+    final String json = OW.writeValueAsString(
+        WrappedErrorResponse.builder()
+            .code(HttpServletResponse.SC_BAD_REQUEST)
+            .message(message)
+            .build());
 
     out.print(json);
   }

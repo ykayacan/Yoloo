@@ -8,11 +8,15 @@ import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.sorter.PostSorter;
 import com.yoloo.android.framework.MvpPresenter;
 import com.yoloo.android.util.Pair;
+
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import java.util.List;
-import javax.annotation.Nonnull;
+import timber.log.Timber;
 
 class FeedGlobalPresenter extends MvpPresenter<FeedGlobalView> {
 
@@ -26,8 +30,8 @@ class FeedGlobalPresenter extends MvpPresenter<FeedGlobalView> {
     this.userRepository = userRepository;
   }
 
-  void loadPostsByCategory(boolean pullToRefresh, String categoryName, PostSorter sorter,
-      int limit) {
+  void loadPostsByCategory(boolean pullToRefresh, @Nonnull String categoryName,
+      @Nonnull PostSorter sorter, int limit) {
     getView().onLoading(pullToRefresh);
 
     shouldResetCursor(pullToRefresh);
@@ -42,7 +46,8 @@ class FeedGlobalPresenter extends MvpPresenter<FeedGlobalView> {
     getDisposable().add(d);
   }
 
-  void loadPostsByTag(boolean pullToRefresh, String tagName, PostSorter sorter, int limit) {
+  void loadPostsByTag(boolean pullToRefresh, @Nonnull String tagName, @Nonnull PostSorter sorter,
+      int limit) {
     getView().onLoading(pullToRefresh);
 
     shouldResetCursor(pullToRefresh);
@@ -57,13 +62,13 @@ class FeedGlobalPresenter extends MvpPresenter<FeedGlobalView> {
     getDisposable().add(d);
   }
 
-  void loadPostsByUser(boolean pullToRefresh, String userId, boolean commented, int limit) {
+  void loadPostsByUser(boolean pullToRefresh, @Nonnull String userId, int limit) {
     getView().onLoading(pullToRefresh);
 
     shouldResetCursor(pullToRefresh);
 
     Observable<Response<List<PostRealm>>> postsObservable =
-        postRepository.listByUser(userId, commented, cursor, limit)
+        postRepository.listByUser(userId, cursor, limit)
             .observeOn(AndroidSchedulers.mainThread(), true);
 
     Disposable d = Observable.zip(getUserObservable(), postsObservable, Pair::create)
@@ -141,6 +146,7 @@ class FeedGlobalPresenter extends MvpPresenter<FeedGlobalView> {
 
   private void showData(Pair<AccountRealm, Response<List<PostRealm>>> pair) {
     if (pair.second.getData().isEmpty()) {
+      Timber.d("Empty()");
       getView().onEmpty();
     } else {
       getView().onAccountLoaded(pair.first);

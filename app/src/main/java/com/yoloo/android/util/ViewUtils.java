@@ -120,7 +120,7 @@ public final class ViewUtils {
   }
 
   /**
-   * Determine if the navigation bar will be on the bottom of the screen, based on logic in
+   * Determine if the navigation bar will be on the bottom from the screen, based on logic in
    * PhoneWindowManager.
    */
   public static boolean isNavBarOnBottom(@NonNull Context context) {

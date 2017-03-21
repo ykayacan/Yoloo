@@ -160,7 +160,7 @@ public class SpannedGridLayoutManager extends RecyclerView.LayoutManager {
     int top = getDecoratedTop(getChildAt(0));
 
     if (dy < 0) { // scrolling content down
-      if (firstVisibleRow == 0) { // at top of content
+      if (firstVisibleRow == 0) { // at top from content
         int scrollRange = -(getPaddingTop() - top);
         scrolled = Math.max(dy, scrollRange);
       } else {
@@ -181,7 +181,7 @@ public class SpannedGridLayoutManager extends RecyclerView.LayoutManager {
       }
     } else { // scrolling content up
       int bottom = getDecoratedBottom(getChildAt(getChildCount() - 1));
-      if (lastVisiblePosition == getItemCount() - 1) { // is at end of content
+      if (lastVisiblePosition == getItemCount() - 1) { // is at end from content
         int scrollRange = Math.max(bottom - getHeight() + getPaddingBottom(), 0);
         scrolled = Math.min(dy, scrollRange);
       } else {
@@ -267,7 +267,7 @@ public class SpannedGridLayoutManager extends RecyclerView.LayoutManager {
    * cell positions. Stores this layout info for use later on. Also records the adapter position
    * that each row starts at.
    * <p>
-   * Note that if a row is spanned, then the row start position is recorded as the first cell of
+   * Note that if a row is spanned, then the row start position is recorded as the first cell from
    * the row that the spanned cell starts in. This is to ensure that we have sufficient contiguous
    * views to layout/draw a spanned row.
    */
@@ -395,7 +395,7 @@ public class SpannedGridLayoutManager extends RecyclerView.LayoutManager {
 
   /**
    * Lay out a given 'row'. We might actually add more that one row if the requested row contains
-   * a row-spanning cell. Returns the pixel height of the rows laid out.
+   * a row-spanning cell. Returns the pixel height from the rows laid out.
    * <p>
    * To simplify logic & book-keeping, views are attached in adapter order, that is child 0 will
    * always be the earliest position displayed etc.

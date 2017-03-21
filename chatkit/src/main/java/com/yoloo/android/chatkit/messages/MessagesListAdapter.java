@@ -66,27 +66,26 @@ public class MessagesListAdapter<MESSAGE extends IMessage>
   /**
    * For default list item layout and view holder.
    *
-   * @param senderId identifier of sender.
    * @param imageLoader image loading method.
    */
-  public MessagesListAdapter(String senderId, ImageLoader imageLoader) {
-    this(senderId, new HoldersConfig(), imageLoader);
+  public MessagesListAdapter(ImageLoader imageLoader) {
+    this(new HoldersConfig(), imageLoader);
   }
 
   /**
    * For default list item layout and view holder.
-   *
-   * @param senderId identifier of sender.
-   * @param holders custom layouts and view holders. See {@link HoldersConfig} documentation for
+   *  @param holders custom layouts and view holders. See {@link HoldersConfig} documentation for
    * details
    * @param imageLoader image loading method.
    */
-  public MessagesListAdapter(String senderId, HoldersConfig holders,
-      ImageLoader imageLoader) {
-    this.senderId = senderId;
+  public MessagesListAdapter(HoldersConfig holders, ImageLoader imageLoader) {
     this.holders = holders;
     this.imageLoader = imageLoader;
     this.items = new ArrayList<>();
+  }
+
+  public void setSenderId(String senderId) {
+    this.senderId = senderId;
   }
 
   @Override public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -609,8 +608,7 @@ public class MessagesListAdapter<MESSAGE extends IMessage>
 
   /**
    * Configuration object for passing custom layouts and view holders into adapter.
-   * You need to pass it into {@link MessagesListAdapter#MessagesListAdapter(String, HoldersConfig,
-   * ImageLoader)} to apply your changes.
+   * You need to pass it into {@link MessagesListAdapter#MessagesListAdapter(HoldersConfig, ImageLoader)} to apply your changes.
    */
   public static class HoldersConfig {
 

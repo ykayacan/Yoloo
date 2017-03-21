@@ -46,14 +46,17 @@ public class UserDiskDataStore {
     });
   }
 
-  public Single<AccountRealm> getMe() {
+  public Single<Optional<AccountRealm>> getMe() {
     return Single.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 
-      AccountRealm account = realm.copyFromRealm(
-          realm.where(AccountRealm.class)
+      AccountRealm result = realm.where(AccountRealm.class)
               .equalTo(AccountRealmFields.ME, true)
-              .findFirst());
+              .findFirst();
+
+      Optional<AccountRealm> account = result == null
+          ? Optional.empty()
+          : Optional.of(realm.copyFromRealm(result));
 
       realm.close();
 

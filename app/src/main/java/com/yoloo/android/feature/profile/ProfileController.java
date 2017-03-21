@@ -19,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -27,6 +28,7 @@ import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.Router;
 import com.bluelinelabs.conductor.RouterTransaction;
+import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bluelinelabs.conductor.support.RouterPagerAdapter;
 import com.bumptech.glide.Glide;
@@ -35,6 +37,7 @@ import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
 import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
+import com.yoloo.android.feature.category.CategoryController;
 import com.yoloo.android.feature.feed.global.FeedGlobalController;
 import com.yoloo.android.feature.follow.FollowController;
 import com.yoloo.android.feature.profile.photos.PhotosController;
@@ -54,6 +57,7 @@ import java.util.List;
 import butterknife.BindColor;
 import butterknife.BindString;
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
 import timber.log.Timber;
 
@@ -66,7 +70,9 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   @BindView(R.id.iv_profile_edit) ImageView ivEdit;
   @BindView(R.id.iv_profile_avatar) ImageView ivProfileAvatar;
   @BindView(R.id.iv_profile_bg) ImageView ivProfileBg;
+  @BindView(R.id.viewstub_profile_info) ViewStub stubInfo;
   @BindView(R.id.tv_profile_realname) TextView tvRealname;
+  @BindView(R.id.tv_profile_username) TextView tvUsername;
   @BindView(R.id.tv_profile_level) TextView tvLevel;
   @BindView(R.id.tv_profile_posts) TextView tvPosts;
   @BindView(R.id.tv_profile_followers) TextView tvFollowers;
@@ -97,9 +103,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   }
 
   public static ProfileController create(@NonNull String userId) {
-    final Bundle bundle = new BundleBuilder()
-        .putString(KEY_USER_ID, userId)
-        .build();
+    final Bundle bundle = new BundleBuilder().putString(KEY_USER_ID, userId).build();
 
     return new ProfileController(bundle);
   }
@@ -111,7 +115,6 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
   @Override protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
-    ViewUtils.setStatusBarColor(getActivity(), Color.BLACK);
     setHasOptionsMenu(true);
     setupToolbar();
 
@@ -119,9 +122,10 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
     List<Pair<String, Controller>> pairs = new ArrayList<>(4);
     pairs.add(Pair.create(profilePostsTabString, FeedGlobalController.ofUser(userId, false)));
-    pairs.add(Pair.create(profilePhotosTabString, PhotosController.create()));
-    pairs.add(Pair.create(profileCountriesTabString, PhotosController.create()));
-    pairs.add(Pair.create(profileInterestsTabString, PhotosController.create()));
+    pairs.add(Pair.create(profilePhotosTabString, PhotosController.create(userId)));
+    pairs.add(Pair.create(profileCountriesTabString, PhotosController.create(userId)));
+    pairs.add(Pair.create(profileInterestsTabString, CategoryController.create(userId, 3)));
+    pairs.add(Pair.create(profileInterestsTabString, PhotosController.create(userId)));
 
     final RouterPagerAdapter pagerAdapter = new ProfilePagerAdapter(this, pairs);
 
@@ -130,18 +134,17 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   }
 
   @Override protected void onAttach(@NonNull View view) {
-    super.onAttach(view);
+    ViewUtils.setStatusBarColor(getActivity(), Color.BLACK);
     getPresenter().loadUserProfile(userId);
+  }
+
+  @Override protected void onDetach(@NonNull View view) {
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @Override protected void onDestroyView(@NonNull View view) {
     viewPager.setAdapter(null);
     super.onDestroyView(view);
-  }
-
-  @Override protected void onDestroy() {
-    super.onDestroy();
-    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -202,7 +205,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   }
 
   @OnClick(R.id.iv_profile_edit) void openProfileEdit() {
-    startTransaction(ProfileEditController.create(), new VerticalChangeHandler());
+    startTransaction(ProfileEditController.create(), new HorizontalChangeHandler());
   }
 
   private void setupToolbar() {
@@ -210,7 +213,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
     final ActionBar ab = getSupportActionBar();
     if (ab != null) {
-      ab.setDisplayShowTitleEnabled(true);
+      ab.setDisplayShowTitleEnabled(false);
       ab.setDisplayHomeAsUpEnabled(true);
       ab.setDisplayShowHomeEnabled(true);
     }
@@ -219,9 +222,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   private void setupProfileInfo(AccountRealm account) {
     final Resources res = getResources();
 
-    Timber.d("Username: %s", account.getUsername());
-
-    getSupportActionBar().setTitle(account.getUsername());
+    tvUsername.setText(account.getUsername());
 
     Glide.with(getActivity())
         .load(account.getAvatarUrl().replace("s96-c", "s80-c-rw"))
@@ -233,6 +234,14 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
           getResources().getString(R.string.transition_avatar));
     }
 
+    if (!TextUtils.isEmpty(account.getBio()) || !TextUtils.isEmpty(account.getWebsiteUrl())) {
+      View view = stubInfo.inflate();
+      TextView tvBio = ButterKnife.findById(view, R.id.tv_profile_bio);
+      tvBio.setText(account.getBio());
+
+      TextView tvWebsite = ButterKnife.findById(view, R.id.tv_profile_website);
+      tvWebsite.setText(account.getWebsiteUrl());
+    }
     tvRealname.setText(account.getRealname());
     tvLevel.setText(res.getString(R.string.label_profile_level, account.getLevel()));
     DrawableHelper.create()
@@ -257,10 +266,6 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
         : R.string.action_profile_follow);
 
     ivEdit.setVisibility(account.isMe() ? View.VISIBLE : View.GONE);
-
-    ivProfileBg.getLayoutParams().height = TextUtils.isEmpty(account.getBio())
-        ? getResources().getDimensionPixelSize(R.dimen._152asdp)
-        : getResources().getDimensionPixelSize(R.dimen._216asdp);
   }
 
   private void startTransaction(Controller to, ControllerChangeHandler handler) {

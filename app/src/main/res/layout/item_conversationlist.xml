@@ -36,7 +36,7 @@
     app:layout_constraintBottom_toTopOf="@+id/guideline"
     app:layout_constraintLeft_toRightOf="@+id/iv_chat_avatar"
     app:layout_constraintRight_toLeftOf="@+id/guideline2"
-    tools:text="username" />
+    tools:text="name" />
 
   <com.yoloo.android.ui.widget.timeview.TimeTextView
     android:id="@+id/tv_chat_time"

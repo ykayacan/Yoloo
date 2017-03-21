@@ -6,7 +6,6 @@ import com.google.api.server.spi.config.ApiClass;
 import com.google.api.server.spi.config.ApiMethod;
 import com.google.api.server.spi.config.ApiNamespace;
 import com.google.api.server.spi.response.CollectionResponse;
-import com.google.api.server.spi.response.NotFoundException;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
@@ -15,7 +14,7 @@ import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
 import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
 import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
-import com.yoloo.backend.post.Post;
+
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
@@ -24,55 +23,75 @@ import javax.inject.Named;
     version = "v1",
     namespace = @ApiNamespace(
         ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER,
-        packagePath = Constants.API_PACKAGE_PATH
-    )
+        ownerName = Constants.API_OWNER)
 )
 @ApiClass(
     resource = "medias",
     clientIds = {
         Constants.ANDROID_CLIENT_ID,
         Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID},
-    audiences = {Constants.AUDIENCE_ID},
-    authenticators = {
-        FirebaseAuthenticator.class
-    }
+        Constants.WEB_CLIENT_ID
+    },
+    audiences = { Constants.AUDIENCE_ID },
+    authenticators = { FirebaseAuthenticator.class }
 )
 public class MediaEndpoint {
 
   /**
-   * Returns the {@link Post} with the corresponding ID.
+   * Get media.
    *
-   * @param accountId the ID from the entity to be retrieved
-   * @return the entity with the corresponding ID
-   * @throws NotFoundException if there is no {@code Feed} with the provided ID.
+   * @param mediaId the user id
+   * @param user the user
+   * @return the media
+   * @throws ServiceException the service exception
+   */
+  @ApiMethod(
+      name = "medias.get",
+      path = "medias/{mediaId}",
+      httpMethod = ApiMethod.HttpMethod.GET)
+  public Media get(@Named("mediaId") String mediaId, User user) throws ServiceException {
+
+    EndpointsValidator.create()
+        .on(BadRequestValidator.create(mediaId, "mediaId is required."))
+        .on(AuthValidator.create(user))
+        .on(NotFoundValidator.create(mediaId, "Invalid mediaId."));
+
+    return getMediaController().getMedia(mediaId, user);
+  }
+
+  /**
+   * List collection response.
+   *
+   * @param userId the user id
+   * @param cursor the cursor
+   * @param limit the limit
+   * @param user the user
+   * @return the collection response
+   * @throws ServiceException the service exception
    */
   @ApiMethod(
       name = "medias.list",
-      path = "medias/{accountId}",
+      path = "medias/{userId}",
       httpMethod = ApiMethod.HttpMethod.POST)
   public CollectionResponse<Media> list(
-      @Named("accountId") String accountId,
+      @Named("userId") String userId,
       @Nullable @Named("cursor") String cursor,
       @Nullable @Named("limit") Integer limit,
       User user) throws ServiceException {
 
     EndpointsValidator.create()
-        .on(BadRequestValidator.create(accountId, "accountId is required."))
+        .on(BadRequestValidator.create(userId, "userId is required."))
         .on(AuthValidator.create(user))
-        .on(NotFoundValidator.create(accountId, "Invalid accountId."))
-        .validate();
+        .on(NotFoundValidator.create(userId, "Invalid userId."));
 
     return getMediaController().listMedias(
-        accountId,
+        userId,
         Optional.fromNullable(limit),
         Optional.fromNullable(cursor),
         user);
   }
 
   private MediaController getMediaController() {
-    return MediaController.create(
-        MediaService.create());
+    return MediaController.create(MediaService.create());
   }
 }

@@ -21,7 +21,7 @@ import com.yoloo.android.framework.MvpView;
 import com.yoloo.android.util.Preconditions;
 
 /**
- * The default implementation of {@link ViewGroupMvpDelegate}
+ * The default implementation from {@link ViewGroupMvpDelegate}
  *
  * @author Hannes Dorfmann
  * @see ViewGroupMvpDelegate

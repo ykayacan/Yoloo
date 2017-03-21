@@ -16,7 +16,9 @@ import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
 import com.yoloo.backend.post.sort_strategy.PostSorter;
+
 import java.util.logging.Logger;
+
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
@@ -25,8 +27,8 @@ import javax.inject.Named;
     version = "v1",
     namespace = @ApiNamespace(
         ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER,
-        packagePath = Constants.API_PACKAGE_PATH))
+        ownerName = Constants.API_OWNER)
+)
 @ApiClass(
     resource = "posts",
     clientIds = {
@@ -34,10 +36,9 @@ import javax.inject.Named;
         Constants.IOS_CLIENT_ID,
         Constants.WEB_CLIENT_ID
     },
-    audiences = {Constants.AUDIENCE_ID},
-    authenticators = {
-        FirebaseAuthenticator.class
-    })
+    audiences = { Constants.AUDIENCE_ID },
+    authenticators = { FirebaseAuthenticator.class }
+)
 public class BlogEndpoint {
 
   private static final Logger LOG =
@@ -61,8 +62,7 @@ public class BlogEndpoint {
 
     EndpointsValidator.create()
         .on(BadRequestValidator.create(blogId, "blogId is required."))
-        .on(AuthValidator.create(user))
-        .validate();
+        .on(AuthValidator.create(user));
 
     return postController.getPost(blogId, user);
   }
@@ -96,8 +96,7 @@ public class BlogEndpoint {
         .on(BadRequestValidator.create(content, "content is required."))
         .on(BadRequestValidator.create(tags, "tags is required."))
         .on(BadRequestValidator.create(categoryIds, "categoryIds is required."))
-        .on(AuthValidator.create(user))
-        .validate();
+        .on(AuthValidator.create(user));
 
     return postController.insertBlog(
         title,
@@ -135,8 +134,7 @@ public class BlogEndpoint {
     EndpointsValidator.create()
         .on(BadRequestValidator.create(blogId, "blogId is required."))
         .on(AuthValidator.create(user))
-        .on(ForbiddenValidator.create(blogId, user, ForbiddenValidator.Op.UPDATE))
-        .validate();
+        .on(ForbiddenValidator.create(blogId, user, ForbiddenValidator.Op.UPDATE));
 
     return postController.updatePost(
         blogId,
@@ -164,8 +162,7 @@ public class BlogEndpoint {
         .on(BadRequestValidator.create(blogId, "blogId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(blogId, "Invalid blogId."))
-        .on(ForbiddenValidator.create(blogId, user, ForbiddenValidator.Op.DELETE))
-        .validate();
+        .on(ForbiddenValidator.create(blogId, user, ForbiddenValidator.Op.DELETE));
 
     postController.deletePost(blogId);
   }
@@ -186,7 +183,7 @@ public class BlogEndpoint {
       path = "blogs",
       httpMethod = ApiMethod.HttpMethod.GET)
   public CollectionResponse<Post> list(
-      @Nullable @Named("accountId") String accountId,
+      @Nullable @Named("userId") String userId,
       @Nullable @Named("sort") PostSorter sorter,
       @Nullable @Named("category") String category,
       @Nullable @Named("tags") String tags,
@@ -194,12 +191,10 @@ public class BlogEndpoint {
       @Nullable @Named("limit") Integer limit,
       User user) throws ServiceException {
 
-    EndpointsValidator.create()
-        .on(AuthValidator.create(user))
-        .validate();
+    EndpointsValidator.create().on(AuthValidator.create(user));
 
     return postController.listPosts(
-        Optional.fromNullable(accountId),
+        Optional.fromNullable(userId),
         Optional.fromNullable(sorter),
         Optional.fromNullable(category),
         Optional.fromNullable(tags),

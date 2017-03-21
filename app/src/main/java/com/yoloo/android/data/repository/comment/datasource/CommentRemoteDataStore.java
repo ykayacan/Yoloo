@@ -4,13 +4,16 @@ import com.google.api.client.http.HttpHeaders;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.faker.FakerUtil;
 import com.yoloo.android.data.model.CommentRealm;
+
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
-import java.util.Date;
-import java.util.List;
-import javax.annotation.Nonnull;
 
 import static com.yoloo.android.data.ApiManager.INSTANCE;
 import static com.yoloo.android.data.ApiManager.getIdToken;
@@ -54,8 +57,7 @@ public class CommentRemoteDataStore {
     return Completable.complete();
   }
 
-  public Observable<Response<List<CommentRealm>>> list(String postId, String cursor, String eTag,
-      int limit) {
+  public Observable<Response<List<CommentRealm>>> list(String postId, String cursor, int limit) {
     return getIdToken()
         .toObservable()
         .flatMap(s -> Observable.empty());

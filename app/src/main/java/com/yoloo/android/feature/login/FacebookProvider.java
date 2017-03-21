@@ -164,7 +164,7 @@ public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResu
     // In startLogin(Activity), LoginManager#registerCallback(CallbackManager, FacebookCallback)
     // stores the FacebookCallback parameter--in this case a FacebookProvider instance--into
     // a HashMap in the CallbackManager instance, callbackManager.
-    // Because FacebookProvider which contains an instance of an activity, callbackObject,
+    // Because FacebookProvider which contains an instance from an activity, callbackObject,
     // is contained in callbackManager, that activity will not be garbage collected.
     // Thus, we have leaked an Activity.
     callbackManager = null;

@@ -1,34 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <datastore-indexes autoGenerate="true">
-  <datastore-index ancestor="true" kind="Vote">
+
+  <datastore-index ancestor="true" kind="Vote" source="manual">
     <property name="parent" direction="asc" />
     <property name="created" direction="asc" />
   </datastore-index>
 
-  <datastore-index ancestor="false" kind="Post">
+  <datastore-index ancestor="true" kind="Post" source="manual">
     <property name="created" direction="desc" />
+  </datastore-index>
+
+  <datastore-index ancestor="false" kind="Post" source="manual">
     <property name="postType" direction="asc" />
+    <property name="created" direction="desc" />
+  </datastore-index>
+
+  <datastore-index ancestor="false" kind="Post" source="manual">
     <property name="rank" direction="desc" />
-  </datastore-index>
-
-  <datastore-index ancestor="false" kind="Post">
-    <property name="created" direction="desc" />
     <property name="postType" direction="asc" />
-    <property name="news" direction="asc" />
+    <property name="created" direction="desc" />
   </datastore-index>
 
-  <datastore-index ancestor="false" kind="Post">
+  <datastore-index ancestor="false" kind="Post" source="manual">
+    <property name="categories" direction="asc" />
+    <property name="postType" direction="asc" />
+    <property name="created" direction="desc" />
+  </datastore-index>
+
+  <datastore-index ancestor="false" kind="Post" source="manual">
+    <property name="tags" direction="asc" />
+    <property name="postType" direction="asc" />
+    <property name="created" direction="desc" />
+  </datastore-index>
+
+  <datastore-index ancestor="false" kind="Post" source="manual">
     <property name="bounty" direction="desc" />
     <property name="postType" direction="asc" />
     <property name="created" direction="desc" />
   </datastore-index>
 
-  <datastore-index ancestor="false" kind="Comment">
+  <datastore-index ancestor="false" kind="Comment" source="manual">
     <property name="created" direction="desc" />
     <property name="postKey" direction="asc" />
   </datastore-index>
 
-  <datastore-index ancestor="true" kind="Notification">
+  <datastore-index ancestor="true" kind="Notification" source="manual">
     <property name="receiverKey" direction="desc" />
     <property name="created" direction="desc" />
   </datastore-index>

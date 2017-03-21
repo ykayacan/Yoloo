@@ -14,6 +14,7 @@ public class AccountTransformer implements Transformer<Account, AccountDTO> {
         .websiteUrl(in.getWebsiteUrl() != null ? in.getWebsiteUrl().getValue() : null)
         .bio(in.getBio())
         .email(in.getEmail().getEmail())
+        .visitedCountries(in.getVisitedCountries())
         .interestedCategoryIds(in.getInterestedCategoryIds())
         .avatarUrl(in.getAvatarUrl() != null ? in.getAvatarUrl().getValue() : null)
         .created(in.getCreated().toDate())

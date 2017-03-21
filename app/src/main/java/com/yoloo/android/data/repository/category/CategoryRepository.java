@@ -4,9 +4,13 @@ import com.yoloo.android.data.model.CategoryRealm;
 import com.yoloo.android.data.repository.category.datasource.CategoryDiskDataStore;
 import com.yoloo.android.data.repository.category.datasource.CategoryRemoteDataStore;
 import com.yoloo.android.data.sorter.CategorySorter;
+
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
-import java.util.List;
 
 public class CategoryRepository {
 
@@ -29,7 +33,7 @@ public class CategoryRepository {
     return instance;
   }
 
-  public Observable<List<CategoryRealm>> listCategories(CategorySorter sorter, int limit) {
+  public Observable<List<CategoryRealm>> listCategories(@Nonnull CategorySorter sorter, int limit) {
     Observable<List<CategoryRealm>> diskObservable = diskDataStore.list(sorter, limit)
         .subscribeOn(Schedulers.io());
 
@@ -40,5 +44,9 @@ public class CategoryRepository {
     return Observable.mergeDelayError(diskObservable, remoteObservable)
         .filter(categories -> !categories.isEmpty())
         .distinct();
+  }
+
+  public Observable<List<CategoryRealm>> listInterestedCategories(@Nonnull String userId) {
+    return remoteDataStore.listInterestedCategories(userId).subscribeOn(Schedulers.io());
   }
 }

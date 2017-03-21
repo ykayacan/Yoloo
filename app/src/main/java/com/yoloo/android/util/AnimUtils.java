@@ -142,7 +142,7 @@ public final class AnimUtils {
   }
 
   /**
-   * The animation framework has an optimization for <code>Properties</code> of type
+   * The animation framework has an optimization for <code>Properties</code> from type
    * <code>int</code> but it was only made public in API24, so wrap the impl in our own type
    * and conditionally create the appropriate type, delegating the implementation.
    */
@@ -175,7 +175,7 @@ public final class AnimUtils {
   }
 
   /**
-   * The animation framework has an optimization for <code>Properties</code> of type
+   * The animation framework has an optimization for <code>Properties</code> from type
    * <code>float</code> but it was only made public in API24, so wrap the impl in our own type
    * and conditionally create the appropriate type, delegating the implementation.
    */
@@ -226,7 +226,7 @@ public final class AnimUtils {
   }
 
   /**
-   * A delegate for creating a {@link Property} of <code>int</code> type.
+   * A delegate for creating a {@link Property} from <code>int</code> type.
    */
   public static abstract class IntProp<T> {
     public final String name;
@@ -241,7 +241,7 @@ public final class AnimUtils {
   }
 
   /**
-   * A delegate for creating a {@link Property} of <code>float</code> type.
+   * A delegate for creating a {@link Property} from <code>float</code> type.
    */
   public static abstract class FloatProp<T> {
     public final String name;

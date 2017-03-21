@@ -6,13 +6,16 @@ import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.post.datasource.PostDiskDataStore;
 import com.yoloo.android.data.repository.post.datasource.PostRemoteDataStore;
 import com.yoloo.android.data.sorter.PostSorter;
+
+import java.util.List;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
-import java.util.List;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import timber.log.Timber;
 
 public class PostRepository {
@@ -103,10 +106,9 @@ public class PostRepository {
     return remoteDataStore.listByTags(tagNames, sorter, cursor, limit).subscribeOn(Schedulers.io());
   }
 
-  public Observable<Response<List<PostRealm>>> listByUser(@Nonnull String userId, boolean commented,
+  public Observable<Response<List<PostRealm>>> listByUser(@Nonnull String userId,
       @Nullable String cursor, int limit) {
-    return remoteDataStore.listByUser(userId, commented, cursor, limit)
-        .subscribeOn(Schedulers.io());
+    return remoteDataStore.listByUser(userId, cursor, limit).subscribeOn(Schedulers.io());
   }
 
   public Observable<Response<List<PostRealm>>> listByBookmarked(@Nullable String cursor,
@@ -129,7 +131,6 @@ public class PostRepository {
   }
 
   public Completable unBookmarkPost(@Nonnull String postId) {
-
     return remoteDataStore.unbookmark(postId)
         .andThen(diskDataStore.unBookmark(postId))
         .subscribeOn(Schedulers.io());

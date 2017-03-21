@@ -59,7 +59,7 @@ class SignInPresenter extends MvpPresenter<SignInView> {
 
   private void loadUser() {
     Disposable d = userRepository.getMe()
-        .observeOn(AndroidSchedulers.mainThread())
+        .observeOn(AndroidSchedulers.mainThread(), true)
         .subscribe(account -> {
           getView().onHideLoading();
           getView().onSignedIn();

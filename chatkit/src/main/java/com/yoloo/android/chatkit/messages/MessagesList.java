@@ -51,6 +51,9 @@ public class MessagesList extends RecyclerView {
    * Call {@link #setAdapter(MessagesListAdapter)} instead.
    */
   @Override public void setAdapter(Adapter adapter) {
+    if (isInEditMode()) {
+      return;
+    }
     throw new IllegalArgumentException(
         "You can't set adapter to MessagesList. Use #setAdapter(MessagesListAdapter) instead.");
   }

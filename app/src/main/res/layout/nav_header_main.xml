@@ -50,6 +50,6 @@
     android:textAppearance="@style/TextAppearance.AppCompat.Small"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintLeft_toLeftOf="parent"
-    tools:text="username" />
+    tools:text="name" />
 
 </android.support.constraint.ConstraintLayout>

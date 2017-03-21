@@ -14,6 +14,7 @@ import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.cmd.Query;
+import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.category.sort_strategy.CategorySorter;
 import com.yoloo.backend.config.MediaConfig;
@@ -21,6 +22,7 @@ import com.yoloo.backend.endpointsvalidator.Guard;
 import com.yoloo.backend.util.KeyUtil;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -62,12 +64,14 @@ public class CategoryController extends Controller {
 
     final String imageServingUrl;
 
-    if (Strings.isNullOrEmpty(imageName)) {
+    if (imageName.equals("dev_test")) {
       imageServingUrl = Strings.nullToEmpty(imageName);
     } else {
       ServingUrlOptions options = ServingUrlOptions.Builder
-          .withGoogleStorageFileName(
-              MediaConfig.CATEGORY_BUCKET + "/" + imageName.toLowerCase() + "@2x.webp");
+          .withGoogleStorageFileName(MediaConfig.SERVE_CATEGORY_BUCKET
+              + "/"
+              + imageName.toLowerCase()
+              + "@2x.webp");
 
       imageServingUrl = imagesService.getServingUrl(options);
     }
@@ -153,5 +157,14 @@ public class CategoryController extends Controller {
         .setItems(categories)
         .setNextPageToken(websafeCursor)
         .build();
+  }
+
+  public Collection<Category> listInterestedCategories(String userId) {
+
+    final Key<Account> accountKey = Key.create(userId);
+
+    Account account = ofy().load().key(accountKey).now();
+
+    return ofy().load().keys(account.getInterestedCategoryKeys()).values();
   }
 }

@@ -34,7 +34,7 @@ dependencies {
   compile 'com.google.cloud:google-cloud:0.10.0-alpha'
 
   // Endpoints
-  compile 'com.google.endpoints:endpoints-framework:2.0.4'
+  compile 'com.google.endpoints:endpoints-framework:2.0.5'
   compile 'javax.inject:javax.inject:1'
   providedCompile 'javax.servlet:servlet-api:2.5'
 

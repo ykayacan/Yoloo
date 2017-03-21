@@ -4,7 +4,7 @@ import com.google.api.server.spi.ServiceException;
 
 public interface Validator {
 
-  boolean valid();
+  boolean isValid();
 
   void onException() throws ServiceException;
 }

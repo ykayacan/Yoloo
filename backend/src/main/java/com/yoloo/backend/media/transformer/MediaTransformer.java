@@ -13,7 +13,8 @@ import com.yoloo.backend.media.size.ThumbSize;
 public class MediaTransformer implements Transformer<Media, MediaDTO> {
   @Override public MediaDTO transformTo(Media in) {
     return MediaDTO.builder()
-        .id(in.getId())
+        .id(in.getWebsafeId())
+        .ownerId(in.getWebsafeOwnerId())
         .mime(in.getMime())
         .sizes(ImmutableList.of(
             ThumbSize.of(in.getUrl()),

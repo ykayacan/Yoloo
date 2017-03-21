@@ -1,7 +1,15 @@
 package com.yoloo.android.feature.profile.profileedit;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -15,11 +23,19 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.github.jksiezni.permissive.Permissive;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.sandrios.sandriosCamera.internal.configuration.CameraConfiguration;
+import com.sandrios.sandriosCamera.internal.ui.camera.Camera1Activity;
+import com.sandrios.sandriosCamera.internal.ui.camera2.Camera2Activity;
+import com.sandrios.sandriosCamera.internal.utils.CameraHelper;
+import com.yalantis.ucrop.UCrop;
 import com.yoloo.android.R;
+import com.yoloo.android.YolooApp;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
@@ -27,19 +43,32 @@ import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
 import com.yoloo.android.feature.login.AuthUI;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.ControllerUtil;
+import com.yoloo.android.util.FormUtil;
+import com.yoloo.android.util.KeyboardUtil;
+import com.yoloo.android.util.MediaUtil;
 import com.yoloo.android.util.VersionUtil;
 import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
+
+import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindColor;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.OnTextChanged;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.subjects.PublishSubject;
 import timber.log.Timber;
 
 public class ProfileEditController extends MvpController<ProfileEditView, ProfileEditPresenter>
     implements ProfileEditView {
+
+  private static final int REQUEST_SELECT_MEDIA = 1;
+  private static final int REQUEST_CAPTURE_MEDIA = 2;
 
   @BindView(R.id.toolbar_profile_edit) Toolbar toolbar;
   @BindView(R.id.iv_profile_edit_save) ImageView ivSaveIcon;
@@ -55,12 +84,27 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   @BindString(R.string.error_profile_edit_empty_realname) String realNameEmptyErrorString;
   @BindString(R.string.error_profile_edit_empty_username) String usernameEmptyErrorString;
   @BindString(R.string.error_profile_edit_empty_email) String emailEmptyErrorString;
+  @BindString(R.string.error_profile_edit_empty_password) String passwordEmptyErrorString;
+  @BindString(R.string.error_profile_edit_username_unavailable) String usernameUnavailableString;
+  @BindString(R.string.error_profile_edit_invalid_email) String invalidEmailString;
+  @BindString(R.string.error_profile_edit_invalid_website) String invalidWebsiteString;
+  @BindString(R.string.error_invalid_password) String invalidPasswordString;
 
   @BindColor(R.color.primary_dark) int primaryDarkColor;
+  @BindColor(R.color.primary) int primaryColor;
 
-  private AccountRealm me;
+  private PublishSubject<String> usernameSubject = PublishSubject.create();
 
-  private boolean hasErrors;
+  private PublishSubject<Boolean> realNameErrorSubject = PublishSubject.create();
+  private PublishSubject<Boolean> usernameErrorSubject = PublishSubject.create();
+  private PublishSubject<Boolean> emailErrorSubject = PublishSubject.create();
+  private PublishSubject<Boolean> passwordErrorSubject = PublishSubject.create();
+  private PublishSubject<Boolean> websiteErrorSubject = PublishSubject.create();
+
+  private AccountRealm draft = new AccountRealm();
+  private AccountRealm original;
+
+  private Disposable disposable;
 
   public ProfileEditController() {
     setHasOptionsMenu(true);
@@ -83,9 +127,52 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     ControllerUtil.preventDefaultBackPressAction(view, this::showDiscardDialog);
   }
 
+  @Override protected void onAttach(@NonNull View view) {
+    usernameSubject
+        .filter(s -> !s.equals(original.getUsername()))
+        .filter(s -> !s.isEmpty())
+        .debounce(400, TimeUnit.MILLISECONDS)
+        .observeOn(AndroidSchedulers.mainThread())
+        .doOnNext(username -> getPresenter().checkUsername(username))
+        .subscribe();
+
+    // TODO: 19.03.2017 Fix error handling
+    disposable = Observable.combineLatest(realNameErrorSubject, usernameErrorSubject,
+        emailErrorSubject, passwordErrorSubject, websiteErrorSubject,
+        (validRealName, validUsername, validEmail, validPassword, validWebsiteUrl) ->
+            validRealName && validUsername && validEmail && validPassword && validWebsiteUrl)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(enabled -> {
+          Timber.d("Enabled: %s", enabled);
+          ivSaveIcon.setImageAlpha(enabled ? 255 : 138);
+          ivSaveIcon.setEnabled(enabled);
+        });
+  }
+
+  @Override public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    if (requestCode == REQUEST_SELECT_MEDIA) {
+      if (resultCode == Activity.RESULT_OK) {
+        handleGalleryResult(data);
+      }
+    } else if (requestCode == REQUEST_CAPTURE_MEDIA) {
+      if (resultCode == Activity.RESULT_OK) {
+        handleCameraResult(data);
+      }
+    } else if (requestCode == UCrop.REQUEST_CROP) {
+      if (resultCode == Activity.RESULT_OK) {
+        handleCropResult(data);
+      } else if (resultCode == UCrop.RESULT_ERROR) {
+        handleCropError(data);
+      }
+    }
+  }
+
   @Override protected void onDestroy() {
     super.onDestroy();
     ViewUtils.setStatusBarColor(getActivity(), Color.BLACK);
+    if (disposable != null && !disposable.isDisposed()) {
+      disposable.dispose();
+    }
   }
 
   @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -95,10 +182,6 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
       return false;
     }
     return super.onOptionsItemSelected(item);
-  }
-
-  private void validateFields() {
-
   }
 
   private void showDiscardDialog() {
@@ -115,12 +198,19 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     getRouter().handleBack();
   }
 
+  @Override public void onUsernameUnavailable() {
+    tilUsername.setError(usernameUnavailableString);
+  }
+
   @Override public void onLoading(boolean pullToRefresh) {
 
   }
 
   @Override public void onLoaded(AccountRealm account) {
-    me = account;
+    original = account;
+    draft.setId(account.getId())
+        .setMe(account.isMe())
+        .setCategoryIds(account.getCategoryIds());
     setProfile(account);
   }
 
@@ -140,30 +230,96 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
         ));
   }
 
-  @OnTextChanged(R.id.et_profile_edit_realname) void listenRealName(CharSequence text) {
+  @OnTextChanged(R.id.et_profile_edit_realname) void listenRealNameChange(CharSequence text) {
     tilRealName.setError(TextUtils.isEmpty(text) ? realNameEmptyErrorString : null);
-    hasErrors = TextUtils.isEmpty(text);
+    realNameErrorSubject.onNext(!TextUtils.isEmpty(text));
   }
 
-  @OnTextChanged(R.id.et_profile_edit_username) void listenUsername(CharSequence text) {
+  @OnTextChanged(R.id.et_profile_edit_username) void listenUsernameChange(CharSequence text) {
+    usernameSubject.onNext(text.toString());
     tilUsername.setError(TextUtils.isEmpty(text) ? usernameEmptyErrorString : null);
-    hasErrors = TextUtils.isEmpty(text);
+    usernameErrorSubject.onNext(!TextUtils.isEmpty(text));
   }
 
-  @OnTextChanged(R.id.et_profile_edit_email) void listenEmail(CharSequence text) {
+  @OnTextChanged(R.id.et_profile_edit_email) void listenEmailChange(CharSequence text) {
     tilEmail.setError(TextUtils.isEmpty(text) ? emailEmptyErrorString : null);
-    hasErrors = TextUtils.isEmpty(text);
+    tilEmail.setError(FormUtil.isEmailAddress(text) ? null : invalidEmailString);
+    emailErrorSubject.onNext(!TextUtils.isEmpty(text) || !FormUtil.isEmailAddress(text));
+  }
+
+  @OnTextChanged(R.id.et_profile_edit_password) void listenPasswordChange(CharSequence text) {
+    tilPassword.setError(FormUtil.isPasswordValid(text) ? null : invalidPasswordString);
+    tilPassword.setError(TextUtils.isEmpty(text) ? null : passwordEmptyErrorString);
+    passwordErrorSubject.onNext(!TextUtils.isEmpty(text) || !FormUtil.isPasswordValid(text));
+  }
+
+  @OnTextChanged(R.id.et_profile_edit_website) void listenWebsiteChange(CharSequence text) {
+    if (TextUtils.isEmpty(text)) {
+      return;
+    }
+    tilWebsite.setError(FormUtil.isWebUrl(text) ? null : invalidWebsiteString);
+    websiteErrorSubject.onNext(!FormUtil.isWebUrl(text));
   }
 
   @OnClick({
       R.id.iv_profile_edit_avatar,
       R.id.tv_profile_edit_change_photo
   }) void changeAvatar() {
+    new AlertDialog.Builder(getActivity()).setTitle(R.string.label_editor_select_media_source_title)
+        .setItems(R.array.action_editor_list_media_source, (dialog, which) -> {
+          KeyboardUtil.hideKeyboard(getActivity().getCurrentFocus());
 
+          if (which == 0) {
+            checkGalleryPermissions();
+          } else if (which == 1) {
+            checkCameraPermissions();
+          }
+        })
+        .show();
   }
 
   @OnClick(R.id.iv_profile_edit_save) void saveProfile() {
-    Timber.d("Has errors: %s", hasErrors);
+    String realName = tilRealName.getEditText().getText().toString();
+    if (!realName.equals(original.getRealname())) {
+      draft.setRealname(realName);
+    }
+
+    String username = tilUsername.getEditText().getText().toString();
+    if (!username.equals(original.getUsername())) {
+      draft.setUsername(username);
+    }
+
+    String email = tilEmail.getEditText().getText().toString();
+    if (!email.equals(original.getEmail())) {
+      draft.setEmail(email);
+    }
+
+    if (tilPassword.isEnabled()) {
+      String password = tilPassword.getEditText().getText().toString();
+      // TODO: 19.03.2017 Implement password issue.
+    }
+
+    String gender = spinnerGender.getSelectedItem().toString();
+    if (!gender.equalsIgnoreCase(original.getGender())) {
+      draft.setGender(gender.toUpperCase());
+    }
+
+    String websiteUrl = tilWebsite.getEditText().getText().toString();
+    if (!websiteUrl.equals(original.getWebsiteUrl())) {
+      if (!websiteUrl.contains("http://") || websiteUrl.contains("https://")) {
+        websiteUrl = "http://" + websiteUrl;
+      }
+      draft.setWebsiteUrl(websiteUrl);
+    }
+
+    String bio = tilBio.getEditText().getText().toString();
+    if (!bio.equals(original.getBio())) {
+      draft.setBio(bio);
+    }
+
+    getPresenter().updateMe(draft);
+
+    Timber.d("Changes will be saved: %s", draft.toString());
   }
 
   private void setProfile(AccountRealm account) {
@@ -183,6 +339,7 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
     if (user != null) {
       tilPassword.setEnabled(user.getProviderId().equals(AuthUI.EMAIL_PROVIDER));
+      tilEmail.setEnabled(user.getProviderId().equals(AuthUI.EMAIL_PROVIDER));
     }
 
     ArrayAdapter adapter = (ArrayAdapter) spinnerGender.getAdapter();
@@ -209,5 +366,108 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
           AppCompatResources.getDrawable(getActivity(), R.drawable.ic_close_white_24dp));
       ab.setDisplayShowHomeEnabled(true);
     }
+  }
+
+  private void checkCameraPermissions() {
+    new Permissive.Request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.RECORD_AUDIO)
+        .whenPermissionsGranted(permissions -> openCamera())
+        .whenPermissionsRefused(
+            permissions -> Snackbar.make(getView(), "Permission is denied!", Snackbar.LENGTH_SHORT)
+                .show())
+        .execute(getActivity());
+  }
+
+  private void checkGalleryPermissions() {
+    new Permissive.Request(Manifest.permission.WRITE_EXTERNAL_STORAGE).whenPermissionsGranted(
+        permissions -> openGallery())
+        .whenPermissionsRefused(
+            permissions -> Snackbar.make(getView(), "Permission is denied!", Snackbar.LENGTH_SHORT)
+                .show())
+        .execute(getActivity());
+  }
+
+  private void openGallery() {
+    Intent intent =
+        new Intent(Intent.ACTION_GET_CONTENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+    intent.setType("image/*");
+
+    startActivityForResult(
+        Intent.createChooser(intent, getResources().getString(R.string.label_select_media)),
+        REQUEST_SELECT_MEDIA);
+  }
+
+  private void openCamera() {
+    final Activity activity = getActivity();
+
+    if (CameraHelper.hasCamera(activity)) {
+      Intent cameraIntent = new Intent(activity,
+          CameraHelper.hasCamera2(activity) ? Camera2Activity.class : Camera1Activity.class);
+
+      cameraIntent.putExtra(CameraConfiguration.Arguments.REQUEST_CODE, REQUEST_CAPTURE_MEDIA);
+      cameraIntent.putExtra(CameraConfiguration.Arguments.SHOW_PICKER, false);
+      cameraIntent.putExtra(CameraConfiguration.Arguments.MEDIA_ACTION,
+          CameraConfiguration.MEDIA_ACTION_PHOTO);
+      cameraIntent.putExtra(CameraConfiguration.Arguments.ENABLE_CROP, false);
+
+      startActivityForResult(cameraIntent, REQUEST_CAPTURE_MEDIA);
+    }
+  }
+
+  private void handleGalleryResult(Intent data) {
+    final Uri uri = data.getData();
+    if (uri != null) {
+      startCropActivity(uri);
+    }
+  }
+
+  private void handleCameraResult(Intent data) {
+    final String path = data.getStringExtra(CameraConfiguration.Arguments.FILE_PATH);
+    if (path != null) {
+      MediaUtil.addToPhoneGallery(path, getActivity());
+
+      startCropActivity(Uri.fromFile(new File(path)));
+    }
+  }
+
+  private void startCropActivity(Uri uri) {
+    final Uri destUri = Uri
+        .fromFile(new File(YolooApp.getCacheDirectory(), MediaUtil.createImageName()));
+
+    Intent intent = UCrop.of(uri, destUri)
+        .withAspectRatio(1, 1)
+        .withMaxResultSize(180, 180)
+        .withOptions(createUCropOptions())
+        .getIntent(getActivity());
+
+    startActivityForResult(intent, UCrop.REQUEST_CROP);
+  }
+
+  private void handleCropResult(Intent data) {
+    final Uri uri = UCrop.getOutput(data);
+    if (uri != null) {
+      draft.setAvatarUrl(uri.getPath());
+
+      Glide.with(getActivity())
+          .load(uri)
+          .bitmapTransform(new CropCircleTransformation(getActivity()))
+          .into(ivAvatar);
+    } else {
+      Toast.makeText(getActivity(), "Error occurred.", Toast.LENGTH_SHORT).show();
+    }
+  }
+
+  private void handleCropError(Intent data) {
+    Timber.e("Crop error: %s", UCrop.getError(data));
+  }
+
+  private UCrop.Options createUCropOptions() {
+    final UCrop.Options options = new UCrop.Options();
+    options.setCompressionFormat(Bitmap.CompressFormat.WEBP);
+    options.setCompressionQuality(85);
+    options.setToolbarColor(primaryColor);
+    options.setStatusBarColor(primaryDarkColor);
+    options.setToolbarTitle(getResources().getString(R.string.label_editor_crop_image_title));
+    return options;
   }
 }

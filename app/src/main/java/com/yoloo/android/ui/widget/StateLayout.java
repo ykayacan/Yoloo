@@ -10,17 +10,20 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import butterknife.ButterKnife;
+
 import com.yoloo.android.R;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+
+import butterknife.ButterKnife;
 
 /**
  * View that contains 4 different states: Content, Error, Empty, and Loading.<br>
  * Each state has their own separate layout which can be shown/hidden by setting
  * the {@link ViewState} accordingly
  * Every MultiStateView <b><i>MUST</i></b> contain a content view. The content view
- * is obtained from whatever is inside of the tags of the view via its XML declaration
+ * is obtained from whatever is inside from the tags from the view via its XML declaration
  */
 public class StateLayout extends CoordinatorLayout {
 
@@ -42,10 +45,6 @@ public class StateLayout extends CoordinatorLayout {
   public static final int VIEW_STATE_LOADING = 3;
 
   private static final int ANIMATION_DURATION = 250;
-
-  private int loadingViewRes;
-  private int emptyViewRes;
-  private int errorViewRes;
 
   private int contentViewId;
 
@@ -83,9 +82,9 @@ public class StateLayout extends CoordinatorLayout {
 
     final TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.StateLayout);
 
-    loadingViewRes = a.getResourceId(R.styleable.StateLayout_loadingLayout, 0);
-    emptyViewRes = a.getResourceId(R.styleable.StateLayout_emptyLayout, 0);
-    errorViewRes = a.getResourceId(R.styleable.StateLayout_errorLayout, 0);
+    int loadingViewRes = a.getResourceId(R.styleable.StateLayout_loadingLayout, 0);
+    int emptyViewRes = a.getResourceId(R.styleable.StateLayout_emptyLayout, 0);
+    int errorViewRes = a.getResourceId(R.styleable.StateLayout_errorLayout, 0);
 
     contentViewId = a.getResourceId(R.styleable.StateLayout_contentViewId, NO_ID);
 
@@ -140,7 +139,7 @@ public class StateLayout extends CoordinatorLayout {
    * <p>Specify content view with the given id</p>
    *
    * @param layoutRes The id to specify
-   * @return This StateLayout object to allow for chaining of calls to set methods
+   * @return This StateLayout object to allow for chaining from calls to set methods
    */
   public StateLayout setContentViewRes(@LayoutRes int layoutRes) {
     setContentView(inflater.inflate(layoutRes, this, false));
@@ -151,7 +150,7 @@ public class StateLayout extends CoordinatorLayout {
    * <p>Set content view.</p>
    *
    * @param contentView The content view to add
-   * @return This StateLayout object to allow for chaining of calls to set methods
+   * @return This StateLayout object to allow for chaining from calls to set methods
    */
   public StateLayout setContentView(View contentView) {
     setViewForState(contentView, VIEW_STATE_CONTENT);
@@ -162,7 +161,7 @@ public class StateLayout extends CoordinatorLayout {
    * <p>Specify empty view with the given id</p>
    *
    * @param layoutRes The id to specify
-   * @return This StateLayout object to allow for chaining of calls to set methods
+   * @return This StateLayout object to allow for chaining from calls to set methods
    */
   public StateLayout setEmptyViewRes(@LayoutRes int layoutRes) {
     setEmptyView(inflater.inflate(layoutRes, this, false));
@@ -173,7 +172,7 @@ public class StateLayout extends CoordinatorLayout {
    * <p>Set empty view.</p>
    *
    * @param emptyView The empty view to add
-   * @return This StateLayout object to allow for chaining of calls to set methods
+   * @return This StateLayout object to allow for chaining from calls to set methods
    */
   public StateLayout setEmptyView(View emptyView) {
     setViewForState(emptyView, VIEW_STATE_EMPTY);
@@ -184,7 +183,7 @@ public class StateLayout extends CoordinatorLayout {
    * <p>Specify error view with the given id</p>
    *
    * @param layoutRes The id to specify
-   * @return This StateLayout object to allow for chaining of calls to set methods
+   * @return This StateLayout object to allow for chaining from calls to set methods
    */
   public StateLayout setErrorViewRes(@LayoutRes int layoutRes) {
     setErrorView(inflater.inflate(layoutRes, this, false));
@@ -195,7 +194,7 @@ public class StateLayout extends CoordinatorLayout {
    * <p>set error view.</p>
    *
    * @param errorView the error view to add
-   * @return This StateLayout object to allow for chaining of calls to set methods
+   * @return This StateLayout object to allow for chaining from calls to set methods
    */
   public StateLayout setErrorView(View errorView) {
     setViewForState(errorView, VIEW_STATE_ERROR);
@@ -206,7 +205,7 @@ public class StateLayout extends CoordinatorLayout {
    * <p>Specify loading view with the given id</p>
    *
    * @param layoutRes The id to specify
-   * @return This StateLayout object to allow for chaining of calls to set methods
+   * @return This StateLayout object to allow for chaining from calls to set methods
    */
   public StateLayout setLoadingViewRes(@LayoutRes int layoutRes) {
     setLoadingView(View.inflate(getContext(), layoutRes, this));
@@ -217,7 +216,7 @@ public class StateLayout extends CoordinatorLayout {
    * <p>Set loading view.</p>
    *
    * @param loadingView the loading view to add
-   * @return This StateLayout object to allow for chaining of calls to set methods
+   * @return This StateLayout object to allow for chaining from calls to set methods
    */
   public StateLayout setLoadingView(View loadingView) {
     setViewForState(loadingView, VIEW_STATE_LOADING);

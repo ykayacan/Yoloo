@@ -37,7 +37,7 @@
     app:layout_constraintLeft_toRightOf="@+id/iv_comment_user_avatar"
     app:layout_constraintTop_toTopOf="@+id/iv_comment_user_avatar"
     app:layout_constraintVertical_bias="0.2"
-    tools:text="username" />
+    tools:text="name" />
 
   <com.yoloo.android.ui.widget.timeview.TimeTextView
     android:id="@+id/tv_comment_time"

@@ -24,13 +24,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import butterknife.BindColor;
-import butterknife.BindDimen;
-import butterknife.BindDrawable;
-import butterknife.BindView;
-import butterknife.OnClick;
-import butterknife.OnTextChanged;
-import butterknife.Optional;
+
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
@@ -64,13 +58,22 @@ import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.widget.ThumbView;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.KeyboardUtil;
+import com.yoloo.android.util.MediaUtil;
 import com.yoloo.android.util.TextViewUtil;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
+
+import butterknife.BindColor;
+import butterknife.BindDimen;
+import butterknife.BindDrawable;
+import butterknife.BindView;
+import butterknife.OnClick;
+import butterknife.OnTextChanged;
+import butterknife.Optional;
 import timber.log.Timber;
 
 public class ComposeController extends MvpController<ComposeView, ComposePresenter>
@@ -121,7 +124,7 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
 
     final int layoutRes = editorType == EditorType.ASK_QUESTION
         ? R.layout.controller_questioneditor
-        : R.layout.controller_blogeditor2;
+        : R.layout.controller_blogeditor;
 
     return inflater.inflate(layoutRes, container, false);
   }
@@ -352,14 +355,15 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
   private void handleCameraResult(Intent data) {
     final String path = data.getStringExtra(CameraConfiguration.Arguments.FILE_PATH);
     if (path != null) {
-      addPhotoToGallery(path);
+      MediaUtil.addToPhoneGallery(path, getActivity());
 
       startCropActivity(Uri.fromFile(new File(path)));
     }
   }
 
   private void startCropActivity(Uri uri) {
-    final Uri destUri = Uri.fromFile(new File(YolooApp.getCacheDirectory(), createImageName()));
+    final Uri destUri = Uri
+        .fromFile(new File(YolooApp.getCacheDirectory(), MediaUtil.createImageName()));
 
     Intent intent = UCrop.of(uri, destUri)
         .withAspectRatio(1, 1)
@@ -435,8 +439,8 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
   }
 
   private String createImageName() {
-    return "IMG_" + UUID.randomUUID().toString() + "_" + new SimpleDateFormat("yyyyMMdd_HHmmss",
-        Locale.US).format(new Date(System.currentTimeMillis())) + ".webp";
+    return "IMG_" + "_" + new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
+        .format(new Date(System.currentTimeMillis())) + ".webp";
   }
 
   private void checkCameraPermissions() {
@@ -498,14 +502,6 @@ public class ComposeController extends MvpController<ComposeView, ComposePresent
         tagContainer.addView(tag);
       });
     }
-  }
-
-  private void addPhotoToGallery(String photoPath) {
-    Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-    File f = new File(photoPath);
-    Uri contentUri = Uri.fromFile(f);
-    mediaScanIntent.setData(contentUri);
-    getActivity().sendBroadcast(mediaScanIntent);
   }
 
   private List<String> getUsedTags() {

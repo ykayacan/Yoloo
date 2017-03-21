@@ -18,9 +18,7 @@ import javax.inject.Named;
     version = "v1",
     namespace = @ApiNamespace(
         ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER,
-        packagePath = Constants.API_PACKAGE_PATH
-    )
+        ownerName = Constants.API_OWNER)
 )
 @ApiClass(
     resource = "devices",
@@ -29,9 +27,7 @@ import javax.inject.Named;
         Constants.IOS_CLIENT_ID,
         Constants.WEB_CLIENT_ID},
     audiences = {Constants.AUDIENCE_ID,},
-    authenticators = {
-        FirebaseAuthenticator.class
-    }
+    authenticators = { FirebaseAuthenticator.class }
 )
 public class DeviceEndpoint {
 
@@ -51,9 +47,7 @@ public class DeviceEndpoint {
       httpMethod = ApiMethod.HttpMethod.POST)
   public void registerDevice(@Named("regId") String regId, User user) throws ServiceException {
 
-    EndpointsValidator.create()
-        .on(AuthValidator.create(user))
-        .validate();
+    EndpointsValidator.create().on(AuthValidator.create(user));
 
     getDeviceController().registerDevice(regId, user);
   }
@@ -71,9 +65,7 @@ public class DeviceEndpoint {
       httpMethod = ApiMethod.HttpMethod.DELETE)
   public void unregisterDevice(@Named("regId") String regId, User user) throws ServiceException {
 
-    EndpointsValidator.create()
-        .on(AuthValidator.create(user))
-        .validate();
+    EndpointsValidator.create().on(AuthValidator.create(user));
 
     getDeviceController().unregisterDevice(regId, user);
   }

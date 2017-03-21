@@ -11,7 +11,8 @@ import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentShard;
 import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.feed.Feed;
-import com.yoloo.backend.follow.Follow;
+import com.yoloo.backend.media.Media;
+import com.yoloo.backend.relationship.Relationship;
 import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.notification.Notification;
 import com.yoloo.backend.post.Post;
@@ -50,13 +51,14 @@ public final class OfyService {
     factory().register(Vote.class);
 
     factory().register(Tracker.class);
-    factory().register(Follow.class);
+    factory().register(Relationship.class);
 
     factory().register(Bookmark.class);
 
     factory().register(DeviceRecord.class);
 
     factory().register(Notification.class);
+    factory().register(Media.class);
   }
 
   public static Objectify ofy() {

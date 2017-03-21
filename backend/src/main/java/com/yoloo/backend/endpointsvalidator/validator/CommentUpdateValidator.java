@@ -15,7 +15,7 @@ public class CommentUpdateValidator implements Validator {
   private String commentId;
   private User user;
 
-  @Override public boolean valid() {
+  @Override public boolean isValid() {
     try {
       final Key<?> postKey = Key.create(postId);
       final Key<?> commentKey = Key.create(commentId);

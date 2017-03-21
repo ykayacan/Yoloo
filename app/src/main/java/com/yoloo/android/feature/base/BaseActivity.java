@@ -12,8 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
-import butterknife.BindView;
-import butterknife.ButterKnife;
+
 import com.bluelinelabs.conductor.Conductor;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
@@ -26,11 +25,15 @@ import com.yoloo.android.R;
 import com.yoloo.android.fcm.FCMListener;
 import com.yoloo.android.fcm.FCMManager;
 import com.yoloo.android.feature.feed.home.FeedHomeController;
-import com.yoloo.android.feature.login.AuthController;
+import com.yoloo.android.feature.login.welcome.WelcomeController;
 import com.yoloo.android.util.NotificationHelper;
 import com.yoloo.android.util.Preconditions;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class BaseActivity extends AppCompatActivity implements FCMListener {
@@ -59,7 +62,9 @@ public class BaseActivity extends AppCompatActivity implements FCMListener {
     if (!router.hasRootController()) {
       FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-      Controller controller = user == null ? AuthController.create() : FeedHomeController.create();
+      Controller controller = user == null
+          ? WelcomeController.create()
+          : FeedHomeController.create();
       router.setRoot(RouterTransaction.with(controller));
     }
 

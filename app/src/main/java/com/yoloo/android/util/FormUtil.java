@@ -5,19 +5,25 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Patterns;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+
 import com.annimon.stream.Stream;
 import com.github.jksiezni.permissive.Permissive;
 
 public final class FormUtil {
 
-  public static boolean isEmailAddress(String text) {
-    return Patterns.EMAIL_ADDRESS.matcher(text).matches();
+  public static boolean isEmailAddress(CharSequence target) {
+    return !TextUtils.isEmpty(target) && Patterns.EMAIL_ADDRESS.matcher(target).matches();
   }
 
-  public static boolean isPasswordValid(String password) {
+  public static boolean isWebUrl(CharSequence target) {
+    return Patterns.WEB_URL.matcher(target).matches();
+  }
+
+  public static boolean isPasswordValid(CharSequence password) {
     return password.length() > 4;
   }
 

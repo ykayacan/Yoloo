@@ -9,6 +9,7 @@ import com.yoloo.android.BuildConfig;
 import com.yoloo.backend.yolooApi.YolooApi;
 
 import io.reactivex.Single;
+import okhttp3.OkHttpClient;
 
 public enum ApiManager {
   INSTANCE;
@@ -42,6 +43,10 @@ public enum ApiManager {
     return LazyApiHolder.YOLOO_API;
   }
 
+  public OkHttpClient getOkHttpClient() {
+    return LazyOkHttpClient.client;
+  }
+
   static class LazyApiHolder {
     // TODO: 18.02.2017 Convert it to OkHttp
     // see https://github.com/dereulenspiegel/okhttp-transport/blob/master/
@@ -53,6 +58,10 @@ public enum ApiManager {
         .setGoogleClientRequestInitializer(ApiManager::checkGZip)
         .setApplicationName("YolooApp")
         .build();
+  }
+
+  static class LazyOkHttpClient {
+    static final OkHttpClient client = new OkHttpClient();
   }
 
   private static class LazyHttpTransport {

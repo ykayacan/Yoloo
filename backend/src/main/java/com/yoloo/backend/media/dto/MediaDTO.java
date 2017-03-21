@@ -9,6 +9,7 @@ import lombok.Value;
 @Builder
 public class MediaDTO {
   private String id;
+  private String ownerId;
   private String mime;
   private List<Size> sizes;
 }

@@ -3,7 +3,7 @@ package com.yoloo.android.feature.category;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import butterknife.BindView;
+
 import com.airbnb.epoxy.EpoxyAttribute;
 import com.airbnb.epoxy.EpoxyModelClass;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
@@ -14,7 +14,10 @@ import com.yoloo.android.data.model.CategoryRealm;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.SelectableAdapter;
+
 import java.util.List;
+
+import butterknife.BindView;
 
 class CategoryAdapter extends SelectableAdapter {
 
@@ -66,7 +69,7 @@ class CategoryAdapter extends SelectableAdapter {
       });
     }
 
-    public CategoryRealm getCategory() {
+    CategoryRealm getCategory() {
       return category;
     }
 

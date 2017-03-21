@@ -3,6 +3,7 @@ package com.yoloo.android.feature.feed.global;
 import android.content.Context;
 import android.support.constraint.ConstraintSet;
 import android.support.v7.widget.RecyclerView;
+
 import com.airbnb.epoxy.EpoxyAdapter;
 import com.airbnb.epoxy.EpoxyModel;
 import com.yoloo.android.R;
@@ -23,8 +24,8 @@ import com.yoloo.android.feature.feed.component.post.RichQuestionModel_;
 import com.yoloo.android.feature.feed.component.post.TextQuestionModel;
 import com.yoloo.android.feature.feed.component.post.TextQuestionModel_;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
+
 import java.util.List;
-import timber.log.Timber;
 
 public class FeedGlobalAdapter extends EpoxyAdapter {
 
@@ -65,7 +66,6 @@ public class FeedGlobalAdapter extends EpoxyAdapter {
   }
 
   public void addPosts(List<PostRealm> posts) {
-    Timber.d("addPosts(): %s", posts.size());
     for (PostRealm post : posts) {
       final int postType = post.getPostType();
 

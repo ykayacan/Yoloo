@@ -6,19 +6,18 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
-import butterknife.BindString;
-import butterknife.BindView;
-import butterknife.OnClick;
-import butterknife.OnEditorAction;
-import butterknife.OnFocusChange;
+
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.yoloo.android.R;
 import com.yoloo.android.data.repository.user.UserRepository;
@@ -33,7 +32,14 @@ import com.yoloo.android.feature.login.IdpResponse;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.FormUtil;
 import com.yoloo.android.util.KeyboardUtil;
+
 import java.net.SocketTimeoutException;
+
+import butterknife.BindString;
+import butterknife.BindView;
+import butterknife.OnClick;
+import butterknife.OnEditorAction;
+import butterknife.OnFocusChange;
 import timber.log.Timber;
 
 public class SignInController extends MvpController<SignInView, SignInPresenter>
@@ -41,6 +47,7 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
 
   @BindView(R.id.et_login_email) AutoCompleteTextView etEmail;
   @BindView(R.id.et_login_password) EditText etPassword;
+  @BindView(R.id.toolbar_sign_in) Toolbar toolbar;
 
   @BindString(R.string.error_google_play_services) String errorGooglePlayServicesString;
   @BindString(R.string.error_auth_failed) String errorAuthFailedString;
@@ -64,7 +71,8 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
   }
 
   @Override protected void onViewBound(@NonNull View view) {
-    super.onViewBound(view);
+    setHasOptionsMenu(true);
+    setupToolbar();
 
     getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
   }
@@ -85,6 +93,16 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
     if (idpProvider != null) {
       idpProvider.setAuthenticationCallback(null);
     }
+  }
+
+  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    final int itemId = item.getItemId();
+    if (itemId == android.R.id.home) {
+      getRouter().handleBack();
+      return true;
+    }
+
+    return super.onOptionsItemSelected(item);
   }
 
   @NonNull @Override public SignInPresenter createPresenter() {
@@ -170,7 +188,9 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
   }
 
   @Override public void onSignedIn() {
-    getParentController().getRouter().setRoot(RouterTransaction.with(FeedHomeController.create()));
+    getRouter().setRoot(RouterTransaction.with(FeedHomeController.create()));
+    //getParentController().getRouter().setRoot(RouterTransaction.with(FeedHomeController.create
+    // ()));
   }
 
   @Override public void onError(Throwable t) {
@@ -219,6 +239,18 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
         return new FacebookProvider(config);
       default:
         throw new UnsupportedOperationException("Given providerId is not valid!");
+    }
+  }
+
+  private void setupToolbar() {
+    setSupportActionBar(toolbar);
+
+    // addPost back arrow to toolbar
+    final ActionBar ab = getSupportActionBar();
+    if (ab != null) {
+      ab.setDisplayShowTitleEnabled(false);
+      ab.setDisplayHomeAsUpEnabled(true);
+      ab.setDisplayShowHomeEnabled(true);
     }
   }
 }

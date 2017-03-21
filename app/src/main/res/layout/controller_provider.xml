@@ -1,68 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:fillViewport="true">
+  android:background="@color/primary">
 
-  <LinearLayout
+  <android.support.design.widget.AppBarLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:animateLayoutChanges="true"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:paddingBottom="56dp">
+    android:layout_marginTop="24dp"
+    android:background="@android:color/transparent"
+    android:theme="@style/Yoloo.AppBarOverlay"
+    app:elevation="0dp">
 
-    <com.yoloo.android.ui.widget.BaselineGridTextView
-      android:id="@+id/tv_login_select_topics"
-      android:layout_width="@dimen/_296asdp"
-      android:layout_height="wrap_content"
-      android:text="@string/label_login_select_categories"
-      android:textAlignment="center"
-      android:textColor="@android:color/white"
-      android:textSize="24sp" />
-
-    <android.support.v7.widget.RecyclerView
-      android:id="@+id/rv_login_categories"
+    <android.support.v7.widget.Toolbar
+      android:id="@+id/toolbar_provider"
       android:layout_width="match_parent"
-      android:layout_height="200dp"
-      android:layout_marginEnd="@dimen/_16asdp"
-      android:layout_marginLeft="@dimen/_16asdp"
-      android:layout_marginRight="@dimen/_16asdp"
-      android:layout_marginStart="@dimen/_16asdp"
-      android:layout_marginTop="@dimen/_24asdp"
-      android:nestedScrollingEnabled="false" />
+      android:layout_height="?attr/actionBarSize"
+      app:popupTheme="@style/Yoloo.PopupOverlay" />
 
-    <Button
-      android:id="@+id/btn_facebook_sign_in"
-      style="@style/Yoloo.Button.AccountChooser.FacebookButton"
-      android:layout_width="@dimen/_240asdp"
-      android:layout_height="40dp"
-      android:layout_marginTop="24dp"
-      android:text="@string/action_login_facebook_sing_in" />
+  </android.support.design.widget.AppBarLayout>
 
-    <Button
-      android:id="@+id/btn_google_sign_in"
-      style="@style/Yoloo.Button.AccountChooser.GoogleButton"
-      android:layout_width="@dimen/_240asdp"
-      android:layout_height="40dp"
-      android:layout_marginTop="8dp"
-      android:text="@string/action_login_google_sign_in" />
+  <ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <com.yoloo.android.ui.widget.BaselineGridTextView
-      android:id="@+id/tv_login_or"
-      android:layout_width="wrap_content"
+    <LinearLayout
+      android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_margin="8dp"
-      android:text="@string/label_login_or"
-      android:textColor="@android:color/white" />
+      android:animateLayoutChanges="true"
+      android:gravity="center"
+      android:orientation="vertical"
+      android:paddingBottom="56dp">
 
-    <Button
-      android:id="@+id/btn_login_sign_up"
-      style="@style/Yoloo.Button.Colored"
-      android:layout_width="@dimen/_120asdp"
-      android:layout_height="wrap_content"
-      android:text="@string/action_login_sign_up" />
+      <com.yoloo.android.ui.widget.BaselineGridTextView
+        android:id="@+id/tv_login_select_topics"
+        android:layout_width="@dimen/_296asdp"
+        android:layout_height="wrap_content"
+        android:text="@string/label_login_select_categories"
+        android:textAlignment="center"
+        android:textColor="@android:color/white"
+        android:textSize="24sp" />
 
-  </LinearLayout>
+      <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_login_categories"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginEnd="@dimen/_16asdp"
+        android:layout_marginLeft="@dimen/_16asdp"
+        android:layout_marginRight="@dimen/_16asdp"
+        android:layout_marginStart="@dimen/_16asdp"
+        android:layout_marginTop="@dimen/_24asdp"
+        android:nestedScrollingEnabled="false" />
 
-</ScrollView>
+      <Button
+        android:id="@+id/btn_facebook_sign_in"
+        style="@style/Yoloo.Button.AccountChooser.FacebookButton"
+        android:layout_width="@dimen/_240asdp"
+        android:layout_height="40dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/action_login_facebook_sing_in" />
+
+      <Button
+        android:id="@+id/btn_google_sign_in"
+        style="@style/Yoloo.Button.AccountChooser.GoogleButton"
+        android:layout_width="@dimen/_240asdp"
+        android:layout_height="40dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/action_login_google_sign_in" />
+
+      <com.yoloo.android.ui.widget.BaselineGridTextView
+        android:id="@+id/tv_login_or"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:text="@string/label_login_or"
+        android:textColor="@android:color/white" />
+
+      <Button
+        android:id="@+id/btn_login_sign_up"
+        android:layout_width="@dimen/_120asdp"
+        android:layout_height="wrap_content"
+        android:text="@string/action_login_sign_up"
+        android:theme="@style/Yoloo.Button.White" />
+
+    </LinearLayout>
+
+  </ScrollView>
+
+</android.support.design.widget.CoordinatorLayout>

@@ -1,8 +1,10 @@
 package com.yoloo.android.ui.recyclerview;
 
 import android.support.v4.util.SparseArrayCompat;
+
 import com.airbnb.epoxy.EpoxyAdapter;
 import com.airbnb.epoxy.EpoxyModel;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +14,7 @@ public abstract class SelectableAdapter extends EpoxyAdapter implements Selectab
   private final List<EpoxyModel<?>> selectedItemsList = new ArrayList<>();
 
   private OnMaxSelectionReachedListener onMaxSelectionReachedListener;
+  private OnSelectionListener onSelectionListener;
 
   private int maxSelection = Integer.MAX_VALUE;
 
@@ -57,6 +60,9 @@ public abstract class SelectableAdapter extends EpoxyAdapter implements Selectab
     if (selectedItems.get(id) != null) {
       selectedItems.delete(id);
       notifyModelChanged(model);
+      if (onSelectionListener != null) {
+        onSelectionListener.onSelect(model, false);
+      }
       return true;
     } else {
       if (getSelectedItemCount() == maxSelection) {
@@ -67,6 +73,9 @@ public abstract class SelectableAdapter extends EpoxyAdapter implements Selectab
       } else {
         selectedItems.put(id, model);
         notifyModelChanged(model);
+        if (onSelectionListener != null) {
+          onSelectionListener.onSelect(model, true);
+        }
         return true;
       }
     }
@@ -79,5 +88,13 @@ public abstract class SelectableAdapter extends EpoxyAdapter implements Selectab
   public void setOnMaxSelectionReachedListener(
       OnMaxSelectionReachedListener onMaxSelectionReachedListener) {
     this.onMaxSelectionReachedListener = onMaxSelectionReachedListener;
+  }
+
+  public void setOnSelectionListener(OnSelectionListener onSelectionListener) {
+    this.onSelectionListener = onSelectionListener;
+  }
+
+  public interface OnSelectionListener {
+    void onSelect(EpoxyModel<?> model, boolean selected);
   }
 }

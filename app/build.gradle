@@ -86,17 +86,20 @@ android {
           "$project.rootDir/tools/rules-proguard.pro"
       signingConfig signingConfigs.release
       buildConfigField "String", "SERVER_URL", '"https://yoloo-151719.appspot.com/_ah/api/"'
+      buildConfigField "String", "UPLOAD_URL", '"https://yoloo-151719.appspot.com/upload"'
     }
 
     debug {
       versionNameSuffix ".debug"
       signingConfig signingConfigs.debug
       buildConfigField "String", "SERVER_URL", '"https://yoloo-151719.appspot.com/_ah/api/"'
+      buildConfigField "String", "UPLOAD_URL", '"https://yoloo-151719.appspot.com/upload"'
     }
 
     qa {
       versionNameSuffix ".qa"
       buildConfigField "String", "SERVER_URL", '"https://yoloo-151719.appspot.com/_ah/api/"'
+      buildConfigField "String", "UPLOAD_URL", '"https://yoloo-151719.appspot.com/upload"'
     }
   }
 
@@ -187,6 +190,7 @@ dependencies {
   compile 'com.ogaclejapan.arclayout:library:1.1.0@aar'
   compile 'com.google.android:flexbox:0.3.0-alpha2'
   compile 'com.firebase:firebase-jobdispatcher-with-gcm-dep:0.5.2'
+  compile 'com.squareup.moshi:moshi:1.4.0'
 
   annotationProcessor 'dk.ilios:realmfieldnameshelper:1.1.0'
 

@@ -6,10 +6,12 @@ import com.yoloo.android.data.model.TagRealm;
 import com.yoloo.android.data.repository.tag.TagRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.framework.MvpPresenter;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
+
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import timber.log.Timber;
 
 class ChildSearchPresenter extends MvpPresenter<ChildSearchView> {
@@ -68,7 +70,7 @@ class ChildSearchPresenter extends MvpPresenter<ChildSearchView> {
   }
 
   void follow(String userId, int direction) {
-    Disposable d = userRepository.follow(userId, direction)
+    Disposable d = userRepository.relationship(userId, direction)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe();
 
