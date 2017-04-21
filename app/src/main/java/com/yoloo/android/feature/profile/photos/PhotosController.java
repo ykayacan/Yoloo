@@ -17,7 +17,7 @@ import com.yoloo.android.data.model.MediaRealm;
 import com.yoloo.android.data.repository.media.MediaRepository;
 import com.yoloo.android.data.repository.media.datasource.MediaDiskDataStore;
 import com.yoloo.android.data.repository.media.datasource.MediaRemoteDataStore;
-import com.yoloo.android.feature.photo.PhotoController;
+import com.yoloo.android.feature.fullscreenphoto.FullscreenPhotoController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.changehandler.SharedElementDelayingChangeHandler;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
@@ -93,7 +93,7 @@ public class PhotosController extends MvpController<PhotosView, PhotosPresenter>
     String name = "image.test";
     List<String> names = Collections.singletonList(name);
 
-    Controller controller = PhotoController.create(item.getLargeSizeUrl());
+    Controller controller = FullscreenPhotoController.create(item.getLargeSizeUrl());
     RouterTransaction transaction = RouterTransaction.with(controller)
         .pushChangeHandler(new SharedElementDelayingChangeHandler(names))
         .popChangeHandler(new SharedElementDelayingChangeHandler(names));

@@ -50,7 +50,7 @@ class CreateDialogContactAdapter extends SelectableAdapter {
   }
 
   @EpoxyModelClass(layout = R.layout.item_cratedialog_contact)
-  public static abstract class CreateDialogContactModel
+  public abstract static class CreateDialogContactModel
       extends EpoxyModelWithHolder<CreateDialogContactModel.ContactHolder> {
 
     @EpoxyAttribute AccountRealm account;

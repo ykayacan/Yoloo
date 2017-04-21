@@ -29,8 +29,7 @@ public class TagShard implements Shardable.Shard {
   /**
    * TagId:shardNum
    */
-  @Id
-  private String id;
+  @Id private String id;
 
   private long posts;
 
@@ -38,8 +37,7 @@ public class TagShard implements Shardable.Shard {
     return Key.create(TagShard.class, tagKey.toWebSafeString() + ":" + shardNum);
   }
 
-  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE)
-  public Key<TagShard> getKey() {
+  @ApiResourceProperty(ignored = AnnotationBoolean.TRUE) public Key<TagShard> getKey() {
     return Key.create(TagShard.class, id);
   }
 

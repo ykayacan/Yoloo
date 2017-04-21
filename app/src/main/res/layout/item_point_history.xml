@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:background="@android:color/white"
+  android:orientation="vertical"
+  android:paddingBottom="8dp"
+  android:paddingEnd="16dp"
+  android:paddingLeft="16dp"
+  android:paddingRight="16dp"
+  android:paddingStart="16dp"
+  android:paddingTop="8dp">
+
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_history_earned_points"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:drawablePadding="8dp"
+    android:gravity="center_vertical"
+    android:text="@string/label_earned_points"
+    android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
+    app:drawableStart="@drawable/ic_bookmark_star_24dp" />
+
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_history_earned_bounties"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/padding_micro"
+    android:drawablePadding="8dp"
+    android:gravity="center_vertical"
+    android:text="@string/label_earned_bounties"
+    android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
+    android:visibility="gone"
+    app:drawableStart="@drawable/ic_coin_stack_24dp"
+    tools:visibility="visible" />
+</LinearLayout>

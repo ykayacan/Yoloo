@@ -15,7 +15,8 @@ public class CommentUpdateValidator implements Validator {
   private String commentId;
   private User user;
 
-  @Override public boolean isValid() {
+  @Override
+  public boolean isValid() {
     try {
       final Key<?> postKey = Key.create(postId);
       final Key<?> commentKey = Key.create(commentId);
@@ -28,7 +29,8 @@ public class CommentUpdateValidator implements Validator {
     }
   }
 
-  @Override public void onException() throws ServiceException {
+  @Override
+  public void onException() throws ServiceException {
     throw new ForbiddenException("Not has permission to update.");
   }
 }

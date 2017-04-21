@@ -21,7 +21,7 @@ public abstract class TagModel extends EpoxyModelWithHolder<TagModel.TagViewHold
     final Resources res = holder.itemView.getResources();
 
     holder.tvTag.setText(tag.getName());
-    holder.tvTagCount.setText(res.getString(R.string.label_search_post_count, tag.getPosts()));
+    holder.tvTagCount.setText(res.getString(R.string.label_search_post_count, tag.getPostCount()));
 
     holder.itemView.setOnClickListener(v -> onTagClickListener.onItemClick(v, this, tag));
   }

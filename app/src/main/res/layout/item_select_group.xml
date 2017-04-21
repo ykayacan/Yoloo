@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:foreground="?attr/selectableItemBackground"
+  android:orientation="horizontal"
+  android:paddingEnd="16dp"
+  android:paddingLeft="16dp"
+  android:paddingRight="16dp"
+  android:paddingStart="16dp">
+
+  <ImageView
+    android:id="@+id/iv_item_select_group_image"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginRight="16dp"
+    android:scaleType="centerCrop"
+    tools:src="@drawable/login_bg" />
+
+  <TextView
+    android:id="@+id/tv_item_select_group_title"
+    style="@style/Widget.Yoloo.Username"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
+    android:maxLines="1"
+    tools:text="Test Group" />
+
+</LinearLayout>

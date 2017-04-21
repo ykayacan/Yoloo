@@ -10,14 +10,10 @@ import com.yoloo.android.R;
 @EpoxyModelClass(layout = R.layout.item_feed_bounty_button)
 public abstract class BountyButtonModel extends EpoxyModel<Button> {
 
-  @EpoxyAttribute(hash = false) OnBountyButtonClickListener onBountyButtonClickListener;
+  @EpoxyAttribute(hash = false) View.OnClickListener onClickListener;
 
   @Override public void bind(Button view) {
     view.setText(R.string.action_feed_bounty_questions);
-    view.setOnClickListener(v -> onBountyButtonClickListener.onBountyButtonClick(v));
-  }
-
-  public interface OnBountyButtonClickListener {
-    void onBountyButtonClick(View v);
+    view.setOnClickListener(v -> onClickListener.onClick(v));
   }
 }

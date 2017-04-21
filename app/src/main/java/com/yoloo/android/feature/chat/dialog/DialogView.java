@@ -1,10 +1,6 @@
 package com.yoloo.android.feature.chat.dialog;
 
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.firebase.ChatMessage;
-import com.yoloo.android.framework.MvpView;
-
-public interface DialogView extends MvpView {
+/*public interface DialogView extends MvpView {
 
   void onMeLoaded(AccountRealm me);
 
@@ -15,4 +11,4 @@ public interface DialogView extends MvpView {
   void onMessageRemoved(ChatMessage message);
 
   void onError(Throwable throwable);
-}
+}*/

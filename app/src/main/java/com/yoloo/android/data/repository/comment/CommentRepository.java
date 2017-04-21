@@ -2,18 +2,19 @@ package com.yoloo.android.data.repository.comment;
 
 import com.annimon.stream.Optional;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.AccountRealmFields;
 import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.data.repository.comment.datasource.CommentDiskDataStore;
 import com.yoloo.android.data.repository.comment.datasource.CommentRemoteDataStore;
-import io.reactivex.Completable;
-import io.reactivex.Observable;
-import io.reactivex.schedulers.Schedulers;
-import io.realm.Realm;
+
 import java.util.List;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
 
 public class CommentRepository {
 
@@ -43,21 +44,14 @@ public class CommentRepository {
         remoteDataStore.get(postId, commentId)
             .doOnSuccess(diskDataStore::add)
             .map(Optional::of)
-            .subscribeOn(Schedulers.io())
-            .toObservable());
+            .toObservable()
+            .subscribeOn(Schedulers.io()));
   }
 
-  public Observable<CommentRealm> addComment(@Nonnull CommentRealm comment) {
-    Realm realm = Realm.getDefaultInstance();
-    AccountRealm account = realm.copyFromRealm(
-        realm.where(AccountRealm.class).equalTo(AccountRealmFields.ME, true).findFirst());
-    realm.close();
-
-    comment.setOwnerId(account.getId())
-        .setUsername(account.getUsername())
-        .setAvatarUrl(account.getAvatarUrl());
-
-    return remoteDataStore.add(comment).doOnNext(diskDataStore::add).subscribeOn(Schedulers.io());
+  public Single<CommentRealm> addComment(@Nonnull CommentRealm comment) {
+    return remoteDataStore.add(comment)
+        .doOnSuccess(diskDataStore::add)
+        .subscribeOn(Schedulers.io());
   }
 
   public Completable deleteComment(@Nonnull CommentRealm comment) {
@@ -82,9 +76,9 @@ public class CommentRepository {
     return diskDataStore.vote(commentId, direction).subscribeOn(Schedulers.io());
   }
 
-  public Observable<CommentRealm> acceptComment(@Nonnull CommentRealm comment) {
+  public Single<CommentRealm> acceptComment(@Nonnull CommentRealm comment) {
     return remoteDataStore.accept(comment)
-        .doOnNext(diskDataStore::accept)
+        .doOnSuccess(diskDataStore::accept)
         .subscribeOn(Schedulers.io());
   }
 }

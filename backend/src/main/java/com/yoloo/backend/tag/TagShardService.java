@@ -76,11 +76,12 @@ public class TagShardService implements Shardable<TagShard, Tag> {
   }
 
   @Override public Observable<Tag> mergeShards(Tag entity) {
-    return Observable.fromIterable(entity.getShards())
+    /*return Observable.fromIterable(entity.getShards())
         .cast(TagShard.class)
         .reduce((s1, s2) -> s1.addValues(s2.getPosts()))
-        .map(s -> entity.withPosts(s.getPosts()))
-        .toObservable();
+        .map(s -> entity.withPostCount(s.getPosts()))
+        .toObservable();*/
+    return null;
   }
 
   public Collection<TagShard> updateShards(Iterable<String> tagNames) {

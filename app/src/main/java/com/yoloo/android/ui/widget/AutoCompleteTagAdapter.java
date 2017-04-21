@@ -31,15 +31,20 @@ public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
     this.inflater = LayoutInflater.from(context);
   }
 
-  @Nullable @Override public TagRealm getItem(int position) {
+  @Nullable
+  @Override
+  public TagRealm getItem(int position) {
     return items.get(position);
   }
 
-  @Override public int getCount() {
+  @Override
+  public int getCount() {
     return items.size();
   }
 
-  @NonNull @Override public Filter getFilter() {
+  @NonNull
+  @Override
+  public Filter getFilter() {
     return new TagFilter(items, this, subject);
   }
 
@@ -83,7 +88,6 @@ public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
   }
 
   private static class TagFilter extends Filter {
-
     private final List<TagRealm> items;
     private final AutoCompleteTagAdapter adapter;
     private final PublishSubject<String> subject;
@@ -95,7 +99,8 @@ public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
       this.subject = subject;
     }
 
-    @Override protected FilterResults performFiltering(CharSequence constraint) {
+    @Override
+    protected FilterResults performFiltering(CharSequence constraint) {
       items.clear();
 
       if (isValid(constraint)) {
@@ -105,13 +110,15 @@ public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
       return null;
     }
 
-    @Override protected void publishResults(CharSequence constraint, FilterResults results) {
+    @Override
+    protected void publishResults(CharSequence constraint, FilterResults results) {
       if (items != null && !items.isEmpty()) {
         adapter.notifyDataSetChanged();
       }
     }
 
-    @Override public CharSequence convertResultToString(Object resultValue) {
+    @Override
+    public CharSequence convertResultToString(Object resultValue) {
       if (resultValue instanceof TagRealm) {
         return ((TagRealm) resultValue).getName();
       }

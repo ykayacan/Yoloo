@@ -12,4 +12,6 @@ public final class PushConstants {
   public static final String QUESTION_ID = "qId";
   public static final String ACCEPTED_ID = "acceptedId";
   public static final String COMMENT = "c";
+
+  public static final String GAME_ACTION = "ga";
 }

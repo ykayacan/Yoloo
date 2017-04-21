@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <color name="primary">#FF5722</color>
-  <color name="primary_dark">#E43700</color>
+  <!--<color name="primary_dark">#E43700</color>-->
+  <color name="primary_dark">#c41c00</color>
   <color name="accent">#FF5722</color>
 
   <!-- common colors -->
@@ -11,30 +12,26 @@
   <color name="secondary">#8A000000</color>
 
   <color name="title">#313446</color>
-  <color name="link">#CFD0D1</color>
 
   <color name="content_placeholder">#ffe0e0e0</color>
   
   <color name="grey_700">#616161</color>
-  <color name="gray_transparent">#a6efefef</color>
 
   <color name="accepted">#5CB85C</color>
 
   <color name="profile_card_text">#5C5C5C</color>
 
-  <color name="tag_bg_unselected">#FAFAFA</color>
-  <color name="tag_bg_selected">@color/primary_blue</color>
 
   <color name="tag_text_selected">#FAFAFA</color>
   <color name="tag_text_unselected">@android:color/primary_text_light</color>
 
-  <color name="fab_dim">#F2EEEEEE</color>
   <color name="divider">#1f000000</color>
 
   <color name="login_edittext_bg">#EBEBEB</color>
 
   <color name="background_light">#fafafa</color> <!-- grey 50 -->
   <color name="background_lightish">#e0e0e0</color> <!-- grey 300 -->
+  <color name="background_grey_100">#F5F5F5</color>
   <color name="background_lightish_2">#EEEEEE</color>
   <color name="background_lightish_3">#f9f9f9</color>
   <color name="immersive_bars">#99000000</color>
@@ -42,7 +39,7 @@
   <color name="editor_icon">#7C7C7C</color>
 
   <color name="inactive_icon_dark">#80000000</color>
-  <color name="video_tint">#B3000000</color>
+  <color name="video_tint">#80000000</color>
 
   <color name="label_shadow_start_color">#37000000</color>
   <color name="label_shadow_end_color">#03000000</color>

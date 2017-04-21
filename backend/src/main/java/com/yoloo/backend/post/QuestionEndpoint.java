@@ -16,33 +16,19 @@ import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
 import com.yoloo.backend.post.sort_strategy.PostSorter;
-
 import java.util.logging.Logger;
-
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
-@Api(
-    name = "yolooApi",
+@Api(name = "yolooApi",
     version = "v1",
-    namespace = @ApiNamespace(
-        ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER)
-)
-@ApiClass(
-    resource = "posts",
-    clientIds = {
-        Constants.ANDROID_CLIENT_ID,
-        Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID
-    },
-    audiences = { Constants.AUDIENCE_ID },
-    authenticators = { FirebaseAuthenticator.class }
-)
+    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
+@ApiClass(resource = "posts", clientIds = {
+    Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
+}, audiences = {Constants.AUDIENCE_ID}, authenticators = {FirebaseAuthenticator.class})
 public class QuestionEndpoint {
 
-  private static final Logger LOG =
-      Logger.getLogger(QuestionEndpoint.class.getSimpleName());
+  private static final Logger LOG = Logger.getLogger(QuestionEndpoint.class.getSimpleName());
 
   private final PostController postController = PostControllerFactory.of().create();
 
@@ -54,13 +40,13 @@ public class QuestionEndpoint {
    * @return the entity with the corresponding ID
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "questions.get",
+  @ApiMethod(name = "questions.get",
       path = "questions/{questionId}",
       httpMethod = ApiMethod.HttpMethod.GET)
   public Post get(@Named("questionId") String questionId, User user) throws ServiceException {
 
-    EndpointsValidator.create()
+    EndpointsValidator
+        .create()
         .on(BadRequestValidator.create(questionId, "questionId is required."))
         .on(AuthValidator.create(user));
 
@@ -72,38 +58,27 @@ public class QuestionEndpoint {
    *
    * @param tags the tags
    * @param content the content
-   * @param categoryIds the categories
+   * @param groupId the categories
    * @param mediaId the media id
    * @param bounty the bounty
    * @param user the user
    * @return the question
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "questions.insert",
-      path = "questions",
-      httpMethod = ApiMethod.HttpMethod.POST)
-  public Post insert(
-      @Named("content") String content,
-      @Named("tags") String tags,
-      @Named("categoryIds") String categoryIds,
-      @Nullable @Named("mediaId") String mediaId,
-      @Nullable @Named("bounty") Integer bounty,
-      User user) throws ServiceException {
+  @ApiMethod(name = "questions.insert", path = "questions", httpMethod = ApiMethod.HttpMethod.POST)
+  public Post insert(@Named("content") String content, @Named("tags") String tags,
+      @Named("groupId") String groupId, @Nullable @Named("mediaId") String mediaId,
+      @Nullable @Named("bounty") Integer bounty, User user) throws ServiceException {
 
-    EndpointsValidator.create()
+    EndpointsValidator
+        .create()
         .on(BadRequestValidator.create(content, "content is required."))
         .on(BadRequestValidator.create(tags, "tags is required."))
-        .on(BadRequestValidator.create(categoryIds, "categoryIds is required."))
+        .on(BadRequestValidator.create(groupId, "groupId is required."))
         .on(AuthValidator.create(user));
 
-    return postController.insertQuestion(
-        content,
-        tags,
-        categoryIds,
-        Optional.fromNullable(mediaId),
-        Optional.fromNullable(bounty),
-        user);
+    return postController.insertQuestion(content, tags, groupId, Optional.fromNullable(mediaId),
+        Optional.fromNullable(bounty), user);
   }
 
   /**
@@ -118,31 +93,23 @@ public class QuestionEndpoint {
    * @return the updated version from the entity
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "questions.update",
+  @ApiMethod(name = "questions.update",
       path = "questions/{questionId}",
       httpMethod = ApiMethod.HttpMethod.PUT)
-  public Post update(
-      @Named("questionId") String questionId,
-      @Nullable @Named("bounty") Integer bounty,
-      @Nullable @Named("content") String content,
-      @Nullable @Named("tags") String tags,
-      @Nullable @Named("mediaId") String mediaId,
-      User user) throws ServiceException {
+  public Post update(@Named("questionId") String questionId,
+      @Nullable @Named("bounty") Integer bounty, @Nullable @Named("content") String content,
+      @Nullable @Named("tags") String tags, @Nullable @Named("mediaId") String mediaId, User user)
+      throws ServiceException {
 
-    EndpointsValidator.create()
+    EndpointsValidator
+        .create()
         .on(BadRequestValidator.create(questionId, "questionId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(questionId, "Invalid questionId."))
         .on(ForbiddenValidator.create(questionId, user, ForbiddenValidator.Op.UPDATE));
 
-    return postController.updatePost(
-        questionId,
-        Optional.absent(),
-        Optional.fromNullable(content),
-        Optional.fromNullable(bounty),
-        Optional.fromNullable(tags),
-        Optional.fromNullable(mediaId));
+    return postController.updatePost(questionId, Optional.absent(), Optional.fromNullable(content),
+        Optional.fromNullable(bounty), Optional.fromNullable(tags), Optional.fromNullable(mediaId));
   }
 
   /**
@@ -152,13 +119,13 @@ public class QuestionEndpoint {
    * @param user the user
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "questions.delete",
+  @ApiMethod(name = "questions.delete",
       path = "questions/{questionId}",
       httpMethod = ApiMethod.HttpMethod.DELETE)
   public void delete(@Named("questionId") String questionId, User user) throws ServiceException {
 
-    EndpointsValidator.create()
+    EndpointsValidator
+        .create()
         .on(BadRequestValidator.create(questionId, "questionId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(questionId, "Invalid questionId."))
@@ -178,29 +145,16 @@ public class QuestionEndpoint {
    * @return a response that encapsulates the result listFeed and the next page token/cursor
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "questions.list",
-      path = "questions",
-      httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Post> list(
-      @Nullable @Named("userId") String userId,
-      @Nullable @Named("sort") PostSorter sorter,
-      @Nullable @Named("category") String category,
-      @Nullable @Named("tags") String tags,
-      @Nullable @Named("cursor") String cursor,
-      @Nullable @Named("limit") Integer limit,
-      User user) throws ServiceException {
+  @ApiMethod(name = "questions.list", path = "questions", httpMethod = ApiMethod.HttpMethod.GET)
+  public CollectionResponse<Post> list(@Nullable @Named("userId") String userId,
+      @Nullable @Named("sort") PostSorter sorter, @Nullable @Named("category") String category,
+      @Nullable @Named("tags") String tags, @Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
-    return postController.listPosts(
-        Optional.fromNullable(userId),
-        Optional.fromNullable(sorter),
-        Optional.fromNullable(category),
-        Optional.fromNullable(tags),
-        Optional.fromNullable(limit),
-        Optional.fromNullable(cursor),
-        Optional.of(Post.PostType.QUESTION),
-        user);
+    return postController.listPosts(Optional.fromNullable(userId), Optional.fromNullable(sorter),
+        Optional.fromNullable(category), Optional.fromNullable(tags), Optional.fromNullable(limit),
+        Optional.fromNullable(cursor), Optional.of(Post.PostType.QUESTION), user);
   }
 }

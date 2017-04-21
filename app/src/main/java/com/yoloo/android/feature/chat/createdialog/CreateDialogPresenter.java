@@ -2,17 +2,13 @@ package com.yoloo.android.feature.chat.createdialog;
 
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.firebase.Chat;
 import com.yoloo.android.data.repository.chat.ChatRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.framework.MvpPresenter;
-
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import java.util.List;
+import javax.annotation.Nonnull;
 import timber.log.Timber;
 
 class CreateDialogPresenter extends MvpPresenter<CreateDialogView> {
@@ -57,9 +53,9 @@ class CreateDialogPresenter extends MvpPresenter<CreateDialogView> {
     getDisposable().add(d);
   }
 
-  Chat createDialog(@Nonnull Chat chat) {
+  /*Chat createDialog(@Nonnull Chat chat) {
     return chatRepository.addDialog(chat);
-  }
+  }*/
 
   void searchUsers(String query) {
     Disposable d = userRepository.searchUser(query, null, 20)

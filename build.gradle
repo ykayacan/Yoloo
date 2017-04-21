@@ -5,16 +5,16 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:2.4.0-alpha1'
+    classpath 'com.android.tools.build:gradle:2.4.0-alpha6'
     classpath 'com.google.gms:google-services:3.0.0'
     classpath 'com.google.firebase:firebase-plugins:1.0.4'
-    classpath 'me.tatarka:gradle-retrolambda:3.6.0'
-    classpath 'io.realm:realm-gradle-plugin:3.0.0'
-    classpath 'com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0-beta6'
+    classpath 'io.realm:realm-gradle-plugin:3.1.3'
+    classpath 'com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0-beta7'
     classpath 'com.google.guava:guava:20.0'
     classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
     //classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.6.2'
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.14.0'
+    classpath 'me.tatarka:gradle-retrolambda:3.6.0'
 
     // NOTE: Do not place your application dependencies here; they belong
     // in the individual module build.gradle files
@@ -24,13 +24,9 @@ buildscript {
 allprojects {
   repositories {
     jcenter()
-    maven {
-      url "https://oss.sonatype.org/content/repositories/snapshots/"
-    }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
     maven { url "https://jitpack.io" }
-    maven {
-      url 'https://github.com/uPhyca/stetho-realm/raw/master/maven-repo'
-    }
+    maven { url 'https://github.com/uPhyca/stetho-realm/raw/master/maven-repo' }
   }
 }
 
@@ -39,8 +35,36 @@ task clean(type: Delete) {
 }
 
 task wrapper(type: Wrapper) {
-  gradleVersion = '3.4'
+  gradleVersion = '3.5'
   distributionUrl = distributionUrl.replace("bin", "all")
 }
 
-apply from: rootProject.file('dependencies.gradle')
+ext {
+  minSdk = 16
+  targetSdk = 25
+  compileSdk = 25
+  buildTools = '25.0.2'
+  javaSource = JavaVersion.VERSION_1_8
+  javaTarget = JavaVersion.VERSION_1_8
+
+  rxJava2_version = '2.0.9'
+  rxJava2Android_version = '2.0.1'
+
+  firebase_version = '10.2.1'
+  playServices_version = '10.2.1'
+  supportLibs_version = '25.3.1'
+  multidex_version = '1.0.1'
+  constraintLayout_version = '1.0.2'
+
+  butterKnife_version = '8.5.1'
+  timber_version = '4.5.1'
+  conductor_version = '2.1.2'
+  epoxy_version = '1.7.5'
+  flexbox_version = '0.3.0-alpha3'
+
+  annimonStream_version = '1.1.7'
+
+  junit_version = '4.12'
+  findbugs_version = '3.0.1'
+  espressoCore_version = '2.2.2'
+}

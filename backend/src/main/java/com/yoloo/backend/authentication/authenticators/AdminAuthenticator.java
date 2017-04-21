@@ -10,14 +10,16 @@ import javax.servlet.http.HttpServletRequest;
 
 @Singleton
 public class AdminAuthenticator implements Authenticator {
-  @Override public User authenticate(HttpServletRequest request) {
+
+  @Override
+  public User authenticate(HttpServletRequest request) {
     String authHeader = request.getHeader(OAuth2.HeaderType.AUTHORIZATION);
 
     if (Strings.isNullOrEmpty(authHeader)) {
       return null;
     }
 
-    if (authHeader.equals(Constants.ADMIN_EMAIL)) {
+    if (authHeader.split(" ")[1].equals(Constants.ADMIN_EMAIL)) {
       return new User("1", Constants.ADMIN_EMAIL);
     }
 

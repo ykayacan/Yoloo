@@ -1,7 +1,6 @@
 package com.yoloo.backend.post;
 
 import com.google.api.server.spi.response.CollectionResponse;
-import com.google.api.server.spi.response.ConflictException;
 import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.users.User;
@@ -13,20 +12,19 @@ import com.google.common.net.MediaType;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Ref;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.account.AccountEntity;
 import com.yoloo.backend.account.AccountShard;
 import com.yoloo.backend.account.AccountShardService;
-import com.yoloo.backend.category.Category;
-import com.yoloo.backend.category.CategoryController;
-import com.yoloo.backend.category.CategoryControllerFactory;
 import com.yoloo.backend.comment.CommentController;
 import com.yoloo.backend.comment.CommentControllerFactory;
 import com.yoloo.backend.device.DeviceRecord;
+import com.yoloo.backend.game.GameService;
+import com.yoloo.backend.game.Tracker;
+import com.yoloo.backend.group.TravelerGroupEntity;
+import com.yoloo.backend.group.TravelerGroupController;
+import com.yoloo.backend.group.TravelerGroupControllerFactory;
+import com.yoloo.backend.media.Media;
 import com.yoloo.backend.relationship.RelationshipController;
 import com.yoloo.backend.relationship.RelationshipControllerFactory;
-import com.yoloo.backend.game.GamificationService;
-import com.yoloo.backend.game.Tracker;
-import com.yoloo.backend.media.Media;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagController;
 import com.yoloo.backend.tag.TagControllerFactory;
@@ -53,9 +51,9 @@ public class PostControllerTest extends TestBase {
 
   private Account owner;
 
-  private Category budgetTravel;
-  private Category europe;
-  private Category america;
+  private TravelerGroupEntity budgetTravel;
+  private TravelerGroupEntity europe;
+  private TravelerGroupEntity america;
 
   private Tag visa;
   private Tag visa2;
@@ -68,7 +66,8 @@ public class PostControllerTest extends TestBase {
   public void setUpGAE() {
     super.setUpGAE();
 
-    helper.setEnvIsLoggedIn(true)
+    helper
+        .setEnvIsLoggedIn(true)
         .setEnvIsAdmin(true)
         .setEnvAuthDomain(USER_AUTH_DOMAIN)
         .setEnvEmail(USER_EMAIL);
@@ -81,28 +80,26 @@ public class PostControllerTest extends TestBase {
     postController = PostControllerFactory.of().create();
     RelationshipController relationshipController = RelationshipControllerFactory.of().create();
     TagController tagController = TagControllerFactory.of().create();
-    CategoryController categoryController = CategoryControllerFactory.of().create();
+    TravelerGroupController travelerGroupController = TravelerGroupControllerFactory.of().create();
     voteController = VoteControllerFactory.of().create();
     commentController = CommentControllerFactory.of().create();
 
-    AccountEntity model1 = createAccount();
-    AccountEntity model2 = createAccount();
-
-    owner = model1.getAccount();
-    Account owner2 = model2.getAccount();
+    owner = createAccount();
+    Account owner2 = createAccount();
 
     DeviceRecord record1 = createRecord(owner);
     DeviceRecord record2 = createRecord(owner2);
 
-    Tracker tracker = GamificationService.create().createTracker(owner.getKey());
+    Tracker tracker = GameService.create().createTracker(owner.getKey());
 
-    ImmutableSet<Object> saveList = ImmutableSet.builder()
+    ImmutableSet<Object> saveList = ImmutableSet
+        .builder()
         .add(owner)
         .add(owner2)
         .add(record1)
         .add(record2)
-        .addAll(model1.getShards().values())
-        .addAll(model2.getShards().values())
+        .addAll(owner.getShardMap().values())
+        .addAll(owner2.getShardMap().values())
         .add(tracker)
         .build();
 
@@ -112,26 +109,13 @@ public class PostControllerTest extends TestBase {
 
     relationshipController.follow(owner2.getWebsafeId(), user);
 
-    try {
-      budgetTravel = categoryController.insertCategory("budget travel", null);
-    } catch (ConflictException e) {
-      e.printStackTrace();
-    }
-    try {
-      europe = categoryController.insertCategory("europe", null);
-    } catch (ConflictException e) {
-      e.printStackTrace();
-    }
-    try {
-      america = categoryController.insertCategory("america", null);
-    } catch (ConflictException e) {
-      e.printStackTrace();
-    }
+    budgetTravel = travelerGroupController.insertGroup("budget travel", null);
+    europe = travelerGroupController.insertGroup("europe", null);
+    america = travelerGroupController.insertGroup("america", null);
 
-    Tag passport = tagController.insertGroup("passport");
-
-    visa = tagController.insertTag("visa", "en", passport.getWebsafeId());
-    visa2 = tagController.insertTag("visa2", "en", passport.getWebsafeId());
+    Tag passport = tagController.insertTag("passport");
+    visa = tagController.insertTag("visa");
+    visa2 = tagController.insertTag("visa2");
   }
 
   @Test
@@ -140,8 +124,7 @@ public class PostControllerTest extends TestBase {
 
     Post original =
         postController.insertQuestion("Test content", "visa,passport", europe.getWebsafeId(),
-            Optional.absent(),
-            Optional.of(10), user);
+            Optional.absent(), Optional.of(10), user);
 
     Post fetched = postController.getPost(original.getWebsafeId(), user);
 
@@ -158,7 +141,7 @@ public class PostControllerTest extends TestBase {
     assertEquals(tags, fetched.getTags());
 
     Set<String> categories = ImmutableSet.<String>builder().add("europe").build();
-    assertEquals(categories, fetched.getCategories());
+    //assertEquals(categories, fetched.getTravelerGroup());
 
     assertEquals(0, fetched.getCommentCount());
     assertEquals(0, fetched.getReportCount());
@@ -171,8 +154,7 @@ public class PostControllerTest extends TestBase {
 
     Post original =
         postController.insertQuestion("Test content", "visa,passport", europe.getWebsafeId(),
-            Optional.absent(),
-            Optional.of(10), user);
+            Optional.absent(), Optional.of(10), user);
     voteController.vote(original.getWebsafeId(), Vote.Direction.UP, user);
 
     Post fetched = postController.getPost(original.getWebsafeId(), user);
@@ -186,13 +168,11 @@ public class PostControllerTest extends TestBase {
     assertEquals(new Link("Test avatar"), fetched.getAvatarUrl());
     assertEquals(Vote.Direction.UP, fetched.getDir());
 
-    Set<String> tags = ImmutableSet.<String>builder()
-        .add("visa").add("passport").build();
+    Set<String> tags = ImmutableSet.<String>builder().add("visa").add("passport").build();
     assertEquals(tags, fetched.getTags());
 
-    Set<String> categories = ImmutableSet.<String>builder()
-        .add("europe").build();
-    assertEquals(categories, fetched.getCategories());
+    Set<String> categories = ImmutableSet.<String>builder().add("europe").build();
+    //assertEquals(categories, fetched.getCategories());
 
     assertEquals(0, fetched.getCommentCount());
     assertEquals(0, fetched.getReportCount());
@@ -227,7 +207,7 @@ public class PostControllerTest extends TestBase {
     Set<String> categorySet = new HashSet<>();
     categorySet.add(budgetTravel.getName());
     categorySet.add(europe.getName());
-    assertEquals(categorySet, post.getCategories());
+    //assertEquals(categorySet, post.getCategories());
 
     Tracker tracker = ofy().load().key(Tracker.createKey(Key.create(user.getUserId()))).now();
 
@@ -243,7 +223,8 @@ public class PostControllerTest extends TestBase {
     String tags = visa.getName() + "," + visa2.getName();
     String categories = europe.getWebsafeId() + "," + budgetTravel.getWebsafeId();
 
-    Media media = Media.builder()
+    Media media = Media
+        .builder()
         .id("bucket/test_item")
         .parent(owner.getKey())
         .mime(MediaType.ANY_IMAGE_TYPE.toString())
@@ -269,13 +250,13 @@ public class PostControllerTest extends TestBase {
     assertEquals("Test user", post.getUsername());
     assertEquals(new Link("Test avatar"), post.getAvatarUrl());
     assertEquals(Vote.Direction.DEFAULT, post.getDir());
-    assertEquals(media.getUrl(), post.getMedia().getUrl());
-    assertEquals(media.getId(), post.getMedia().getId());
+    //assertEquals(media.getUrl(), post.getMedia().getUrl());
+    //assertEquals(media.getId(), post.getMedia().getId());
 
     Set<String> categorySet = new HashSet<>();
     categorySet.add(budgetTravel.getName());
     categorySet.add(europe.getName());
-    assertEquals(categorySet, post.getCategories());
+    //assertEquals(categorySet, post.getCategories());
   }
 
   @Test
@@ -283,32 +264,24 @@ public class PostControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     String tags = visa.getName() + "," + visa2.getName();
-    String categoryIds = europe.getWebsafeId()
-        + ","
-        + budgetTravel.getWebsafeId()
-        + ","
-        + america.getWebsafeId();
+    String categoryIds =
+        europe.getWebsafeId() + "," + budgetTravel.getWebsafeId() + "," + america.getWebsafeId();
 
     postController.insertQuestion("Test content", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
     postController.insertQuestion("Test content", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
 
-    CollectionResponse<Post> response = postController.listPosts(
-        Optional.absent(),
-        Optional.absent(),
-        Optional.fromNullable(budgetTravel.getName()),
-        Optional.absent(),
-        Optional.absent(),
-        Optional.absent(),
-        Optional.of(Post.PostType.QUESTION),
-        user);
+    CollectionResponse<Post> response =
+        postController.listPosts(Optional.absent(), Optional.absent(),
+            Optional.fromNullable(budgetTravel.getName()), Optional.absent(), Optional.absent(),
+            Optional.absent(), Optional.of(Post.PostType.QUESTION), user);
 
     assertNotNull(response.getItems());
     assertEquals(2, response.getItems().size());
     for (Post post : response.getItems()) {
       assertEquals("Test content", post.getContent());
-      assertEquals("[budget travel, europe, america]", post.getCategories().toString());
+      //assertEquals("[budget travel, europe, america]", post.getCategories().toString());
     }
   }
 
@@ -327,21 +300,16 @@ public class PostControllerTest extends TestBase {
     postController.insertQuestion("Test content", tags, categories2, Optional.absent(),
         Optional.of(10), user);
 
-    CollectionResponse<Post> response = postController.listPosts(
-        Optional.absent(),
-        Optional.absent(),
-        Optional.fromNullable(budgetTravel.getName()),
-        Optional.absent(),
-        Optional.absent(),
-        Optional.absent(),
-        Optional.of(Post.PostType.QUESTION),
-        user);
+    CollectionResponse<Post> response =
+        postController.listPosts(Optional.absent(), Optional.absent(),
+            Optional.fromNullable(budgetTravel.getName()), Optional.absent(), Optional.absent(),
+            Optional.absent(), Optional.of(Post.PostType.QUESTION), user);
 
     assertNotNull(response.getItems());
     assertEquals(1, response.getItems().size());
     for (Post post : response.getItems()) {
       assertEquals("Test content", post.getContent());
-      assertEquals("[budget travel, europe]", post.getCategories().toString());
+      //assertEquals("[budget travel, europe]", post.getCategories().toString());
     }
   }
 
@@ -370,15 +338,10 @@ public class PostControllerTest extends TestBase {
     commentController.insertComment(p4.getWebsafeId(), "Test comment", user);
     commentController.insertComment(p4.getWebsafeId(), "Test comment 2", user);
 
-    CollectionResponse<Post> response = postController.listPosts(
-        Optional.absent(),
-        Optional.absent(),
-        Optional.fromNullable(budgetTravel.getName()),
-        Optional.absent(),
-        Optional.absent(),
-        Optional.absent(),
-        Optional.of(Post.PostType.QUESTION),
-        user);
+    CollectionResponse<Post> response =
+        postController.listPosts(Optional.absent(), Optional.absent(),
+            Optional.fromNullable(budgetTravel.getName()), Optional.absent(), Optional.absent(),
+            Optional.absent(), Optional.of(Post.PostType.QUESTION), user);
 
     assertNotNull(response.getItems());
     assertEquals(4, response.getItems().size());
@@ -404,30 +367,28 @@ public class PostControllerTest extends TestBase {
     }
   }
 
-  private AccountEntity createAccount() {
+  private Account createAccount() {
     final Key<Account> ownerKey = fact().allocateId(Account.class);
 
     AccountShardService ass = AccountShardService.create();
 
     Map<Ref<AccountShard>, AccountShard> map = ass.createShardMapWithRef(ownerKey);
 
-    Account account = Account.builder()
+    return Account
+        .builder()
         .id(ownerKey.getId())
         .avatarUrl(new Link("Test avatar"))
         .email(new Email(USER_EMAIL))
         .username("Test user")
         .shardRefs(Lists.newArrayList(map.keySet()))
         .created(DateTime.now())
-        .build();
-
-    return AccountEntity.builder()
-        .account(account)
-        .shards(map)
+        .shardMap(map)
         .build();
   }
 
   private DeviceRecord createRecord(Account owner) {
-    return DeviceRecord.builder()
+    return DeviceRecord
+        .builder()
         .id(owner.getWebsafeId())
         .parent(owner.getKey())
         .regId(UUID.randomUUID().toString())

@@ -16,33 +16,16 @@ import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import com.yoloo.backend.endpointsvalidator.validator.CommentUpdateValidator;
 import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
-
-import java.util.logging.Logger;
-
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
-@Api(
-    name = "yolooApi",
+@Api(name = "yolooApi",
     version = "v1",
-    namespace = @ApiNamespace(
-        ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER)
-)
-@ApiClass(
-    resource = "comments",
-    clientIds = {
-        Constants.ANDROID_CLIENT_ID,
-        Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID
-    },
-    audiences = { Constants.AUDIENCE_ID },
-    authenticators = { FirebaseAuthenticator.class }
-)
+    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
+@ApiClass(resource = "comments", clientIds = {
+    Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
+}, audiences = { Constants.AUDIENCE_ID }, authenticators = { FirebaseAuthenticator.class })
 public class CommentEndpoint {
-
-  private static final Logger LOG =
-      Logger.getLogger(CommentEndpoint.class.getSimpleName());
 
   private final CommentController commentController = CommentControllerFactory.of().create();
 
@@ -55,14 +38,10 @@ public class CommentEndpoint {
    * @return the comment
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "posts.comments.get",
+  @ApiMethod(name = "posts.comments.get",
       path = "posts/{postId}/comments/{commentId}",
-      httpMethod = ApiMethod.HttpMethod.GET)
-  public Comment get(
-      @Named("postId") String postId,
-      @Named("commentId") String commentId,
-      User user) throws ServiceException {
+      httpMethod = ApiMethod.HttpMethod.GET) public Comment get(@Named("postId") String postId,
+      @Named("commentId") String commentId, User user) throws ServiceException {
 
     EndpointsValidator.create()
         .on(BadRequestValidator.create(postId, "postId is required."))
@@ -82,14 +61,10 @@ public class CommentEndpoint {
    * @return the comment
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "posts.comments.insert",
+  @ApiMethod(name = "posts.comments.insert",
       path = "posts/{postId}/comments",
-      httpMethod = ApiMethod.HttpMethod.POST)
-  public Comment insert(
-      @Named("postId") String postId,
-      @Named("content") String content,
-      User user) throws ServiceException {
+      httpMethod = ApiMethod.HttpMethod.POST) public Comment insert(@Named("postId") String postId,
+      @Named("content") String content, User user) throws ServiceException {
 
     EndpointsValidator.create()
         .on(BadRequestValidator.create(postId, "postId is required."))
@@ -111,16 +86,11 @@ public class CommentEndpoint {
    * @return the updated version from the entity
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "posts.comments.update",
+  @ApiMethod(name = "posts.comments.update",
       path = "posts/{postId}/comments/{commentId}",
-      httpMethod = ApiMethod.HttpMethod.PUT)
-  public Comment update(
-      @Named("postId") String postId,
-      @Named("commentId") String commentId,
-      @Nullable @Named("content") String content,
-      @Nullable @Named("accepted") Boolean accepted,
-      User user) throws ServiceException {
+      httpMethod = ApiMethod.HttpMethod.PUT) public Comment update(@Named("postId") String postId,
+      @Named("commentId") String commentId, @Nullable @Named("content") String content,
+      @Nullable @Named("accepted") Boolean accepted, User user) throws ServiceException {
 
     EndpointsValidator.create()
         .on(BadRequestValidator.create(postId, "postId is required."))
@@ -129,12 +99,8 @@ public class CommentEndpoint {
         .on(NotFoundValidator.create(postId, "Invalid postId."))
         .on(CommentUpdateValidator.create(postId, commentId, user));
 
-    return commentController.updateComment(
-        postId,
-        commentId,
-        Optional.fromNullable(content),
-        Optional.fromNullable(accepted),
-        user);
+    return commentController.updateComment(postId, commentId, Optional.fromNullable(content),
+        Optional.fromNullable(accepted), user);
   }
 
   /**
@@ -145,14 +111,10 @@ public class CommentEndpoint {
    * @param user the user
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "posts.comments.delete",
+  @ApiMethod(name = "posts.comments.delete",
       path = "posts/{postId}/comments/{commentId}",
-      httpMethod = ApiMethod.HttpMethod.DELETE)
-  public void delete(
-      @Named("postId") String postId,
-      @Named("commentId") String commentId,
-      User user) throws ServiceException {
+      httpMethod = ApiMethod.HttpMethod.DELETE) public void delete(@Named("postId") String postId,
+      @Named("commentId") String commentId, User user) throws ServiceException {
 
     EndpointsValidator.create()
         .on(BadRequestValidator.create(postId, "postId is required."))
@@ -174,26 +136,18 @@ public class CommentEndpoint {
    * @return a response that encapsulates the result listFeed and the next page token/cursor
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "posts.comments.list",
+  @ApiMethod(name = "posts.comments.list",
       path = "posts/{postId}/comments",
-      httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Comment> list(
-      @Named("postId") String postId,
-      @Nullable @Named("cursor") String cursor,
-      @Nullable @Named("limit") Integer limit,
-      User user)
-      throws ServiceException {
+      httpMethod = ApiMethod.HttpMethod.GET) public CollectionResponse<Comment> list(
+      @Named("postId") String postId, @Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
 
     EndpointsValidator.create()
         .on(BadRequestValidator.create(postId, "postId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(postId, "Invalid postId."));
 
-    return commentController.listComments(
-        postId,
-        Optional.fromNullable(cursor),
-        Optional.fromNullable(limit),
-        user);
+    return commentController.listComments(postId, Optional.fromNullable(cursor),
+        Optional.fromNullable(limit), user);
   }
 }

@@ -5,16 +5,24 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.googlecode.objectify.Key;
 import com.yoloo.backend.util.StringUtil;
-import java.util.List;
+import ix.Ix;
+import java.util.Collection;
+import java.util.Collections;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(staticName = "create")
 public class MediaService {
 
-  public static final Storage STORAGE = StorageOptions.getDefaultInstance().getService();
+  private static final Storage STORAGE = StorageOptions.getDefaultInstance().getService();
 
-  public void delete(Key<Media> mediaKey) {
-    List<String> splitted = StringUtil.splitToList(mediaKey.getName(), "/");
-    STORAGE.delete(BlobId.of(splitted.get(0), splitted.get(1)));
+  public void deleteMedia(Key<Media> mediaKey) {
+    deleteMedias(Collections.singleton(mediaKey));
+  }
+
+  public void deleteMedias(Collection<Key<Media>> mediaKeys) {
+    Ix.from(mediaKeys)
+        .map(mediaKey -> StringUtil.split(mediaKey.getName(), "/"))
+        .map(s -> BlobId.of(s.get(0), s.get(1)))
+        .foreach(blobId -> STORAGE.batch().delete(blobId));
   }
 }

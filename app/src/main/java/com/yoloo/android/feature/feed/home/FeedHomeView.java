@@ -7,7 +7,7 @@ import java.util.List;
 
 interface FeedHomeView extends MvpDataView<List<FeedItem>> {
 
-  void onAccountLoaded(AccountRealm account);
+  void onMeLoaded(AccountRealm me);
 
   void showContent();
 }

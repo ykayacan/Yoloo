@@ -72,13 +72,6 @@ public final class OkHttpTransport extends HttpTransport {
   }
 
   /**
-   * HTTP proxy or {@code null} to use the proxy settings from <a
-   * href="http://docs.oracle.com/javase/7/docs/api/java/net/doc-files/net-properties.html">system
-   * properties</a>.
-   */
-  private final Proxy proxy;
-
-  /**
    * SSL socket factory or {@code null} for the default.
    */
   private final SSLSocketFactory sslSocketFactory;
@@ -98,19 +91,15 @@ public final class OkHttpTransport extends HttpTransport {
    * </p>
    */
   public OkHttpTransport() {
-    this(null, null, null);
+    this(null, null);
   }
 
   /**
-   * @param proxy HTTP proxy or {@code null} to use the proxy settings from <a
-   * href="http://docs.oracle.com/javase/7/docs/api/java/net/doc-files/net-properties.html"> system
-   * properties</a>
    * @param sslSocketFactory SSL socket factory or {@code null} for the default
    * @param hostnameVerifier host name verifier or {@code null} for the default
    */
-  private OkHttpTransport(Proxy proxy, SSLSocketFactory sslSocketFactory,
+  private OkHttpTransport(SSLSocketFactory sslSocketFactory,
       HostnameVerifier hostnameVerifier) {
-    this.proxy = proxy;
     this.sslSocketFactory = sslSocketFactory;
     this.hostnameVerifier = hostnameVerifier;
     this.okHttpClient = new OkHttpClient();
@@ -303,7 +292,7 @@ public final class OkHttpTransport extends HttpTransport {
      * Returns a new instance from {@link OkHttpTransport} based on the options.
      */
     public OkHttpTransport build() {
-      return new OkHttpTransport(proxy, sslSocketFactory, hostnameVerifier);
+      return new OkHttpTransport(sslSocketFactory, hostnameVerifier);
     }
   }
 }

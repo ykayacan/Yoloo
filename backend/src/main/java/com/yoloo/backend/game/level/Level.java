@@ -1,22 +1,27 @@
 package com.yoloo.backend.game.level;
 
 import com.google.common.collect.Maps;
-import java.util.NavigableMap;
+import ix.Ix;
+import java.util.Map;
 
 public class Level {
 
-  private static final NavigableMap<Integer, Integer> LEVELS = Maps.newTreeMap();
+  private static final Map<Integer, Integer> LEVELS = Maps.newHashMap();
 
   static {
     LEVELS.put(0, 0);
-    LEVELS.put(300, 1);
-    LEVELS.put(500, 2);
-    LEVELS.put(1000, 3);
-    LEVELS.put(2500, 4);
-    LEVELS.put(5000, 5);
+    LEVELS.put(1, 300);
+    LEVELS.put(2, 500);
+    LEVELS.put(3, 1000);
+    LEVELS.put(4, 2500);
+    LEVELS.put(5, 5000);
   }
 
   public static int findLevelForPoint(int points) {
-    return LEVELS.floorEntry(points).getValue();
+    return Ix.from(LEVELS.entrySet()).filter(entry -> entry.getValue() <= points).last().getKey();
+  }
+
+  public static int findPointsForLevel(int level) {
+    return LEVELS.get(level);
   }
 }

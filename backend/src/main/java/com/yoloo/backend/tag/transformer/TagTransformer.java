@@ -9,9 +9,7 @@ public class TagTransformer implements Transformer<Tag, TagDTO> {
     return TagDTO.builder()
         .id(in.getWebsafeId())
         .name(in.getName())
-        .posts(in.getPosts())
-        .totalTagCount(in.getTotalTagCount())
-        .type(in.getType().name().toLowerCase())
+        .postCount(in.getPostCount())
         .build();
   }
 

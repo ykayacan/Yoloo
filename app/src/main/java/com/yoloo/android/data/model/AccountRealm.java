@@ -3,23 +3,19 @@ package com.yoloo.android.data.model;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.yoloo.backend.yolooApi.model.AccountDTO;
-
-import java.util.Date;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
 import io.realm.RealmObject;
 import io.realm.annotations.Ignore;
 import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import javax.annotation.Nullable;
 
 public class AccountRealm extends RealmObject {
 
-  @PrimaryKey
-  private String id;
-  @Index
-  private boolean me;
+  @PrimaryKey private String id;
+  @Index private boolean me;
   private String username;
   private String realname;
   private String email;
@@ -28,6 +24,8 @@ public class AccountRealm extends RealmObject {
   private String locale;
   private String gender;
   private String websiteUrl;
+  private Date birthdate;
+  private String country;
   private boolean following;
 
   private long followingCount;
@@ -39,17 +37,14 @@ public class AccountRealm extends RealmObject {
   private int pointCount;
   private int bountyCount;
 
-  @Index
-  private boolean recent;
   private boolean pending;
-  @Index
-  private Date localSaveDate;
+  @Index private Date localSaveDate;
 
   private String idToken;
-  private String categoryIds;
+  private String subscribedGroupIds;
 
-  @Ignore
-  private String password;
+  @Ignore private String password;
+  @Ignore private List<String> travelerTypeIds;
 
   public AccountRealm() {
     // Empty constructor.
@@ -72,7 +67,7 @@ public class AccountRealm extends RealmObject {
     level = dto.getLevel();
     pointCount = dto.getPointCount();
     bountyCount = dto.getBountyCount();
-    categoryIds = Stream.of(dto.getInterestedCategoryIds()).collect(Collectors.joining(","));
+    subscribedGroupIds = Stream.of(dto.getSubscribedGroupIds()).collect(Collectors.joining(","));
     localSaveDate = new Date();
   }
 
@@ -238,12 +233,13 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
-  @Nullable public String getCategoryIds() {
-    return categoryIds;
+  @Nullable
+  public String getSubscribedGroupIds() {
+    return subscribedGroupIds;
   }
 
-  public AccountRealm setCategoryIds(String categoryIds) {
-    this.categoryIds = categoryIds;
+  public AccountRealm setSubscribedGroupIds(String subscribedGroupIds) {
+    this.subscribedGroupIds = subscribedGroupIds;
     return this;
   }
 
@@ -274,6 +270,33 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
+  public Date getBirthdate() {
+    return birthdate;
+  }
+
+  public AccountRealm setBirthdate(Date birthdate) {
+    this.birthdate = birthdate;
+    return this;
+  }
+
+  public String getCountry() {
+    return country;
+  }
+
+  public AccountRealm setCountry(String country) {
+    this.country = country;
+    return this;
+  }
+
+  public List<String> getTravelerTypeIds() {
+    return travelerTypeIds;
+  }
+
+  public AccountRealm setTravelerTypeIds(List<String> travelerTypeIds) {
+    this.travelerTypeIds = travelerTypeIds;
+    return this;
+  }
+
   public Date getLocalSaveDate() {
     return localSaveDate;
   }
@@ -292,7 +315,8 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
-  @Override public boolean equals(Object o) {
+  @Override
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -300,64 +324,98 @@ public class AccountRealm extends RealmObject {
       return false;
     }
     AccountRealm that = (AccountRealm) o;
-    return me == that.me &&
-        following == that.following &&
-        followingCount == that.followingCount &&
-        followerCount == that.followerCount &&
-        postCount == that.postCount &&
-        achievementCount == that.achievementCount &&
-        level == that.level &&
-        pointCount == that.pointCount &&
-        bountyCount == that.bountyCount &&
-        recent == that.recent &&
-        pending == that.pending &&
-        Objects.equals(id, that.id) &&
-        Objects.equals(username, that.username) &&
-        Objects.equals(realname, that.realname) &&
-        Objects.equals(email, that.email) &&
-        Objects.equals(avatarUrl, that.avatarUrl) &&
-        Objects.equals(bio, that.bio) &&
-        Objects.equals(locale, that.locale) &&
-        Objects.equals(gender, that.gender) &&
-        Objects.equals(websiteUrl, that.websiteUrl) &&
-        Objects.equals(localSaveDate, that.localSaveDate) &&
-        Objects.equals(idToken, that.idToken) &&
-        Objects.equals(categoryIds, that.categoryIds);
+    return me == that.me
+        && following == that.following
+        && followingCount == that.followingCount
+        && followerCount == that.followerCount
+        && postCount == that.postCount
+        && achievementCount == that.achievementCount
+        && level == that.level
+        && pointCount == that.pointCount
+        && bountyCount == that.bountyCount
+        && pending == that.pending
+        && Objects.equals(id, that.id)
+        && Objects.equals(username, that.username)
+        && Objects.equals(realname, that.realname)
+        && Objects.equals(email, that.email)
+        && Objects.equals(avatarUrl, that.avatarUrl)
+        && Objects.equals(bio, that.bio)
+        && Objects.equals(locale, that.locale)
+        && Objects.equals(gender, that.gender)
+        && Objects.equals(websiteUrl, that.websiteUrl)
+        && Objects.equals(localSaveDate, that.localSaveDate)
+        && Objects.equals(idToken, that.idToken)
+        && Objects.equals(subscribedGroupIds, that.subscribedGroupIds);
   }
 
-  @Override public int hashCode() {
+  @Override
+  public int hashCode() {
     return Objects.hash(id, me, username, realname, email, avatarUrl, bio, locale, gender,
-        websiteUrl,
-        following, followingCount, followerCount, postCount, achievementCount, level, pointCount,
-        bountyCount, recent, pending, localSaveDate, idToken, categoryIds);
+        websiteUrl, following, followingCount, followerCount, postCount, achievementCount, level,
+        pointCount, bountyCount, pending, localSaveDate, idToken, subscribedGroupIds);
   }
 
-  @Override public String toString() {
-    return "AccountRealm{" +
-        "id='" + id + '\'' +
-        ", me=" + me +
-        ", username='" + username + '\'' +
-        ", realname='" + realname + '\'' +
-        ", email='" + email + '\'' +
-        ", avatarUrl='" + avatarUrl + '\'' +
-        ", bio='" + bio + '\'' +
-        ", locale='" + locale + '\'' +
-        ", gender='" + gender + '\'' +
-        ", websiteUrl='" + websiteUrl + '\'' +
-        ", following=" + following +
-        ", followingCount=" + followingCount +
-        ", followerCount=" + followerCount +
-        ", postCount=" + postCount +
-        ", achievementCount=" + achievementCount +
-        ", level=" + level +
-        ", pointCount=" + pointCount +
-        ", bountyCount=" + bountyCount +
-        ", recent=" + recent +
-        ", pending=" + pending +
-        ", localSaveDate=" + localSaveDate +
-        ", idToken='" + idToken + '\'' +
-        ", categoryIds='" + categoryIds + '\'' +
-        ", password='" + password + '\'' +
-        '}';
+  @Override
+  public String toString() {
+    return "AccountRealm{"
+        + "id='"
+        + id
+        + '\''
+        + ", me="
+        + me
+        + ", username='"
+        + username
+        + '\''
+        + ", realname='"
+        + realname
+        + '\''
+        + ", email='"
+        + email
+        + '\''
+        + ", avatarUrl='"
+        + avatarUrl
+        + '\''
+        + ", bio='"
+        + bio
+        + '\''
+        + ", locale='"
+        + locale
+        + '\''
+        + ", gender='"
+        + gender
+        + '\''
+        + ", websiteUrl='"
+        + websiteUrl
+        + '\''
+        + ", following="
+        + following
+        + ", followingCount="
+        + followingCount
+        + ", followerCount="
+        + followerCount
+        + ", postCount="
+        + postCount
+        + ", achievementCount="
+        + achievementCount
+        + ", level="
+        + level
+        + ", pointCount="
+        + pointCount
+        + ", bountyCount="
+        + bountyCount
+        + ", pending="
+        + pending
+        + ", localSaveDate="
+        + localSaveDate
+        + ", idToken='"
+        + idToken
+        + '\''
+        + ", subscribedGroupIds='"
+        + subscribedGroupIds
+        + '\''
+        + ", password='"
+        + password
+        + '\''
+        + '}';
   }
 }

@@ -3,7 +3,7 @@ buildscript {
     jcenter()
   }
   dependencies {
-    classpath 'org.ajoberstar:grgit:1.8.0'
+    classpath 'org.ajoberstar:grgit:1.9.0'
   }
 }
 

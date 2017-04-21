@@ -21,9 +21,7 @@ import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.NotificationRealm;
-import com.yoloo.android.data.repository.notification.NotificationRepository;
-import com.yoloo.android.data.repository.notification.datasource.NotificationDiskDataSource;
-import com.yoloo.android.data.repository.notification.datasource.NotificationRemoteDataSource;
+import com.yoloo.android.data.repository.notification.NotificationRepositoryProvider;
 import com.yoloo.android.feature.base.LceAnimator;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.profile.ProfileController;
@@ -114,10 +112,7 @@ public class NotificationController extends MvpController<NotificationView, Noti
   }
 
   @NonNull @Override public NotificationPresenter createPresenter() {
-    return new NotificationPresenter(
-        NotificationRepository.getInstance(
-            NotificationRemoteDataSource.getInstance(),
-            NotificationDiskDataSource.getInstance()));
+    return new NotificationPresenter(NotificationRepositoryProvider.getRepository());
   }
 
   @Override public void onLoadMore() {
@@ -132,7 +127,8 @@ public class NotificationController extends MvpController<NotificationView, Noti
   }
 
   @Override public void onProfileClick(View v, EpoxyModel<?> model, String userId) {
-    getRouter().pushController(RouterTransaction.with(ProfileController.create(userId))
+    getRouter().pushController(RouterTransaction
+        .with(ProfileController.create(userId))
         .pushChangeHandler(new VerticalChangeHandler())
         .popChangeHandler(new VerticalChangeHandler()));
   }
@@ -168,8 +164,8 @@ public class NotificationController extends MvpController<NotificationView, Noti
     if (ab != null) {
       ab.setTitle(R.string.label_notification_title);
       ab.setDisplayHomeAsUpEnabled(true);
-      ab.setHomeAsUpIndicator(
-          AppCompatResources.getDrawable(getActivity(), R.drawable.ic_close_white_24dp));
+      ab.setHomeAsUpIndicator(AppCompatResources.getDrawable(getActivity(),
+          R.drawable.ic_close_white_24dp));
       ab.setDisplayShowHomeEnabled(true);
     }
   }

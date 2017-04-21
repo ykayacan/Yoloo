@@ -5,18 +5,19 @@ import com.googlecode.objectify.util.Closeable;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.account.AccountShard;
 import com.yoloo.backend.bookmark.Bookmark;
-import com.yoloo.backend.category.Category;
-import com.yoloo.backend.category.CategoryShard;
 import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentShard;
 import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.feed.Feed;
-import com.yoloo.backend.relationship.Relationship;
 import com.yoloo.backend.game.Tracker;
+import com.yoloo.backend.group.TravelerGroupEntity;
+import com.yoloo.backend.group.TravelerGroupShard;
+import com.yoloo.backend.travelertype.TravelerTypeEntity;
 import com.yoloo.backend.media.Media;
 import com.yoloo.backend.notification.Notification;
 import com.yoloo.backend.post.Post;
 import com.yoloo.backend.post.PostShard;
+import com.yoloo.backend.relationship.Relationship;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagShard;
 import com.yoloo.backend.vote.Vote;
@@ -29,8 +30,9 @@ public class TestBase extends GAETestBase {
 
   private Closeable rootService;
 
-  @Before public void setUp() {
-    this.setUpObjectifyFactory(new TestObjectifyFactory());
+  @Before
+  public void setUp() {
+    setUpObjectifyFactory(new TestObjectifyFactory());
     JodaTimeTranslators.add(fact());
 
     fact().register(Account.class);
@@ -42,8 +44,9 @@ public class TestBase extends GAETestBase {
     fact().register(Tag.class);
     fact().register(TagShard.class);
 
-    fact().register(Category.class);
-    fact().register(CategoryShard.class);
+    fact().register(TravelerTypeEntity.class);
+    fact().register(TravelerGroupEntity.class);
+    fact().register(TravelerGroupShard.class);
 
     fact().register(Comment.class);
     fact().register(CommentShard.class);
@@ -58,7 +61,8 @@ public class TestBase extends GAETestBase {
     fact().register(Bookmark.class);
   }
 
-  @After public void tearDown() {
+  @After
+  public void tearDown() {
     rootService.close();
     rootService = null;
   }

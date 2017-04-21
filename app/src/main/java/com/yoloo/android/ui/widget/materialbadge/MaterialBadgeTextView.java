@@ -22,6 +22,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+
 import com.yoloo.android.R;
 
 /**
@@ -274,27 +275,23 @@ public class MaterialBadgeTextView extends AppCompatTextView {
       }
     }
 
-    @Override
-    public void draw(@NonNull Canvas canvas) {
-      float R = (float) (rectF.bottom * 0.4);
+    @Override public void draw(@NonNull Canvas canvas) {
+      float radius = (float) (rectF.bottom * 0.4);
       if (rectF.right < rectF.bottom) {
-        R = (float) (rectF.right * 0.4);
+        radius = (float) (rectF.right * 0.4);
       }
-      canvas.drawRoundRect(rectF, R, R, mPaint);
+      canvas.drawRoundRect(rectF, radius, radius, mPaint);
     }
 
-    @Override
-    public void setAlpha(int alpha) {
+    @Override public void setAlpha(int alpha) {
       mPaint.setAlpha(alpha);
     }
 
-    @Override
-    public void setColorFilter(ColorFilter colorFilter) {
+    @Override public void setColorFilter(ColorFilter colorFilter) {
       mPaint.setColorFilter(colorFilter);
     }
 
-    @Override
-    public int getOpacity() {
+    @Override public int getOpacity() {
       return PixelFormat.TRANSPARENT;
     }
   }

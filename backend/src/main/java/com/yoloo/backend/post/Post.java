@@ -18,27 +18,25 @@ import com.googlecode.objectify.condition.IfNotZero;
 import com.googlecode.objectify.condition.IfNull;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.comment.Comment;
+import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.media.Media;
 import com.yoloo.backend.post.transformer.PostTransformer;
 import com.yoloo.backend.util.Deref;
 import com.yoloo.backend.vote.Votable;
 import com.yoloo.backend.vote.Vote;
-
-import org.joda.time.DateTime;
-
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.Nullable;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.Singular;
 import lombok.Value;
-import lombok.experimental.NonFinal;
+import lombok.experimental.FieldDefaults;
 import lombok.experimental.Wither;
+import org.joda.time.DateTime;
 
 @Entity
 @Cache
@@ -46,120 +44,69 @@ import lombok.experimental.Wither;
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+@FieldDefaults(makeFinal = false)
 @ApiTransformer(PostTransformer.class)
 public class Post implements Votable {
 
   public static final String FIELD_CREATED = "created";
   public static final String FIELD_TAGS = "tags";
-  public static final String FIELD_CATEGORIES = "categories";
+  public static final String FIELD_GROUP_KEY = "travelerGroup";
   public static final String FIELD_COMMENTED = "commented";
   public static final String FIELD_RANK = "rank";
   public static final String FIELD_BOUNTY = "bounty";
   public static final String FIELD_POST_TYPE = "postType";
 
-  @Id
-  private long id;
+  @Id private long id;
 
-  @Parent
-  @NonFinal
-  private Key<Account> parent;
+  @Parent private Key<Account> parent;
 
-  @Wither
-  @NonFinal
-  private Link avatarUrl;
+  @Wither private Link avatarUrl;
 
-  @Wither
-  @NonFinal
-  private String username;
+  @Wither private String username;
 
-  @Wither
-  @NonFinal
-  private String content;
+  @Wither private String content;
 
-  @Wither
-  @NonFinal
-  @IgnoreSave(IfNull.class)
-  private String title;
+  @Wither @IgnoreSave(IfNull.class) private String title;
 
-  @Load(ShardGroup.class)
-  @NonFinal
-  private List<Ref<PostShard>> shardRefs;
+  @Load(ShardGroup.class) private List<Ref<PostShard>> shardRefs;
 
-  @Singular
-  @NonFinal
-  @IgnoreSave(IfNull.class)
-  private Set<Key<Account>> reportedByKeys;
+  @Singular @IgnoreSave(IfNull.class) private Set<Key<Account>> reportedByKeys;
 
-  @Wither
-  @NonFinal
-  @IgnoreSave(IfNull.class)
-  private Key<Comment> acceptedCommentKey;
+  @Wither @IgnoreSave(IfNull.class) private Key<Comment> acceptedCommentKey;
 
   /**
    * The bounty value for the question. Bounty listFeed is given below. 10, 20, 30, 40, 50
    */
-  @Index(IfNotZero.class)
-  @Wither
-  @NonFinal
-  private int bounty;
+  @Index(IfNotZero.class) @Wither private int bounty;
 
-  @Wither
-  @NonFinal
-  @IgnoreSave(IfNull.class)
-  private Media media;
+  @Wither @IgnoreSave(IfNull.class) private List<Media> medias;
 
-  @Index
-  @Wither
-  @NonFinal
-  private Set<String> tags;
+  @Index @Wither private Set<String> tags;
 
-  @Index
-  @Wither
-  @NonFinal
-  private Set<String> categories;
+  @Index @Wither private Key<TravelerGroupEntity> travelerGroup;
 
   // A performance optimization for gamification system.
   // If post is already commented, then mark as true.
-  @Index
-  @IgnoreSave(IfNull.class)
-  @Wither
-  @NonFinal
-  private Boolean commented;
+  @Index @IgnoreSave(IfNull.class) @Wither private Boolean commented;
 
-  @Index(IfNotDefault.class)
-  @Wither
-  @NonFinal
-  private double rank;
+  @Index(IfNotDefault.class) @Wither private double rank;
 
-  @Index
-  @NonFinal
-  private PostType postType;
+  @Index private PostType postType;
 
-  @Index
-  @NonFinal
-  private DateTime created;
+  @Index private DateTime created;
 
   // Extra fields
 
-  @Wither
-  @Ignore
-  @NonFinal
-  private Vote.Direction dir;
+  @Wither @Ignore private Vote.Direction dir;
 
-  @Wither
-  @Ignore
-  @NonFinal
-  private long voteCount;
+  @Wither @Ignore private long voteCount;
 
-  @Wither
-  @Ignore
-  @NonFinal
-  private long commentCount;
+  @Wither @Ignore private long commentCount;
 
-  @Wither
-  @Ignore
-  @NonFinal
-  private int reportCount;
+  @Wither @Ignore private int reportCount;
+
+  // Don't use this
+  @Wither @Ignore private Map<Ref<PostShard>, PostShard> shardMap;
 
   // Methods
 
@@ -179,19 +126,22 @@ public class Post implements Votable {
     return commented != null;
   }
 
-  @Nullable public String getAcceptedCommentId() {
+  @Nullable
+  public String getAcceptedCommentId() {
     if (acceptedCommentKey == null) {
       return null;
     }
     return acceptedCommentKey.toWebSafeString();
   }
 
-  @Override public <T> Key<T> getVotableKey() {
+  @Override
+  public <T> Key<T> getVotableKey() {
     //noinspection unchecked
     return (Key<T>) getKey();
   }
 
-  @Override public Votable setVoteDir(Vote.Direction dir) {
+  @Override
+  public Votable setVoteDir(Vote.Direction dir) {
     return Post.builder()
         .id(id)
         .parent(parent)
@@ -201,11 +151,11 @@ public class Post implements Votable {
         .content(content)
         .shardRefs(shardRefs)
         .tags(tags)
-        .categories(categories)
+        .travelerGroup(travelerGroup)
         .dir(dir)
         .bounty(bounty)
         .acceptedCommentKey(acceptedCommentKey)
-        .media(media)
+        .medias(medias)
         .commentCount(commentCount)
         .voteCount(voteCount)
         .reportCount(reportCount)
@@ -220,11 +170,12 @@ public class Post implements Votable {
     return (List<E>) Deref.deref(shardRefs);
   }
 
-  @OnLoad void onLoad() {
-    voteCount = 0L;
+  @OnLoad
+  void onLoad() {
+    /*voteCount = 0L;
     commentCount = 0L;
     reportCount = 0;
-    dir = Vote.Direction.DEFAULT;
+    dir = Vote.Direction.DEFAULT;*/
   }
 
   public enum PostType {

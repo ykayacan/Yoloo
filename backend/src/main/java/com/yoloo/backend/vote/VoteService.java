@@ -9,16 +9,14 @@ import io.reactivex.Observable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import lombok.AllArgsConstructor;
+import lombok.extern.java.Log;
 
 import static com.yoloo.backend.OfyService.ofy;
 
+@Log
 @AllArgsConstructor(staticName = "create")
 public class VoteService {
-
-  private static final Logger LOG =
-      Logger.getLogger(VoteService.class.getName());
 
   /**
    * Check post vote observable.
@@ -83,7 +81,8 @@ public class VoteService {
 
   private Observable<Map<Key<Vote>, Vote>> getVotesObservable(List<? extends Votable> votables,
       Key<Account> accountKey) {
-    return Observable.fromIterable(votables)
+    return Observable
+        .fromIterable(votables)
         .map(post -> Vote.createKey(post.getVotableKey(), accountKey))
         .toList()
         .flatMapObservable(keys -> Observable.just(ofy().load().keys(keys)));
@@ -91,11 +90,11 @@ public class VoteService {
 
   private Observable<Votable> mergeVoteDirection(List<? extends Votable> votables,
       Key<Account> accountKey, Map<Key<Vote>, Vote> voteMap) {
-    return Observable.fromIterable(votables)
-        .map(votable ->
-            Group.OfTwo.create(Vote.createKey(votable.getVotableKey(), accountKey), votable))
-        .map(group -> voteMap.containsKey(group.first)
-            ? group.second.setVoteDir(voteMap.get(group.first).getDir())
-            : group.second);
+    return Observable
+        .fromIterable(votables)
+        .map(votable -> Group.OfTwo.create(Vote.createKey(votable.getVotableKey(), accountKey),
+            votable))
+        .map(group -> voteMap.containsKey(group.first) ? group.second.setVoteDir(
+            Vote.parse(voteMap.get(group.first).getDir())) : group.second);
   }
 }

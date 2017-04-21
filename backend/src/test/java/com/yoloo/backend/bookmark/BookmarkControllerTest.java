@@ -1,6 +1,5 @@
 package com.yoloo.backend.bookmark;
 
-import com.google.api.server.spi.response.ConflictException;
 import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.users.User;
@@ -11,15 +10,15 @@ import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Ref;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.account.AccountEntity;
+import com.yoloo.backend.account.AccountBundle;
 import com.yoloo.backend.account.AccountShard;
 import com.yoloo.backend.account.AccountShardService;
-import com.yoloo.backend.category.Category;
-import com.yoloo.backend.category.CategoryController;
-import com.yoloo.backend.category.CategoryControllerFactory;
 import com.yoloo.backend.device.DeviceRecord;
-import com.yoloo.backend.game.GamificationService;
+import com.yoloo.backend.game.GameService;
 import com.yoloo.backend.game.Tracker;
+import com.yoloo.backend.group.TravelerGroupEntity;
+import com.yoloo.backend.group.TravelerGroupController;
+import com.yoloo.backend.group.TravelerGroupControllerFactory;
 import com.yoloo.backend.post.Post;
 import com.yoloo.backend.post.PostController;
 import com.yoloo.backend.post.PostControllerFactory;
@@ -47,10 +46,9 @@ public class BookmarkControllerTest extends TestBase {
   private PostController postController;
   private BookmarkController bookmarkController;
   private TagController tagController;
-  private CategoryController categoryController;
+  private TravelerGroupController travelerGroupController;
 
-  @Override
-  public void setUpGAE() {
+  @Override public void setUpGAE() {
     super.setUpGAE();
 
     helper.setEnvIsLoggedIn(true)
@@ -59,33 +57,26 @@ public class BookmarkControllerTest extends TestBase {
         .setEnvEmail(USER_EMAIL);
   }
 
-  @Override
-  public void setUp() {
+  @Override public void setUp() {
     super.setUp();
 
     postController = PostControllerFactory.of().create();
     bookmarkController = BookmarkControllerFactory.of().create();
     tagController = TagControllerFactory.of().create();
-    categoryController = CategoryControllerFactory.of().create();
+    travelerGroupController = TravelerGroupControllerFactory.of().create();
 
-    AccountEntity model = createAccount();
+    AccountBundle model = createAccount();
 
     Account owner = model.getAccount();
     DeviceRecord record = createRecord(owner);
-    Tracker tracker = GamificationService.create().createTracker(owner.getKey());
+    Tracker tracker = GameService.create().createTracker(owner.getKey());
 
     User user = new User(USER_EMAIL, USER_AUTH_DOMAIN, owner.getWebsafeId());
 
-    Category europe = null;
-    try {
-      europe = categoryController.insertCategory("europe", null);
-    } catch (ConflictException e) {
-      e.printStackTrace();
-    }
+    TravelerGroupEntity europe = travelerGroupController.insertGroup("europe", null);
 
-    Tag passport = tagController.insertGroup("passport");
-
-    Tag visa = tagController.insertTag("visa", "en", passport.getWebsafeId());
+    Tag passport = tagController.insertTag("passport");
+    Tag visa = tagController.insertTag("visa");
 
     ImmutableSet<Object> saveList = ImmutableSet.builder()
         .add(owner)
@@ -104,42 +95,36 @@ public class BookmarkControllerTest extends TestBase {
             Optional.absent(), user);
   }
 
-  @Test
-  public void testSaveQuestion() throws Exception {
+  @Test public void testSaveQuestion() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     bookmarkController.insertBookmark(post.getWebsafeId(), user);
 
-    List<Bookmark> bookmarks = ofy().load().type(Bookmark.class)
-        .ancestor(Key.<Account>create(user.getUserId()))
-        .list();
+    List<Bookmark> bookmarks =
+        ofy().load().type(Bookmark.class).ancestor(Key.<Account>create(user.getUserId())).list();
 
     assertEquals(1, bookmarks.size());
   }
 
-  @Test
-  public void testUnSaveQuestion() throws Exception {
+  @Test public void testUnSaveQuestion() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     bookmarkController.insertBookmark(post.getWebsafeId(), user);
 
-    List<Bookmark> bookmarks1 = ofy().load().type(Bookmark.class)
-        .ancestor(Key.<Account>create(user.getUserId()))
-        .list();
+    List<Bookmark> bookmarks1 =
+        ofy().load().type(Bookmark.class).ancestor(Key.<Account>create(user.getUserId())).list();
 
     assertEquals(1, bookmarks1.size());
 
     bookmarkController.deleteBookmark(post.getWebsafeId(), user);
 
-    List<Bookmark> bookmarks2 = ofy().load().type(Bookmark.class)
-        .ancestor(Key.<Account>create(user.getUserId()))
-        .list();
+    List<Bookmark> bookmarks2 =
+        ofy().load().type(Bookmark.class).ancestor(Key.<Account>create(user.getUserId())).list();
 
     assertEquals(0, bookmarks2.size());
   }
 
-  @Test
-  public void testListSavedQuestions() throws Exception {
+  @Test public void testListSavedQuestions() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     Post post2 =
@@ -149,14 +134,13 @@ public class BookmarkControllerTest extends TestBase {
     bookmarkController.insertBookmark(post.getWebsafeId(), user);
     bookmarkController.insertBookmark(post2.getWebsafeId(), user);
 
-    List<Bookmark> bookmarks = ofy().load().type(Bookmark.class)
-        .ancestor(Key.<Account>create(user.getUserId()))
-        .list();
+    List<Bookmark> bookmarks =
+        ofy().load().type(Bookmark.class).ancestor(Key.<Account>create(user.getUserId())).list();
 
     assertEquals(2, bookmarks.size());
   }
 
-  private AccountEntity createAccount() {
+  private AccountBundle createAccount() {
     final Key<Account> ownerKey = fact().allocateId(Account.class);
 
     AccountShardService ass = AccountShardService.create();
@@ -172,10 +156,7 @@ public class BookmarkControllerTest extends TestBase {
         .created(DateTime.now())
         .build();
 
-    return AccountEntity.builder()
-        .account(account)
-        .shards(map)
-        .build();
+    return AccountBundle.builder().account(account).shards(map).build();
   }
 
   private DeviceRecord createRecord(Account owner) {

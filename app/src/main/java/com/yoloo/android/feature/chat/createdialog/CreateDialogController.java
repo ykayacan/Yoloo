@@ -16,42 +16,25 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
+import butterknife.BindString;
+import butterknife.BindView;
+import butterknife.OnClick;
 import com.airbnb.epoxy.EpoxyModel;
-import com.annimon.stream.Collectors;
-import com.annimon.stream.Stream;
-import com.bluelinelabs.conductor.Controller;
-import com.bluelinelabs.conductor.RouterTransaction;
-import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.chat.NormalDialog;
-import com.yoloo.android.data.model.firebase.Chat;
-import com.yoloo.android.data.model.firebase.ChatUser;
 import com.yoloo.android.data.repository.chat.ChatRepository;
-import com.yoloo.android.data.repository.user.UserRepository;
-import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
-import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.chat.dialog.DialogController;
+import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.SelectableAdapter;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.util.BundleBuilder;
-
-import java.util.HashMap;
+import io.reactivex.subjects.PublishSubject;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import butterknife.BindString;
-import butterknife.BindView;
-import butterknife.OnClick;
-import io.reactivex.subjects.PublishSubject;
-
-public class CreateDialogController
-    extends MvpController<CreateDialogView, CreateDialogPresenter>
+public class CreateDialogController extends MvpController<CreateDialogView, CreateDialogPresenter>
     implements CreateDialogView, OnItemClickListener<AccountRealm>,
     SelectableAdapter.OnSelectionListener, EndlessRecyclerViewScrollListener.OnLoadMoreListener {
 
@@ -89,7 +72,8 @@ public class CreateDialogController
     return inflater.inflate(R.layout.controller_createdialog, container, false);
   }
 
-  @Override protected void onViewBound(@NonNull View view) {
+  @Override
+  protected void onViewBound(@NonNull View view) {
     setupToolbar();
     setupRecyclerView();
 
@@ -98,19 +82,23 @@ public class CreateDialogController
     searchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
 
     searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-      @Override public boolean onQueryTextSubmit(String query) {
+      @Override
+      public boolean onQueryTextSubmit(String query) {
         return false;
       }
 
-      @Override public boolean onQueryTextChange(String newText) {
+      @Override
+      public boolean onQueryTextChange(String newText) {
         searchSubject.onNext(newText);
         return false;
       }
     });
   }
 
-  @Override protected void onAttach(@NonNull View view) {
-    searchSubject.filter(s -> !s.isEmpty())
+  @Override
+  protected void onAttach(@NonNull View view) {
+    searchSubject
+        .filter(s -> !s.isEmpty())
         .debounce(400, TimeUnit.MILLISECONDS)
         .subscribe(query -> {
           if (TextUtils.isEmpty(query)) {
@@ -121,7 +109,8 @@ public class CreateDialogController
         });
   }
 
-  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+  @Override
+  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     final int itemId = item.getItemId();
     if (itemId == android.R.id.home) {
       getRouter().handleBack();
@@ -130,53 +119,59 @@ public class CreateDialogController
     return super.onOptionsItemSelected(item);
   }
 
-  @Override public void onLoading(boolean pullToRefresh) {
+  @Override
+  public void onLoading(boolean pullToRefresh) {
 
   }
 
-  @Override public void onLoaded(List<AccountRealm> value) {
+  @Override
+  public void onLoaded(List<AccountRealm> value) {
     adapter.addContacts(value);
   }
 
-  @Override public void onError(Throwable e) {
+  @Override
+  public void onError(Throwable e) {
 
   }
 
-  @Override public void onEmpty() {
+  @Override
+  public void onEmpty() {
 
   }
 
-  @Override public void onLoadMore() {
+  @Override
+  public void onLoadMore() {
 
   }
 
-  @NonNull @Override public CreateDialogPresenter createPresenter() {
-    return new CreateDialogPresenter(
-        UserRepository.getInstance(
-            UserRemoteDataStore.getInstance(),
-            UserDiskDataStore.getInstance()),
+  @NonNull
+  @Override
+  public CreateDialogPresenter createPresenter() {
+    return new CreateDialogPresenter(UserRepositoryProvider.getRepository(),
         ChatRepository.getInstance());
   }
 
-  @Override public void onMeLoaded(AccountRealm me) {
+  @Override
+  public void onMeLoaded(AccountRealm me) {
     this.me = me;
   }
 
-  @Override public void onUsersLoaded(List<AccountRealm> accounts) {
+  @Override
+  public void onUsersLoaded(List<AccountRealm> accounts) {
     adapter.clear();
     adapter.addContacts(accounts);
   }
 
-  @Override public void onItemClick(View v, EpoxyModel<?> model, AccountRealm item) {
-    Map<String, ChatUser> chatUsers = new HashMap<>();
+  @Override
+  public void onItemClick(View v, EpoxyModel<?> model, AccountRealm item) {
+   /* Map<String, ChatUser> chatUsers = new HashMap<>();
     final ChatUser chatUser = new ChatUser(item, 1);
     final ChatUser admin = new ChatUser(me, 3);
 
     chatUsers.put(item.getId(), chatUser);
     chatUsers.put(me.getId(), admin);
 
-    Chat chat = new Chat()
-        .setName(item.getUsername())
+    Chat chat = new Chat().setName(item.getUsername())
         .setChatPhotoUrl("https://storage.googleapis.com/yoloo-151719.appspot.com/"
             + "system-default/empty_user_avatar.webp")
         .setLastSenderId(me.getId())
@@ -190,20 +185,21 @@ public class CreateDialogController
         .popChangeHandler(new VerticalChangeHandler());
 
     getRouter().pushController(transaction);
-    getRouter().popController(this);
+    getRouter().popController(this);*/
   }
 
-  @Override public void onSelect(EpoxyModel<?> model, boolean selected) {
+  @Override
+  public void onSelect(EpoxyModel<?> model, boolean selected) {
     final int selectedItems = adapter.getSelectedItemCount();
     tvStartConversation.setVisibility(selectedItems == 0 ? View.GONE : View.VISIBLE);
-    final String title = selectedItems == 0
-        ? createDialogTitleString
-        : String.valueOf(selectedItems);
+    final String title =
+        selectedItems == 0 ? createDialogTitleString : String.valueOf(selectedItems);
     getSupportActionBar().setTitle(title);
   }
 
-  @OnClick(R.id.tv_createdialog_start_conversation) void createDialog() {
-    Map<String, ChatUser> chatUsers = Stream.of(adapter.getSelectedItems())
+  @OnClick(R.id.tv_createdialog_start_conversation)
+  void createDialog() {
+    /*Map<String, ChatUser> chatUsers = Stream.of(adapter.getSelectedItems())
         .select(CreateDialogContactAdapter.CreateDialogContactModel.class)
         .map(CreateDialogContactAdapter.CreateDialogContactModel::getAccount)
         .map(user -> new ChatUser(user, 1))
@@ -217,8 +213,7 @@ public class CreateDialogController
         .map(ChatUser::getName)
         .collect(Collectors.joining(", "));
 
-    Chat chat = new Chat()
-        .setName(chatName)
+    Chat chat = new Chat().setName(chatName)
         .setChatPhotoUrl("https://storage.googleapis.com/yoloo-151719.appspot.com/"
             + "system-default/empty_user_avatar.webp")
         .setLastSenderId(me.getId())
@@ -232,7 +227,7 @@ public class CreateDialogController
         .popChangeHandler(new VerticalChangeHandler());
 
     getRouter().pushController(transaction);
-    getRouter().popController(this);
+    getRouter().popController(this);*/
   }
 
   private void setupToolbar() {

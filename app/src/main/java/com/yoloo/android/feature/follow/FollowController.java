@@ -10,7 +10,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindColor;
@@ -21,9 +20,7 @@ import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.repository.user.UserRepository;
-import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
-import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
+import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.search.OnFollowClickListener;
@@ -64,10 +61,8 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   }
 
   public static FollowController create(String userId, @FollowViewType int viewType) {
-    final Bundle bundle = new BundleBuilder()
-        .putString(KEY_USER_ID, userId)
-        .putInt(KEY_VIEW_TYPE, viewType)
-        .build();
+    final Bundle bundle =
+        new BundleBuilder().putString(KEY_USER_ID, userId).putInt(KEY_VIEW_TYPE, viewType).build();
 
     return new FollowController(bundle);
   }
@@ -80,7 +75,6 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   @Override protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
     setupToolbar();
-    setHasOptionsMenu(true);
     setupPullToRefresh();
     setupRecyclerView();
   }
@@ -105,18 +99,6 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   @Override protected void onDetach(@NonNull View view) {
     super.onDetach(view);
     rvFollow.removeOnScrollListener(endlessRecyclerViewScrollListener);
-  }
-
-  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    // handle arrow click here
-    final int itemId = item.getItemId();
-    switch (itemId) {
-      case android.R.id.home:
-        getRouter().popCurrentController();
-        return true;
-      default:
-        return super.onOptionsItemSelected(item);
-    }
   }
 
   @Override public void onLoading(boolean pullToRefresh) {
@@ -148,13 +130,12 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   }
 
   @NonNull @Override public FollowPresenter createPresenter() {
-    return new FollowPresenter(UserRepository.getInstance(
-        UserRemoteDataStore.getInstance(),
-        UserDiskDataStore.getInstance()));
+    return new FollowPresenter(UserRepositoryProvider.getRepository());
   }
 
   @Override public void onProfileClick(View v, EpoxyModel<?> model, String userId) {
-    getRouter().pushController(RouterTransaction.with(ProfileController.create(userId))
+    getRouter().pushController(RouterTransaction
+        .with(ProfileController.create(userId))
         .pushChangeHandler(new VerticalChangeHandler())
         .popChangeHandler(new VerticalChangeHandler()));
   }
@@ -172,11 +153,14 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
     // addPostToBeginning back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
     if (ab != null) {
-      ab.setTitle(viewType == TYPE_FOLLOWERS ? R.string.label_follow_followers_title
+      ab.setTitle(viewType == TYPE_FOLLOWERS
+          ? R.string.label_follow_followers_title
           : R.string.label_follow_following_title);
       ab.setDisplayHomeAsUpEnabled(true);
       ab.setDisplayShowHomeEnabled(true);
     }
+
+    toolbar.setNavigationOnClickListener(v -> getRouter().handleBack());
   }
 
   private void setupRecyclerView() {
@@ -203,8 +187,7 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   }
 
   @IntDef({
-      FollowController.TYPE_FOLLOWERS,
-      FollowController.TYPE_FOLLOWINGS
+      FollowController.TYPE_FOLLOWERS, FollowController.TYPE_FOLLOWINGS
   })
   @Retention(RetentionPolicy.SOURCE)
   public @interface FollowViewType {

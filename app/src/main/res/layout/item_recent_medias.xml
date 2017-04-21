@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content">
+
+  <android.support.constraint.Guideline
+    android:id="@+id/top_guideline"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:orientation="horizontal"
+    app:layout_constraintGuide_begin="48dp" />
+
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="@dimen/padding_normal"
+    android:layout_marginStart="@dimen/padding_normal"
+    android:text="@string/label_explore_recent_medias_title"
+    android:textAppearance="@style/TextAppearance.GroupTitle"
+    app:layout_constraintBottom_toBottomOf="@id/top_guideline"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintTop_toTopOf="parent" />
+
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_explore_more"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="@dimen/padding_normal"
+    android:layout_marginRight="@dimen/padding_normal"
+    android:text="@string/label_explore_recent_medias_more"
+    android:textAppearance="@style/TextAppearance.GroupMore"
+    app:layout_constraintBottom_toBottomOf="@id/top_guideline"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toTopOf="parent" />
+
+  <android.support.v7.widget.RecyclerView
+    android:id="@+id/recycler_view"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:clipToPadding="false"
+    android:paddingBottom="2dp"
+    android:paddingEnd="40dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="40dp"
+    android:paddingStart="16dp"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/top_guideline" />
+
+</android.support.constraint.ConstraintLayout>

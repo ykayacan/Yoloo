@@ -1,21 +1,31 @@
 package com.yoloo.android.data.model;
 
+import com.yoloo.backend.yolooApi.model.TagDTO;
 import io.realm.RealmObject;
+import io.realm.TagRealmRealmProxy;
 import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
+import org.parceler.Parcel;
 
+@Parcel(implementations = { TagRealmRealmProxy.class },
+        value = Parcel.Serialization.FIELD,
+        analyze = { TagRealm.class })
 public class TagRealm extends RealmObject implements Chipable {
 
-  @PrimaryKey
-  private String id;
-  private String name;
-  private String language;
-  @Index
-  private long posts;
-  @Index
-  private boolean isRecommended;
-  @Index
-  private boolean recent;
+  @PrimaryKey String id;
+  String name;
+  @Index long postCount;
+  @Index boolean isRecommended;
+  @Index boolean recent;
+
+  public TagRealm() {
+  }
+
+  public TagRealm(TagDTO dto) {
+    this.id = dto.getId();
+    this.name = dto.getName();
+    this.postCount = dto.getPostCount();
+  }
 
   public String getId() {
     return id;
@@ -35,21 +45,12 @@ public class TagRealm extends RealmObject implements Chipable {
     return this;
   }
 
-  public String getLanguage() {
-    return language;
+  public long getPostCount() {
+    return postCount;
   }
 
-  public TagRealm setLanguage(String language) {
-    this.language = language;
-    return this;
-  }
-
-  public long getPosts() {
-    return posts;
-  }
-
-  public TagRealm setPosts(long posts) {
-    this.posts = posts;
+  public TagRealm setPostCount(long postCount) {
+    this.postCount = postCount;
     return this;
   }
 
@@ -69,5 +70,15 @@ public class TagRealm extends RealmObject implements Chipable {
   public TagRealm setRecent(boolean recent) {
     this.recent = recent;
     return this;
+  }
+
+  @Override public String toString() {
+    return "TagRealm{" +
+        "id='" + id + '\'' +
+        ", name='" + name + '\'' +
+        ", postCount=" + postCount +
+        ", isRecommended=" + isRecommended +
+        ", recent=" + recent +
+        '}';
   }
 }

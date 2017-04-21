@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:fitsSystemWindows="true">
+
+  <android.support.design.widget.AppBarLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fitsSystemWindows="true"
+    android:theme="@style/Yoloo.AppBarOverlay">
+
+    <android.support.design.widget.CollapsingToolbarLayout
+      android:id="@+id/collapsingToolbarLayout"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:fitsSystemWindows="true"
+      app:contentScrim="?attr/colorPrimary"
+      app:expandedTitleMarginBottom="56dp"
+      app:layout_scrollFlags="scroll|exitUntilCollapsed"
+      app:title="@string/label_bloglist_title"
+      app:toolbarId="@+id/toolbar_bloglist">
+
+      <ImageView
+        android:id="@+id/iv_group_cover"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/app_bar_height"
+        android:fitsSystemWindows="true"
+        android:foreground="@drawable/shape_bottom_scrim"
+        android:scaleType="centerCrop"
+        app:layout_collapseMode="parallax"
+        tools:background="@drawable/blog_header_small" />
+
+      <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:layout_collapseMode="pin"
+        app:popupTheme="@style/Yoloo.PopupOverlay" />
+
+      <com.yoloo.android.ui.widget.BaselineGridTextView
+        android:id="@+id/tv_group_subscriber_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="32dp"
+        android:layout_marginStart="32dp"
+        android:drawablePadding="8dp"
+        android:gravity="center"
+        android:textAppearance="@style/TextAppearance.SubscriberCount"
+        app:drawableStart="@drawable/ic_person_white_18dp"
+        app:layout_collapseMode="parallax"
+        tools:text="1000" />
+
+      <Button
+        android:id="@+id/btn_group_subscribe"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:textColor="@android:color/white"
+        android:visibility="gone"
+        app:layout_collapseMode="parallax"
+        tools:text="Subscribe"
+        tools:visibility="visible" />
+
+    </android.support.design.widget.CollapsingToolbarLayout>
+
+    <android.support.design.widget.TabLayout
+      android:id="@+id/tablayout"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="@android:color/white"
+      app:tabGravity="center"
+      app:tabMode="fixed"
+      app:tabSelectedTextColor="@color/accent"
+      app:tabTextColor="@color/profile_card_text" />
+
+  </android.support.design.widget.AppBarLayout>
+
+  <android.support.v4.widget.NestedScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <android.support.v4.view.ViewPager
+      android:id="@+id/viewpager"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent" />
+
+  </android.support.v4.widget.NestedScrollView>
+
+</android.support.design.widget.CoordinatorLayout>

@@ -16,7 +16,7 @@
   <dimen name="avatar_size">40dp</dimen>
   <dimen name="avatar_bounds">48dp</dimen>
   <dimen name="avatar_padding">4dp</dimen> <!-- (avatar_bounds - avatar_size) / 2 -->
-  <dimen name="avatar_margin">12dp</dimen> <!-- padding_normal - avatar_padding -->
+  <dimen name="avatar_margin">16dp</dimen> <!-- padding_normal - avatar_padding -->
   <dimen name="avatar_ripple_radius">20dp</dimen> <!-- avatar_size / 2 -->
 
   <!-- Default screen margins, per the Android Design guidelines. -->
@@ -25,11 +25,8 @@
 
   <dimen name="lce_content_view_animation_translate_y">40dp</dimen>
 
-  <dimen name="min_item_width">0dp</dimen>
-  <dimen name="default_text_size">14sp</dimen>
-  <dimen name="default_item_margin">2dp</dimen>
-  <dimen name="default_item_padding">4dp</dimen>
-  <dimen name="default_row_margin">2dp</dimen>
+  <dimen name="app_bar_height">180dp</dimen>
+
   <dimen name="fab_margin">16dp</dimen>
   <dimen name="nav_header_vertical_spacing">16dp</dimen>
   <dimen name="nav_header_height">196dp</dimen>
@@ -39,18 +36,7 @@
   <dimen name="fam_label_spacing">16dp</dimen>
   <dimen name="dim_elevation">5dp</dimen>
 
-  <!-- LabelView -->
-  <dimen name="label_inset_shadow">1dp</dimen>
-
-  <dimen name="defaultTagsTextSize">16sp</dimen>
-  <dimen name="defaultTagsCloseImagePadding">10dp</dimen>
-  <dimen name="defaultTagsPadding">0dp</dimen>
-
-  <dimen name="z_fab_over_touchable_app_bar">9dp</dimen>
-
   <dimen name="profile_avatar_width">72dp</dimen>
-
-  <dimen name="feed_actions_height">40dp</dimen>
 
   <dimen name="drag_dismiss_distance">112dp</dimen> <!-- 2 * ?android:actionBarSize -->
 

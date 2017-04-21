@@ -11,7 +11,7 @@ import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.List;
 
-public class SearchAdapter extends EpoxyAdapter {
+class SearchAdapter extends EpoxyAdapter {
 
   private final OnItemClickListener<TagRealm> onTagClickListener;
   private final OnProfileClickListener onProfileClickListener;
@@ -19,11 +19,8 @@ public class SearchAdapter extends EpoxyAdapter {
 
   private final CropCircleTransformation circleTransformation;
 
-  public SearchAdapter(
-      Context context,
-      OnItemClickListener<TagRealm> onTagClickListener,
-      OnProfileClickListener onProfileClickListener,
-      OnFollowClickListener onFollowClickListener) {
+  SearchAdapter(Context context, OnItemClickListener<TagRealm> onTagClickListener,
+      OnProfileClickListener onProfileClickListener, OnFollowClickListener onFollowClickListener) {
     this.onTagClickListener = onTagClickListener;
     this.onProfileClickListener = onProfileClickListener;
     this.onFollowClickListener = onFollowClickListener;
@@ -33,24 +30,28 @@ public class SearchAdapter extends EpoxyAdapter {
     circleTransformation = new CropCircleTransformation(context);
   }
 
-  public void replaceTags(List<TagRealm> tags) {
+  void replaceTags(List<TagRealm> tags) {
     models.clear();
 
-    models.addAll(Stream.of(tags)
+    models.addAll(Stream
+        .of(tags)
         .map(tag -> new TagModel_().tag(tag).onTagClickListener(onTagClickListener))
         .collect(Collectors.toList()));
 
     notifyModelsChanged();
   }
 
-  public void replaceUsers(List<AccountRealm> accounts) {
+  void replaceUsers(List<AccountRealm> accounts) {
     models.clear();
 
-    models.addAll(Stream.of(accounts).map(account -> new UserModel_()
-        .account(account)
-        .cropCircleTransformation(circleTransformation)
-        .onProfileClickListener(onProfileClickListener)
-        .onFollowClickListener(onFollowClickListener)).collect(Collectors.toList()));
+    models.addAll(Stream
+        .of(accounts)
+        .map(account -> new UserModel_()
+            .account(account)
+            .cropCircleTransformation(circleTransformation)
+            .onProfileClickListener(onProfileClickListener)
+            .onFollowClickListener(onFollowClickListener))
+        .collect(Collectors.toList()));
 
     notifyModelsChanged();
   }

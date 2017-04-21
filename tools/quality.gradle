@@ -1,5 +1,5 @@
-apply from: "$project.rootDir/tools/script-checkstyle.gradle"
-apply from: "$project.rootDir/tools/script-findbugs.gradle"
-apply from: "$project.rootDir/tools/script-pmd.gradle"
+apply from: "$project.rootDir/tools/checkstyle/script-checkstyle.gradle"
+apply from: "$project.rootDir/tools/findbugs/script-findbugs.gradle"
+apply from: "$project.rootDir/tools/pmd/script-pmd.gradle"
 
 check.dependsOn 'checkstyle', 'findbugs', 'pmd'

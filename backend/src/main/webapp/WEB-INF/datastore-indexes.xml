@@ -12,6 +12,11 @@
 
   <datastore-index ancestor="false" kind="Post" source="manual">
     <property name="postType" direction="asc" />
+    <property name="rank" direction="desc" />
+  </datastore-index>
+
+  <datastore-index ancestor="false" kind="Post" source="manual">
+    <property name="postType" direction="asc" />
     <property name="created" direction="desc" />
   </datastore-index>
 
@@ -22,7 +27,7 @@
   </datastore-index>
 
   <datastore-index ancestor="false" kind="Post" source="manual">
-    <property name="categories" direction="asc" />
+    <property name="groupId" direction="asc" />
     <property name="postType" direction="asc" />
     <property name="created" direction="desc" />
   </datastore-index>
@@ -46,6 +51,11 @@
 
   <datastore-index ancestor="true" kind="Notification" source="manual">
     <property name="receiverKey" direction="desc" />
+    <property name="created" direction="desc" />
+  </datastore-index>
+
+  <datastore-index ancestor="true" kind="Notification" source="manual">
+    <property name="action" direction="asc" />
     <property name="created" direction="desc" />
   </datastore-index>
 </datastore-indexes>

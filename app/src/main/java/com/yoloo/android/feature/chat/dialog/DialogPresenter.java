@@ -1,18 +1,6 @@
 package com.yoloo.android.feature.chat.dialog;
 
-import com.google.firebase.database.DataSnapshot;
-import com.yoloo.android.data.model.firebase.Chat;
-import com.yoloo.android.data.model.firebase.ChatMessage;
-import com.yoloo.android.data.repository.chat.ChatRepository;
-import com.yoloo.android.data.repository.user.UserRepository;
-import com.yoloo.android.framework.MvpPresenter;
-
-import javax.annotation.Nonnull;
-
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-
-class DialogPresenter extends MvpPresenter<DialogView> {
+/*class DialogPresenter extends MvpPresenter<DialogView> {
 
   private final ChatRepository chatRepository;
   private final UserRepository userRepository;
@@ -41,8 +29,10 @@ class DialogPresenter extends MvpPresenter<DialogView> {
         .subscribe(event -> {
           DataSnapshot snapshot = event.getDataSnapshot();
           ChatMessage message = snapshot.getValue(ChatMessage.class);
+
           message.setId(snapshot.getKey());
           message.setDialogId(dialogId);
+
           switch (event.getEventType()) {
             case ADDED:
               getView().onMessageAdded(message);
@@ -72,4 +62,4 @@ class DialogPresenter extends MvpPresenter<DialogView> {
   void deleteDialog(@Nonnull Chat chat) {
     chatRepository.deleteDialog(chat);
   }
-}
+}*/

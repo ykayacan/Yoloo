@@ -10,7 +10,7 @@ import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyAttribute;
 import com.airbnb.epoxy.EpoxyModelClass;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
-import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.data.model.PostRealm;
@@ -36,6 +36,7 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
   @EpoxyAttribute boolean postAccepted;
   @EpoxyAttribute int postType;
   @EpoxyAttribute @ColorInt int backgroundColor;
+  @EpoxyAttribute(hash = false) RequestManager glide;
   @EpoxyAttribute(hash = false) OnItemLongClickListener<CommentRealm> onCommentLongClickListener;
   @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
   @EpoxyAttribute(hash = false) OnVoteClickListener onVoteClickListener;
@@ -49,10 +50,9 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
     backgroundColor = backgroundColor == 0 ? DEFAULT_BACKGROUND_COLOR : backgroundColor;
     holder.itemView.setBackgroundColor(backgroundColor);
 
-    Glide.with(context)
-        .load(comment.getAvatarUrl())
+    glide.load(comment.getAvatarUrl())
         .bitmapTransform(circleTransformation)
-        .placeholder(R.drawable.ic_player)
+        .placeholder(R.drawable.ic_player_72dp)
         .into(holder.ivUserAvatar);
 
     holder.tvUsername.setText(comment.getUsername());
@@ -63,10 +63,9 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
 
     holder.tvAcceptedMark.setVisibility(comment.isAccepted() ? View.VISIBLE : View.GONE);
     holder.tvAccept.setVisibility(isPostOwner
-        /*&& !isCommentOwner*/
-        && !postAccepted
-        && postType != PostRealm.POST_BLOG
-        ? View.VISIBLE : View.GONE);
+        /*&& !isCommentOwner*/ && !postAccepted && postType != PostRealm.TYPE_BLOG
+        ? View.VISIBLE
+        : View.GONE);
 
     DrawableHelper.create()
         .withDrawable(holder.tvAccept.getCompoundDrawables()[0])

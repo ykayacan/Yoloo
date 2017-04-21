@@ -22,19 +22,17 @@ import java.util.List;
 @EpoxyModelClass(layout = R.layout.item_feed_newcomers)
 public abstract class NewcomersModel extends EpoxyModelWithHolder<NewcomersModel.NewcomersHolder> {
 
-  @EpoxyAttribute(hash = false) View.OnClickListener moreClickListener;
+  @EpoxyAttribute(hash = false) View.OnClickListener onHeaderClickListener;
 
   private NewcomersContactAdapter adapter;
   private RecyclerView.ItemDecoration itemDecoration;
   private LinearLayoutManager lm;
   private SnapHelper snapHelper;
 
-  public NewcomersModel(Context context, OnFollowClickListener onFollowClickListener,
-      OnItemClickListener<AccountRealm> onItemClickListener) {
-    adapter = new NewcomersContactAdapter(onFollowClickListener, onItemClickListener);
+  public NewcomersModel(Context context) {
+    adapter = new NewcomersContactAdapter();
     itemDecoration = new SpaceItemDecoration(8, SpaceItemDecoration.HORIZONTAL);
     snapHelper = new LinearSnapHelper();
-
     lm = new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
     lm.setInitialPrefetchItemCount(4);
   }
@@ -53,7 +51,11 @@ public abstract class NewcomersModel extends EpoxyModelWithHolder<NewcomersModel
       holder.rvNewcomers.setAdapter(adapter);
     }
 
-    holder.tvMore.setOnClickListener(v -> moreClickListener.onClick(v));
+    if (onHeaderClickListener == null) {
+      throw new IllegalStateException("onHeaderClickListener is null.");
+    }
+
+    holder.tvMore.setOnClickListener(v -> onHeaderClickListener.onClick(v));
   }
 
   @Override public void unbind(NewcomersHolder holder) {
@@ -62,6 +64,14 @@ public abstract class NewcomersModel extends EpoxyModelWithHolder<NewcomersModel
 
   public void addNewcomersContacts(List<AccountRealm> items) {
     adapter.addNewcomersContacts(items);
+  }
+
+  public void setOnFollowClickListener(OnFollowClickListener listener) {
+    adapter.setOnFollowClickListener(listener);
+  }
+
+  public void setOnItemClickListener(OnItemClickListener<AccountRealm> listener) {
+    adapter.setOnItemClickListener(listener);
   }
 
   public NewcomersContactAdapter getAdapter() {

@@ -42,10 +42,12 @@ public final class PostContent {
           + "Istanbul ✈️ Napoli \uD83D\uDE8C Roma \uD83D\uDE8C Floransa \uD83D\uDE8C "
           + "Venedik \uD83D\uDE8C Ljubliana \uD83D\uDE8C Graz \uD83D\uDE8C Viyana \uD83D\uDE8C "
           + "Brno \uD83D\uDE8C Prag \uD83D\uDE8C Berlin \uD83D\uDE8C Hamburg \uD83D\uDE8C "
-          + "Köln \uD83D\uDE8C Giethoorn \uD83D\uDE8C Amsterdam \uD83D\uDE8C Rotterdam \uD83D\uDE8C "
+          + "Köln \uD83D\uDE8C Giethoorn \uD83D\uDE8C Amsterdam \uD83D\uDE8C Rotterdam "
+          + "\uD83D\uDE8C "
           + "Antwerp \uD83D\uDE8C Brüksel \uD83D\uDE8C Paris \uD83D\uDE8C Zürih ✈️ Valencia "
           + "\uD83D\uDE8C Madrid \uD83D\uDE8C Lizbon ✈️ Paris \uD83D\uDE84 Londra \uD83D\uDE8C"
-          + " Oxford \uD83D\uDE8C Bristol \uD83D\uDE8C Bournemouth \uD83D\uDE8C Eastbourne \uD83D\uDE8C "
+          + " Oxford \uD83D\uDE8C Bristol \uD83D\uDE8C Bournemouth \uD83D\uDE8C Eastbourne "
+          + "\uD83D\uDE8C "
           + "Londra ✈️ Istanbul\n"
           + "Gelecekten gelen not: Lizbon'dan direkt olarak londraya uçabilirim ama Manş "
           + "tünelinden trenle geçmek istediğim için Paris'e uçup geçmek istiyorum "
@@ -71,7 +73,8 @@ public final class PostContent {
 
       "Arkadaşlarla kamp için çadır almayı düşünüyoruz ama bu konuda pek bir fikrimiz yok. "
           + "Kışın soğuğundan bizi koruyabilecek yağmura falan dayanıklı güzel çadır "
-          + "markaları hangileri? Not: bütçe konusunda fiyatları çok fazla olmadığı sürece rahatım.",
+          + "markaları hangileri? Not: bütçe konusunda fiyatları çok fazla olmadığı sürece "
+          + "rahatım.",
 
       "20 günlük bir Asya turu ne kadardır kabaca?"
   );
@@ -92,7 +95,8 @@ public final class PostContent {
           + "derin bir tarihi geçmişi olduğunu aklınızda tutarak gezin. Örneğin Ayasofya "
           + "Bizans İmparatorluğu tarafından 532-537 yılları arasında kilise olarak inşa edilmiş. "
           + "Eski dilde, “Aya; Kutsal” , “Sofya; Bilgelik” demekmiş. Dolayısıyla Ayasofya; "
-          + "Kutsal Bilgelik anlamına geliyor. Osmanlı İmparatorluğu, İstanbul’u fethettikten sonra, "
+          + "Kutsal Bilgelik anlamına geliyor. Osmanlı İmparatorluğu, İstanbul’u fethettikten "
+          + "sonra, "
           + "Ayasofya, camiye çevrilmiş.\n"
           + "Yapıldığı dönemde, Dünya’daki en geniş kubbeli kilise olan Ayasofya’nın mimarisinde o "
           + "dönemin ünlü İmparatoru Jüstinyen, en ünlü matematik ve geometri bilginlerini "

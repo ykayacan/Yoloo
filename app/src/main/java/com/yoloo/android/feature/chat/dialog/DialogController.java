@@ -1,44 +1,9 @@
 package com.yoloo.android.feature.chat.dialog;
 
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-
-import com.bumptech.glide.Glide;
-import com.yoloo.android.R;
-import com.yoloo.android.chatkit.commons.ImageLoader;
-import com.yoloo.android.chatkit.messages.MessageInput;
-import com.yoloo.android.chatkit.messages.MessagesList;
-import com.yoloo.android.chatkit.messages.MessagesListAdapter;
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.chat.DialogMessage;
-import com.yoloo.android.data.model.chat.NormalDialog;
-import com.yoloo.android.data.model.firebase.Chat;
-import com.yoloo.android.data.model.firebase.ChatMessage;
-import com.yoloo.android.data.model.firebase.ChatUser;
-import com.yoloo.android.data.repository.chat.ChatRepository;
-import com.yoloo.android.data.repository.user.UserRepository;
-import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
-import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.framework.MvpController;
-import com.yoloo.android.util.BundleBuilder;
-import com.yoloo.android.util.ControllerUtil;
-import com.yoloo.android.util.KeyboardUtil;
-
-import butterknife.BindView;
-
-public class DialogController extends MvpController<DialogView, DialogPresenter>
+/*public class DialogController extends MvpController<DialogView, DialogPresenter>
     implements DialogView, MessagesListAdapter.SelectionListener {
 
-  private static final String KEY_DIALOG = "DIALOG";
+  *//*private static final String KEY_DIALOG = "DIALOG";
 
   @BindView(R.id.toolbar_dialog) Toolbar toolbar;
   @BindView(R.id.rv_dialog) MessagesList messagesList;
@@ -61,8 +26,8 @@ public class DialogController extends MvpController<DialogView, DialogPresenter>
     return new DialogController(bundle);
   }
 
-  @Override protected View inflateView(@NonNull LayoutInflater inflater,
-      @NonNull ViewGroup container) {
+  @Override
+  protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
     return inflater.inflate(R.layout.controller_dialog, container, false);
   }
 
@@ -116,11 +81,8 @@ public class DialogController extends MvpController<DialogView, DialogPresenter>
   }
 
   @NonNull @Override public DialogPresenter createPresenter() {
-    return new DialogPresenter(
-        ChatRepository.getInstance(),
-        UserRepository.getInstance(
-            UserRemoteDataStore.getInstance(),
-            UserDiskDataStore.getInstance()));
+    return new DialogPresenter(ChatRepository.getInstance(),
+        UserRepositoryProvider.getRepository());
   }
 
   @Override public void onMeLoaded(AccountRealm me) {
@@ -176,5 +138,5 @@ public class DialogController extends MvpController<DialogView, DialogPresenter>
 
   private boolean isChatBot() {
     return dialog.getId().equals("dialog.chatbot");
-  }
-}
+  }*//*
+}*/

@@ -2,18 +2,20 @@ package com.yoloo.backend.relationship;
 
 import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
 import com.yoloo.backend.account.AccountShardService;
-import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.base.ControllerFactory;
-import lombok.NoArgsConstructor;
+import com.yoloo.backend.notification.NotificationService;
 
-@NoArgsConstructor(staticName = "of")
 public class RelationshipControllerFactory implements ControllerFactory<RelationshipController> {
 
-  @Override
-  public RelationshipController create() {
-    return RelationshipController.create(
-        AccountShardService.create(),
-        NotificationService.create(URLFetchServiceFactory.getURLFetchService())
-    );
+  private RelationshipControllerFactory() {
+  }
+
+  public static RelationshipControllerFactory of() {
+    return new RelationshipControllerFactory();
+  }
+
+  @Override public RelationshipController create() {
+    return RelationshipController.create(AccountShardService.create(),
+        NotificationService.create(URLFetchServiceFactory.getURLFetchService()));
   }
 }

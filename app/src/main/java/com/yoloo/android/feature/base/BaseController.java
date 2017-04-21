@@ -1,26 +1,22 @@
 package com.yoloo.android.feature.base;
 
 import android.os.Bundle;
+import android.support.annotation.CallSuper;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.support.design.widget.NavigationView;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import com.bluelinelabs.conductor.Controller;
-import com.bluelinelabs.conductor.ControllerChangeHandler;
-import com.bluelinelabs.conductor.ControllerChangeType;
-
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import com.bluelinelabs.conductor.Controller;
 
 public abstract class BaseController extends Controller {
 
   private Unbinder unbinder;
-  private boolean hasExited;
 
   protected BaseController() {
   }
@@ -32,7 +28,8 @@ public abstract class BaseController extends Controller {
   protected abstract View inflateView(@NonNull LayoutInflater inflater,
       @NonNull ViewGroup container);
 
-  @NonNull @Override
+  @NonNull
+  @Override
   protected View onCreateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
     final View view = inflateView(inflater, container);
     unbinder = ButterKnife.bind(this, view);
@@ -40,40 +37,46 @@ public abstract class BaseController extends Controller {
     return view;
   }
 
+  @CallSuper
   protected void onViewBound(@NonNull View view) {
+
   }
 
-  @Override protected void onDestroyView(@NonNull View view) {
+  @CallSuper
+  @Override
+  protected void onAttach(@NonNull View view) {
+    super.onAttach(view);
+    // Default settings to reset Activity UI state to each time a new controller is loaded.
+    DrawerLayout drawerLayout = getDrawerLayout();
+    drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+  }
+
+  @Override
+  protected void onDestroyView(@NonNull View view) {
     super.onDestroyView(view);
     unbinder.unbind();
     unbinder = null;
   }
 
-  @Override protected void onDestroy() {
-    super.onDestroy();
-
-    if (hasExited) {
-      //YolooApp.getRefWatcher(getActivity()).watch(this);
-    }
-  }
-
-  @Override protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
-      @NonNull ControllerChangeType changeType) {
-    super.onChangeEnded(changeHandler, changeType);
-
-    hasExited = !changeType.isEnter;
-    if (isDestroyed()) {
-      //YolooApp.getRefWatcher(getActivity()).watch(this);
-    }
-  }
-
-  @Nullable protected ActionBar getSupportActionBar() {
-    return getActivity() != null ? ((AppCompatActivity) getActivity()).getSupportActionBar() : null;
+  protected ActionBar getSupportActionBar() {
+    ActionBarInterface actionBarInterface = (ActionBarInterface) getActivity();
+    return actionBarInterface.getSupportActionBar();
   }
 
   protected void setSupportActionBar(@NonNull Toolbar toolbar) {
-    if (getActivity() != null && getActivity() instanceof AppCompatActivity) {
-      ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
-    }
+    ActionBarInterface actionBarInterface = ((ActionBarInterface) getActivity());
+    actionBarInterface.setSupportActionBar(toolbar);
+
+    toolbar.setNavigationOnClickListener(v -> getRouter().handleBack());
+  }
+
+  protected DrawerLayout getDrawerLayout() {
+    DrawerLayoutProvider drawerLayoutProvider = ((DrawerLayoutProvider) getActivity());
+    return drawerLayoutProvider.getDrawerLayout();
+  }
+
+  protected NavigationView getNavigationView() {
+    NavigationViewProvider navigationViewProvider = ((NavigationViewProvider) getActivity());
+    return navigationViewProvider.getNavigationView();
   }
 }

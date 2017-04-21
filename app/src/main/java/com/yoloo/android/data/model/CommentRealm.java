@@ -1,11 +1,13 @@
 package com.yoloo.android.data.model;
 
 import com.yoloo.backend.yolooApi.model.CommentDTO;
+
+import java.util.Date;
+import java.util.Objects;
+
 import io.realm.RealmObject;
 import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
-import java.util.Date;
-import java.util.Objects;
 
 public class CommentRealm extends RealmObject {
 
@@ -25,6 +27,7 @@ public class CommentRealm extends RealmObject {
   private long voteCount;
 
   public CommentRealm() {
+    // empty constructor
   }
 
   public CommentRealm(CommentDTO dto) {

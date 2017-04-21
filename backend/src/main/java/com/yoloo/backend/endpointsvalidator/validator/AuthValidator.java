@@ -11,11 +11,13 @@ public class AuthValidator implements Validator {
 
   private User user;
 
-  @Override public boolean isValid() {
+  @Override
+  public boolean isValid() {
     return !(user == null || user.getUserId() == null);
   }
 
-  @Override public void onException() throws ServiceException {
+  @Override
+  public void onException() throws ServiceException {
     throw new UnauthorizedException("Only authenticated users may invoke this operation.");
   }
 }

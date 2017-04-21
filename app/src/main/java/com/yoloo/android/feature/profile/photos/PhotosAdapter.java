@@ -49,7 +49,8 @@ class PhotosAdapter extends SelectableAdapter {
   }
 
   @EpoxyModelClass(layout = R.layout.item_photo_grid)
-  public static abstract class PhotosModel extends EpoxyModelWithHolder<PhotosModel.PhotosHolder> {
+  public abstract static class PhotosModel extends EpoxyModelWithHolder<PhotosModel
+      .PhotosHolder> {
 
     @EpoxyAttribute MediaRealm media;
     @EpoxyAttribute(hash = false) OnItemClickListener<MediaRealm> onItemClickListener;

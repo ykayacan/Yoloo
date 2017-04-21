@@ -6,18 +6,18 @@ import android.os.StrictMode;
 import android.support.multidex.MultiDex;
 import android.support.v7.app.AppCompatDelegate;
 import android.util.Log;
-
+import com.evernote.android.job.JobManager;
 import com.facebook.stetho.Stetho;
 import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.database.FirebaseDatabase;
 import com.uphyca.stetho_realm.RealmInspectorModulesProvider;
 import com.yoloo.android.data.faker.AccountFaker;
 import com.yoloo.android.data.faker.PostFaker;
-
-import java.io.File;
-
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
+import java.io.File;
+import javax.annotation.Nonnull;
+import org.solovyev.android.checkout.Billing;
 import timber.log.Timber;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
@@ -29,12 +29,24 @@ public class YolooApp extends Application {
     AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
   }
 
+  private final Billing billing = new Billing(this, new Billing.DefaultConfiguration() {
+    @Nonnull
+    @Override
+    public String getPublicKey() {
+      return "dfdfdgdfgdfgfdg";
+    }
+  });
+
   public static File getCacheDirectory() {
     return appContext.getCacheDir();
   }
 
   public static Context getAppContext() {
     return appContext;
+  }
+
+  public Billing getBilling() {
+    return billing;
   }
 
   @Override
@@ -47,6 +59,7 @@ public class YolooApp extends Application {
     initStetho();
     FirebaseDatabase.getInstance().setPersistenceEnabled(false);
     initCalligraphy();
+    JobManager.create(this).addJobCreator(new YolooJobCreator());
 
     AccountFaker.generateAll();
     PostFaker.fakePosts();
@@ -69,40 +82,31 @@ public class YolooApp extends Application {
   }
 
   private void initStetho() {
-    Stetho.initialize(
-        Stetho.newInitializerBuilder(this)
-            .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
-            .enableWebKitInspector(RealmInspectorModulesProvider.builder(this).build())
-            .build());
+    Stetho.initialize(Stetho
+        .newInitializerBuilder(this)
+        .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
+        .enableWebKitInspector(RealmInspectorModulesProvider.builder(this).build())
+        .build());
   }
 
   private void initRealm() {
     Realm.init(this);
-    RealmConfiguration realmConfiguration = new RealmConfiguration.Builder()
-        .deleteRealmIfMigrationNeeded()
-        .build();
+    RealmConfiguration realmConfiguration =
+        new RealmConfiguration.Builder().deleteRealmIfMigrationNeeded().build();
     Realm.setDefaultConfiguration(realmConfiguration);
   }
 
   private void enabledStrictMode() {
     if (BuildConfig.DEBUG) {
-      StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-          .detectAll()
-          .penaltyLog()
-          .penaltyDeath()
-          .build());
+      StrictMode.setThreadPolicy(
+          new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().penaltyDeath().build());
 
-      StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
-          .detectAll()
-          .penaltyLog()
-          .build());
+      StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
     }
   }
 
   private void initTimber() {
-    Timber.plant(BuildConfig.DEBUG
-        ? new Timber.DebugTree()
-        : new ReleaseTree());
+    Timber.plant(BuildConfig.DEBUG ? new Timber.DebugTree() : new ReleaseTree());
   }
 
   private static class ReleaseTree extends Timber.Tree {
@@ -115,9 +119,7 @@ public class YolooApp extends Application {
     @Override
     protected void log(int priority, String tag, String message, Throwable throwable) {
       if (isLoggable(tag, priority)) {
-        Throwable t = throwable != null
-            ? throwable
-            : new Exception(message);
+        Throwable t = throwable != null ? throwable : new Exception(message);
 
         // Firebase Crash Reporting
         FirebaseCrash.logcat(priority, tag, message);

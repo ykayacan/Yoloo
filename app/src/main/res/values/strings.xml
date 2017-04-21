@@ -19,7 +19,6 @@
   <!-- NAV DRAWER -->
   <string name="label_nav_profile">Profile</string>
   <string name="label_nav_bookmarks">Bookmarks</string>
-  <string name="label_nav_change_view">Change View</string>
   <string name="label_nav_invite_friends">Invite Friends</string>
   <string name="label_nav_settings">Settings</string>
   <string name="label_nav_refresh_data">Refresh Data</string>
@@ -29,9 +28,9 @@
 
   <!-- HOME FEED -->
   <string name="label_feed_toolbar_title">Home</string>
-  <string name="label_feed_trending_now">Trending now</string>
+  <string name="feed_recommended_groups_title">Recommended Groups</string>
   <string name="label_feed_explore">Explore</string>
-  <string name="label_feed_news">Travel News</string>
+  <string name="label_feed_trending_blogs_title">Trending Blogs</string>
   <string name="label_feed_bookmarked">Post saved.</string>
   <string name="label_feed_unbookmarked">Post unsaved.</string>
   <string name="label_feed_read_more_news">More</string>
@@ -60,9 +59,9 @@
   <string name="hint_editor_write_title">Click here to write title…</string>
   <string name="hint_editor_blog_content">Write anything about your story here…</string>
   <string name="hint_editor_question_content">Ask anything about your trip here…</string>
-  <string name="hint_editor_max_tags">Enter maximum 7 tags here</string>
+  <string name="hint_editor_max_tags">Add up to 7 tags</string>
 
-  <string name="action_editor_ask_bounty">Ask a bounty question</string>
+  <string name="action_editor_add_bounty">Add bounty</string>
   <string-array name="action_editor_list_media_source">
     <item>From gallery</item>
     <item>From camera</item>
@@ -76,7 +75,7 @@
   <string name="label_tag"># %1$s</string>
   <string name="label_editor_ensure_bounty">Do you want to add %1$d bountyCount?</string>
   <string name="label_editor_bounty_description">
-    You will increase the chance of getting answered by asking bounty questions.
+    You will increase the chance of getting answered by adding bounty to your post.
   </string>
   <string-array name="label_editor_bounties">
     <item>10</item>
@@ -86,7 +85,7 @@
     <item>50</item>
   </string-array>
   <string name="label_editor_select_bounty_value">SELECT A BOUNTY</string>
-  <string name="label_editor_recommended_tags">Recommended Tags</string>
+  <string name="label_editor_trending_tags_title">Trending Tags</string>
 
   <string name="error_editor_not_enough_bounty">You don\'t have enough bounty!</string>
 
@@ -97,12 +96,8 @@
   <!-- CATALOG -->
   <string name="label_catalog_toolbar_title">Select a Category</string>
   <string name="label_main_catalog_toolbar_title">All Categories</string>
-  <string name="label_catalog_tab_destination">Destination</string>
-  <string name="label_catalog_tab_theme">Theme</string>
 
   <string name="action_catalog_discard_draft">Do you want to discard?</string>
-  <string name="action_catalog_draft_save">Save</string>
-  <string name="action_catalog_draft_delete">Discard</string>
   <string name="action_catalog_next">NEXT</string>
 
   <string name="error_catalog_select_category">Please select category!</string>
@@ -128,8 +123,8 @@
   <!-- PROFILE -->
   <string name="label_profile_level">Level %1$d</string>
   <string name="label_profile_posts">%1$s\nposts</string>
-  <string name="label_profile_followers">%1$s\nfollowers</string>
-  <string name="label_profile_following">%1$s\nfollowing</string>
+  <string name="label_profile_follower_count">&#032;&#032;FOLLOWERS</string>
+  <string name="label_profile_following_count">&#032;&#032;FOLLOWING</string>
   <string name="label_profile_points">%1$s\nPOINTS</string>
   <string name="label_profile_bounties">%1$d\nBOUNTIES</string>
   <string name="label_profile_countries">%1$d\nCOUNTRIES</string>
@@ -156,8 +151,13 @@
   <string name="label_notification_title">Notifications</string>
   <string name="label_notification_comment">\@%1$s commented on your post.</string>
   <string name="label_notification_mention">\@%1$s mentioned you in a comment: %2$s</string>
-  <string name="label_notification_follow">\@%1$s followed you.</string>
-  <string name="label_notification_accept">Your comment is accepted.</string>
+  <string name="label_notification_follow">\@%1$s followed you</string>
+  <string name="label_notification_accept">Your comment is accepted</string>
+  <string name="label_notification_game_level_up">🎊🎉 Congrats! You reached Level %1$s</string>
+  <string name="label_notification_game_together">🎊🎉🏅 You earned  %1$s bounties and %2$s points</string>
+  <string name="label_notification_game_with_bounty">🎊🎉 You earned 🏅 %1$s bounties</string>
+  <string name="label_notification_game_with_points">🎊🎉 You earned 🎖 %1$s points</string>
+
   <string name="error_network_unavailable">Network unavailable.
     Your post will be sent when network is available.</string>
 
@@ -167,7 +167,7 @@
     and connect with travelers.
   </string>
   <string name="label_login_select_categories">
-    Select at least 3 news to personalize your feed.
+    Select at least 3 groupId to personalize your feed.
   </string>
   <string name="label_login_or">or</string>
   <string name="label_loading">Loading</string>
@@ -194,16 +194,17 @@
   <string name="error_email_already_taken">Email is in use</string>
   <string name="error_invalid_password">Your password must include at least 4 characters</string>
   <string name="error_field_required">Required field</string>
+  <string name="error_field_username_unavailable">Username is already taken</string>
 
   <string name="hint_full_name">Full Name</string>
-  <string name="hint_email">E-mail</string>
+  <string name="hint_username">Username</string>
+  <string name="hint_email">Email</string>
   <string name="hint_password">Password</string>
+  <string name="hint_birthdate">Set Birthday</string>
+  <string name="hint_country_prompt">Select Country</string>
 
   <string name="idp_name_google">Google</string>
   <string name="idp_name_facebook">Facebook</string>
-
-  <!-- NEWS -->
-  <string name="label_news_toolbar_title">News</string>
 
   <!-- COMPONENT NEWCOMERS -->
   <string name="label_newcomers_group_title">Recently Joined</string>
@@ -237,28 +238,22 @@
     <item>Female</item>
   </string-array>
 
+  <!-- BLOGLIST -->
+  <string name="label_bloglist_title">Top Blogs</string>
+
   <!-- DIALOG LIST -->
   <string-array name="action_dialog_list_group_options_dialog">
     <item>Group info</item>
-    <item>Exit group</item>
+    <item>Exit groupId</item>
   </string-array>
 
   <string-array name="action_dialog_list_normal_options_dialog">
     <item>Delete</item>
   </string-array>
 
-  <!-- DIALOG -->
-  <string name="hint_dialog_write_message">Type a message</string>
-
   <!-- CREATE DIALOG -->
   <string name="label_create_dialog_toolbar_title">Select contact</string>
   <string name="label_create_dialog_create_dialog">Start conversation</string>
-
-  <string-array name="label_sub_feed_list">
-    <item>Questions</item>
-    <item>Tags</item>
-    <item>Users</item>
-  </string-array>
 
   <string name="label_toolbar_bounty_title">Bounty Questions</string>
 
@@ -287,10 +282,67 @@
 
   <!-- CHAT -->
   <string name="label_toolbar_conversationlist_title">Conversations</string>
-  <string name="title_activity_login">Sign in</string>
 
-  <string name="transition_test" translatable="false">transition.test</string>
   <string name="transition_avatar" translatable="false">transition.avatar</string>
   <string name="transition_username" translatable="false">transition.name%1$s</string>
+
+  <string name="label_pointsoverview_latest_achievements_title">Latest Achievements</string>
+
+  <string name="label_earned_points">%1$d points earned.</string>
+  <string name="label_earned_bounties">%1$d bounties earned.</string>
+
+  <string name="group_subscribe">Subscribe</string>
+  <string name="group_unsubscribe">Unsubscribe</string>
+
+  <string name="group_tab_posts">Posts</string>
+  <string name="group_tab_tags">Tags</string>
+  <string name="group_tab_users">Users</string>
+
+  <string name="user_followed">User followed</string>
+  <string name="user_unfollowed">User unfollowed</string>
+
+  <string name="label_compose_select_group">Select Group</string>
+
+  <string name="hint_sign_up_enter_username">Enter username</string>
+  <string name="hint_sign_up_enter_password">Enter password</string>
+
+  <string name="label_click_add_image">Click to add image</string>
+  <string name="label_click_remove_image">Click to delete image</string>
+
+  <string name="label_select_group_title">Select Group</string>
+
+  <string name="error_bounty_network">Adding a bounty needs Internet.</string>
+
+  <string name="buy_bounty">BUY BOUNTY</string>
+  <string name="label_editor_tag_dialog_info">Tags make your post discoverable by users (up to 7 tags)</string>
+
+  <string name="invitation_title">Send App Invite Quickstart Invitation</string>
+  <string name="invitation_message">This app is terrific, give it a try and get $5 off!</string>
+  <string name="invitation_deep_link">http://example.com/offer/five_dollar_offer</string>
+  <string name="invitation_custom_image">https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png</string>
+  <string name="invitation_cta">Install!</string>
+
+  <string name="sent_invitations_fmt" formatted="false">Sent %d invitations</string>
+  <string name="send_failed">Sending invitations failed</string>
+  <string name="invite_dialog_title">You got an invitation!</string>
+
+  <string name="invite">Send invitations!</string>
+  <string name="welcome">Invites</string>
+  <string name="referrer_hint">Deep link not provided</string>
+  <string name="deep_link_default">Deep link not set</string>
+  <string name="invitation_id_default">Invitation ID not set</string>
+  <string name="invite_friends">Invite Friends</string>
+
+  <string name="deep_link_fmt" formatted="false">Deep Link: %s</string>
+  <string name="invitation_id_fmt" formatted="false">Invitation ID: %s</string>
+
+  <string name="tag_hint">Tag</string>
+
+  <string name="label_editor_add_media">Add Media</string>
+  <string name="label_editor_select_group">Select Group</string>
+  <string name="hint_editor_tag">Tag post (up to 7)</string>
+
+  <string name="label_explore_recent_medias_title">Recent Photos</string>
+  <string name="label_explore_recent_medias_more">See All</string>
 
 </resources>

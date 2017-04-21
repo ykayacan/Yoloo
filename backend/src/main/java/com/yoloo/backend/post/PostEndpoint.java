@@ -16,33 +16,16 @@ import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
 import com.yoloo.backend.post.sort_strategy.PostSorter;
-
-import java.util.logging.Logger;
-
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
-@Api(
-    name = "yolooApi",
+@Api(name = "yolooApi",
     version = "v1",
-    namespace = @ApiNamespace(
-        ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER
-    ))
-@ApiClass(
-    resource = "posts",
-    clientIds = {
-        Constants.ANDROID_CLIENT_ID,
-        Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID
-    },
-    audiences = { Constants.AUDIENCE_ID },
-    authenticators = { FirebaseAuthenticator.class }
-)
+    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
+@ApiClass(resource = "posts", clientIds = {
+    Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
+}, audiences = { Constants.AUDIENCE_ID }, authenticators = { FirebaseAuthenticator.class })
 public class PostEndpoint {
-
-  private static final Logger LOG =
-      Logger.getLogger(PostEndpoint.class.getSimpleName());
 
   private final PostController postController = PostControllerFactory.of().create();
 
@@ -54,10 +37,7 @@ public class PostEndpoint {
    * @return the entity with the corresponding ID
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "posts.get",
-      path = "posts/{postId}",
-      httpMethod = ApiMethod.HttpMethod.GET)
+  @ApiMethod(name = "posts.get", path = "posts/{postId}", httpMethod = ApiMethod.HttpMethod.GET)
   public Post get(@Named("postId") String postId, User user) throws ServiceException {
 
     EndpointsValidator.create()
@@ -70,12 +50,11 @@ public class PostEndpoint {
   /**
    * Deletes the specified {@code Post}.
    *
-   * @param postId the ID from the entity to delete
+   * @param postId the ID from the entity to deleteMedia
    * @param user the user
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "posts.delete",
+  @ApiMethod(name = "posts.delete",
       path = "posts/{postId}",
       httpMethod = ApiMethod.HttpMethod.DELETE)
   public void delete(@Named("postId") String postId, User user) throws ServiceException {
@@ -90,24 +69,23 @@ public class PostEndpoint {
   }
 
   /**
-   * List all entities.
+   * List collection response.
    *
+   * @param userId the user id
    * @param sorter the sorter
-   * @param category the category
-   * @param cursor used for pagination to determine which page to return
-   * @param limit the maximum number from entries to return
+   * @param groupId the group id
+   * @param tags the tags
+   * @param cursor the cursor
+   * @param limit the limit
    * @param user the user
-   * @return a response that encapsulates the result listFeed and the next page token/cursor
+   * @return the collection response
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "posts.list",
-      path = "posts",
-      httpMethod = ApiMethod.HttpMethod.GET)
+  @ApiMethod(name = "posts.list", path = "posts", httpMethod = ApiMethod.HttpMethod.GET)
   public CollectionResponse<Post> list(
       @Nullable @Named("userId") String userId,
       @Nullable @Named("sort") PostSorter sorter,
-      @Nullable @Named("category") String category,
+      @Nullable @Named("groupId") String groupId,
       @Nullable @Named("tags") String tags,
       @Nullable @Named("cursor") String cursor,
       @Nullable @Named("limit") Integer limit,
@@ -115,15 +93,9 @@ public class PostEndpoint {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
-    return postController.listPosts(
-        Optional.fromNullable(userId),
-        Optional.fromNullable(sorter),
-        Optional.fromNullable(category),
-        Optional.fromNullable(tags),
-        Optional.fromNullable(limit),
-        Optional.fromNullable(cursor),
-        Optional.absent(),
-        user);
+    return postController.listPosts(Optional.fromNullable(userId), Optional.fromNullable(sorter),
+        Optional.fromNullable(groupId), Optional.fromNullable(tags), Optional.fromNullable(limit),
+        Optional.fromNullable(cursor), Optional.absent(), user);
   }
 
   /**
@@ -133,8 +105,7 @@ public class PostEndpoint {
    * @param user the user
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "posts.report",
+  @ApiMethod(name = "posts.report",
       path = "posts/{postId}/report",
       httpMethod = ApiMethod.HttpMethod.PUT)
   public void report(@Named("postId") String postId, User user) throws ServiceException {

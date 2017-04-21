@@ -76,7 +76,7 @@ public class AutoCompleteMentionAdapter extends ArrayAdapter<AccountRealm> {
     Glide.with(getContext())
         .load(item.getAvatarUrl())
         .bitmapTransform(circleTransformation)
-        .placeholder(R.drawable.ic_player)
+        .placeholder(R.drawable.ic_player_72dp)
         .into(holder.ivAvatar);
 
     holder.tvUsername.setText(item.getUsername());

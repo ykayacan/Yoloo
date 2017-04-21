@@ -17,7 +17,7 @@ import lombok.extern.java.Log;
 public class CheckInController extends Controller {
 
   public CheckIn insertCheckIn(@Nonnull String location, User user) {
-    List<Float> points = Ix.from(StringUtil.splitToList(location, ","))
+    List<Float> points = Ix.from(StringUtil.split(location, ","))
         .map(Float::parseFloat)
         .toList();
     // TODO: 18.03.2017 Finish checkin

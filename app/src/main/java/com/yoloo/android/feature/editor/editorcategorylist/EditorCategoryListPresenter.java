@@ -7,14 +7,15 @@ import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.framework.MvpPresenter;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import javax.annotation.Nonnull;
 import timber.log.Timber;
 
-public class EditorCategoryListPresenter extends MvpPresenter<EditorCategoryListView> {
+class EditorCategoryListPresenter extends MvpPresenter<EditorCategoryListView> {
 
   private final PostRepository postRepository;
   private final UserRepository userRepository;
 
-  public EditorCategoryListPresenter(PostRepository postRepository, UserRepository userRepository) {
+  EditorCategoryListPresenter(PostRepository postRepository, UserRepository userRepository) {
     this.postRepository = postRepository;
     this.userRepository = userRepository;
   }
@@ -36,7 +37,7 @@ public class EditorCategoryListPresenter extends MvpPresenter<EditorCategoryList
     getDisposable().add(d);
   }
 
-  public void loadDraft() {
+  void loadDraft() {
     Disposable d = postRepository.getDraft()
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(draft -> getView().onDraftLoaded(draft));
@@ -44,7 +45,7 @@ public class EditorCategoryListPresenter extends MvpPresenter<EditorCategoryList
     getDisposable().add(d);
   }
 
-  public void updateDraft(PostRealm draft) {
+  void updateDraft(@Nonnull PostRealm draft) {
     Disposable d = postRepository.addDraft(draft)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(() -> getView().onDraftSaved());
@@ -52,7 +53,7 @@ public class EditorCategoryListPresenter extends MvpPresenter<EditorCategoryList
     getDisposable().add(d);
   }
 
-  public void deleteDraft() {
+  void deleteDraft() {
     Disposable d = postRepository.deleteDraft()
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe();

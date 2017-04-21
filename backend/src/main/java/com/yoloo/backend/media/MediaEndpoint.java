@@ -14,27 +14,15 @@ import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
 import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
 import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
-
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
-@Api(
-    name = "yolooApi",
+@Api(name = "yolooApi",
     version = "v1",
-    namespace = @ApiNamespace(
-        ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER)
-)
-@ApiClass(
-    resource = "medias",
-    clientIds = {
-        Constants.ANDROID_CLIENT_ID,
-        Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID
-    },
-    audiences = { Constants.AUDIENCE_ID },
-    authenticators = { FirebaseAuthenticator.class }
-)
+    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
+@ApiClass(resource = "medias", clientIds = {
+    Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
+}, audiences = { Constants.AUDIENCE_ID }, authenticators = { FirebaseAuthenticator.class })
 public class MediaEndpoint {
 
   /**
@@ -45,10 +33,7 @@ public class MediaEndpoint {
    * @return the media
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "medias.get",
-      path = "medias/{mediaId}",
-      httpMethod = ApiMethod.HttpMethod.GET)
+  @ApiMethod(name = "medias.get", path = "medias/{mediaId}", httpMethod = ApiMethod.HttpMethod.GET)
   public Media get(@Named("mediaId") String mediaId, User user) throws ServiceException {
 
     EndpointsValidator.create()
@@ -69,26 +54,18 @@ public class MediaEndpoint {
    * @return the collection response
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "medias.list",
-      path = "medias/{userId}",
-      httpMethod = ApiMethod.HttpMethod.POST)
-  public CollectionResponse<Media> list(
-      @Named("userId") String userId,
-      @Nullable @Named("cursor") String cursor,
-      @Nullable @Named("limit") Integer limit,
-      User user) throws ServiceException {
+  @ApiMethod(name = "medias.list", path = "medias/{userId}", httpMethod = ApiMethod.HttpMethod.POST)
+  public CollectionResponse<Media> list(@Named("userId") String userId,
+      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
+      throws ServiceException {
 
     EndpointsValidator.create()
         .on(BadRequestValidator.create(userId, "userId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(userId, "Invalid userId."));
 
-    return getMediaController().listMedias(
-        userId,
-        Optional.fromNullable(limit),
-        Optional.fromNullable(cursor),
-        user);
+    return getMediaController().listMedias(userId, Optional.fromNullable(limit),
+        Optional.fromNullable(cursor), user);
   }
 
   private MediaController getMediaController() {

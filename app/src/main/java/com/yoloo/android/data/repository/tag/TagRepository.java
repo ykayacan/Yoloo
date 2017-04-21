@@ -8,6 +8,8 @@ import com.yoloo.android.data.sorter.TagSorter;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class TagRepository {
 
@@ -34,8 +36,10 @@ public class TagRepository {
   }
 
   public Observable<Response<List<TagRealm>>> listTags(String name, String cursor, int limit) {
-    return remoteDataStore.list(name, cursor, limit)
-        .doOnNext(response -> Observable.fromIterable(response.getData())
+    return remoteDataStore
+        .searchTag(name, cursor, limit)
+        .doOnNext(response -> Observable
+            .fromIterable(response.getData())
             .map(tag -> tag.setRecent(true))
             .toList()
             .toObservable()
@@ -44,12 +48,22 @@ public class TagRepository {
   }
 
   public Observable<Response<List<TagRealm>>> listTags2(String name, String cursor, int limit) {
-    return diskDataStore.list(TagSorter.DEFAULT)
+    return diskDataStore
+        .list(TagSorter.DEFAULT)
         .map(tagRealms -> Response.create(tagRealms, cursor))
         .subscribeOn(Schedulers.io());
   }
 
   public Observable<List<TagRealm>> listRecentTags() {
     return diskDataStore.listRecent().subscribeOn(Schedulers.io());
+  }
+
+  public Observable<List<TagRealm>> listRecommendedTags() {
+    return remoteDataStore.listRecommendedTags();
+  }
+
+  public Observable<Response<List<TagRealm>>> searchTag(@Nonnull String query,
+      @Nullable String cursor, int limit) {
+    return remoteDataStore.searchTag(query, cursor, limit);
   }
 }

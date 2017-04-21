@@ -1,12 +1,21 @@
 package com.yoloo.android.data.repository.tag.datasource;
 
-import com.yoloo.android.data.ApiManager;
+import com.annimon.stream.Stream;
+import com.google.api.client.http.HttpHeaders;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.TagRealm;
+import com.yoloo.android.data.repository.tag.transformer.TagResponseTransformer;
 import com.yoloo.android.data.sorter.TagSorter;
+import com.yoloo.backend.yolooApi.model.TagCollection;
 import io.reactivex.Observable;
-import java.util.ArrayList;
+import io.reactivex.schedulers.Schedulers;
 import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import timber.log.Timber;
+
+import static com.yoloo.android.data.ApiManager.INSTANCE;
+import static com.yoloo.android.data.ApiManager.getIdToken;
 
 public class TagRemoteDataStore {
 
@@ -23,24 +32,49 @@ public class TagRemoteDataStore {
   }
 
   public Observable<List<TagRealm>> list(TagSorter sorter) {
-    return ApiManager.getIdToken()
-        .toObservable()
-        .flatMap(s -> Observable.empty());
+    return getIdToken().toObservable().flatMap(s -> Observable.empty());
   }
 
-  public Observable<Response<List<TagRealm>>> list(String name, String cursor, int limit) {
-    TagRealm t1 = new TagRealm()
-        .setId("t1")
-        .setName("interrail");
+  public Observable<List<TagRealm>> listRecommendedTags() {
+    return getIdToken()
+        .flatMapObservable(idToken -> Observable
+            .fromCallable(() -> INSTANCE
+                .getApi()
+                .tags()
+                .recommended()
+                .setRequestHeaders(setIdTokenHeader(idToken))
+                .execute())
+            .subscribeOn(Schedulers.io()))
+        .map(TagCollection::getItems)
+        .map(tagDTOS -> Stream.of(tagDTOS).map(TagRealm::new).toList());
+  }
 
-    TagRealm t2 = new TagRealm()
-        .setId("t2")
-        .setName("interbus");
+  /**
+   * List observable.
+   *
+   * @param query the query
+   * @param cursor the cursor
+   * @param limit the limit
+   * @return the observable
+   */
+  public Observable<Response<List<TagRealm>>> searchTag(@Nonnull String query,
+      @Nullable String cursor, int limit) {
+    return getIdToken()
+        .flatMapObservable(idToken -> Observable
+            .fromCallable(() -> INSTANCE
+                .getApi()
+                .tags()
+                .list(query)
+                .setCursor(cursor)
+                .setLimit(limit)
+                .setRequestHeaders(setIdTokenHeader(idToken))
+                .execute())
+            .subscribeOn(Schedulers.io()))
+        .compose(TagResponseTransformer.create());
+  }
 
-    List<TagRealm> list = new ArrayList<>();
-    list.add(t1);
-    list.add(t2);
-
-    return Observable.just(Response.create(list, null));
+  private HttpHeaders setIdTokenHeader(@Nonnull String idToken) {
+    Timber.d("Id Token: %s", idToken);
+    return new HttpHeaders().setAuthorization("Bearer " + idToken);
   }
 }

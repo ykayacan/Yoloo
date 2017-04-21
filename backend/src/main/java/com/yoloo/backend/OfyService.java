@@ -7,10 +7,12 @@ import com.googlecode.objectify.impl.translate.opt.joda.JodaTimeTranslators;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.account.AccountShard;
 import com.yoloo.backend.bookmark.Bookmark;
+import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentShard;
 import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.feed.Feed;
+import com.yoloo.backend.travelertype.TravelerTypeEntity;
 import com.yoloo.backend.media.Media;
 import com.yoloo.backend.relationship.Relationship;
 import com.yoloo.backend.game.Tracker;
@@ -19,8 +21,7 @@ import com.yoloo.backend.post.Post;
 import com.yoloo.backend.post.PostShard;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagShard;
-import com.yoloo.backend.category.Category;
-import com.yoloo.backend.category.CategoryShard;
+import com.yoloo.backend.group.TravelerGroupShard;
 import com.yoloo.backend.vote.Vote;
 
 /**
@@ -42,8 +43,9 @@ public final class OfyService {
     factory().register(Tag.class);
     factory().register(TagShard.class);
 
-    factory().register(Category.class);
-    factory().register(CategoryShard.class);
+    factory().register(TravelerTypeEntity.class);
+    factory().register(TravelerGroupEntity.class);
+    factory().register(TravelerGroupShard.class);
 
     factory().register(Comment.class);
     factory().register(CommentShard.class);

@@ -99,7 +99,7 @@ public final class Group {
     }
   }
 
-  public final static class Of5<First, Second, Third, Fourth, Fifth> {
+  public static final class Of5<First, Second, Third, Fourth, Fifth> {
     public First first;
     public Second second;
     public Third third;
@@ -114,13 +114,12 @@ public final class Group {
       this.fifth = fifth;
     }
 
-    public static <First, Second, Third, Fourth, Fifth> Of5<First, Second, Third, Fourth, Fifth> create(
-        First first, Second second, Third third, Fourth fourth, Fifth fifth) {
+    public static <First, Second, Third, Fourth, Fifth> Of5<First, Second, Third, Fourth, Fifth>
+    create(First first, Second second, Third third, Fourth fourth, Fifth fifth) {
       return new Of5<>(first, second, third, fourth, fifth);
     }
 
-    @Override
-    public final boolean equals(Object o) {
+    @Override public final boolean equals(Object o) {
       if (!(o instanceof Of5)) {
         return false;
       }
@@ -132,8 +131,7 @@ public final class Group {
           Objects.equal(p.fifth, fifth);
     }
 
-    @Override
-    public final int hashCode() {
+    @Override public final int hashCode() {
       return (first == null ? 0 : first.hashCode()) ^
           (second == null ? 0 : second.hashCode()) ^
           (third == null ? 0 : third.hashCode()) ^
@@ -142,7 +140,7 @@ public final class Group {
     }
   }
 
-  public final static class Of6<First, Second, Third, Fourth, Fifth, Sixth> {
+  public static final class Of6<First, Second, Third, Fourth, Fifth, Sixth> {
     public First first;
     public Second second;
     public Third third;
@@ -159,13 +157,13 @@ public final class Group {
       this.sixth = sixth;
     }
 
-    public static <First, Second, Third, Fourth, Fifth, Sixth> Of6<First, Second, Third, Fourth, Fifth, Sixth> create(
+    public static <First, Second, Third, Fourth, Fifth, Sixth> Of6<First, Second, Third, Fourth,
+        Fifth, Sixth> create(
         First first, Second second, Third third, Fourth fourth, Fifth fifth, Sixth sixth) {
       return new Of6<>(first, second, third, fourth, fifth, sixth);
     }
 
-    @Override
-    public final boolean equals(Object o) {
+    @Override public final boolean equals(Object o) {
       if (!(o instanceof Of6)) {
         return false;
       }
@@ -178,8 +176,7 @@ public final class Group {
           Objects.equal(p.sixth, sixth);
     }
 
-    @Override
-    public final int hashCode() {
+    @Override public final int hashCode() {
       return (first == null ? 0 : first.hashCode()) ^
           (second == null ? 0 : second.hashCode()) ^
           (third == null ? 0 : third.hashCode()) ^
@@ -190,7 +187,7 @@ public final class Group {
   }
 
   private static final class Objects {
-    public static boolean equal(Object a, Object b) {
+    static boolean equal(Object a, Object b) {
       return a == b || (a != null && a.equals(b));
     }
   }

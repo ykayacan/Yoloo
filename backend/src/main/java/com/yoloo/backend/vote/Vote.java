@@ -4,6 +4,7 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Parent;
 import com.yoloo.backend.account.Account;
 import lombok.AccessLevel;
@@ -24,19 +25,26 @@ public class Vote {
   public static final String FIELD_VOTABLE_KEY = "votableKey";
 
   // Websafe voteable id.
-  @Id
-  private String id;
+  @Id private String id;
 
-  @Parent
-  @NonFinal
-  private Key<Account> parent;
+  @Parent @NonFinal private Key<Account> parent;
 
-  @Wither
-  @NonFinal
-  private Direction dir;
+  @Wither @NonFinal private int dir;
 
-  @NonFinal
-  private Key<Votable> votableKey;
+  @NonFinal @Index private Key<Votable> votableKey;
+
+  public static Vote.Direction parse(int dir) {
+    switch (dir) {
+      case -1:
+        return Direction.DOWN;
+      case 0:
+        return Direction.DEFAULT;
+      case 1:
+        return Direction.UP;
+      default:
+        return Direction.DEFAULT;
+    }
+  }
 
   public static Key<Vote> createKey(Key<? extends Votable> votableKey, Key<Account> accountKey) {
     return Key.create(accountKey, Vote.class, votableKey.toWebSafeString());
@@ -57,7 +65,7 @@ public class Vote {
    * @return the boolean
    */
   public boolean isUpVote() {
-    return this.dir == Direction.UP;
+    return this.dir == Direction.UP.value;
   }
 
   /**
@@ -66,7 +74,7 @@ public class Vote {
    * @return the boolean
    */
   public boolean isDownVote() {
-    return this.dir == Direction.DOWN;
+    return this.dir == Direction.DOWN.value;
   }
 
   /**
@@ -75,7 +83,7 @@ public class Vote {
    * @return the boolean
    */
   public boolean isDefault() {
-    return this.dir == Direction.DEFAULT;
+    return this.dir == Direction.DEFAULT.value;
   }
 
   /**
@@ -90,9 +98,7 @@ public class Vote {
   @AllArgsConstructor
   @Getter
   public enum Direction {
-    DEFAULT(0),
-    UP(1),
-    DOWN(-1);
+    DEFAULT(0), UP(1), DOWN(-1);
 
     private int value;
   }

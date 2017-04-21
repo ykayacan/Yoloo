@@ -4,16 +4,17 @@
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="@android:color/white">
+  android:background="@android:color/white"
+  android:fitsSystemWindows="true">
 
   <android.support.design.widget.AppBarLayout
-    android:id="@+id/appbar_comment"
+    android:id="@+id/appbar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:theme="@style/Yoloo.AppBarOverlay.Light">
 
     <android.support.v7.widget.Toolbar
-      android:id="@+id/toolbar_comment"
+      android:id="@+id/toolbar"
       android:layout_width="match_parent"
       android:layout_height="?attr/actionBarSize"
       android:background="@android:color/white"

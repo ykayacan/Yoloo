@@ -228,7 +228,7 @@ public final class AnimUtils {
   /**
    * A delegate for creating a {@link Property} from <code>int</code> type.
    */
-  public static abstract class IntProp<T> {
+  public abstract static class IntProp<T> {
     public final String name;
 
     public IntProp(String name) {
@@ -243,7 +243,7 @@ public final class AnimUtils {
   /**
    * A delegate for creating a {@link Property} from <code>float</code> type.
    */
-  public static abstract class FloatProp<T> {
+  public abstract static class FloatProp<T> {
     public final String name;
 
     protected FloatProp(String name) {

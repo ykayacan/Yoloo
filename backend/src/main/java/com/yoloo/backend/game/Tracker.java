@@ -30,28 +30,23 @@ public class Tracker {
   /**
    * AccountId:tracker
    */
-  @Id
-  private String id;
+  @Id private String id;
 
-  @Index(IfNotZero.class)
-  private int points;
+  @Index(IfNotZero.class) private int points;
 
-  @Index(IfNotZero.class)
-  private int bounties;
+  @Index(IfNotZero.class) private int bounties;
 
-  @Index
-  private int level;
+  @Index private int level;
 
   private int dailyPoints;
 
-  private boolean firstQuestion;
+  private boolean firstPost;
 
   private boolean firstComment;
 
-  private DateTime questionBonusAwardedAt;
+  private DateTime postBonusAwardedAt;
 
-  @Singular
-  private Set<Badge> badges;
+  @Singular private Set<Badge> badges;
 
   public static Key<Tracker> createKey(Key<Account> accountKey) {
     return Key.create(Tracker.class, accountKey.toWebSafeString() + ":tracker");

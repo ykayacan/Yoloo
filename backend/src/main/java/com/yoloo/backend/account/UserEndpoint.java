@@ -11,35 +11,22 @@ import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.AdminAuthenticator;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
+import com.yoloo.backend.authentication.oauth2.OAuth2;
 import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
 import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
 import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
-
-import java.util.logging.Logger;
-
 import javax.annotation.Nullable;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
-@Api(
-    name = "yolooApi",
+@Api(name = "yolooApi",
     version = "v1",
-    namespace = @ApiNamespace(
-        ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER))
-@ApiClass(resource = "accounts",
-    clientIds = {
-        Constants.ANDROID_CLIENT_ID,
-        Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID
-    },
-    audiences = Constants.AUDIENCE_ID,
-    authenticators = FirebaseAuthenticator.class
-)
+    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
+@ApiClass(resource = "accounts", clientIds = {
+    Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
+}, audiences = Constants.AUDIENCE_ID, authenticators = FirebaseAuthenticator.class)
 public class UserEndpoint {
-
-  private static final Logger LOG = Logger.getLogger(UserEndpoint.class.getSimpleName());
 
   private final AccountController accountController = AccountControllerProvider.of().create();
 
@@ -51,13 +38,11 @@ public class UserEndpoint {
    * @return the user with the corresponding ID
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "users.get",
-      path = "users/{userId}",
-      httpMethod = ApiMethod.HttpMethod.GET)
+  @ApiMethod(name = "users.get", path = "users/{userId}", httpMethod = ApiMethod.HttpMethod.GET)
   public Account get(@Named("userId") String userId, User user) throws ServiceException {
 
-    EndpointsValidator.create()
+    EndpointsValidator
+        .create()
         .on(BadRequestValidator.create(userId, "userId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(userId, "Invalid userId."));
@@ -68,51 +53,34 @@ public class UserEndpoint {
   /**
    * Register user.
    *
-   * @param realname the realname
-   * @param locale the locale
-   * @param gender the gender
-   * @param categoryIds the category ids
    * @param request the request
    * @return the account
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "users.register",
-      path = "users",
-      httpMethod = ApiMethod.HttpMethod.POST)
-  public Account registerUser(
-      @Named("realname") String realname,
-      @Named("locale") String locale,
-      @Named("gender") Account.Gender gender,
-      @Named("categoryIds") String categoryIds,
-      HttpServletRequest request) throws ServiceException {
+  @ApiMethod(name = "users.register", path = "users", httpMethod = ApiMethod.HttpMethod.POST)
+  public Account registerUser(HttpServletRequest request) throws ServiceException {
 
-    EndpointsValidator.create()
-        .on(BadRequestValidator.create(locale, "locale is required."))
-        .on(BadRequestValidator.create(gender, "gender is required."))
-        .on(BadRequestValidator.create(categoryIds, "categoryIds is required."));
+    EndpointsValidator
+        .create()
+        .on(BadRequestValidator.create(request.getHeader(OAuth2.HeaderType.AUTHORIZATION),
+            "Authorization Header cannot be null."));
 
-    return accountController.insertAccount(realname, locale, gender, categoryIds, request);
+    return accountController.insertAccount(request);
   }
 
   /**
    * Check username wrapped boolean.
    *
    * @param username the username
-   * @param user the user
    * @return the wrapped boolean
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "users.checkUsername",
+  @ApiMethod(name = "users.checkUsername",
       path = "users/checkUsername",
       httpMethod = ApiMethod.HttpMethod.GET)
-  public WrappedBoolean checkUsername(@Named("username") String username, User user)
-      throws ServiceException {
+  public WrappedBoolean checkUsername(@Named("username") String username) throws ServiceException {
 
-    EndpointsValidator.create()
-        .on(BadRequestValidator.create(username, "username is required."))
-        .on(AuthValidator.create(user));
+    EndpointsValidator.create().on(BadRequestValidator.create(username, "username is required."));
 
     return accountController.checkUsername(username);
   }
@@ -127,23 +95,17 @@ public class UserEndpoint {
    * @return the collection response
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "users.search",
-      path = "users",
-      httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Account> search(
-      @Named("q") String query,
-      @Nullable @Named("cursor") String cursor,
-      @Nullable @Named("limit") Integer limit,
-      User user) throws ServiceException {
+  @ApiMethod(name = "users.search", path = "users", httpMethod = ApiMethod.HttpMethod.GET)
+  public CollectionResponse<Account> search(@Named("q") String query,
+      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
+      throws ServiceException {
 
-    EndpointsValidator.create()
+    EndpointsValidator
+        .create()
         .on(BadRequestValidator.create(query, "query is required."))
         .on(AuthValidator.create(user));
 
-    return accountController.searchAccounts(
-        query,
-        Optional.fromNullable(cursor),
+    return accountController.searchAccounts(query, Optional.fromNullable(cursor),
         Optional.fromNullable(limit));
   }
 
@@ -154,10 +116,7 @@ public class UserEndpoint {
    * @return the entity with the corresponding ID
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "users.me.get",
-      path = "users/me",
-      httpMethod = ApiMethod.HttpMethod.GET)
+  @ApiMethod(name = "users.me.get", path = "users/me", httpMethod = ApiMethod.HttpMethod.GET)
   public Account getMe(User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
@@ -178,30 +137,18 @@ public class UserEndpoint {
    * @return the updated version of the entity
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "users.me.update",
-      path = "users/me",
-      httpMethod = ApiMethod.HttpMethod.PUT)
-  public Account updateMe(
-      @Nullable @Named("mediaId") String mediaId,
-      @Nullable @Named("name") String realName,
-      @Nullable @Named("email") String email,
+  @ApiMethod(name = "users.me.update", path = "users/me", httpMethod = ApiMethod.HttpMethod.PUT)
+  public Account updateMe(@Nullable @Named("mediaId") String mediaId,
+      @Nullable @Named("name") String realName, @Nullable @Named("email") String email,
       @Nullable @Named("username") String username,
-      @Nullable @Named("websiteUrl") String websiteUrl,
-      @Nullable @Named("bio") String bio,
-      @Nullable @Named("gender") Account.Gender gender,
-      User user) throws ServiceException {
+      @Nullable @Named("websiteUrl") String websiteUrl, @Nullable @Named("bio") String bio,
+      @Nullable @Named("gender") Account.Gender gender, User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
-    return accountController.updateAccount(
-        user.getUserId(),
-        Optional.fromNullable(mediaId),
-        Optional.fromNullable(username),
-        Optional.fromNullable(realName),
-        Optional.fromNullable(email),
-        Optional.fromNullable(websiteUrl),
-        Optional.fromNullable(bio),
+    return accountController.updateAccount(user.getUserId(), Optional.fromNullable(mediaId),
+        Optional.fromNullable(username), Optional.fromNullable(realName),
+        Optional.fromNullable(email), Optional.fromNullable(websiteUrl), Optional.fromNullable(bio),
         Optional.fromNullable(gender));
   }
 
@@ -211,10 +158,7 @@ public class UserEndpoint {
    * @param user the user
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "users.me.delete",
-      path = "users/me",
-      httpMethod = ApiMethod.HttpMethod.DELETE)
+  @ApiMethod(name = "users.me.delete", path = "users/me", httpMethod = ApiMethod.HttpMethod.DELETE)
   public void deleteMe(User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
@@ -228,8 +172,7 @@ public class UserEndpoint {
    * @return the account
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "admin.users.register",
+  @ApiMethod(name = "admin.users.register",
       path = "admin/users",
       httpMethod = ApiMethod.HttpMethod.POST)
   public Account registerAdmin() throws ServiceException {
@@ -243,8 +186,7 @@ public class UserEndpoint {
    * @param user the user
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "admin.users.delete",
+  @ApiMethod(name = "admin.users.delete",
       path = "admin/users/{userId}",
       httpMethod = ApiMethod.HttpMethod.DELETE,
       authenticators = AdminAuthenticator.class)

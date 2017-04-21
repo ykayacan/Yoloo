@@ -16,15 +16,11 @@
 
 package com.yoloo.android.util;
 
-import android.graphics.Bitmap;
 import android.support.annotation.CheckResult;
 import android.support.annotation.ColorInt;
 import android.support.annotation.FloatRange;
 import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.graphics.Palette;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -44,16 +40,18 @@ public final class ColorUtils {
   /**
    * Set the alpha component from {@code color} to be {@code alpha}.
    */
-  @CheckResult @ColorInt public static int modifyAlpha(@ColorInt int color,
-      @IntRange(from = 0, to = 255) int alpha) {
+  @CheckResult
+  @ColorInt
+  public static int modifyAlpha(@ColorInt int color, @IntRange(from = 0, to = 255) int alpha) {
     return (color & 0x00ffffff) | (alpha << 24);
   }
 
   /**
    * Set the alpha component from {@code color} to be {@code alpha}.
    */
-  @CheckResult @ColorInt public static int modifyAlpha(@ColorInt int color,
-      @FloatRange(from = 0f, to = 1f) float alpha) {
+  @CheckResult
+  @ColorInt
+  public static int modifyAlpha(@ColorInt int color, @FloatRange(from = 0f, to = 1f) float alpha) {
     return modifyAlpha(color, (int) (255f * alpha));
   }
 
@@ -63,13 +61,13 @@ public final class ColorUtils {
    * Annoyingly we have to return this Lightness 'enum' rather than a boolean as palette isn't
    * guaranteed to find the most populous color.
    */
-  @Lightness public static int isDark(Palette palette) {
+  /*@Lightness public static int isDark(Palette palette) {
     Palette.Swatch mostPopulous = getMostPopulousSwatch(palette);
     if (mostPopulous == null) return LIGHTNESS_UNKNOWN;
     return isDark(mostPopulous.getHsl()) ? IS_DARK : IS_LIGHT;
-  }
+  }*/
 
-  @Nullable public static Palette.Swatch getMostPopulousSwatch(Palette palette) {
+  /*@Nullable public static Palette.Swatch getMostPopulousSwatch(Palette palette) {
     Palette.Swatch mostPopulous = null;
     if (palette != null) {
       for (Palette.Swatch swatch : palette.getSwatches()) {
@@ -79,7 +77,7 @@ public final class ColorUtils {
       }
     }
     return mostPopulous;
-  }
+  }*/
 
   /**
    * Determines if a given bitmap is dark. This extracts a palette inline so should not be called
@@ -87,15 +85,15 @@ public final class ColorUtils {
    * <p/>
    * Note: If palette fails then check the color from the central pixel
    */
-  public static boolean isDark(@NonNull Bitmap bitmap) {
+  /*public static boolean isDark(@NonNull Bitmap bitmap) {
     return isDark(bitmap, bitmap.getWidth() / 2, bitmap.getHeight() / 2);
-  }
+  }*/
 
   /**
    * Determines if a given bitmap is dark. This extracts a palette inline so should not be called
    * with a large image!! If palette fails then check the color from the specified pixel
    */
-  public static boolean isDark(@NonNull Bitmap bitmap, int backupPixelX, int backupPixelY) {
+  /*public static boolean isDark(@NonNull Bitmap bitmap, int backupPixelX, int backupPixelY) {
     // first try palette with a small color quant size
     Palette palette = Palette.from(bitmap).maximumColorCount(3).generate();
     if (palette.getSwatches().size() > 0) {
@@ -104,7 +102,7 @@ public final class ColorUtils {
       // if palette failed, then check the color from the specified pixel
       return isDark(bitmap.getPixel(backupPixelX, backupPixelY));
     }
-  }
+  }*/
 
   /**
    * Check that the lightness value (0–1)
@@ -131,7 +129,8 @@ public final class ColorUtils {
    * @param lightnessMultiplier the amount to modify the color e.g. 0.1f will alter it by 10%
    * @return the adjusted color
    */
-  @ColorInt public static int scrimify(@ColorInt int color, boolean isDark,
+  @ColorInt
+  public static int scrimify(@ColorInt int color, boolean isDark,
       @FloatRange(from = 0f, to = 1f) float lightnessMultiplier) {
     float[] hsl = new float[3];
     android.support.v4.graphics.ColorUtils.colorToHSL(color, hsl);
@@ -146,7 +145,8 @@ public final class ColorUtils {
     return android.support.v4.graphics.ColorUtils.HSLToColor(hsl);
   }
 
-  @ColorInt public static int scrimify(@ColorInt int color,
+  @ColorInt
+  public static int scrimify(@ColorInt int color,
       @FloatRange(from = 0f, to = 1f) float lightnessMultiplier) {
     return scrimify(color, isDark(color), lightnessMultiplier);
   }

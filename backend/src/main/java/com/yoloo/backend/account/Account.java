@@ -14,118 +14,79 @@ import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
 import com.googlecode.objectify.condition.IfNotNull;
 import com.googlecode.objectify.condition.IfNull;
-import com.yoloo.backend.account.condition.IfNotAdmin;
 import com.yoloo.backend.account.transformer.AccountTransformer;
-import com.yoloo.backend.category.Category;
 import com.yoloo.backend.country.Country;
+import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.util.Deref;
-
-import org.joda.time.DateTime;
-
+import ix.Ix;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-
-import ix.Ix;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Singular;
 import lombok.Value;
-import lombok.experimental.NonFinal;
+import lombok.experimental.FieldDefaults;
 import lombok.experimental.Wither;
+import org.joda.time.DateTime;
 
 @Entity
 @Cache
 @Value
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @ApiTransformer(AccountTransformer.class)
+@FieldDefaults(makeFinal = false)
 public class Account {
 
   public static final String FIELD_EMAIL = "email";
   public static final String FIELD_USERNAME = "username";
-  public static final String FIELD_FIREBASE_UUID = "firebaseUUID";
+  public static final String FIELD_SUBSCRIBED_GROUP_KEYS = "subscribedGroupKeys";
 
-  @Id
-  private long id;
+  @Id private long id;
 
-  @Index(value = IfNotAdmin.class)
-  @Wither
-  @NonFinal
-  private String username;
+  @Wither @Index(value = IfNotAdmin.class) private String username;
 
-  @Wither
-  @NonFinal
-  @IgnoreSave(IfNull.class)
-  private String realname;
+  @Wither @IgnoreSave(IfNull.class) private String realname;
 
-  @Index
-  @Wither
-  @NonFinal
-  private Email email;
+  @Index @Wither private Email email;
 
-  @Index
-  @IgnoreSave(value = IfNull.class)
-  @NonFinal
-  private String firebaseUUID;
+  @Wither private Link avatarUrl;
 
-  @Wither
-  @NonFinal
-  private Link avatarUrl;
+  @Wither private String bio;
 
-  @Wither
-  @NonFinal
-  private String bio;
+  @Wither private Link websiteUrl;
 
-  @Wither
-  @NonFinal
-  private Link websiteUrl;
+  @Load(ShardGroup.class) private List<Ref<AccountShard>> shardRefs;
 
-  @Load(ShardGroup.class)
-  @NonFinal
-  private List<Ref<AccountShard>> shardRefs;
+  @Index private DateTime created;
 
-  @Index
-  @NonFinal
-  private DateTime created;
-
-  @NonFinal
   private String locale;
 
-  @Wither
-  @NonFinal
-  private Gender gender;
+  private String country;
 
-  @NonFinal
+  @Wither private Gender gender;
+
   private DateTime birthDate;
 
-  @NonFinal
-  @Index(IfNotNull.class)
-  private Set<Country> visitedCountries;
+  @Index(IfNotNull.class) private Set<Country> visitedCountries;
 
-  @NonFinal
-  @Index
-  private Set<Key<Category>> interestedCategoryKeys;
+  @Index @Singular @Wither private List<Key<TravelerGroupEntity>> subscribedGroupKeys;
 
   // Extra fields
 
-  @Wither
-  @Ignore
-  @NonFinal
-  private boolean isFollowing;
+  @Wither @Ignore private boolean isFollowing;
 
-  @Wither
-  @Ignore
-  @NonFinal
-  private Counts counts;
+  @Wither @Ignore private Counts counts;
 
-  @Ignore
-  @Wither
-  @NonFinal
-  private Detail detail;
+  @Ignore @Wither private Detail detail;
+
+  @Ignore @Wither private Map<Ref<AccountShard>, AccountShard> shardMap;
 
   public String getWebsafeId() {
     return getKey().toWebSafeString();
@@ -139,22 +100,20 @@ public class Account {
     return Deref.deref(getShardRefs());
   }
 
-  public Set<String> getInterestedCategoryIds() {
-    return interestedCategoryKeys == null
+  public Set<String> getSubscribedGroupIds() {
+    return subscribedGroupKeys == null
         ? Collections.emptySet()
-        : Ix.from(interestedCategoryKeys).map(Key::toWebSafeString).toSet();
+        : Ix.from(subscribedGroupKeys).map(Key::toWebSafeString).toSet();
   }
 
   public enum Gender {
     /**
      * Male gender.
      */
-    MALE,
-    /**
+    MALE, /**
      * Female gender.
      */
-    FEMALE,
-    /**
+    FEMALE, /**
      * Unspecified gender.
      */
     UNSPECIFIED

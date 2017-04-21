@@ -27,14 +27,12 @@ public final class PushMessage {
   private String to;
 
   /**
-   * This parameter specifies a listFeed of devices (registration tokens, or IDs) receiving a multicast
-   * message. It must contain at least 1 and at most 1000 registration tokens. Use this parameter
-   * only for multicast messaging, not for single recipients. Multicast messages (sending to more
-   * than 1 registration tokens) are allowed using HTTP JSON format only.
+   * This parameter specifies a listFeed of devices (registration tokens, or IDs) receiving a
+   * multicast message. It must contain at least 1 and at most 1000 registration tokens. Use this
+   * parameter only for multicast messaging, not for single recipients. Multicast messages (sending
+   * to more than 1 registration tokens) are allowed using HTTP JSON format only.
    */
-  @JsonProperty("registration_ids")
-  @Singular
-  private List<String> registrationIds;
+  @JsonProperty("registration_ids") @Singular private List<String> registrationIds;
 
   /**
    * This parameter specifies a logical expression of conditions that determine the message target.
@@ -48,16 +46,15 @@ public final class PushMessage {
    * This parameter identifies a group of messages (e.g., with collapse_key: "Updates Available")
    * that can be collapsed, so that only the last message gets sent when delivery can be resumed.
    * This is intended to avoid sending too many of the same messages when the device comes back
-   * online or becomes active. Note that there is no guarantee of the order in which messages getPost
-   * sent.
+   * online or becomes active. Note that there is no guarantee of the order in which messages
+   * getPost sent.
    *
    * Note: A maximum of 4 different collapse keys is allowed at any given time. This means a FCM
-   * connection server can simultaneously store 4 different send-to-sync messages per client app. If
-   * you exceed this number, there is no guarantee which 4 collapse keys the FCM connection server
-   * will keep.
+   * connection server can simultaneously store 4 different send-to-sync messages per client app.
+   * If you exceed this number, there is no guarantee which 4 collapse keys the FCM connection
+   * server will keep.
    */
-  @JsonProperty("collapse_key")
-  private String collapseKey;
+  @JsonProperty("collapse_key") private String collapseKey;
 
   /**
    * Sets the priority of the message. Valid values are "normal" and "high." On iOS, these
@@ -83,8 +80,7 @@ public final class PushMessage {
    *
    * For more information, see Setting the lifespan of a message.
    */
-  @JsonProperty("time_to_live")
-  private Integer timeToLive;
+  @JsonProperty("time_to_live") private Integer timeToLive;
 
   /**
    * This parameter, when set to true, allows developers to test a request without actually sending
@@ -92,8 +88,7 @@ public final class PushMessage {
    *
    * The default value is false.
    */
-  @JsonProperty("dry_run")
-  private Boolean dryRun;
+  @JsonProperty("dry_run") private Boolean dryRun;
 
   private NotificationBody notification;
 
@@ -105,8 +100,7 @@ public final class PushMessage {
 
   @AllArgsConstructor
   public enum PRIORITY {
-    NORMAL("normal"),
-    HIGH("high");
+    NORMAL("normal"), HIGH("high");
 
     String priority;
   }
@@ -122,8 +116,7 @@ public final class PushMessage {
   @Value
   @Builder
   public static class DataBody {
-    @Singular
-    private Map<String, String> values;
+    @Singular private Map<String, String> values;
 
     @JsonAnyGetter
     public Map<String, String> getValues() {

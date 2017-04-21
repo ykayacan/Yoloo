@@ -14,7 +14,8 @@ public class SpacingItemDecoration extends RecyclerView.ItemDecoration {
     this.verticalSpacing = verticalSpacing;
   }
 
-  public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+  public void getItemOffsets(Rect outRect, View view, RecyclerView parent,
+      RecyclerView.State state) {
     outRect.left = this.horizontalSpacing / 2;
     outRect.right = this.horizontalSpacing / 2;
     outRect.top = this.verticalSpacing / 2;

@@ -24,11 +24,9 @@ import com.yoloo.android.data.model.TagRealm;
 import com.yoloo.android.data.repository.tag.TagRepository;
 import com.yoloo.android.data.repository.tag.datasource.TagDiskDataStore;
 import com.yoloo.android.data.repository.tag.datasource.TagRemoteDataStore;
-import com.yoloo.android.data.repository.user.UserRepository;
-import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
-import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
+import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
-import com.yoloo.android.feature.feed.global.FeedGlobalController;
+import com.yoloo.android.feature.postlist.PostListController;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
@@ -117,7 +115,7 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
 
     searchSubject.filter(s -> !s.isEmpty())
         .debounce(400, TimeUnit.MILLISECONDS)
-        .subscribe(query -> loadBySearchType(query, false));
+        .subscribe(query -> loadBySearchType(query, true));
   }
 
   @Override protected void onDetach(@NonNull View view) {
@@ -128,12 +126,8 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
 
   @NonNull @Override public ChildSearchPresenter createPresenter() {
     return new ChildSearchPresenter(
-        TagRepository.getInstance(
-            TagRemoteDataStore.getInstance(),
-            TagDiskDataStore.getInstance()),
-        UserRepository.getInstance(
-            UserRemoteDataStore.getInstance(),
-            UserDiskDataStore.getInstance()));
+        TagRepository.getInstance(TagRemoteDataStore.getInstance(), TagDiskDataStore.getInstance()),
+        UserRepositoryProvider.getRepository());
   }
 
   @Override public void onRecentTagsLoaded(List<TagRealm> tags) {
@@ -156,7 +150,7 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
     KeyboardUtil.hideKeyboard(etSearch);
 
     getParentController().getRouter()
-        .pushController(RouterTransaction.with(FeedGlobalController.ofTag(item.getName()))
+        .pushController(RouterTransaction.with(PostListController.ofTag(item.getName()))
             .pushChangeHandler(new VerticalChangeHandler())
             .popChangeHandler(new VerticalChangeHandler()));
   }

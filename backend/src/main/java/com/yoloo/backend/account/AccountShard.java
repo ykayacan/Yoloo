@@ -27,17 +27,13 @@ public final class AccountShard implements Shardable.Shard {
   /**
    * Websafe accountId:shard_num
    */
-  @Id
-  private String id;
+  @Id private String id;
 
-  @Index(IfNotZero.class)
-  private long followingCount;
+  @Index(IfNotZero.class) private long followingCount;
 
-  @Index(IfNotZero.class)
-  private long followerCount;
+  @Index(IfNotZero.class) private long followerCount;
 
-  @Index(IfNotZero.class)
-  private long postCount;
+  @Index(IfNotZero.class) private long postCount;
 
   public static Key<AccountShard> createKey(Key<Account> accountKey, int shardId) {
     return Key.create(AccountShard.class, accountKey.toWebSafeString() + ":" + shardId);
@@ -51,28 +47,28 @@ public final class AccountShard implements Shardable.Shard {
     return id.split(":")[0];
   }
 
-  public long increaseFollowings() {
-    return ++followingCount;
+  public void increaseFollowings() {
+    ++followingCount;
   }
 
-  public long decreaseFollowings() {
-    return --followingCount;
+  public void decreaseFollowings() {
+    --followingCount;
   }
 
-  public long increaseFollowers() {
-    return ++followerCount;
+  public void increaseFollowers() {
+    ++followerCount;
   }
 
-  public long decreaseFollowers() {
-    return --followerCount;
+  public void decreaseFollowers() {
+    --followerCount;
   }
 
-  public long increasePostCount() {
-    return ++postCount;
+  public void increasePostCount() {
+    ++postCount;
   }
 
-  public long decreasePostCount() {
-    return --postCount;
+  public void decreasePostCount() {
+    --postCount;
   }
 
   @Override public void increaseVotesBy(long value) {

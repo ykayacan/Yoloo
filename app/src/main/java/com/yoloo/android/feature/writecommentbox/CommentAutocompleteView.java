@@ -7,6 +7,8 @@ import java.util.List;
 
 interface CommentAutocompleteView extends MvpView {
 
+  void onMeLoaded(AccountRealm me);
+
   void onSuggestionsLoaded(List<AccountRealm> suggestions);
 
   void onNewComment(CommentRealm comment);

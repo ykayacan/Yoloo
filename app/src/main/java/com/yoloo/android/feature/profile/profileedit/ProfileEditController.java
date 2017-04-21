@@ -24,7 +24,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
-
+import butterknife.BindColor;
+import butterknife.BindString;
+import butterknife.BindView;
+import butterknife.OnClick;
+import butterknife.OnTextChanged;
 import com.bumptech.glide.Glide;
 import com.github.jksiezni.permissive.Permissive;
 import com.google.firebase.auth.FirebaseAuth;
@@ -37,31 +41,23 @@ import com.yalantis.ucrop.UCrop;
 import com.yoloo.android.R;
 import com.yoloo.android.YolooApp;
 import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.repository.user.UserRepository;
-import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
-import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.login.AuthUI;
+import com.yoloo.android.data.repository.user.UserRepositoryProvider;
+import com.yoloo.android.feature.auth.AuthUI;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.ControllerUtil;
 import com.yoloo.android.util.FormUtil;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.MediaUtil;
+import com.yoloo.android.util.TextViewUtil;
 import com.yoloo.android.util.VersionUtil;
 import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
-
-import java.io.File;
-import java.util.concurrent.TimeUnit;
-
-import butterknife.BindColor;
-import butterknife.BindString;
-import butterknife.BindView;
-import butterknife.OnClick;
-import butterknife.OnTextChanged;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.PublishSubject;
+import java.io.File;
+import java.util.concurrent.TimeUnit;
 import timber.log.Timber;
 
 public class ProfileEditController extends MvpController<ProfileEditView, ProfileEditPresenter>
@@ -114,8 +110,8 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     return new ProfileEditController();
   }
 
-  @Override protected View inflateView(@NonNull LayoutInflater inflater,
-      @NonNull ViewGroup container) {
+  @Override
+  protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
     return inflater.inflate(R.layout.controller_profile_edit, container, false);
   }
 
@@ -128,8 +124,7 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   }
 
   @Override protected void onAttach(@NonNull View view) {
-    usernameSubject
-        .filter(s -> !s.equals(original.getUsername()))
+    usernameSubject.filter(s -> !s.equals(original.getUsername()))
         .filter(s -> !s.isEmpty())
         .debounce(400, TimeUnit.MILLISECONDS)
         .observeOn(AndroidSchedulers.mainThread())
@@ -137,16 +132,21 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
         .subscribe();
 
     // TODO: 19.03.2017 Fix error handling
-    disposable = Observable.combineLatest(realNameErrorSubject, usernameErrorSubject,
-        emailErrorSubject, passwordErrorSubject, websiteErrorSubject,
-        (validRealName, validUsername, validEmail, validPassword, validWebsiteUrl) ->
-            validRealName && validUsername && validEmail && validPassword && validWebsiteUrl)
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(enabled -> {
-          Timber.d("Enabled: %s", enabled);
-          ivSaveIcon.setImageAlpha(enabled ? 255 : 138);
-          ivSaveIcon.setEnabled(enabled);
-        });
+    disposable =
+        Observable.combineLatest(realNameErrorSubject, usernameErrorSubject, emailErrorSubject,
+            passwordErrorSubject, websiteErrorSubject,
+            (validRealName, validUsername, validEmail, validPassword, validWebsiteUrl) ->
+                validRealName
+                    && validUsername
+                    && validEmail
+                    && validPassword
+                    && validWebsiteUrl)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(enabled -> {
+              Timber.d("Enabled: %s", enabled);
+              ivSaveIcon.setImageAlpha(enabled ? 255 : 138);
+              ivSaveIcon.setEnabled(enabled);
+            });
   }
 
   @Override public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -185,8 +185,7 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   }
 
   private void showDiscardDialog() {
-    new AlertDialog.Builder(getActivity())
-        .setTitle(R.string.action_catalog_discard_draft)
+    new AlertDialog.Builder(getActivity()).setTitle(R.string.action_catalog_discard_draft)
         .setCancelable(false)
         .setPositiveButton(android.R.string.ok, (dialog, which) -> getRouter().handleBack())
         .setNegativeButton(android.R.string.cancel, null)
@@ -208,9 +207,7 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
 
   @Override public void onLoaded(AccountRealm account) {
     original = account;
-    draft.setId(account.getId())
-        .setMe(account.isMe())
-        .setCategoryIds(account.getCategoryIds());
+    draft.setId(account.getId()).setMe(account.isMe()).setSubscribedGroupIds(account.getSubscribedGroupIds());
     setProfile(account);
   }
 
@@ -223,11 +220,7 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   }
 
   @NonNull @Override public ProfileEditPresenter createPresenter() {
-    return new ProfileEditPresenter(
-        UserRepository.getInstance(
-            UserRemoteDataStore.getInstance(),
-            UserDiskDataStore.getInstance()
-        ));
+    return new ProfileEditPresenter(UserRepositoryProvider.getRepository());
   }
 
   @OnTextChanged(R.id.et_profile_edit_realname) void listenRealNameChange(CharSequence text) {
@@ -262,9 +255,8 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   }
 
   @OnClick({
-      R.id.iv_profile_edit_avatar,
-      R.id.tv_profile_edit_change_photo
-  }) void changeAvatar() {
+               R.id.iv_profile_edit_avatar, R.id.tv_profile_edit_change_photo
+           }) void changeAvatar() {
     new AlertDialog.Builder(getActivity()).setTitle(R.string.label_editor_select_media_source_title)
         .setItems(R.array.action_editor_list_media_source, (dialog, which) -> {
           KeyboardUtil.hideKeyboard(getActivity().getCurrentFocus());
@@ -351,6 +343,7 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     spinnerGender.setSelection(spinnerPosition);
 
     tilWebsite.getEditText().setText(account.getWebsiteUrl());
+    TextViewUtil.stripUnderlines(tilWebsite.getEditText().getText());
     tilBio.getEditText().setText(account.getBio());
   }
 
@@ -370,8 +363,7 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
 
   private void checkCameraPermissions() {
     new Permissive.Request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        Manifest.permission.RECORD_AUDIO)
-        .whenPermissionsGranted(permissions -> openCamera())
+        Manifest.permission.RECORD_AUDIO).whenPermissionsGranted(permissions -> openCamera())
         .whenPermissionsRefused(
             permissions -> Snackbar.make(getView(), "Permission is denied!", Snackbar.LENGTH_SHORT)
                 .show())
@@ -431,8 +423,8 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   }
 
   private void startCropActivity(Uri uri) {
-    final Uri destUri = Uri
-        .fromFile(new File(YolooApp.getCacheDirectory(), MediaUtil.createImageName()));
+    final Uri destUri =
+        Uri.fromFile(new File(YolooApp.getCacheDirectory(), MediaUtil.createImageName()));
 
     Intent intent = UCrop.of(uri, destUri)
         .withAspectRatio(1, 1)

@@ -1,7 +1,6 @@
 package com.yoloo.backend.comment;
 
 import com.google.api.server.spi.response.CollectionResponse;
-import com.google.api.server.spi.response.ConflictException;
 import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.users.User;
@@ -13,15 +12,15 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.NotFoundException;
 import com.googlecode.objectify.Ref;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.account.AccountEntity;
+import com.yoloo.backend.account.AccountBundle;
 import com.yoloo.backend.account.AccountShard;
 import com.yoloo.backend.account.AccountShardService;
-import com.yoloo.backend.category.Category;
-import com.yoloo.backend.category.CategoryController;
-import com.yoloo.backend.category.CategoryControllerFactory;
 import com.yoloo.backend.device.DeviceRecord;
-import com.yoloo.backend.game.GamificationService;
+import com.yoloo.backend.game.GameService;
 import com.yoloo.backend.game.Tracker;
+import com.yoloo.backend.group.TravelerGroupEntity;
+import com.yoloo.backend.group.TravelerGroupController;
+import com.yoloo.backend.group.TravelerGroupControllerFactory;
 import com.yoloo.backend.post.Post;
 import com.yoloo.backend.post.PostController;
 import com.yoloo.backend.post.PostControllerFactory;
@@ -53,7 +52,7 @@ public class CommentControllerTest extends TestBase {
   private Account owner;
   private Post post;
 
-  private Category europe;
+  private TravelerGroupEntity europe;
 
   private CommentController commentController;
   private VoteController voteController;
@@ -77,16 +76,16 @@ public class CommentControllerTest extends TestBase {
     PostController postController = PostControllerFactory.of().create();
     commentController = CommentControllerFactory.of().create();
     TagController tagController = TagControllerFactory.of().create();
-    CategoryController categoryController = CategoryControllerFactory.of().create();
+    TravelerGroupController travelerGroupController = TravelerGroupControllerFactory.of().create();
     voteController = VoteControllerFactory.of().create();
 
     postShardService = PostShardService.create();
 
-    AccountEntity model = createAccount();
+    AccountBundle model = createAccount();
 
     owner = model.getAccount();
     DeviceRecord record = createRecord(owner);
-    Tracker tracker = GamificationService.create().createTracker(owner.getKey());
+    Tracker tracker = GameService.create().createTracker(owner.getKey());
 
     ImmutableSet<Object> saveList = ImmutableSet.builder()
         .add(owner)
@@ -99,14 +98,10 @@ public class CommentControllerTest extends TestBase {
 
     User user = new User(USER_EMAIL, USER_AUTH_DOMAIN, owner.getWebsafeId());
 
-    try {
-      europe = categoryController.insertCategory("europe", null);
-    } catch (ConflictException e) {
-      e.printStackTrace();
-    }
+    europe = travelerGroupController.insertGroup("europe", null);
 
-    Tag passport = tagController.insertGroup("passport");
-    tagController.insertTag("visa", "en", passport.getWebsafeId());
+    Tag passport = tagController.insertTag("passport");
+    tagController.insertTag("visa");
 
     post = postController.insertQuestion("Test content", "visa,passport", europe.getWebsafeId(),
         Optional.absent(), Optional.absent(), user);
@@ -272,7 +267,7 @@ public class CommentControllerTest extends TestBase {
     }
   }
 
-  private AccountEntity createAccount() {
+  private AccountBundle createAccount() {
     final Key<Account> ownerKey = fact().allocateId(Account.class);
 
     AccountShardService ass = AccountShardService.create();
@@ -288,7 +283,7 @@ public class CommentControllerTest extends TestBase {
         .created(DateTime.now())
         .build();
 
-    return AccountEntity.builder()
+    return AccountBundle.builder()
         .account(account)
         .shards(map)
         .build();

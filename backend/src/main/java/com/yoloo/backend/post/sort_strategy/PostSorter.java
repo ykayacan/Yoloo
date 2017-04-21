@@ -13,20 +13,17 @@ public enum PostSorter {
     public SortStrategy getSortStrategy(Query<Post> query) {
       return SortByNewest.create(query);
     }
-  },
-  HOT("hot") {
+  }, HOT("hot") {
     @Override
     public SortStrategy getSortStrategy(Query<Post> query) {
       return SortByTrending.create(query);
     }
-  },
-  UNANSWERED("unanswered") {
+  }, UNANSWERED("unanswered") {
     @Override
     public SortStrategy getSortStrategy(Query<Post> query) {
       return SortByUnanswered.create(query);
     }
-  },
-  BOUNTY("bounty") {
+  }, BOUNTY("bounty") {
     @Override
     protected SortStrategy getSortStrategy(Query<Post> query) {
       return SortByBounty.create(query);

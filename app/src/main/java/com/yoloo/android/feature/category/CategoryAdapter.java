@@ -10,7 +10,7 @@ import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.CategoryRealm;
+import com.yoloo.android.data.model.GroupRealm;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.SelectableAdapter;
@@ -21,13 +21,13 @@ import butterknife.BindView;
 
 class CategoryAdapter extends SelectableAdapter {
 
-  private final OnItemClickListener<CategoryRealm> onItemClickListener;
+  private final OnItemClickListener<GroupRealm> onItemClickListener;
 
-  CategoryAdapter(OnItemClickListener<CategoryRealm> onItemClickListener) {
+  CategoryAdapter(OnItemClickListener<GroupRealm> onItemClickListener) {
     this.onItemClickListener = onItemClickListener;
   }
 
-  void addCategories(List<CategoryRealm> categories) {
+  void addCategories(List<GroupRealm> categories) {
     addModels(Stream.of(categories)
         .map(category -> new CategoryAdapter$CategoryModel_()
             .adapter(this)
@@ -36,7 +36,7 @@ class CategoryAdapter extends SelectableAdapter {
         .toList());
   }
 
-  List<CategoryRealm> getSelectedCategories() {
+  List<GroupRealm> getSelectedCategories() {
     return Stream.of(getSelectedItems())
         .select(CategoryModel.class)
         .map(CategoryModel::getCategory)
@@ -44,11 +44,11 @@ class CategoryAdapter extends SelectableAdapter {
   }
 
   @EpoxyModelClass(layout = R.layout.item_category)
-  public static abstract class CategoryModel
+  public abstract static class CategoryModel
       extends EpoxyModelWithHolder<CategoryModel.CategoryHolder> {
 
-    @EpoxyAttribute CategoryRealm category;
-    @EpoxyAttribute(hash = false) OnItemClickListener<CategoryRealm> onItemClickListener;
+    @EpoxyAttribute GroupRealm category;
+    @EpoxyAttribute(hash = false) OnItemClickListener<GroupRealm> onItemClickListener;
     @EpoxyAttribute(hash = false) CategoryAdapter adapter;
 
     @Override public void bind(CategoryHolder holder) {
@@ -69,7 +69,7 @@ class CategoryAdapter extends SelectableAdapter {
       });
     }
 
-    CategoryRealm getCategory() {
+    GroupRealm getCategory() {
       return category;
     }
 

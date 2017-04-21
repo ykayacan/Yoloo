@@ -8,5 +8,5 @@ public interface TagSelectDialogView extends MvpView {
 
   void onRecommendedTagsLoaded(List<TagRealm> tags);
 
-  void onNewRecommendedTagsLoaded(List<TagRealm> tags);
+  void onSearchTags(List<TagRealm> tags);
 }

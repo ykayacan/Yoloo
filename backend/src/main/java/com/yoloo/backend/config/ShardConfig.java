@@ -1,12 +1,11 @@
 package com.yoloo.backend.config;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.experimental.UtilityClass;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@UtilityClass
 public final class ShardConfig {
 
-  public static final int POST_SHARD_COUNTER = 5;
+  public static final int POST_SHARD_COUNTER = 3;
 
   public static final int BLOG_SHARD_COUNTER = 2;
 
@@ -16,5 +15,5 @@ public final class ShardConfig {
 
   public static final int COMMENT_SHARD_COUNTER = 2;
 
-  public static final int CATEGORY_SHARD_COUNTER = 3;
+  public static final int GROUP_SHARD_COUNTER = 3;
 }

@@ -216,7 +216,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     }
   }
 
-  public static abstract class ElasticDragDismissCallback {
+  public abstract static class ElasticDragDismissCallback {
 
     /**
      * Called for each drag event.

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:orientation="horizontal">
+
+  <TextView
+    android:id="@+id/tv_explore_trending"
+    android:layout_width="156dp"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="8dp"
+    android:layout_marginRight="8dp"
+    android:background="@android:color/white"
+    android:foreground="?attr/selectableItemBackground"
+    android:gravity="center"
+    android:padding="16dp"
+    android:text="Trending"
+    app:layout_constraintRight_toRightOf="@+id/guideline" />
+
+  <TextView
+    android:id="@+id/tv_explore_new"
+    android:layout_width="156dp"
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="8dp"
+    android:layout_marginStart="8dp"
+    android:background="@android:color/white"
+    android:foreground="?attr/selectableItemBackground"
+    android:gravity="center"
+    android:padding="16dp"
+    android:text="New"
+    app:layout_constraintLeft_toLeftOf="@+id/guideline" />
+
+  <android.support.constraint.Guideline
+    android:id="@+id/guideline"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:orientation="vertical"
+    app:layout_constraintGuide_percent="0.5" />
+
+</android.support.constraint.ConstraintLayout>

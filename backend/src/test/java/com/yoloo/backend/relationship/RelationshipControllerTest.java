@@ -10,7 +10,7 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.NotFoundException;
 import com.googlecode.objectify.Ref;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.account.AccountEntity;
+import com.yoloo.backend.account.AccountBundle;
 import com.yoloo.backend.account.AccountShard;
 import com.yoloo.backend.account.AccountShardService;
 import com.yoloo.backend.device.DeviceRecord;
@@ -50,8 +50,8 @@ public class RelationshipControllerTest extends TestBase {
 
     relationshipController = RelationshipControllerFactory.of().create();
 
-    AccountEntity model1 = createAccount();
-    AccountEntity model2 = createAccount();
+    AccountBundle model1 = createAccount();
+    AccountBundle model2 = createAccount();
 
     follower = model1.getAccount();
     following = model2.getAccount();
@@ -103,7 +103,7 @@ public class RelationshipControllerTest extends TestBase {
     ofy().load().type(Relationship.class).ancestor(follower.getKey()).first().safe();
   }
 
-  private AccountEntity createAccount() {
+  private AccountBundle createAccount() {
     final Key<Account> ownerKey = fact().allocateId(Account.class);
 
     AccountShardService ass = AccountShardService.create();
@@ -119,7 +119,7 @@ public class RelationshipControllerTest extends TestBase {
         .created(DateTime.now())
         .build();
 
-    return AccountEntity.builder()
+    return AccountBundle.builder()
         .account(account)
         .shards(map)
         .build();

@@ -5,6 +5,7 @@ import android.support.constraint.ConstraintSet;
 import android.view.View;
 import com.airbnb.epoxy.EpoxyAdapter;
 import com.airbnb.epoxy.EpoxyModel;
+import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
 import com.yoloo.android.data.feedtypes.BlogFeedItem;
 import com.yoloo.android.data.feedtypes.BountyButtonFeedItem;
@@ -12,115 +13,164 @@ import com.yoloo.android.data.feedtypes.FeedItem;
 import com.yoloo.android.data.feedtypes.NewUsersFeedItem;
 import com.yoloo.android.data.feedtypes.RichQuestionFeedItem;
 import com.yoloo.android.data.feedtypes.TextQuestionFeedItem;
-import com.yoloo.android.data.feedtypes.TravelNewsFeedItem;
+import com.yoloo.android.data.feedtypes.TrendingBlogsFeedItem;
 import com.yoloo.android.data.feedtypes.TrendingCategoriesFeedItem;
 import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.CategoryRealm;
-import com.yoloo.android.data.model.NewsRealm;
+import com.yoloo.android.data.model.GroupRealm;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
+import com.yoloo.android.feature.feed.common.listener.OnBookmarkClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnReadMoreClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
-import com.yoloo.android.feature.feed.component.blog.BlogModel;
-import com.yoloo.android.feature.feed.component.blog.BlogModel_;
-import com.yoloo.android.feature.feed.component.bountybutton.BountyButtonModel;
 import com.yoloo.android.feature.feed.component.bountybutton.BountyButtonModel_;
 import com.yoloo.android.feature.feed.component.loading.LoadingModel;
 import com.yoloo.android.feature.feed.component.newcomers.NewcomersContactAdapter;
 import com.yoloo.android.feature.feed.component.newcomers.NewcomersModel_;
-import com.yoloo.android.feature.feed.component.news.FeedNewsModel_;
+import com.yoloo.android.feature.feed.component.post.BlogModel;
+import com.yoloo.android.feature.feed.component.post.BlogModel_;
 import com.yoloo.android.feature.feed.component.post.RichQuestionModel;
 import com.yoloo.android.feature.feed.component.post.RichQuestionModel_;
 import com.yoloo.android.feature.feed.component.post.TextQuestionModel;
 import com.yoloo.android.feature.feed.component.post.TextQuestionModel_;
+import com.yoloo.android.feature.feed.component.trendingblogs.FeedTrendingBlogsModel_;
 import com.yoloo.android.feature.feed.component.trendingcategory.FeedTrendingCategoryModel_;
 import com.yoloo.android.feature.search.OnFollowClickListener;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.List;
 
-public class FeedHomeAdapter extends EpoxyAdapter {
-
-  private final OnProfileClickListener onProfileClickListener;
-  private final OnPostOptionsClickListener onPostOptionsClickListener;
-  private final OnReadMoreClickListener onReadMoreClickListener;
-  private final OnShareClickListener onShareClickListener;
-  private final OnCommentClickListener onCommentClickListener;
-  private final OnVoteClickListener onVoteClickListener;
-  private final OnContentImageClickListener onContentImageClickListener;
-  private final OnItemClickListener<CategoryRealm> onCategoryItemClickListener;
-  private final OnItemClickListener<NewsRealm> onNewsItemClickListener;
+class FeedHomeAdapter extends EpoxyAdapter {
 
   private final ConstraintSet set = new ConstraintSet();
-
   private final CropCircleTransformation circleTransformation;
-
   private final LoadingModel loadingModel;
-  private final FeedNewsModel_ newsModel;
+  private final FeedTrendingBlogsModel_ trendingBlogsModel;
   private final BountyButtonModel_ bountyButtonModel;
   private final FeedTrendingCategoryModel_ trendingCategoryModel;
   private final NewcomersModel_ newcomersModel;
 
-  private FeedHomeAdapter(FeedBuilder builder) {
-    this.onProfileClickListener = builder.onProfileClickListener;
-    this.onPostOptionsClickListener = builder.onPostOptionsClickListener;
-    this.onReadMoreClickListener = builder.onReadMoreClickListener;
-    this.onShareClickListener = builder.onShareClickListener;
-    this.onCommentClickListener = builder.onCommentClickListener;
-    this.onVoteClickListener = builder.onVoteClickListener;
-    this.onContentImageClickListener = builder.onContentImageClickListener;
-    this.onCategoryItemClickListener = builder.onTrendingCategoryItemClickListener;
-    this.onNewsItemClickListener = builder.onNewsItemClickListener;
+  private final RequestManager glide;
 
-    final Context context = builder.context;
+  private String userId;
 
+  private OnProfileClickListener onProfileClickListener;
+  private OnPostOptionsClickListener onPostOptionsClickListener;
+  private OnBookmarkClickListener onBookmarkClickListener;
+  private OnItemClickListener<PostRealm> onPostClickListener;
+  private OnShareClickListener onShareClickListener;
+  private OnCommentClickListener onCommentClickListener;
+  private OnVoteClickListener onVoteClickListener;
+  private OnContentImageClickListener onContentImageClickListener;
+
+  public FeedHomeAdapter(Context context, RequestManager glide) {
     enableDiffing();
 
     loadingModel = new LoadingModel();
     bountyButtonModel = new BountyButtonModel_();
-    trendingCategoryModel = new FeedTrendingCategoryModel_(context);
-    newsModel = new FeedNewsModel_(context);
-    newcomersModel = new NewcomersModel_(context, builder.onNewcomersFollowClickListener,
-        builder.onNewcomersItemClickListener);
-    newcomersModel.moreClickListener(builder.onNewcomersHeaderClickListener);
-
-    bountyButtonModel.onBountyButtonClickListener(builder.onBountyButtonClickListener);
-    trendingCategoryModel.headerClickListener(builder.onTrendingCategoryHeaderClickListener);
-    newsModel.headerClickListener(builder.onNewsHeaderClickListener);
+    trendingCategoryModel = new FeedTrendingCategoryModel_(context, glide);
+    trendingBlogsModel = new FeedTrendingBlogsModel_(context, glide);
+    newcomersModel = new NewcomersModel_(context);
 
     circleTransformation = new CropCircleTransformation(context);
+    this.glide = glide;
   }
 
-  public static FeedBuilder builder(Context context) {
-    return new FeedBuilder(context);
+  public void setUserId(String userId) {
+    this.userId = userId;
+    trendingBlogsModel.setUserId(userId);
   }
 
-  public void addPostToBeginning(PostRealm post) {
+  public void setOnRecommendedGroupHeaderClickListener(View.OnClickListener listener) {
+    trendingCategoryModel.onHeaderClickListener(listener);
+  }
+
+  public void setOnRecommendedGroupItemClickListener(OnItemClickListener<GroupRealm> listener) {
+    trendingCategoryModel.setOnItemClickListener(listener);
+  }
+
+  public void setOnTrendingBlogHeaderClickListener(View.OnClickListener listener) {
+    trendingBlogsModel.onHeaderClickListener(listener);
+  }
+
+  public void setOnTrendingBlogItemClickListener(OnItemClickListener<PostRealm> listener) {
+    trendingBlogsModel.setOnItemClickListener(listener);
+  }
+
+  public void setOnBountyButtonClickListener(View.OnClickListener listener) {
+    bountyButtonModel.onClickListener(listener);
+  }
+
+  public void setOnProfileClickListener(OnProfileClickListener listener) {
+    this.onProfileClickListener = listener;
+  }
+
+  public void setOnPostOptionsClickListener(OnPostOptionsClickListener listener) {
+    this.onPostOptionsClickListener = listener;
+    trendingBlogsModel.setOnPostOptionsClickListener(listener);
+  }
+
+  public void setOnBookmarkClickListener(OnBookmarkClickListener listener) {
+    this.onBookmarkClickListener = listener;
+    trendingBlogsModel.setOnBookmarkClickListener(listener);
+  }
+
+  public void setOnPostClickListener(OnItemClickListener<PostRealm> listener) {
+    this.onPostClickListener = listener;
+  }
+
+  public void setOnShareClickListener(OnShareClickListener listener) {
+    this.onShareClickListener = listener;
+  }
+
+  public void setOnCommentClickListener(OnCommentClickListener listener) {
+    this.onCommentClickListener = listener;
+  }
+
+  public void setOnVoteClickListener(OnVoteClickListener listener) {
+    this.onVoteClickListener = listener;
+  }
+
+  public void setOnContentImageClickListener(OnContentImageClickListener listener) {
+    this.onContentImageClickListener = listener;
+  }
+
+  public void setOnNewcomersHeaderClickListener(View.OnClickListener listener) {
+    newcomersModel.onHeaderClickListener(listener);
+  }
+
+  public void setOnNewcomersItemClickListener(OnItemClickListener<AccountRealm> listener) {
+    newcomersModel.setOnItemClickListener(listener);
+  }
+
+  public void setOnNewcomersFollowClickListener(OnFollowClickListener listener) {
+    newcomersModel.setOnFollowClickListener(listener);
+  }
+
+  void addPostToBeginning(PostRealm post) {
     final int postType = post.getPostType();
 
-    if (postType == PostRealm.POST_TEXT) {
+    if (postType == PostRealm.TYPE_TEXT) {
       insertModelAfter(createTextQuestion(post), bountyButtonModel);
-    } else if (postType == PostRealm.POST_RICH) {
+    } else if (postType == PostRealm.TYPE_RICH) {
       insertModelAfter(createRichQuestion(post), bountyButtonModel);
-    } else if (postType == PostRealm.POST_BLOG) {
+    } else if (postType == PostRealm.TYPE_BLOG) {
       insertModelAfter(createBlog(post), bountyButtonModel);
     }
   }
 
-  public void addFeedItems(List<? extends FeedItem> items) {
+  void addFeedItems(List<? extends FeedItem> items) {
     for (FeedItem item : items) {
       if (item instanceof TrendingCategoriesFeedItem) {
         trendingCategoryModel.addTrendingCategories(
-            ((TrendingCategoriesFeedItem) item).getCategories(), onCategoryItemClickListener);
+            ((TrendingCategoriesFeedItem) item).getCategories());
         models.add(trendingCategoryModel);
-      } else if (item instanceof TravelNewsFeedItem) {
-        newsModel.addNews(((TravelNewsFeedItem) item).getNews(), onNewsItemClickListener);
-        models.add(newsModel);
+      } else if (item instanceof TrendingBlogsFeedItem) {
+        trendingBlogsModel.addTrendingBlogs(((TrendingBlogsFeedItem) item).getTrendingBlogs());
+        models.add(trendingBlogsModel);
       } else if (item instanceof BountyButtonFeedItem) {
         models.add(bountyButtonModel);
       } else if (item instanceof TextQuestionFeedItem) {
@@ -138,17 +188,17 @@ public class FeedHomeAdapter extends EpoxyAdapter {
     notifyModelsChanged();
   }
 
-  public void clearPostsSection() {
+  void clearPostsSection() {
     if (models.size() > 3) {
       models.subList(3, models.size()).clear();
     }
   }
 
-  public void delete(EpoxyModel<?> model) {
+  void delete(EpoxyModel<?> model) {
     removeModel(model);
   }
 
-  public void deleteNewcomersModel(EpoxyModel<?> model) {
+  void deleteNewcomersModel(EpoxyModel<?> model) {
     final NewcomersContactAdapter adapter = newcomersModel.getAdapter();
     adapter.delete(model);
 
@@ -157,7 +207,7 @@ public class FeedHomeAdapter extends EpoxyAdapter {
     }
   }
 
-  public void updatePost(@FeedAction int action, PostRealm payload) {
+  void updatePost(@FeedAction int action, PostRealm payload) {
     EpoxyModel<?> modelToBeUpdated = null;
     for (EpoxyModel<?> model : models) {
       if (model instanceof TextQuestionModel) {
@@ -189,160 +239,52 @@ public class FeedHomeAdapter extends EpoxyAdapter {
   }
 
   private TextQuestionModel createTextQuestion(PostRealm post) {
-    return new TextQuestionModel_()
+    return new TextQuestionModel_().id(post.getId())
+        .userId(userId)
         .onProfileClickListener(onProfileClickListener)
+        .onBookmarkClickListener(onBookmarkClickListener)
         .onPostOptionsClickListener(onPostOptionsClickListener)
-        .onReadMoreClickListener(onReadMoreClickListener)
+        .onItemClickListener(onPostClickListener)
         .onShareClickListener(onShareClickListener)
         .onCommentClickListener(onCommentClickListener)
         .onVoteClickListener(onVoteClickListener)
-        .layout(R.layout.item_feed_question_normal)
+        .layout(R.layout.item_feed_question_text)
         .circleTransformation(circleTransformation)
+        .glide(glide)
         .post(post);
   }
 
   private RichQuestionModel createRichQuestion(PostRealm post) {
-    return new RichQuestionModel_()
+    return new RichQuestionModel_().id(post.getId())
+        .userId(userId)
         .onProfileClickListener(onProfileClickListener)
+        .onBookmarkClickListener(onBookmarkClickListener)
         .onPostOptionsClickListener(onPostOptionsClickListener)
-        .onReadMoreClickListener(onReadMoreClickListener)
+        .onItemClickListener(onPostClickListener)
         .onShareClickListener(onShareClickListener)
         .onCommentClickListener(onCommentClickListener)
         .onVoteClickListener(onVoteClickListener)
         .onContentImageClickListener(onContentImageClickListener)
         .layout(R.layout.item_feed_question_rich)
         .circleTransformation(circleTransformation)
+        .glide(glide)
         .set(set)
         .post(post);
   }
 
   private BlogModel createBlog(PostRealm post) {
-    return new BlogModel_()
+    return new BlogModel_().id(post.getId())
+        .userId(userId)
         .onProfileClickListener(onProfileClickListener)
+        .onBookmarkClickListener(onBookmarkClickListener)
         .onPostOptionsClickListener(onPostOptionsClickListener)
-        .onReadMoreClickListener(onReadMoreClickListener)
+        .onItemClickListener(onPostClickListener)
         .onShareClickListener(onShareClickListener)
         .onCommentClickListener(onCommentClickListener)
         .onVoteClickListener(onVoteClickListener)
         .layout(R.layout.item_feed_blog)
         .circleTransformation(circleTransformation)
+        .glide(glide)
         .post(post);
-  }
-
-  public static class FeedBuilder {
-    final Context context;
-    OnProfileClickListener onProfileClickListener;
-    OnPostOptionsClickListener onPostOptionsClickListener;
-    OnReadMoreClickListener onReadMoreClickListener;
-    OnShareClickListener onShareClickListener;
-    OnCommentClickListener onCommentClickListener;
-    View.OnClickListener onTrendingCategoryHeaderClickListener;
-    OnItemClickListener<CategoryRealm> onTrendingCategoryItemClickListener;
-    View.OnClickListener onNewsHeaderClickListener;
-    OnItemClickListener<NewsRealm> onNewsItemClickListener;
-    OnVoteClickListener onVoteClickListener;
-    OnContentImageClickListener onContentImageClickListener;
-    BountyButtonModel.OnBountyButtonClickListener onBountyButtonClickListener;
-    OnItemClickListener<AccountRealm> onNewcomersItemClickListener;
-    OnFollowClickListener onNewcomersFollowClickListener;
-    View.OnClickListener onNewcomersHeaderClickListener;
-
-    FeedBuilder(Context context) {
-      this.context = context;
-    }
-
-    public FeedBuilder onProfileClickListener(
-        OnProfileClickListener onProfileClickListener) {
-      this.onProfileClickListener = onProfileClickListener;
-      return this;
-    }
-
-    public FeedBuilder onOptionsClickListener(
-        OnPostOptionsClickListener onPostOptionsClickListener) {
-      this.onPostOptionsClickListener = onPostOptionsClickListener;
-      return this;
-    }
-
-    public FeedBuilder onReadMoreClickListener(
-        OnReadMoreClickListener onReadMoreClickListener) {
-      this.onReadMoreClickListener = onReadMoreClickListener;
-      return this;
-    }
-
-    public FeedBuilder onShareClickListener(
-        OnShareClickListener onShareClickListener) {
-      this.onShareClickListener = onShareClickListener;
-      return this;
-    }
-
-    public FeedBuilder onCommentClickListener(
-        OnCommentClickListener onCommentClickListener) {
-      this.onCommentClickListener = onCommentClickListener;
-      return this;
-    }
-
-    public FeedBuilder onTrendingCategoryHeaderClickListener(
-        View.OnClickListener onTrendingCategoryHeaderClickListener) {
-      this.onTrendingCategoryHeaderClickListener = onTrendingCategoryHeaderClickListener;
-      return this;
-    }
-
-    public FeedBuilder onTrendingCategoryItemClickListener(
-        OnItemClickListener<CategoryRealm> onTrendingCategoryItemClickListener) {
-      this.onTrendingCategoryItemClickListener = onTrendingCategoryItemClickListener;
-      return this;
-    }
-
-    public FeedBuilder onVoteClickListener(
-        OnVoteClickListener onVoteClickListener) {
-      this.onVoteClickListener = onVoteClickListener;
-      return this;
-    }
-
-    public FeedBuilder onContentImageClickListener(
-        OnContentImageClickListener onContentImageClickListener) {
-      this.onContentImageClickListener = onContentImageClickListener;
-      return this;
-    }
-
-    public FeedBuilder onBountyButtonClickListener(
-        BountyButtonModel.OnBountyButtonClickListener onBountyButtonClickListener) {
-      this.onBountyButtonClickListener = onBountyButtonClickListener;
-      return this;
-    }
-
-    public FeedBuilder onNewsHeaderClickListener(
-        View.OnClickListener onTravelNewsHeaderClickListener) {
-      this.onNewsHeaderClickListener = onTravelNewsHeaderClickListener;
-      return this;
-    }
-
-    public FeedBuilder onNewsItemClickListener(
-        OnItemClickListener<NewsRealm> onNewsItemClickListener) {
-      this.onNewsItemClickListener = onNewsItemClickListener;
-      return this;
-    }
-
-    public FeedBuilder onNewcomersItemClickListener(
-        OnItemClickListener<AccountRealm> onNewcomersItemClickListener) {
-      this.onNewcomersItemClickListener = onNewcomersItemClickListener;
-      return this;
-    }
-
-    public FeedBuilder onNewcomersFollowClickListener(
-        OnFollowClickListener onNewcomersFollowClickListener) {
-      this.onNewcomersFollowClickListener = onNewcomersFollowClickListener;
-      return this;
-    }
-
-    public FeedBuilder onNewcomersHeaderClickListener(
-        View.OnClickListener onNewcomersHeaderClickListener) {
-      this.onNewcomersHeaderClickListener = onNewcomersHeaderClickListener;
-      return this;
-    }
-
-    public FeedHomeAdapter build() {
-      return new FeedHomeAdapter(this);
-    }
   }
 }

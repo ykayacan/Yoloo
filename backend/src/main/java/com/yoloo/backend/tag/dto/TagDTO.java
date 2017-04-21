@@ -10,7 +10,5 @@ public class TagDTO {
 
   private String id;
   @Wither private String name;
-  private String type;
-  private long posts;
-  private long totalTagCount;
+  private long postCount;
 }

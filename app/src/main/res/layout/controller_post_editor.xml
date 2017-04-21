@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@android:color/white"
+  android:fitsSystemWindows="true">
+
+  <android.support.design.widget.AppBarLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:theme="@style/Yoloo.AppBarOverlay">
+
+    <android.support.v7.widget.Toolbar
+      android:id="@+id/toolbar"
+      android:layout_width="match_parent"
+      android:layout_height="?attr/actionBarSize"
+      android:background="?attr/colorPrimary"
+      app:popupTheme="@style/Yoloo.PopupOverlay" />
+
+  </android.support.design.widget.AppBarLayout>
+
+  <android.support.constraint.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="16dp"
+    android:paddingEnd="16dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingStart="16dp"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <ImageView
+      android:id="@+id/iv_editor_post_image"
+      android:layout_width="50dp"
+      android:layout_height="50dp"
+      android:scaleType="centerCrop"
+      android:visibility="gone"
+      app:layout_constraintBottom_toBottomOf="@+id/et_editor_post_content"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="@+id/et_editor_post_content"
+      tools:src="@drawable/login_bg"
+      tools:visibility="visible" />
+
+    <TextView
+      android:id="@+id/tv_editor_post_image_counter"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:textAppearance="@style/TextAppearance.AppCompat.Large.Inverse"
+      android:visibility="gone"
+      app:layout_constraintBottom_toBottomOf="@+id/iv_editor_post_image"
+      app:layout_constraintEnd_toEndOf="@+id/iv_editor_post_image"
+      app:layout_constraintStart_toStartOf="@+id/iv_editor_post_image"
+      app:layout_constraintTop_toTopOf="@+id/iv_editor_post_image"
+      tools:text="+2" />
+
+    <EditText
+      android:id="@+id/et_editor_post_content"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="16dp"
+      android:background="@android:color/transparent"
+      android:hint="@string/hint_editor_question_content"
+      android:inputType="textMultiLine|textCapSentences"
+      android:minHeight="66dp"
+      android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+      android:textSize="16sp"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toEndOf="@+id/iv_editor_post_image"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+      android:id="@+id/divider1"
+      android:layout_width="0dp"
+      android:layout_height="1dp"
+      android:background="@color/divider"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/et_editor_post_content" />
+
+    <com.yoloo.android.ui.widget.CompatTextView
+      android:id="@+id/tv_editor_post_add_media"
+      style="@style/TextAppearance.AppCompat.Body2"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:background="?attr/selectableItemBackground"
+      android:drawablePadding="16dp"
+      android:gravity="center_vertical"
+      android:paddingBottom="12dp"
+      android:paddingTop="12dp"
+      android:text="@string/label_editor_add_media"
+      app:drawableStart="@drawable/ic_add_a_photo_black_24dp"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/divider1" />
+
+    <View
+      android:id="@+id/divider2"
+      android:layout_width="0dp"
+      android:layout_height="1dp"
+      android:background="@color/divider"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/tv_editor_post_add_media" />
+
+    <com.yoloo.android.ui.widget.CompatTextView
+      android:id="@+id/tv_editor_post_select_group"
+      style="@style/TextAppearance.AppCompat.Body2"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:background="?attr/selectableItemBackground"
+      android:drawablePadding="16dp"
+      android:gravity="center_vertical"
+      android:paddingBottom="12dp"
+      android:paddingTop="12dp"
+      android:text="@string/label_editor_select_group"
+      app:drawableStart="@drawable/ic_local_library_black_24dp"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/divider2" />
+
+    <View
+      android:id="@+id/divider3"
+      android:layout_width="0dp"
+      android:layout_height="1dp"
+      android:background="@color/divider"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/tv_editor_post_select_group" />
+
+    <com.hootsuite.nachos.NachoTextView
+      android:id="@+id/et_editor_post_tags"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:background="@android:color/transparent"
+      android:drawableLeft="@drawable/ic_local_offer_black_24dp"
+      android:drawablePadding="16dp"
+      android:drawableStart="@drawable/ic_local_offer_black_24dp"
+      android:hint="@string/hint_editor_tag"
+      android:paddingBottom="2dp"
+      android:paddingTop="2dp"
+      android:textSize="14sp"
+      app:chipTextSize="14sp"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/divider3" />
+
+    <TextView
+      android:id="@+id/tv_editor_post_trending_tag_title"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="8dp"
+      android:paddingBottom="8dp"
+      android:paddingTop="8dp"
+      android:text="Trending Tags"
+      android:textAppearance="@style/TextAppearance.GroupTitle"
+      android:textColor="@android:color/black"
+      android:textSize="12sp"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/et_editor_post_tags" />
+
+    <android.support.v7.widget.RecyclerView
+      android:id="@+id/recycler_view"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/tv_editor_post_trending_tag_title" />
+
+    <View
+      android:id="@+id/divider4"
+      android:layout_width="0dp"
+      android:layout_height="1dp"
+      android:layout_marginTop="16dp"
+      android:background="@color/divider"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/recycler_view" />
+
+    <FrameLayout
+      android:id="@+id/editor_post_add_bounty_wrapper"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="16dp"
+      android:background="?attr/selectableItemBackground"
+      android:padding="8dp"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/divider4">
+
+      <com.yoloo.android.ui.widget.CompatTextView
+        android:id="@+id/tv_editor_post_add_bounty"
+        style="@style/TextAppearance.BountyText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:drawablePadding="8dp"
+        android:gravity="center"
+        android:text="@string/action_editor_add_bounty"
+        app:drawableStart="@drawable/ic_bounty_coin_20dp" />
+
+    </FrameLayout>
+
+  </android.support.constraint.ConstraintLayout>
+
+</android.support.design.widget.CoordinatorLayout>

@@ -5,7 +5,7 @@ import com.google.appengine.api.urlfetch.HTTPMethod;
 import com.google.appengine.api.urlfetch.HTTPRequest;
 import com.google.appengine.api.urlfetch.URLFetchService;
 import com.yoloo.backend.authentication.oauth2.OAuth2;
-import com.yoloo.backend.notification.type.NotificationBundle;
+import com.yoloo.backend.notification.type.Notifiable;
 import com.yoloo.backend.util.NetworkHelper;
 import com.yoloo.backend.util.ServerConfig;
 import java.io.IOException;
@@ -18,8 +18,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor(staticName = "create")
 public class NotificationService {
 
-  private static final Logger LOG =
-      Logger.getLogger(NotificationService.class.getName());
+  private static final Logger LOG = Logger.getLogger(NotificationService.class.getName());
 
   private static final String FCM_ENDPOINT = "https://fcm.googleapis.com/fcm/send";
 
@@ -28,12 +27,12 @@ public class NotificationService {
   /**
    * Send.
    *
-   * @param bundle the bundle
+   * @param notifiable the bundle
    */
-  public void send(@Nonnull NotificationBundle bundle) {
+  public void send(@Nonnull Notifiable notifiable) {
     if (!ServerConfig.isDev()) {
       try {
-        service.fetchAsync(buildRequest(bundle.getPushMessage().getJsonAsBytes()));
+        service.fetchAsync(buildRequest(notifiable.getPushMessage().getJsonAsBytes()));
       } catch (IOException e) {
         LOG.info(e.getMessage());
       }

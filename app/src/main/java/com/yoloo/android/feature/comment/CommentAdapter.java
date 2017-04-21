@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import com.airbnb.epoxy.EpoxyAdapter;
 import com.airbnb.epoxy.EpoxyModel;
+import com.bumptech.glide.RequestManager;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
@@ -14,37 +15,49 @@ import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.List;
 
-public class CommentAdapter extends EpoxyAdapter {
+class CommentAdapter extends EpoxyAdapter {
 
-  private final OnItemLongClickListener<CommentRealm> onCommentLongClickListener;
-  private final OnProfileClickListener onProfileClickListener;
-  private final OnVoteClickListener onVoteClickListener;
-  private final OnMentionClickListener onMentionClickListener;
-  private final OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener;
   private final int postType;
+
+  private final RequestManager glide;
 
   private final CropCircleTransformation cropCircleTransformation;
 
-  public CommentAdapter(
-      Context context,
-      OnItemLongClickListener<CommentRealm> onCommentLongClickListener,
-      OnProfileClickListener onProfileClickListener,
-      OnVoteClickListener onVoteClickListener,
-      OnMentionClickListener onMentionClickListener,
-      OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener,
-      int postType) {
-    this.onCommentLongClickListener = onCommentLongClickListener;
-    this.onProfileClickListener = onProfileClickListener;
-    this.onVoteClickListener = onVoteClickListener;
-    this.onMentionClickListener = onMentionClickListener;
-    this.onMarkAsAcceptedClickListener = onMarkAsAcceptedClickListener;
+  private OnItemLongClickListener<CommentRealm> onCommentLongClickListener;
+  private OnProfileClickListener onProfileClickListener;
+  private OnVoteClickListener onVoteClickListener;
+  private OnMentionClickListener onMentionClickListener;
+  private OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener;
+
+  CommentAdapter(Context context, int postType, RequestManager glide) {
     this.postType = postType;
+    this.glide = glide;
 
     enableDiffing();
     cropCircleTransformation = new CropCircleTransformation(context);
   }
 
-  public void addComments(List<CommentRealm> comments, AccountRealm account, String postOwnerId,
+  public void setOnCommentLongClickListener(OnItemLongClickListener<CommentRealm> listener) {
+    this.onCommentLongClickListener = listener;
+  }
+
+  public void setOnProfileClickListener(OnProfileClickListener listener) {
+    this.onProfileClickListener = listener;
+  }
+
+  public void setOnVoteClickListener(OnVoteClickListener listener) {
+    this.onVoteClickListener = listener;
+  }
+
+  public void setOnMentionClickListener(OnMentionClickListener listener) {
+    this.onMentionClickListener = listener;
+  }
+
+  public void setOnMarkAsAcceptedClickListener(OnMarkAsAcceptedClickListener listener) {
+    this.onMarkAsAcceptedClickListener = listener;
+  }
+
+  void addComments(List<CommentRealm> comments, AccountRealm account, String postOwnerId,
       boolean acceptedPost) {
     for (CommentRealm comment : comments) {
       // Don't addPost accepted comment twice.
@@ -59,28 +72,28 @@ public class CommentAdapter extends EpoxyAdapter {
     notifyModelsChanged();
   }
 
-  public void addAcceptedComment(CommentRealm comment, AccountRealm account, String postOwnerId,
+  void addAcceptedComment(CommentRealm comment, AccountRealm account, String postOwnerId,
       boolean acceptedPost) {
     insertModelBefore(createCommentModel(comment, isPostOwner(postOwnerId, account),
         isCommentOwner(comment, account), acceptedPost), models.get(0));
   }
 
-  public void addComment(CommentRealm comment, AccountRealm account, String postOwnerId,
+  void addComment(CommentRealm comment, AccountRealm account, String postOwnerId,
       boolean acceptedPost) {
     addModel(createCommentModel(comment, isPostOwner(postOwnerId, account), true, acceptedPost));
   }
 
-  public void delete(EpoxyModel<?> model) {
+  void delete(EpoxyModel<?> model) {
     removeModel(model);
   }
 
-  public void scrollToEnd(RecyclerView recyclerView) {
+  void scrollToEnd(RecyclerView recyclerView) {
     recyclerView.smoothScrollToPosition(getItemCount() - 1);
   }
 
   private CommentModel createCommentModel(CommentRealm comment, boolean isPostOwner,
       boolean isCommentOwner, boolean acceptedPost) {
-    return new CommentModel_()
+    return new CommentModel_().glide(glide)
         .comment(comment)
         .isCommentOwner(isCommentOwner)
         .isPostOwner(isPostOwner)

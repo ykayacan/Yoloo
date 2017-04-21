@@ -16,7 +16,7 @@ import com.yoloo.backend.account.AccountShardService;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.notification.NotificationService;
-import com.yoloo.backend.notification.type.FollowNotification;
+import com.yoloo.backend.notification.type.FollowNotifiable;
 import com.yoloo.backend.endpointsvalidator.Guard;
 import java.util.Collection;
 import java.util.Map;
@@ -72,7 +72,7 @@ public class RelationshipController extends Controller {
     followingShard = accountShardService
         .updateCounter(followingShard, AccountShardService.Update.FOLLOWER_UP);
 
-    FollowNotification notification = FollowNotification.create(follower, record);
+    FollowNotifiable notification = FollowNotifiable.create(follower, record);
 
     ImmutableSet<Object> saveList = ImmutableSet.builder()
         .add(relationship)

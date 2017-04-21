@@ -24,8 +24,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 /**
- * A decoration which draws a horizontal divider between {@link RecyclerView.ViewHolder}s from a given
- * type; with a left inset.
+ * A decoration which draws a horizontal divider between {@link RecyclerView.ViewHolder}s from a
+ * given type; with a left inset.
  */
 public class InsetDividerDecoration extends RecyclerView.ItemDecoration {
 
@@ -50,7 +50,9 @@ public class InsetDividerDecoration extends RecyclerView.ItemDecoration {
   @Override
   public void onDrawOver(Canvas canvas, RecyclerView parent, RecyclerView.State state) {
     final int childCount = parent.getChildCount();
-    if (childCount < 2) return;
+    if (childCount < 2) {
+      return;
+    }
 
     final RecyclerView.LayoutManager lm = parent.getLayoutManager();
     float[] lines = new float[childCount * 4];

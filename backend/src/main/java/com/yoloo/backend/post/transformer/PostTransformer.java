@@ -2,6 +2,7 @@ package com.yoloo.backend.post.transformer;
 
 import com.google.api.server.spi.config.Transformer;
 import com.google.common.collect.ImmutableList;
+import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.media.Media;
 import com.yoloo.backend.media.dto.MediaDTO;
 import com.yoloo.backend.media.size.LargeSize;
@@ -10,9 +11,11 @@ import com.yoloo.backend.media.size.MediumSize;
 import com.yoloo.backend.media.size.ThumbSize;
 import com.yoloo.backend.post.Post;
 import com.yoloo.backend.post.dto.PostDTO;
+import ix.Ix;
 
 public class PostTransformer implements Transformer<Post, PostDTO> {
-  @Override public PostDTO transformTo(Post in) {
+  @Override
+  public PostDTO transformTo(Post in) {
     return PostDTO.builder()
         .id(in.getWebsafeId())
         .ownerId(in.getWebsafeOwnerId())
@@ -21,9 +24,9 @@ public class PostTransformer implements Transformer<Post, PostDTO> {
         .content(in.getContent())
         .acceptedCommentId(in.getAcceptedCommentId())
         .title(in.getTitle())
-        .media(getMediaDTO(in.getMedia()))
+        .medias(Ix.from(in.getMedias()).map(this::getMediaDTO).toList())
         .tags(in.getTags())
-        .categories(in.getCategories())
+        .group(TravelerGroupEntity.extractNameFromKey(in.getTravelerGroup()))
         .bounty(in.getBounty())
         .rank(in.getRank())
         .direction(in.getDir().getValue())
@@ -35,7 +38,8 @@ public class PostTransformer implements Transformer<Post, PostDTO> {
         .build();
   }
 
-  @Override public Post transformFrom(PostDTO in) {
+  @Override
+  public Post transformFrom(PostDTO in) {
     return null;
   }
 
@@ -47,12 +51,10 @@ public class PostTransformer implements Transformer<Post, PostDTO> {
     return MediaDTO.builder()
         .id(in.getId())
         .mime(in.getMime())
-        .sizes(ImmutableList.of(
-            ThumbSize.of(in.getUrl()),
+        .sizes(ImmutableList.of(ThumbSize.of(in.getUrl()),
             LowSize.of(in.getUrl()),
             MediumSize.of(in.getUrl()),
-            LargeSize.of(in.getUrl())
-        ))
+            LargeSize.of(in.getUrl())))
         .build();
   }
 }

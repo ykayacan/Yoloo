@@ -56,7 +56,7 @@ public class TagDiskDataStore {
         case RECOMMENDED:
           tags = realm.copyFromRealm(realm.where(TagRealm.class)
               .equalTo(TagRealmFields.IS_RECOMMENDED, true)
-              .findAllSorted(TagRealmFields.POSTS, Sort.DESCENDING));
+              .findAllSorted(TagRealmFields.POST_COUNT, Sort.DESCENDING));
           break;
         case DEFAULT:
         default:
@@ -72,9 +72,8 @@ public class TagDiskDataStore {
     return Observable.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 
-      RealmResults<TagRealm> results = realm.where(TagRealm.class)
-          .equalTo(TagRealmFields.RECENT, true)
-          .findAll();
+      RealmResults<TagRealm> results =
+          realm.where(TagRealm.class).equalTo(TagRealmFields.RECENT, true).findAll();
 
       if (results.isEmpty()) {
         realm.close();

@@ -24,13 +24,15 @@ public abstract class UserModel extends EpoxyModelWithHolder<UserModel.UserHolde
   @EpoxyAttribute(hash = false) OnFollowClickListener onFollowClickListener;
   @EpoxyAttribute(hash = false) CropCircleTransformation cropCircleTransformation;
 
-  @Override public void bind(UserHolder holder) {
+  @Override
+  public void bind(UserHolder holder) {
     final Context context = holder.itemView.getContext();
 
-    Glide.with(context)
+    Glide
+        .with(context)
         .load(account.getAvatarUrl())
         .bitmapTransform(cropCircleTransformation)
-        .placeholder(R.drawable.ic_player)
+        .placeholder(R.drawable.ic_player_72dp)
         .into(holder.ivAvatar);
 
     holder.tvUsername.setText(account.getUsername());
@@ -39,19 +41,20 @@ public abstract class UserModel extends EpoxyModelWithHolder<UserModel.UserHolde
       v.setTag(v.getTag() == null);
       account.setFollowing(v.getTag() != null);
 
-      final int textResId = v.getTag() == null
-          ? R.string.label_search_followed
-          : R.string.label_search_unfollowed;
+      final int textResId =
+          v.getTag() == null ? R.string.label_search_followed : R.string.label_search_unfollowed;
 
-      Snackbar.make(v, context.getString(textResId, account.getUsername()),
-          Snackbar.LENGTH_SHORT).show();
+      Snackbar
+          .make(v, context.getString(textResId, account.getUsername()), Snackbar.LENGTH_SHORT)
+          .show();
       onFollowClickListener.onFollowClick(v, this, account, 1);
     });
     holder.itemView.setOnClickListener(
         v -> onProfileClickListener.onProfileClick(v, this, account.getId()));
   }
 
-  @Override public void unbind(UserHolder holder) {
+  @Override
+  public void unbind(UserHolder holder) {
     Glide.clear(holder.ivAvatar);
     holder.ivAvatar.setImageDrawable(null);
 

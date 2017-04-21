@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content"
+  android:clickable="true"
+  android:gravity="center"
+  android:orientation="vertical">
+
+  <android.support.design.widget.FloatingActionButton
+    android:id="@+id/fab"
+    android:layout_width="@dimen/spacing_huge"
+    android:layout_height="@dimen/spacing_huge"
+    android:tint="@android:color/white"
+    app:backgroundTint="@color/primary"
+    tools:src="@drawable/ic_edit_white_18dp" />
+
+  <TextView
+    android:id="@+id/tv_fab_text"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:textAllCaps="false"
+    android:textAppearance="@style/TextAppearance.GroupTitle"
+    tools:text="Fab 1" />
+
+</merge>

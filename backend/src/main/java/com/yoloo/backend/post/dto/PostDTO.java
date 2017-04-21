@@ -2,6 +2,7 @@ package com.yoloo.backend.post.dto;
 
 import com.yoloo.backend.media.dto.MediaDTO;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 import lombok.Builder;
@@ -17,9 +18,9 @@ public class PostDTO {
   private String content;
   @Nullable private String acceptedCommentId;
   @Nullable private String title;
-  @Nullable private MediaDTO media;
+  @Nullable private List<MediaDTO> medias;
   private Set<String> tags;
-  private Set<String> categories;
+  private String group;
   private int bounty;
   private double rank;
   private int direction;

@@ -3,8 +3,6 @@ package com.yoloo.android.data.repository.notification;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.FcmRealm;
 import com.yoloo.android.data.model.NotificationRealm;
-import com.yoloo.android.data.repository.notification.datasource.NotificationDiskDataSource;
-import com.yoloo.android.data.repository.notification.datasource.NotificationRemoteDataSource;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
@@ -34,22 +32,24 @@ public class NotificationRepository {
   }
 
   public Completable registerFcmToken(@Nonnull FcmRealm fcm) {
-    return remoteDataStore.registerFcmToken(fcm)
+    return remoteDataStore
+        .registerFcmToken(fcm)
         .doOnComplete(() -> diskDataStore.registerFcmToken(fcm))
         .subscribeOn(Schedulers.io());
   }
 
   public Completable unregisterFcmToken(@Nonnull FcmRealm fcm) {
-    return remoteDataStore.unregisterFcmToken(fcm)
+    return remoteDataStore
+        .unregisterFcmToken(fcm)
         .doOnComplete(diskDataStore::unregisterFcmToken)
         .subscribeOn(Schedulers.io());
   }
 
   public Observable<Response<List<NotificationRealm>>> listNotifications(@Nullable String cursor,
       int limit) {
-    return Observable.mergeDelayError(
-        diskDataStore.list(limit).subscribeOn(Schedulers.io()),
-        remoteDataStore.list(cursor, limit)
+    return Observable.mergeDelayError(diskDataStore.list(limit).subscribeOn(Schedulers.io()),
+        remoteDataStore
+            .list(cursor, limit)
             .doOnNext(response -> diskDataStore.addAll(response.getData()))
             .subscribeOn(Schedulers.io()));
   }

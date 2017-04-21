@@ -10,6 +10,7 @@ import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.AdminAuthenticator;
+import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
 import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
 import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
 import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
@@ -19,22 +20,14 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
-@Api(
-    name = "yolooApi",
+@Api(name = "yolooApi",
     version = "v1",
-    namespace = @ApiNamespace(
-        ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER)
-)
-@ApiClass(
-    resource = "tags",
-    clientIds = {
-        Constants.ANDROID_CLIENT_ID,
-        Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID},
-    audiences = {Constants.AUDIENCE_ID},
-    authenticators = { AdminAuthenticator.class }
-)
+    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
+@ApiClass(resource = "tags", clientIds = {
+    Constants.ANDROID_CLIENT_ID,
+    Constants.IOS_CLIENT_ID,
+    Constants.WEB_CLIENT_ID
+}, audiences = { Constants.AUDIENCE_ID })
 public class TagEndpoint {
 
   private final TagController tagController = TagControllerFactory.of().create();
@@ -43,25 +36,22 @@ public class TagEndpoint {
    * Inserts a new {@code Tag}.
    *
    * @param name the name
-   * @param langCode the language code
-   * @param groupIds the group ids
    * @param user the user
    * @return the comment
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "tags.insert",
+  @ApiMethod(name = "tags.insert",
       path = "tags",
-      httpMethod = ApiMethod.HttpMethod.POST)
-  public Tag insertTag(
-      @Named("name") String name,
-      @Named("langCode") String langCode,
-      @Named("groupIds") String groupIds,
-      User user) throws ServiceException {
+      httpMethod = ApiMethod.HttpMethod.POST,
+      authenticators = {
+          AdminAuthenticator.class,
+          FirebaseAuthenticator.class
+      })
+  public Tag insert(@Named("name") String name, User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
-    return tagController.insertTag(name, langCode, groupIds);
+    return tagController.insertTag(name);
   }
 
   /**
@@ -73,14 +63,12 @@ public class TagEndpoint {
    * @return the updated version from the entity
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "tags.update",
+  @ApiMethod(name = "tags.update",
       path = "tags/{tagId}",
-      httpMethod = ApiMethod.HttpMethod.PUT)
-  public Tag updateTag(
-      @Named("tagId") String tagId,
-      @Nullable @Named("name") String name,
-      User user) throws ServiceException {
+      httpMethod = ApiMethod.HttpMethod.PUT,
+      authenticators = { AdminAuthenticator.class })
+  public Tag update(@Named("tagId") String tagId, @Nullable @Named("name") String name, User user)
+      throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
@@ -94,11 +82,11 @@ public class TagEndpoint {
    * @param user the user
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "tags.delete",
+  @ApiMethod(name = "tags.delete",
       path = "tags/{tagId}",
-      httpMethod = ApiMethod.HttpMethod.DELETE)
-  public void deleteTag(@Named("tagId") String tagId, User user) throws ServiceException {
+      httpMethod = ApiMethod.HttpMethod.DELETE,
+      authenticators = AdminAuthenticator.class)
+  public void delete(@Named("tagId") String tagId, User user) throws ServiceException {
 
     EndpointsValidator.create()
         .on(BadRequestValidator.create(tagId, "tagId is required."))
@@ -119,20 +107,17 @@ public class TagEndpoint {
    * @return a response that encapsulates the result listFeed and the next page token/cursor
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "tags.list",
+  @ApiMethod(name = "tags.list",
       path = "tags",
-      httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Tag> listTags(
-      @Named("name") String name,
-      @Nullable @Named("cursor") String cursor,
-      @Nullable @Named("limit") Integer limit,
-      User user) throws ServiceException {
+      httpMethod = ApiMethod.HttpMethod.GET,
+      authenticators = { AdminAuthenticator.class, FirebaseAuthenticator.class })
+  public CollectionResponse<Tag> list(@Named("name") String name,
+      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
+      throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
-    return tagController.list(name, Optional.fromNullable(cursor), Optional.fromNullable(limit)
-    );
+    return tagController.list(name, Optional.fromNullable(cursor), Optional.fromNullable(limit));
   }
 
   /**
@@ -142,78 +127,15 @@ public class TagEndpoint {
    * @return the listFeed
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "tags.recommended",
+  @ApiMethod(name = "tags.recommended",
       path = "tags/recommended",
-      httpMethod = ApiMethod.HttpMethod.GET)
-  public List<Tag> recommended(User user) throws ServiceException {
+      httpMethod = ApiMethod.HttpMethod.GET,
+      authenticators = { AdminAuthenticator.class, FirebaseAuthenticator.class })
+  public List<Tag> recommended(User user)
+      throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
     return tagController.getRecommendedTags();
-  }
-
-  /**
-   * Inserts a new {@code TagGroup}.
-   *
-   * @param name the name
-   * @param user the user
-   * @return the comment
-   * @throws ServiceException the service exception
-   */
-  @ApiMethod(
-      name = "tagGroups.insert",
-      path = "tagGroups",
-      httpMethod = ApiMethod.HttpMethod.POST)
-  public Tag insertGroup(@Named("name") String name, User user) throws ServiceException {
-
-    EndpointsValidator.create().on(AuthValidator.create(user));
-
-    return tagController.insertGroup(name);
-  }
-
-  /**
-   * Updates an existing {@code TagGroup}.
-   *
-   * @param groupId the websafe group id
-   * @param name the name
-   * @param user the user
-   * @return the updated version from the entity
-   * @throws ServiceException the service exception
-   */
-  @ApiMethod(
-      name = "tagGroups.update",
-      path = "tagGroups/{groupId}",
-      httpMethod = ApiMethod.HttpMethod.PUT)
-  public Tag updateGroup(
-      @Named("groupId") String groupId,
-      @Nullable @Named("name") String name,
-      User user) throws ServiceException {
-
-    EndpointsValidator.create().on(AuthValidator.create(user));
-
-    return tagController.updateGroup(groupId, Optional.fromNullable(name));
-  }
-
-  /**
-   * Deletes the specified {@code TagGroup}.
-   *
-   * @param groupId the websafe group id
-   * @param user the user
-   * @throws ServiceException the service exception
-   */
-  @ApiMethod(
-      name = "tagGroups.delete",
-      path = "tagGroups/{groupId}",
-      httpMethod = ApiMethod.HttpMethod.DELETE)
-  public void deleteGroup(@Named("groupId") String groupId, User user) throws ServiceException {
-
-    EndpointsValidator.create()
-        .on(BadRequestValidator.create(groupId, "groupId is required."))
-        .on(AuthValidator.create(user))
-        .on(NotFoundValidator.create(groupId, "Invalid groupId."))
-        .on(ForbiddenValidator.create(groupId, user, ForbiddenValidator.Op.DELETE));
-
-    tagController.deleteGroup(groupId);
   }
 }

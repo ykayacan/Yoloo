@@ -1,12 +1,12 @@
 package com.yoloo.android.data;
 
-public class Response<T> {
+public final class Response<T> {
 
   private static final long STALE_MS = 5 * 1000; // Data is stale after 5 seconds
 
   private final T data;
-  private String cursor;
-  private long timestamp;
+  private final String cursor;
+  private final long timestamp;
 
   private Response(T data, String cursor) {
     this.data = data;

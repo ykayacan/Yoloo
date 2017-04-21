@@ -1,29 +1,26 @@
 package com.yoloo.android.feature.profile;
 
 import android.content.res.Resources;
-import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.text.Spannable;
 import android.text.TextUtils;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewStub;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
+import butterknife.BindColor;
+import butterknife.BindString;
+import butterknife.BindView;
+import butterknife.OnClick;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.Router;
@@ -34,31 +31,23 @@ import com.bluelinelabs.conductor.support.RouterPagerAdapter;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.repository.user.UserRepository;
-import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
-import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.category.CategoryController;
-import com.yoloo.android.feature.feed.global.FeedGlobalController;
+import com.yoloo.android.data.repository.user.UserRepositoryProvider;
+import com.yoloo.android.feature.category.GroupOverviewController;
 import com.yoloo.android.feature.follow.FollowController;
+import com.yoloo.android.feature.postlist.PostListController;
 import com.yoloo.android.feature.profile.photos.PhotosController;
+import com.yoloo.android.feature.profile.pointsoverview.PointsOverviewController;
 import com.yoloo.android.feature.profile.profileedit.ProfileEditController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.CountUtil;
-import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.Pair;
+import com.yoloo.android.util.TextViewUtil;
 import com.yoloo.android.util.VersionUtil;
-import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import butterknife.BindColor;
-import butterknife.BindString;
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
+import java.util.concurrent.ThreadLocalRandom;
 import timber.log.Timber;
 
 public class ProfileController extends MvpController<ProfileView, ProfilePresenter>
@@ -66,27 +55,33 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
   private static final String KEY_USER_ID = "USER_ID";
 
+  private static final int PERCENTAGE_TO_ANIMATE_AVATAR = 15;
+
+  @BindView(R.id.appbar_profile) AppBarLayout appBarLayout;
   @BindView(R.id.toolbar_profile) Toolbar toolbar;
   @BindView(R.id.iv_profile_edit) ImageView ivEdit;
   @BindView(R.id.iv_profile_avatar) ImageView ivProfileAvatar;
   @BindView(R.id.iv_profile_bg) ImageView ivProfileBg;
-  @BindView(R.id.viewstub_profile_info) ViewStub stubInfo;
   @BindView(R.id.tv_profile_realname) TextView tvRealname;
   @BindView(R.id.tv_profile_username) TextView tvUsername;
   @BindView(R.id.tv_profile_level) TextView tvLevel;
-  @BindView(R.id.tv_profile_posts) TextView tvPosts;
-  @BindView(R.id.tv_profile_followers) TextView tvFollowers;
-  @BindView(R.id.tv_profile_following) TextView tvFollowing;
+  @BindView(R.id.tv_profile_bio) TextView tvBio;
+  @BindView(R.id.tv_profile_website) TextView tvWebsiteUrl;
+  @BindView(R.id.tv_profile_followers_counter) TextView tvFollowerCounter;
+  @BindView(R.id.tv_profile_followers_counter_text) TextView tvFollowerCounterText;
+  @BindView(R.id.tv_profile_following_counter) TextView tvFollowingCounter;
+  @BindView(R.id.tv_profile_following_counter_text) TextView tvFollowingCounterText;
   @BindView(R.id.btn_profile_follow) Button btnFollow;
-  @BindView(R.id.tv_profile_bounties) TextView tvBounties;
-  @BindView(R.id.tv_profile_points) TextView tvPoints;
-  @BindView(R.id.tv_profile_achievements) TextView tvAchievements;
+  @BindView(R.id.tv_profile_bounty_count) TextView tvBountyCount;
+  @BindView(R.id.tv_profile_point_count) TextView tvPointCount;
+  @BindView(R.id.tv_profile_country_count) TextView tvCountryCount;
 
   @BindView(R.id.tablayout_profile) TabLayout tabLayout;
   @BindView(R.id.viewpager_profile) ViewPager viewPager;
 
   @BindColor(R.color.primary_dark) int primaryDarkColor;
   @BindColor(R.color.primary_blue) int primaryBlueColor;
+  @BindColor(android.R.color.primary_text_light) int primaryTextLightColor;
 
   @BindString(R.string.label_profile_tab_posts) String profilePostsTabString;
   @BindString(R.string.label_profile_tab_photos) String profilePhotosTabString;
@@ -96,6 +91,9 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   private String userId;
 
   private AccountRealm account;
+
+  private boolean isAvatarShown = true;
+  private int maxScrollSize;
 
   public ProfileController(@Nullable Bundle args) {
     super(args);
@@ -110,101 +108,104 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
-    return inflater.inflate(R.layout.controller_profile, container, false);
+    return inflater.inflate(R.layout.controller_profile_new, container, false);
   }
 
-  @Override protected void onViewBound(@NonNull View view) {
-    super.onViewBound(view);
-    setHasOptionsMenu(true);
+  @Override
+  protected void onViewBound(@NonNull View view) {
     setupToolbar();
 
     userId = getArgs().getString(KEY_USER_ID);
 
     List<Pair<String, Controller>> pairs = new ArrayList<>(4);
-    pairs.add(Pair.create(profilePostsTabString, FeedGlobalController.ofUser(userId, false)));
+    pairs.add(Pair.create(profilePostsTabString, PostListController.ofUser(userId)));
     pairs.add(Pair.create(profilePhotosTabString, PhotosController.create(userId)));
     pairs.add(Pair.create(profileCountriesTabString, PhotosController.create(userId)));
-    pairs.add(Pair.create(profileInterestsTabString, CategoryController.create(userId, 3)));
-    pairs.add(Pair.create(profileInterestsTabString, PhotosController.create(userId)));
+    pairs.add(Pair.create(profileInterestsTabString, GroupOverviewController.create(userId, 3)));
 
     final RouterPagerAdapter pagerAdapter = new ProfilePagerAdapter(this, pairs);
 
     viewPager.setAdapter(pagerAdapter);
     tabLayout.setupWithViewPager(viewPager);
+
+    int randomNum = ThreadLocalRandom.current().nextInt(1, 7 + 1);
+
+    final String backgroundUrl =
+        "https://storage.googleapis.com/yoloo-151719.appspot.com/profile-bg-images/small/p"
+            + randomNum
+            + ".webp";
+
+    Glide.with(getActivity()).load(backgroundUrl).into(ivProfileBg);
   }
 
-  @Override protected void onAttach(@NonNull View view) {
-    ViewUtils.setStatusBarColor(getActivity(), Color.BLACK);
+  @Override
+  protected void onAttach(@NonNull View view) {
     getPresenter().loadUserProfile(userId);
   }
 
-  @Override protected void onDetach(@NonNull View view) {
-    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
-  }
-
-  @Override protected void onDestroyView(@NonNull View view) {
+  @Override
+  protected void onDestroyView(@NonNull View view) {
     viewPager.setAdapter(null);
     super.onDestroyView(view);
   }
 
-  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    final int itemId = item.getItemId();
-    if (itemId == android.R.id.home) {
-      getRouter().handleBack();
-      return true;
-    }
-    return super.onOptionsItemSelected(item);
+  @NonNull
+  @Override
+  public ProfilePresenter createPresenter() {
+    return new ProfilePresenter(UserRepositoryProvider.getRepository());
   }
 
-  @NonNull @Override public ProfilePresenter createPresenter() {
-    return new ProfilePresenter(
-        UserRepository.getInstance(
-            UserRemoteDataStore.getInstance(),
-            UserDiskDataStore.getInstance())
-    );
-  }
-
-  @Override public void onProfileLoaded(AccountRealm account) {
+  @Override
+  public void onProfileLoaded(AccountRealm account) {
     this.account = account;
     setupProfileInfo(account);
   }
 
-  @Override public void onError(Throwable t) {
+  @Override
+  public void onError(Throwable t) {
     Timber.e(t);
   }
 
-  @OnClick(R.id.btn_profile_follow) void onFollowClick() {
+  @OnClick(R.id.btn_profile_follow)
+  void onFollowClick() {
     final Resources res = getResources();
 
-    btnFollow.setText(account.isFollowing() ? res.getString(R.string.action_profile_follow)
+    btnFollow.setText(account.isFollowing()
+        ? res.getString(R.string.action_profile_follow)
         : res.getString(R.string.action_profile_unfollow));
     getPresenter().follow(userId, account.isFollowing() ? -1 : 1);
     account.setFollowing(!account.isFollowing());
   }
 
-  @OnClick(R.id.card_profile_points) void onPointsCardClick() {
+  @OnClick(R.id.card_profile_point_count)
+  void openPointScreen() {
+    startTransaction(PointsOverviewController.create(), new VerticalChangeHandler());
+  }
+
+  @OnClick(R.id.card_profile_bounty_count)
+  void openBountyScreen() {
 
   }
 
-  @OnClick(R.id.card_profile_bounties) void onBountiesCardClick() {
+  @OnClick(R.id.card_profile_country_count)
+  void openVisitedCountiesScreen() {
 
   }
 
-  @OnClick(R.id.card_profile_achievements) void onAchievementsClick() {
-
-  }
-
-  @OnClick(R.id.tv_profile_followers) void onFollowersClick() {
+  @OnClick(R.id.tv_profile_followers_counter_text)
+  void onFollowersClick() {
     startTransaction(FollowController.create(userId, FollowController.TYPE_FOLLOWERS),
         new VerticalChangeHandler());
   }
 
-  @OnClick(R.id.tv_profile_following) void onFollowingClick() {
+  @OnClick(R.id.tv_profile_following_counter_text)
+  void onFollowingClick() {
     startTransaction(FollowController.create(userId, FollowController.TYPE_FOLLOWINGS),
         new VerticalChangeHandler());
   }
 
-  @OnClick(R.id.iv_profile_edit) void openProfileEdit() {
+  @OnClick(R.id.iv_profile_edit)
+  void openProfileEdit() {
     startTransaction(ProfileEditController.create(), new HorizontalChangeHandler());
   }
 
@@ -212,11 +213,30 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     setSupportActionBar(toolbar);
 
     final ActionBar ab = getSupportActionBar();
-    if (ab != null) {
-      ab.setDisplayShowTitleEnabled(false);
-      ab.setDisplayHomeAsUpEnabled(true);
-      ab.setDisplayShowHomeEnabled(true);
-    }
+    ab.setDisplayShowTitleEnabled(false);
+    ab.setDisplayHomeAsUpEnabled(true);
+
+    maxScrollSize = appBarLayout.getTotalScrollRange();
+
+    appBarLayout.addOnOffsetChangedListener((layout, verticalOffset) -> {
+      if (maxScrollSize == 0) {
+        maxScrollSize = appBarLayout.getTotalScrollRange();
+      }
+
+      int percentage = (Math.abs(verticalOffset)) * 100 / maxScrollSize;
+
+      if (percentage >= PERCENTAGE_TO_ANIMATE_AVATAR && isAvatarShown) {
+        isAvatarShown = false;
+
+        ivProfileAvatar.animate().scaleY(0).scaleX(0).setDuration(200);
+      }
+
+      if (percentage <= PERCENTAGE_TO_ANIMATE_AVATAR && !isAvatarShown) {
+        isAvatarShown = true;
+
+        ivProfileAvatar.animate().scaleY(1).scaleX(1);
+      }
+    });
   }
 
   private void setupProfileInfo(AccountRealm account) {
@@ -224,46 +244,41 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
     tvUsername.setText(account.getUsername());
 
-    Glide.with(getActivity())
+    Glide
+        .with(getActivity())
         .load(account.getAvatarUrl().replace("s96-c", "s80-c-rw"))
         .bitmapTransform(new CropCircleTransformation(getActivity()))
         .into(ivProfileAvatar);
 
     if (VersionUtil.hasL()) {
-      ivProfileAvatar.setTransitionName(
-          getResources().getString(R.string.transition_avatar));
+      ivProfileAvatar.setTransitionName(getResources().getString(R.string.transition_avatar));
     }
 
-    if (!TextUtils.isEmpty(account.getBio()) || !TextUtils.isEmpty(account.getWebsiteUrl())) {
-      View view = stubInfo.inflate();
-      TextView tvBio = ButterKnife.findById(view, R.id.tv_profile_bio);
-      tvBio.setText(account.getBio());
+    tvBio.setVisibility(TextUtils.isEmpty(account.getBio()) ? View.GONE : View.VISIBLE);
+    tvBio.setText(account.getBio());
 
-      TextView tvWebsite = ButterKnife.findById(view, R.id.tv_profile_website);
-      tvWebsite.setText(account.getWebsiteUrl());
+    tvWebsiteUrl.setVisibility(
+        TextUtils.isEmpty(account.getWebsiteUrl()) ? View.GONE : View.VISIBLE);
+    if (!TextUtils.isEmpty(account.getWebsiteUrl())) {
+      tvWebsiteUrl.setText(account.getWebsiteUrl());
+      TextViewUtil.stripUnderlines((Spannable) tvWebsiteUrl.getText());
     }
+
     tvRealname.setText(account.getRealname());
     tvLevel.setText(res.getString(R.string.label_profile_level, account.getLevel()));
-    DrawableHelper.create()
-        .withDrawable(tvLevel.getCompoundDrawables()[0])
-        .withColor(getActivity(), R.color.primary_yellow)
-        .tint();
 
-    formatCounterText(tvPosts, account.getPostCount(), R.string.label_profile_posts);
-    formatCounterText(tvFollowers, account.getFollowerCount(), R.string.label_profile_followers);
-    formatCounterText(tvFollowing, account.getFollowingCount(), R.string.label_profile_following);
+    tvFollowerCounter.setText(CountUtil.formatCount(account.getFollowerCount()));
+    tvFollowingCounter.setText(CountUtil.formatCount(account.getFollowingCount()));
 
-    tvPoints.setText(
-        res.getString(R.string.label_profile_points,
-            CountUtil.formatCount(account.getPointCount())));
-    tvBounties.setText(res.getString(R.string.label_profile_bounties, account.getBountyCount()));
-    tvAchievements.setText(
+    tvPointCount.setText(res.getString(R.string.label_profile_points,
+        CountUtil.formatCount(account.getPointCount())));
+    tvBountyCount.setText(res.getString(R.string.label_profile_bounties, account.getBountyCount()));
+    tvCountryCount.setText(
         res.getString(R.string.label_profile_countries, account.getAchievementCount()));
 
     btnFollow.setVisibility(account.isMe() ? View.GONE : View.VISIBLE);
-    btnFollow.setText(account.isFollowing()
-        ? R.string.action_profile_unfollow
-        : R.string.action_profile_follow);
+    btnFollow.setText(
+        account.isFollowing() ? R.string.action_profile_unfollow : R.string.action_profile_follow);
 
     ivEdit.setVisibility(account.isMe() ? View.VISIBLE : View.GONE);
   }
@@ -271,20 +286,6 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   private void startTransaction(Controller to, ControllerChangeHandler handler) {
     getRouter().pushController(
         RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
-  }
-
-  private void formatCounterText(TextView view, long value, @StringRes int stringRes) {
-    String original = getResources().getString(stringRes, CountUtil.formatCount(value));
-
-    final int i = original.indexOf("\n") + 1;
-
-    Spannable span = Spannable.Factory.getInstance().newSpannable(original);
-    span.setSpan(new StyleSpan(Typeface.BOLD), i, original.length(),
-        Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-    span.setSpan(new ForegroundColorSpan(Color.WHITE), i, original.length(),
-        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-    view.setText(span, TextView.BufferType.SPANNABLE);
   }
 
   private static class ProfilePagerAdapter extends RouterPagerAdapter {
@@ -295,15 +296,18 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
       this.pairs = pairs;
     }
 
-    @Override public int getCount() {
+    @Override
+    public int getCount() {
       return pairs.size();
     }
 
-    @Override public CharSequence getPageTitle(int position) {
+    @Override
+    public CharSequence getPageTitle(int position) {
       return pairs.get(position).first;
     }
 
-    @Override public void configureRouter(@NonNull Router router, int position) {
+    @Override
+    public void configureRouter(@NonNull Router router, int position) {
       if (!router.hasRootController()) {
         router.setRoot(RouterTransaction.with(pairs.get(position).second));
       }

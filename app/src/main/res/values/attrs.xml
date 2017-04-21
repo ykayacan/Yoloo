@@ -73,4 +73,9 @@
     <attr name="animateStateChanges" format="boolean" />
   </declare-styleable>
 
+  <declare-styleable name="FabGroupView">
+    <attr name="fabText" format="string"/>
+    <attr name="fabIcon" format="reference"/>
+  </declare-styleable>
+
 </resources>

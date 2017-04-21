@@ -30,12 +30,14 @@
         com.yoloo.backend.vote.VoteEndpoint,
         com.yoloo.backend.bookmark.BookmarkEndpoint,
         com.yoloo.backend.tag.TagEndpoint,
-        com.yoloo.backend.category.CategoryEndpoint,
+        com.yoloo.backend.group.TravelerGroupEndpoint,
+        com.yoloo.backend.travelertype.TravelerTypeEndpoint,
         com.yoloo.backend.media.MediaEndpoint,
         com.yoloo.backend.device.DeviceEndpoint,
         com.yoloo.backend.feed.FeedEndpoint,
         com.yoloo.backend.recommendation.RecommendationEndpoint,
-        com.yoloo.backend.notification.NotificationEndpoint
+        com.yoloo.backend.notification.NotificationEndpoint,
+        com.yoloo.backend.game.GameEndpoint
       </param-value>
     </init-param>
     <init-param>
@@ -61,22 +63,22 @@
 
   <servlet>
     <servlet-name>UpdateCategoryRankServlet</servlet-name>
-    <servlet-class>com.yoloo.backend.category.UpdateCategoryRankServlet</servlet-class>
+    <servlet-class>com.yoloo.backend.group.UpdateCategoryRankServlet</servlet-class>
   </servlet>
 
   <servlet-mapping>
     <servlet-name>UpdateCategoryRankServlet</servlet-name>
-    <url-pattern>/tasks/update/category/rank</url-pattern>
+    <url-pattern>/tasks/update/travelerGroup/rank</url-pattern>
   </servlet-mapping>
 
   <servlet>
-    <servlet-name>UpdateTagCounterServlet</servlet-name>
-    <servlet-class>com.yoloo.backend.tag.UpdateTagCounterServlet</servlet-class>
+    <servlet-name>UpdateTagServlet</servlet-name>
+    <servlet-class>com.yoloo.backend.tag.UpdateTagServlet</servlet-class>
   </servlet>
 
   <servlet-mapping>
-    <servlet-name>UpdateTagCounterServlet</servlet-name>
-    <url-pattern>/tasks/update/tag/counter</url-pattern>
+    <servlet-name>UpdateTagServlet</servlet-name>
+    <url-pattern>/tasks/update/tag</url-pattern>
   </servlet-mapping>
 
   <servlet>
@@ -191,8 +193,8 @@
 
   <security-constraint>
     <web-resource-collection>
-      <web-resource-name>UpdateTagCounterServlet</web-resource-name>
-      <url-pattern>/tasks/update/tag/counter</url-pattern>
+      <web-resource-name>UpdateTagServlet</web-resource-name>
+      <url-pattern>/tasks/update/tag</url-pattern>
     </web-resource-collection>
     <auth-constraint>
       <role-name>admin</role-name>

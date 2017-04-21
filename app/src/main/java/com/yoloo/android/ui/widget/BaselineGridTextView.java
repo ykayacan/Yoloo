@@ -46,18 +46,18 @@ public class BaselineGridTextView extends CompatTextView {
   }
 
   private void init(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-    final TypedArray a = context.obtainStyledAttributes(
-        attrs, R.styleable.BaselineGridTextView, defStyleAttr, defStyleRes);
+    final TypedArray a =
+        context.obtainStyledAttributes(attrs, R.styleable.BaselineGridTextView, defStyleAttr,
+            defStyleRes);
 
     lineHeightMultiplierHint =
         a.getFloat(R.styleable.BaselineGridTextView_lineHeightMultiplierHint, 1f);
-    lineHeightHint =
-        a.getDimensionPixelSize(R.styleable.BaselineGridTextView_lineHeightHint, 0);
+    lineHeightHint = a.getDimensionPixelSize(R.styleable.BaselineGridTextView_lineHeightHint, 0);
     maxLinesByHeight = a.getBoolean(R.styleable.BaselineGridTextView_maxLinesByHeight, false);
     a.recycle();
 
-    fourDip = TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP, 4, getResources().getDisplayMetrics());
+    fourDip = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4,
+        getResources().getDisplayMetrics());
     computeLineHeight();
   }
 
@@ -113,14 +113,13 @@ public class BaselineGridTextView extends CompatTextView {
    * Ensures line height is a multiple from 4dp.
    */
   private void computeLineHeight() {
-    final Paint.FontMetricsInt fm = getPaint().getFontMetricsInt();
-    final int fontHeight = Math.abs(fm.ascent - fm.descent) + fm.leading;
-    final float desiredLineHeight = (lineHeightHint > 0)
-        ? lineHeightHint
-        : lineHeightMultiplierHint * fontHeight;
+    final Paint.FontMetrics fm = getPaint().getFontMetrics();
+    final float fontHeight = Math.abs(fm.ascent - fm.descent) + fm.leading;
+    final float desiredLineHeight =
+        (lineHeightHint > 0) ? lineHeightHint : lineHeightMultiplierHint * fontHeight;
 
     final int baselineAlignedLineHeight =
-        (int) (fourDip * (float) Math.ceil(desiredLineHeight / fourDip));
+        (int) ((fourDip * (float) Math.ceil(desiredLineHeight / fourDip)) + 0.5F);
     setLineSpacing(baselineAlignedLineHeight - fontHeight, 1f);
   }
 

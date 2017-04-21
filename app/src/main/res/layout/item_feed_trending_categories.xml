@@ -19,7 +19,7 @@
     android:layout_height="wrap_content"
     android:layout_marginLeft="@dimen/padding_normal"
     android:layout_marginStart="@dimen/padding_normal"
-    android:text="@string/label_feed_trending_now"
+    android:text="@string/feed_recommended_groups_title"
     android:textAppearance="@style/TextAppearance.GroupTitle"
     app:layout_constraintBottom_toBottomOf="@+id/top_guideline"
     app:layout_constraintLeft_toLeftOf="parent"

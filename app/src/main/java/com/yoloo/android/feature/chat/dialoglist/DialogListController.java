@@ -1,41 +1,6 @@
 package com.yoloo.android.feature.chat.dialoglist;
 
-import android.support.annotation.NonNull;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-
-import com.bluelinelabs.conductor.Controller;
-import com.bluelinelabs.conductor.RouterTransaction;
-import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
-import com.bumptech.glide.Glide;
-import com.yoloo.android.R;
-import com.yoloo.android.chatkit.commons.ImageLoader;
-import com.yoloo.android.chatkit.commons.models.IDialog;
-import com.yoloo.android.chatkit.dialogs.DialogsList;
-import com.yoloo.android.chatkit.dialogs.DialogsListAdapter;
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.chat.NormalDialog;
-import com.yoloo.android.data.model.chat.chatbot.ChatBotDialog;
-import com.yoloo.android.data.model.firebase.Chat;
-import com.yoloo.android.data.repository.chat.ChatRepository;
-import com.yoloo.android.data.repository.user.UserRepository;
-import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
-import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-import com.yoloo.android.feature.chat.createdialog.CreateDialogController;
-import com.yoloo.android.feature.chat.dialog.DialogController;
-import com.yoloo.android.framework.MvpController;
-
-import butterknife.BindArray;
-import butterknife.BindView;
-import butterknife.OnClick;
-import timber.log.Timber;
-
-public class DialogListController extends MvpController<DialogListView, DialogListPresenter>
+/*public class DialogListController extends MvpController<DialogListView, DialogListPresenter>
     implements DialogListView {
 
   @BindView(R.id.chat_list) DialogsList dialogsList;
@@ -103,10 +68,7 @@ public class DialogListController extends MvpController<DialogListView, DialogLi
   }
 
   @NonNull @Override public DialogListPresenter createPresenter() {
-    return new DialogListPresenter(
-        UserRepository.getInstance(
-            UserRemoteDataStore.getInstance(),
-            UserDiskDataStore.getInstance()),
+    return new DialogListPresenter(UserRepositoryProvider.getRepository(),
         ChatRepository.getInstance());
   }
 
@@ -133,8 +95,8 @@ public class DialogListController extends MvpController<DialogListView, DialogLi
   }
 
   private void setupRecyclerView() {
-    ImageLoader imageLoader = (imageView, url) ->
-        Glide.with(getActivity()).load(url).into(imageView);
+    ImageLoader imageLoader =
+        (imageView, url) -> Glide.with(getActivity()).load(url).into(imageView);
 
     adapter = new DialogsListAdapter<>(imageLoader);
     dialogsList.setAdapter(adapter);
@@ -155,8 +117,8 @@ public class DialogListController extends MvpController<DialogListView, DialogLi
   private void showDeleteDialog(IDialog normalDialog) {
     boolean isGroup = normalDialog.getUsers().size() > 2;
 
-    new AlertDialog.Builder(getActivity())
-        .setItems(isGroup ? groupDialogOptions : normalDialogOptions, (dialog, which) -> {
+    new AlertDialog.Builder(getActivity()).setItems(
+        isGroup ? groupDialogOptions : normalDialogOptions, (dialog, which) -> {
           if (isGroup) {
             if (which == 0) {
 
@@ -168,7 +130,6 @@ public class DialogListController extends MvpController<DialogListView, DialogLi
               getPresenter().exitGroup(normalDialog.getId(), me.getId());
             }
           }
-        })
-        .show();
+        }).show();
   }
-}
+}*/

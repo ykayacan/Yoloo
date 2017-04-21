@@ -6,9 +6,10 @@
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-  <uses-permission android:name="android.permission.READ_CONTACTS" />
   <uses-permission android:name="android.permission.CAMERA" />
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+  <uses-permission android:name="android.permission.VIBRATE" />
+  <uses-permission android:name="com.android.vending.BILLING" />
 
   <uses-feature
     android:name="android.hardware.camera"
@@ -42,16 +43,6 @@
     <service
       android:name=".fcm.SaveFCMIdService"
       android:exported="false" />
-    <service
-      android:name=".feature.editor.SendPostService"
-      android:exported="false" />
-    <service
-      android:name=".feature.editor.job.SendPostJobService"
-      android:exported="false">
-      <intent-filter>
-        <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE" />
-      </intent-filter>
-    </service>
 
     <activity
       android:name=".feature.splash.SplashActivity"
@@ -96,13 +87,23 @@
       android:screenOrientation="portrait"
       android:theme="@style/Yoloo"
       tools:replace="android:theme" />
+    <activity
+      android:name=".feature.DeepLinkActivity"
+      android:theme="@style/Yoloo">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
 
-    <!-- Glide configurations for image loading -->
-    <!--
-      <meta-data
-      android:name="com.yoloo.android.util.glide.GlideConfiguration"
-      android:value="GlideModule" />
-        -->
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+
+        <data
+          android:host="example.com"
+          android:scheme="http" />
+        <data
+          android:host="example.com"
+          android:scheme="https" />
+      </intent-filter>
+    </activity>
 
   </application>
 

@@ -1,5 +1,5 @@
 package com.yoloo.backend.relationship;
 
-public enum RelationshipAction {
+enum RelationshipAction {
   FOLLOW, UNFOLLOW, APPROVE, IGNORE
 }

@@ -2,6 +2,7 @@ package com.yoloo.backend.account;
 
 import com.google.api.client.util.Strings;
 import com.google.firebase.auth.FirebaseToken;
+import javax.annotation.Nonnull;
 import lombok.experimental.UtilityClass;
 
 import static com.yoloo.backend.OfyService.ofy;
@@ -10,9 +11,21 @@ import static com.yoloo.backend.OfyService.ofy;
 public final class AccountUtil {
 
   public static boolean isUserRegistered(FirebaseToken token) {
-    return ofy().load().type(Account.class)
+    return ofy().load()
+        .type(Account.class)
         .filter(Account.FIELD_EMAIL + " =", token.getEmail())
-        .keys().first().now() != null;
+        .keys()
+        .first()
+        .now() != null;
+  }
+
+  public static boolean isUserRegistered(@Nonnull String email) {
+    return ofy().load()
+        .type(Account.class)
+        .filter(Account.FIELD_EMAIL + " =", email)
+        .keys()
+        .first()
+        .now() != null;
   }
 
   public static String generateUsername(FirebaseToken token) {

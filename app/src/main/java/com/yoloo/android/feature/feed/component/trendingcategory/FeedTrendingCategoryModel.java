@@ -11,8 +11,9 @@ import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyAttribute;
 import com.airbnb.epoxy.EpoxyModelClass;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
+import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.CategoryRealm;
+import com.yoloo.android.data.model.GroupRealm;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
@@ -22,18 +23,17 @@ import java.util.List;
 public abstract class FeedTrendingCategoryModel
     extends EpoxyModelWithHolder<FeedTrendingCategoryModel.FeedTrendingCategoriesHolder> {
 
-  @EpoxyAttribute(hash = false) View.OnClickListener headerClickListener;
+  @EpoxyAttribute(hash = false) View.OnClickListener onHeaderClickListener;
 
   private FeedTrendingCategoryAdapter adapter;
   private RecyclerView.ItemDecoration itemDecoration;
   private LinearLayoutManager lm;
   private SnapHelper snapHelper;
 
-  public FeedTrendingCategoryModel(Context context) {
-    adapter = new FeedTrendingCategoryAdapter();
+  public FeedTrendingCategoryModel(Context context, RequestManager glide) {
+    adapter = new FeedTrendingCategoryAdapter(glide);
     itemDecoration = new SpaceItemDecoration(4, SpaceItemDecoration.HORIZONTAL);
     snapHelper = new LinearSnapHelper();
-
     lm = new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
     lm.setInitialPrefetchItemCount(4);
   }
@@ -52,16 +52,19 @@ public abstract class FeedTrendingCategoryModel
       holder.rvTrendingCategory.setAdapter(adapter);
     }
 
-    holder.tvMore.setOnClickListener(v -> headerClickListener.onClick(v));
+    if (onHeaderClickListener == null) {
+      throw new IllegalStateException("onHeaderClickListener is null.");
+    }
+
+    holder.tvMore.setOnClickListener(v -> onHeaderClickListener.onClick(v));
   }
 
-  @Override public void unbind(FeedTrendingCategoriesHolder holder) {
-    holder.tvMore.setOnClickListener(null);
+  public void addTrendingCategories(List<GroupRealm> items) {
+    adapter.addTrendingCategories(items);
   }
 
-  public void addTrendingCategories(List<CategoryRealm> items,
-      OnItemClickListener<CategoryRealm> onItemClickListener) {
-    adapter.addTrendingCategories(items, onItemClickListener);
+  public void setOnItemClickListener(OnItemClickListener<GroupRealm> listener) {
+    adapter.setOnItemClickListener(listener);
   }
 
   static class FeedTrendingCategoriesHolder extends BaseEpoxyHolder {

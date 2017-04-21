@@ -17,13 +17,13 @@ import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.device.DeviceUtil;
 import com.yoloo.backend.endpointsvalidator.Guard;
-import com.yoloo.backend.game.GamificationService;
+import com.yoloo.backend.game.GameService;
 import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.notification.NotificationService;
-import com.yoloo.backend.notification.type.AcceptNotification;
-import com.yoloo.backend.notification.type.CommentNotification;
+import com.yoloo.backend.notification.type.AcceptNotifiable;
+import com.yoloo.backend.notification.type.CommentNotifiable;
 import com.yoloo.backend.notification.type.MentionNotification;
-import com.yoloo.backend.notification.type.NotificationBundle;
+import com.yoloo.backend.notification.type.Notifiable;
 import com.yoloo.backend.post.Post;
 import com.yoloo.backend.post.PostShard;
 import com.yoloo.backend.post.PostShardService;
@@ -56,7 +56,7 @@ public class CommentController extends Controller {
 
   private PostShardService postShardService;
 
-  private GamificationService gameService;
+  private GameService gameService;
 
   private NotificationService notificationService;
 
@@ -147,11 +147,11 @@ public class CommentController extends Controller {
     qqs.increaseComments();
 
     // Start gamification check.
-    List<NotificationBundle> notificationBundles = Lists.newArrayList();
-    gameService.addFirstAnswerBonus(record, tracker, notificationBundles::addAll);
-    gameService.addFirstAnswererPerDayBonus(record, tracker, post, notificationBundles::addAll);
+    List<Notifiable> notifiables = Lists.newArrayList();
+    gameService.addFirstAnswerBonus(record, tracker, notifiables::addAll);
+    gameService.addFirstAnswererPerDayBonus(record, tracker, post, notifiables::addAll);
     gameService.addAnswerToUnansweredQuestionBonus(record, tracker, post,
-        notificationBundles::addAll);
+        notifiables::addAll);
 
     ImmutableSet.Builder<Object> saveBuilder = ImmutableSet.builder()
         .add(comment)
@@ -160,7 +160,7 @@ public class CommentController extends Controller {
         .add(post)
         .add(tracker);
 
-    for (NotificationBundle bundle : notificationBundles) {
+    for (Notifiable bundle : notifiables) {
       saveBuilder.addAll(bundle.getNotifications());
     }
 
@@ -190,20 +190,20 @@ public class CommentController extends Controller {
         sendCommentNotification = false;
       }
 
-      CommentNotification commentNotification =
-          CommentNotification.create(account, record, comment, post);
+      CommentNotifiable commentNotifiable =
+          CommentNotifiable.create(account, record, comment, post);
 
       if (sendCommentNotification) {
-        notificationService.send(commentNotification);
+        notificationService.send(commentNotifiable);
       }
 
-      saveBuilder.addAll(commentNotification.getNotifications());
+      saveBuilder.addAll(commentNotifiable.getNotifications());
     }
 
     return ofy().transact(() -> {
       Map<Key<Object>, Object> saved = ofy().save().entities(saveBuilder.build()).now();
 
-      for (NotificationBundle bundle : notificationBundles) {
+      for (Notifiable bundle : notifiables) {
         notificationService.send(bundle);
       }
 
@@ -276,19 +276,19 @@ public class CommentController extends Controller {
     comment = commentService.update(comment, content);
 
     // Start gamification check.
-    List<NotificationBundle> notificationBundles = Lists.newArrayList();
+    List<Notifiable> notifiables = Lists.newArrayList();
     if (accepted.isPresent() && post.getParent().equivalent(accountKey)) {
 
       post = post.withAcceptedCommentKey(comment.getKey());
       comment = comment.withAccepted(true);
       post = gameService.addAcceptCommentBonus(askerTracker, answererTracker, askerRecord,
-          answererRecord, post, notificationBundles::addAll, notificationBundles::addAll);
+          answererRecord, post, notifiables::addAll, notifiables::addAll);
 
-      notificationBundles.add(AcceptNotification.create(account, answererRecord, post));
+      notifiables.add(AcceptNotifiable.create(account, answererRecord, post));
 
       saveBuilder.add(askerRecord).add(answererRecord);
 
-      for (NotificationBundle bundle : notificationBundles) {
+      for (Notifiable bundle : notifiables) {
         saveBuilder.addAll(bundle.getNotifications());
       }
     }
@@ -298,7 +298,7 @@ public class CommentController extends Controller {
     return ofy().transact(() -> {
       Map<Key<Object>, Object> saved = ofy().save().entities(saveBuilder.build()).now();
 
-      for (NotificationBundle bundle : notificationBundles) {
+      for (Notifiable bundle : notifiables) {
         notificationService.send(bundle);
       }
 
@@ -317,8 +317,8 @@ public class CommentController extends Controller {
   public void deleteComment(String postId, String commentId, User user) {
     // Create comment key from websafe id.
     final Key<Comment> commentKey = Key.create(commentId);
-    final Key<Post> questionKey = Key.create(postId);
-    final Key<PostShard> shardKey = postShardService.getRandomShardKey(questionKey);
+    final Key<Post> postKey = Key.create(postId);
+    final Key<PostShard> shardKey = postShardService.getRandomShardKey(postKey);
 
     final List<Key<Vote>> voteKeys = ofy().load().type(Vote.class)
         .filter(Vote.FIELD_VOTABLE_KEY + " =", commentKey)

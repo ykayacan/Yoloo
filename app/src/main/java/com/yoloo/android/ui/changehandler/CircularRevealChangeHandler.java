@@ -57,7 +57,7 @@ public class CircularRevealChangeHandler extends AnimatorChangeHandler {
    */
   public CircularRevealChangeHandler(@NonNull View fromView, @NonNull View containerView,
       boolean removesFromViewOnPush) {
-    this(fromView, containerView, DEFAULT_ANIMATION_DURATION, true);
+    this(fromView, containerView, DEFAULT_ANIMATION_DURATION, removesFromViewOnPush);
   }
 
   /**
@@ -147,19 +147,16 @@ public class CircularRevealChangeHandler extends AnimatorChangeHandler {
     return animator;
   }
 
-  @Override
-  protected void resetFromView(@NonNull View from) {
+  @Override protected void resetFromView(@NonNull View from) {
   }
 
-  @Override
-  public void saveToBundle(@NonNull Bundle bundle) {
+  @Override public void saveToBundle(@NonNull Bundle bundle) {
     super.saveToBundle(bundle);
     bundle.putInt(KEY_CX, cx);
     bundle.putInt(KEY_CY, cy);
   }
 
-  @Override
-  public void restoreFromBundle(@NonNull Bundle bundle) {
+  @Override public void restoreFromBundle(@NonNull Bundle bundle) {
     super.restoreFromBundle(bundle);
     cx = bundle.getInt(KEY_CX);
     cy = bundle.getInt(KEY_CY);

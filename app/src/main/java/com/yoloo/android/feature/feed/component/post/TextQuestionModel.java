@@ -1,28 +1,23 @@
 package com.yoloo.android.feature.feed.component.post;
 
 import android.content.Context;
+import android.graphics.PorterDuff;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import com.airbnb.epoxy.EpoxyAttribute;
+import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyModelClass;
-import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.YolooApp;
 import com.yoloo.android.data.model.PostRealm;
-import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnReadMoreClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.ui.widget.CompatTextView;
@@ -33,26 +28,13 @@ import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.ReadMoreUtil;
 import com.yoloo.android.util.TextViewUtil;
 import com.yoloo.android.util.VersionUtil;
-import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
-
 import java.util.List;
 
-import butterknife.BindView;
+@EpoxyModelClass(layout = R.layout.item_feed_question_text)
+public abstract class TextQuestionModel extends BasePostModel<TextQuestionModel.QuestionHolder> {
 
-@EpoxyModelClass(layout = R.layout.item_feed_question_normal)
-public abstract class TextQuestionModel
-    extends EpoxyModelWithHolder<TextQuestionModel.QuestionHolder> {
-
-  @EpoxyAttribute PostRealm post;
-  @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
-  @EpoxyAttribute(hash = false) OnShareClickListener onShareClickListener;
-  @EpoxyAttribute(hash = false) OnCommentClickListener onCommentClickListener;
-  @EpoxyAttribute(hash = false) OnReadMoreClickListener onReadMoreClickListener;
-  @EpoxyAttribute(hash = false) OnPostOptionsClickListener onPostOptionsClickListener;
-  @EpoxyAttribute(hash = false) OnVoteClickListener onVoteClickListener;
-  @EpoxyAttribute(hash = false) CropCircleTransformation circleTransformation;
-
-  @Override public void bind(QuestionHolder holder, List<Object> payloads) {
+  @Override
+  public void bind(QuestionHolder holder, List<Object> payloads) {
     if (!payloads.isEmpty()) {
       if (payloads.get(0) instanceof PostRealm) {
         PostRealm payload = (PostRealm) payloads.get(0);
@@ -78,25 +60,29 @@ public abstract class TextQuestionModel
     }
   }
 
-  @Override public void bind(QuestionHolder holder) {
+  @Override
+  public void bind(QuestionHolder holder) {
     final Context context = holder.itemView.getContext();
 
-    Glide.with(context)
+    glide
         .load(post.getAvatarUrl().replace("s96-c", "s64-c-rw"))
         .bitmapTransform(circleTransformation)
-        .placeholder(R.drawable.ic_player)
+        .placeholder(R.drawable.ic_player_72dp)
         .into(holder.ivUserAvatar);
 
     holder.tvUsername.setText(post.getUsername());
     holder.tvTime.setTimeStamp(post.getCreated().getTime() / 1000);
     holder.tvBounty.setVisibility(post.getBounty() == 0 ? View.GONE : View.VISIBLE);
     holder.tvBounty.setText(String.valueOf(post.getBounty()));
-    holder.tvContent.setText(isNormal()
-        ? ReadMoreUtil.addReadMore(context, post.getContent(), 200)
-        : post.getContent());
+    holder.tvContent.setText(
+        isNormal() ? ReadMoreUtil.addReadMore(context, post.getContent(), 200) : post.getContent());
     holder.tvComment.setText(CountUtil.formatCount(post.getCommentCount()));
     holder.voteView.setVotes(post.getVoteCount());
     holder.voteView.setVoteDirection(post.getVoteDir());
+
+    final int drawableIconRes =
+        isSelf() ? R.drawable.ic_more_vert_black_24dp : R.drawable.ic_bookmark_black_24dp;
+    holder.ibOptions.setImageDrawable(AppCompatResources.getDrawable(context, drawableIconRes));
 
     if (holder.tagContainer != null) {
       Stream.of(post.getTagNames()).forEach(tagName -> {
@@ -120,45 +106,35 @@ public abstract class TextQuestionModel
           context.getResources().getString(R.string.transition_username, post.getOwnerId()));
     }
 
-    setupClickListeners(holder);
-  }
-
-  @Override public void unbind(QuestionHolder holder) {
-    Glide.clear(holder.ivUserAvatar);
-    holder.ivUserAvatar.setImageDrawable(null);
-    clearClickListeners(holder);
-  }
-
-  private void tintDrawables(QuestionHolder holder, Context context) {
-    DrawableHelper.create()
-        .withDrawable(holder.tvShare.getCompoundDrawables()[0])
-        .withColor(context, android.R.color.secondary_text_dark)
-        .tint();
-
-    DrawableHelper.create()
-        .withDrawable(holder.tvComment.getCompoundDrawables()[0])
-        .withColor(context, android.R.color.secondary_text_dark)
-        .tint();
-  }
-
-  private void setupClickListeners(QuestionHolder holder) {
+    // listeners
     holder.ivUserAvatar.setOnClickListener(
         v -> onProfileClickListener.onProfileClick(v, this, post.getOwnerId()));
 
     holder.tvUsername.setOnClickListener(
         v -> onProfileClickListener.onProfileClick(v, this, post.getOwnerId()));
 
-    if (onReadMoreClickListener != null && post.shouldShowReadMore()) {
-      holder.tvContent.setOnClickListener(
-          v -> onReadMoreClickListener.onReadMoreClick(v, post));
+    if (onItemClickListener != null && post.shouldShowReadMore()) {
+      holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(v, this, post));
+      holder.tvContent.setOnClickListener(v -> onItemClickListener.onItemClick(v, this, post));
     }
 
     holder.tvShare.setOnClickListener(v -> onShareClickListener.onShareClick(v, post));
 
     holder.tvComment.setOnClickListener(v -> onCommentClickListener.onCommentClick(v, post));
 
-    holder.ibOptions.setOnClickListener(
-        v -> onPostOptionsClickListener.onPostOptionsClick(v, this, post));
+    holder.ibOptions.setOnClickListener(v -> {
+      if (isSelf()) {
+        onPostOptionsClickListener.onPostOptionsClick(v, this, post);
+      } else {
+        final boolean isBookmarked = holder.ibOptions.getTag() == Boolean.TRUE;
+        final int colorRes = isBookmarked ? android.R.color.secondary_text_dark : R.color.primary;
+
+        holder.ibOptions.setTag(!isBookmarked);
+        holder.ibOptions.setColorFilter(ContextCompat.getColor(context, colorRes),
+            PorterDuff.Mode.SRC_IN);
+        onBookmarkClickListener.onBookmarkClick(post.getId(), isBookmarked);
+      }
+    });
 
     holder.voteView.setOnVoteEventListener(direction -> {
       post.setVoteDir(direction);
@@ -166,7 +142,34 @@ public abstract class TextQuestionModel
     });
   }
 
+  @Override
+  public void unbind(QuestionHolder holder) {
+    Glide.clear(holder.ivUserAvatar);
+    holder.ivUserAvatar.setImageDrawable(null);
+    clearClickListeners(holder);
+  }
+
+  @Override
+  protected int getDetailLayoutRes() {
+    return R.layout.item_feed_question_text_detail;
+  }
+
+  private void tintDrawables(QuestionHolder holder, Context context) {
+    DrawableHelper
+        .create()
+        .withDrawable(holder.tvShare.getCompoundDrawables()[0])
+        .withColor(context, android.R.color.secondary_text_dark)
+        .tint();
+
+    DrawableHelper
+        .create()
+        .withDrawable(holder.tvComment.getCompoundDrawables()[0])
+        .withColor(context, android.R.color.secondary_text_dark)
+        .tint();
+  }
+
   private void clearClickListeners(QuestionHolder holder) {
+    holder.itemView.setOnClickListener(null);
     holder.ivUserAvatar.setOnClickListener(null);
     holder.tvUsername.setOnClickListener(null);
     holder.tvContent.setOnClickListener(null);
@@ -174,14 +177,6 @@ public abstract class TextQuestionModel
     holder.tvComment.setOnClickListener(null);
     holder.ibOptions.setOnClickListener(null);
     holder.voteView.setOnVoteEventListener(null);
-  }
-
-  private boolean isNormal() {
-    return getLayout() == R.layout.item_feed_question_normal;
-  }
-
-  public String getItemId() {
-    return post.getId();
   }
 
   static class QuestionHolder extends BaseEpoxyHolder {

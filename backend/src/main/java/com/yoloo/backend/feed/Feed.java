@@ -1,12 +1,16 @@
 package com.yoloo.backend.feed;
 
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Index;
+import com.googlecode.objectify.annotation.Load;
 import com.googlecode.objectify.annotation.Parent;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.post.Post;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,6 +26,8 @@ import lombok.experimental.NonFinal;
 @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
 public class Feed {
 
+  public static final String FIELD_POST = "post";
+
   // feed:postWebsafeId
   @Id
   private String id;
@@ -29,6 +35,11 @@ public class Feed {
   @Parent
   @NonFinal
   private Key<Account> parent;
+
+  @NonFinal
+  @Load
+  @Index
+  private Ref<Post> post;
 
   public static String createId(Key<Post> postKey) {
     return "feed:" + postKey.toWebSafeString();

@@ -2,24 +2,25 @@ package com.yoloo.android.data.repository.user;
 
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
+import com.google.api.client.util.Base64;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.faker.AccountFaker;
 import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.repository.user.datasource.UserDiskDataStore;
-import com.yoloo.android.data.repository.user.datasource.UserRemoteDataStore;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import com.yoloo.android.data.model.GameInfoRealm;
+import com.yoloo.android.data.model.RegisterUserPayload;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import timber.log.Timber;
 
 public class UserRepository {
 
@@ -42,24 +43,22 @@ public class UserRepository {
   }
 
   public Observable<AccountRealm> getUser(@Nonnull String userId) {
-    Observable<AccountRealm> remoteObservable = remoteDataStore.get(userId)
-        .subscribeOn(Schedulers.io())
-        .map(account -> {
+    Observable<AccountRealm> remoteObservable =
+        remoteDataStore.get(userId).subscribeOn(Schedulers.io()).map(account -> {
           FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
           if (user != null && user.getEmail() != null) {
             account.setMe(user.getEmail().equals(account.getEmail()));
           }
 
           return account;
-        })
-        .doOnSuccess(account -> {
+        }).doOnSuccess(account -> {
           if (account.isMe()) {
             diskDataStore.add(account);
           }
-        })
-        .toObservable();
+        }).toObservable();
 
-    Observable<AccountRealm> diskObservable = diskDataStore.get(userId)
+    Observable<AccountRealm> diskObservable = diskDataStore
+        .get(userId)
         .subscribeOn(Schedulers.io())
         .filter(Optional::isPresent)
         .map(Optional::get)
@@ -69,13 +68,15 @@ public class UserRepository {
   }
 
   public Observable<AccountRealm> getMe() {
-    Observable<AccountRealm> diskObservable = diskDataStore.getMe()
+    Observable<AccountRealm> diskObservable = diskDataStore
+        .getMe()
         .subscribeOn(Schedulers.io())
         .filter(Optional::isPresent)
         .map(Optional::get)
         .toObservable();
 
-    Observable<AccountRealm> remoteObservable = remoteDataStore.getMe()
+    Observable<AccountRealm> remoteObservable = remoteDataStore
+        .getMe()
         .doOnSuccess(diskDataStore::add)
         .subscribeOn(Schedulers.io())
         .toObservable();
@@ -84,20 +85,33 @@ public class UserRepository {
   }
 
   public Single<AccountRealm> getLocalMe() {
-    return diskDataStore.getMe().subscribeOn(Schedulers.io())
+    return diskDataStore
+        .getMe()
+        .subscribeOn(Schedulers.io())
         .filter(Optional::isPresent)
         .map(Optional::get)
         .toSingle();
   }
 
   public Single<AccountRealm> registerUser(@Nonnull AccountRealm account) {
-    return remoteDataStore.add(account)
+    RegisterUserPayload payload = new RegisterUserPayload(account);
+
+    Moshi moshi = new Moshi.Builder().build();
+    JsonAdapter<RegisterUserPayload> jsonAdapter = moshi.adapter(RegisterUserPayload.class);
+
+    String json = jsonAdapter.toJson(payload);
+    Timber.d("Payload: %s", json);
+    String base64Payload = Base64.encodeBase64URLSafeString(json.getBytes());
+
+    return remoteDataStore
+        .add(base64Payload)
         .doOnSuccess(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }
 
   public Single<AccountRealm> updateMe(@Nonnull AccountRealm account) {
-    return remoteDataStore.update(account)
+    return remoteDataStore
+        .update(account)
         .doOnSuccess(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }
@@ -112,8 +126,8 @@ public class UserRepository {
   }
 
   public Observable<Response<List<AccountRealm>>> listNewUsers(@Nullable String cursor, int limit) {
-    return Observable.just(Response.create(Stream.range(0, 6)
-        .map(__ -> AccountFaker.generateOne()).toList(), null));
+    return Observable.just(
+        Response.create(Stream.range(0, 6).map(__ -> AccountFaker.generateOne()).toList(), null));
   }
 
   public Observable<List<AccountRealm>> listRecentSearchedUsers() {
@@ -134,6 +148,10 @@ public class UserRepository {
   public Observable<Response<List<AccountRealm>>> listFollowings(@Nonnull String userId,
       @Nullable String cursor, int limit) {
     return remoteDataStore.listFollowings(userId, cursor, limit).subscribeOn(Schedulers.io());
+  }
+
+  public Single<GameInfoRealm> getGameInfo() {
+    return remoteDataStore.getGameInfo();
   }
 
   public Completable relationship(@Nonnull String userId, int direction) {

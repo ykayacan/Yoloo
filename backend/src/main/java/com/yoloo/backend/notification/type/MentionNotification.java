@@ -5,10 +5,10 @@ import com.yoloo.backend.account.Account;
 import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentUtil;
 import com.yoloo.backend.device.DeviceRecord;
-import com.yoloo.backend.notification.PushConstants;
-import com.yoloo.backend.notification.Notification;
-import com.yoloo.backend.notification.PushMessage;
 import com.yoloo.backend.notification.Action;
+import com.yoloo.backend.notification.Notification;
+import com.yoloo.backend.notification.PushConstants;
+import com.yoloo.backend.notification.PushMessage;
 import com.yoloo.backend.post.Post;
 import io.reactivex.Observable;
 import java.util.Collection;
@@ -17,15 +17,14 @@ import lombok.AllArgsConstructor;
 import org.joda.time.DateTime;
 
 @AllArgsConstructor(staticName = "create")
-public class MentionNotification implements NotificationBundle {
+public class MentionNotification implements Notifiable {
 
   private Post post;
   private Account sender;
   private Collection<DeviceRecord> records;
   private Comment comment;
 
-  @Override
-  public List<Notification> getNotifications() {
+  @Override public List<Notification> getNotifications() {
     List<Notification> notifications = Lists.newArrayListWithCapacity(records.size());
     for (final DeviceRecord record : records) {
       Notification notification = Notification.builder()
@@ -35,7 +34,7 @@ public class MentionNotification implements NotificationBundle {
           .senderAvatarUrl(sender.getAvatarUrl())
           .action(Action.MENTION)
           .payload("comment", CommentUtil.trimContent(comment.getContent(), 50))
-          .payload("questionId", comment.getPostKey().toWebSafeString())
+          .payload("postId", comment.getPostKey().toWebSafeString())
           .created(DateTime.now())
           .build();
 
@@ -44,8 +43,7 @@ public class MentionNotification implements NotificationBundle {
     return notifications;
   }
 
-  @Override
-  public PushMessage getPushMessage() {
+  @Override public PushMessage getPushMessage() {
     PushMessage.DataBody dataBody = PushMessage.DataBody.builder()
         .value(PushConstants.ACTION, Action.MENTION.getValueString())
         .value(PushConstants.QUESTION_ID, comment.getPostKey().toWebSafeString())
@@ -62,9 +60,6 @@ public class MentionNotification implements NotificationBundle {
   }
 
   private List<String> convertRegistrationIdsToList() {
-    return Observable.fromIterable(records)
-        .map(DeviceRecord::getRegId)
-        .toList()
-        .blockingGet();
+    return Observable.fromIterable(records).map(DeviceRecord::getRegId).toList().blockingGet();
   }
 }

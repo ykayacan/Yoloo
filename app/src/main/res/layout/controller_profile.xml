@@ -115,7 +115,7 @@
           app:layout_constraintTop_toTopOf="@+id/tv_profile_posts" />
 
         <TextView
-          android:id="@+id/tv_profile_followers"
+          android:id="@+id/tv_profile_followers_counter_text"
           style="@style/Widget.Yoloo.ProfileCounter"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
@@ -123,7 +123,7 @@
           android:layout_marginStart="8dp"
           app:layout_constraintBaseline_toBaselineOf="@+id/tv_profile_posts"
           app:layout_constraintLeft_toRightOf="@+id/view1"
-          tools:text="@string/label_profile_followers" />
+          tools:text="@string/label_profile_follower_count" />
 
         <View
           android:id="@+id/view2"
@@ -132,20 +132,20 @@
           android:layout_marginLeft="8dp"
           android:layout_marginStart="8dp"
           android:background="@color/background_lightish_2"
-          app:layout_constraintBottom_toBottomOf="@+id/tv_profile_followers"
-          app:layout_constraintLeft_toRightOf="@+id/tv_profile_followers"
-          app:layout_constraintTop_toTopOf="@+id/tv_profile_followers" />
+          app:layout_constraintBottom_toBottomOf="@+id/tv_profile_followers_counter_text"
+          app:layout_constraintLeft_toRightOf="@+id/tv_profile_followers_counter_text"
+          app:layout_constraintTop_toTopOf="@+id/tv_profile_followers_counter_text" />
 
         <TextView
-          android:id="@+id/tv_profile_following"
+          android:id="@+id/tv_profile_following_counter_text"
           style="@style/Widget.Yoloo.ProfileCounter"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_marginLeft="8dp"
           android:layout_marginStart="8dp"
-          app:layout_constraintBaseline_toBaselineOf="@+id/tv_profile_followers"
+          app:layout_constraintBaseline_toBaselineOf="@+id/tv_profile_followers_counter_text"
           app:layout_constraintLeft_toRightOf="@+id/view2"
-          tools:text="@string/label_profile_following" />
+          tools:text="@string/label_profile_following_count" />
 
       </android.support.constraint.ConstraintLayout>
 

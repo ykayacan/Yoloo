@@ -7,7 +7,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.yoloo.android.BuildConfig;
 import com.yoloo.backend.yolooApi.YolooApi;
-
 import io.reactivex.Single;
 import okhttp3.OkHttpClient;
 
@@ -44,24 +43,21 @@ public enum ApiManager {
   }
 
   public OkHttpClient getOkHttpClient() {
-    return LazyOkHttpClient.client;
+    return LazyOkHttpClient.CLIENT;
   }
 
   static class LazyApiHolder {
-    // TODO: 18.02.2017 Convert it to OkHttp
-    // see https://github.com/dereulenspiegel/okhttp-transport/blob/master/
-    // okhttp-transport/src/main/java/de/akuz/google/api/OkHttpTransport.java
-    static final YolooApi YOLOO_API = new YolooApi.Builder(
-        LazyHttpTransport.HTTP_TRANSPORT,
-        JacksonFactory.getDefaultInstance(), null)
-        .setRootUrl(BuildConfig.SERVER_URL)
-        .setGoogleClientRequestInitializer(ApiManager::checkGZip)
-        .setApplicationName("YolooApp")
-        .build();
+    static final YolooApi YOLOO_API =
+        new YolooApi.Builder(LazyHttpTransport.HTTP_TRANSPORT, JacksonFactory.getDefaultInstance(),
+            null)
+            .setRootUrl(BuildConfig.SERVER_URL)
+            .setGoogleClientRequestInitializer(ApiManager::checkGZip)
+            .setApplicationName("YolooApp")
+            .build();
   }
 
   static class LazyOkHttpClient {
-    static final OkHttpClient client = new OkHttpClient();
+    static final OkHttpClient CLIENT = new OkHttpClient();
   }
 
   private static class LazyHttpTransport {

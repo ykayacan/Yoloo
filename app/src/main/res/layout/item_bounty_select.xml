@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.yoloo.android.ui.widget.CompatTextView xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="148dp"
+  android:layout_height="wrap_content"
+  android:background="@drawable/shape_bounty"
+  android:foreground="@drawable/selector_category"
+  android:gravity="center"
+  android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+  android:textColor="@android:color/white"
+  app:drawableStart="@drawable/ic_bounty_coin_20dp"
+  tools:text="10" />

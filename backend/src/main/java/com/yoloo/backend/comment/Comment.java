@@ -25,7 +25,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.Value;
-import lombok.experimental.NonFinal;
+import lombok.experimental.FieldDefaults;
 import lombok.experimental.Wither;
 import org.joda.time.DateTime;
 
@@ -35,6 +35,7 @@ import org.joda.time.DateTime;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+@FieldDefaults(makeFinal = false)
 @ApiTransformer(CommentTransformer.class)
 public class Comment implements Votable {
 
@@ -42,53 +43,29 @@ public class Comment implements Votable {
   public static final String FIELD_CREATED = "created";
   public static final String FIELD_ACCEPTED = "accepted";
 
-  @Id
-  private long id;
+  @Id private long id;
 
-  @Parent
-  @NonFinal
-  private Key<Account> parent;
+  @Parent private Key<Account> parent;
 
-  @Wither
-  @NonFinal
-  private String username;
+  @Wither private String username;
 
-  @Wither
-  @NonFinal
-  private Link avatarUrl;
+  @Wither private Link avatarUrl;
 
-  @Wither
-  @NonFinal
-  private String content;
+  @Wither private String content;
 
-  @Load(ShardGroup.class)
-  @NonFinal
-  private List<Ref<CommentShard>> shardRefs;
+  @Load(ShardGroup.class) private List<Ref<CommentShard>> shardRefs;
 
-  @Index
-  @NonFinal
-  private Key<Post> postKey;
+  @Index private Key<Post> postKey;
 
-  @Wither
-  @NonFinal
-  @Index(IfNotDefault.class)
-  private boolean accepted;
+  @Wither @Index(IfNotDefault.class) private boolean accepted;
 
-  @Index
-  @NonFinal
-  private DateTime created;
+  @Index private DateTime created;
 
   // Extra fields
 
-  @Ignore
-  @Wither
-  @NonFinal
-  private Vote.Direction dir;
+  @Ignore @Wither private Vote.Direction dir;
 
-  @Ignore
-  @Wither
-  @NonFinal
-  private long voteCount;
+  @Ignore @Wither private long voteCount;
 
   public Key<Comment> getKey() {
     return Key.create(parent, Comment.class, id);
@@ -108,8 +85,10 @@ public class Comment implements Votable {
     return (Key<T>) getKey();
   }
 
-  @Override public Votable setVoteDir(Vote.Direction dir) {
-    return Comment.builder()
+  @Override
+  public Votable setVoteDir(Vote.Direction dir) {
+    return Comment
+        .builder()
         .id(id)
         .parent(parent)
         .postKey(postKey)
@@ -128,9 +107,10 @@ public class Comment implements Votable {
     return Deref.deref(this.shardRefs);
   }
 
-  @OnLoad void onLoad() {
-    voteCount = 0L;
-    dir = Vote.Direction.DEFAULT;
+  @OnLoad
+  void onLoad() {
+    /*voteCount = 0L;
+    dir = Vote.Direction.DEFAULT;*/
   }
 
   @NoArgsConstructor

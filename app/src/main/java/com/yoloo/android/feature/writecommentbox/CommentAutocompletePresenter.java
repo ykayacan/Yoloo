@@ -6,9 +6,11 @@ import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.data.repository.comment.CommentRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.framework.MvpPresenter;
+
+import java.util.List;
+
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import java.util.List;
 
 class CommentAutocompletePresenter extends MvpPresenter<CommentAutocompleteView> {
 
@@ -19,6 +21,14 @@ class CommentAutocompletePresenter extends MvpPresenter<CommentAutocompleteView>
       CommentRepository commentRepository) {
     this.userRepository = userRepository;
     this.commentRepository = commentRepository;
+  }
+
+  void loadMe() {
+    Disposable d = userRepository.getLocalMe()
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(me -> getView().onMeLoaded(me), throwable -> getView().onError(throwable));
+
+    getDisposable().add(d);
   }
 
   void sendComment(CommentRealm comment) {

@@ -35,9 +35,9 @@ import com.yoloo.android.R;
  */
 public class ShadowDrawableWrapper extends DrawableWrapper {
   // used to calculate content padding
-  private final static double COS_45 = Math.cos(Math.toRadians(45));
+  private static final double COS_45 = Math.cos(Math.toRadians(45));
 
-  private final static float SHADOW_MULTIPLIER = 1.5f;
+  private static final float SHADOW_MULTIPLIER = 1.5f;
 
   private final int mInsetShadow; // extra shadow to avoid gaps between card and shadow
   private final RectF mContentBounds;

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@android:color/white"
+  android:fitsSystemWindows="true">
+
+  <android.support.design.widget.AppBarLayout
+    android:id="@+id/appbar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fitsSystemWindows="true"
+    android:theme="@style/Yoloo.AppBarOverlay">
+
+    <android.support.design.widget.CollapsingToolbarLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="@android:color/white"
+      android:fitsSystemWindows="true"
+      app:layout_scrollFlags="scroll|exitUntilCollapsed"
+      app:titleEnabled="false">
+
+      <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="192dp"
+        android:fitsSystemWindows="true">
+
+        <LinearLayout
+          android:layout_width="wrap_content"
+          android:layout_height="match_parent"
+          android:divider="@drawable/shape_divider"
+          android:orientation="horizontal"
+          android:showDividers="middle">
+
+          <com.yoloo.android.ui.widget.EditorCoverView
+            android:id="@+id/view_cover_1"
+            android:layout_width="256dp"
+            android:layout_height="match_parent" />
+
+          <com.yoloo.android.ui.widget.EditorCoverView
+            android:id="@+id/view_cover_2"
+            android:layout_width="256dp"
+            android:layout_height="match_parent" />
+
+          <com.yoloo.android.ui.widget.EditorCoverView
+            android:id="@+id/view_cover_3"
+            android:layout_width="256dp"
+            android:layout_height="match_parent" />
+
+        </LinearLayout>
+
+      </HorizontalScrollView>
+
+      <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="192dp"
+        android:fitsSystemWindows="true"
+        android:visibility="gone">
+
+        <ImageView
+          android:id="@+id/iv_blogeditor_cover"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:fitsSystemWindows="true"
+          android:scaleType="centerCrop"
+          android:src="@drawable/profile_bg_1x"
+          app:layout_collapseMode="parallax" />
+
+        <com.yoloo.android.ui.widget.BaselineGridTextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center"
+          android:layout_marginTop="@dimen/padding_normal"
+          android:drawablePadding="8dp"
+          android:gravity="center"
+          android:text="ADD COVER (Required)"
+          android:textColor="@android:color/white"
+          android:textSize="14sp"
+          app:drawableStart="@drawable/ic_add_a_photo_black_24dp" />
+
+      </FrameLayout>
+
+      <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:layout_collapseMode="pin"
+        app:popupTheme="@style/Yoloo.PopupOverlay">
+
+        <com.yoloo.android.ui.widget.BaselineGridTextView
+          android:id="@+id/tv_editor_post"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="end"
+          android:foreground="?attr/selectableItemBackgroundBorderless"
+          android:padding="16dp"
+          android:text="@string/action_editor_post"
+          android:textAppearance="@style/TextAppearance.ToolbarMenu" />
+
+      </android.support.v7.widget.Toolbar>
+
+    </android.support.design.widget.CollapsingToolbarLayout>
+
+  </android.support.design.widget.AppBarLayout>
+
+  <android.support.v4.widget.NestedScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginBottom="48dp"
+    android:fillViewport="true"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:animateLayoutChanges="true"
+      android:orientation="vertical">
+
+      <EditText
+        android:id="@+id/et_blogeditor_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/padding_normal"
+        android:layout_marginLeft="@dimen/padding_normal"
+        android:layout_marginRight="@dimen/padding_normal"
+        android:layout_marginStart="@dimen/padding_normal"
+        android:layout_marginTop="24dp"
+        android:background="@android:color/transparent"
+        android:hint="@string/hint_editor_write_title"
+        android:inputType="textMultiLine|textCapSentences"
+        android:maxLength="60"
+        android:maxLines="2"
+        android:textAppearance="@style/TextAppearance.BlogTitle"
+        android:textColor="@color/title" />
+
+      <com.yoloo.android.ui.widget.BaselineGridTextView
+        android:id="@+id/tv_blogeditor_username"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/padding_normal"
+        android:layout_marginStart="@dimen/padding_normal"
+        android:layout_marginTop="8dp"
+        android:text="Yasin Sinan Kayacan  &#8226;  Travel Expert"
+        android:textColor="@color/primary"
+        android:textSize="14sp" />
+
+      <View
+        android:id="@+id/view_divider"
+        android:layout_width="108dp"
+        android:layout_height="2dp"
+        android:layout_marginEnd="@dimen/padding_normal"
+        android:layout_marginLeft="@dimen/padding_normal"
+        android:layout_marginRight="@dimen/padding_normal"
+        android:layout_marginStart="@dimen/padding_normal"
+        android:layout_marginTop="@dimen/padding_normal"
+        android:background="@color/primary" />
+
+      <EditText
+        android:id="@+id/et_compose_area"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/padding_normal"
+        android:background="@android:color/transparent"
+        android:hint="@string/hint_editor_blog_content"
+        android:inputType="textMultiLine|textCapSentences"
+        android:lineSpacingMultiplier="1.1" />
+
+      <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/editor_tag_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingEnd="@dimen/padding_normal"
+        android:paddingLeft="@dimen/padding_normal"
+        android:paddingRight="@dimen/padding_normal"
+        android:paddingStart="@dimen/padding_normal"
+        android:visibility="invisible"
+        app:dividerDrawable="@drawable/tag_divider"
+        app:flexWrap="wrap"
+        app:showDivider="end|middle"
+        tools:visibility="visible" />
+
+    </LinearLayout>
+
+  </android.support.v4.widget.NestedScrollView>
+
+  <FrameLayout
+    android:id="@+id/layout_editor_action"
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:layout_gravity="bottom"
+    android:background="@color/background_lightish_2">
+
+    <com.yoloo.android.ui.widget.CompatTextView
+      android:id="@+id/ib_add_tag"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_vertical"
+      android:layout_marginLeft="@dimen/padding_micro"
+      android:layout_marginStart="@dimen/padding_micro"
+      android:background="?attr/selectableItemBackground"
+      android:drawablePadding="8dp"
+      android:gravity="center_vertical"
+      android:padding="@dimen/padding_micro"
+      android:text="Add tags to post"
+      android:tint="@color/editor_icon"
+      app:drawableStart="@drawable/ic_local_offer_black_24dp" />
+
+  </FrameLayout>
+
+</android.support.design.widget.CoordinatorLayout>

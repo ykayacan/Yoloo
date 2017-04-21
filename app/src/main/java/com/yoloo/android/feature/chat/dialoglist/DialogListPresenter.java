@@ -1,18 +1,6 @@
 package com.yoloo.android.feature.chat.dialoglist;
 
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.firebase.Chat;
-import com.yoloo.android.data.repository.chat.ChatRepository;
-import com.yoloo.android.data.repository.user.UserRepository;
-import com.yoloo.android.framework.MvpPresenter;
-
-import javax.annotation.Nonnull;
-
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import timber.log.Timber;
-
-class DialogListPresenter extends MvpPresenter<DialogListView> {
+/*class DialogListPresenter extends MvpPresenter<DialogListView> {
 
   private final UserRepository userRepository;
   private final ChatRepository chatRepository;
@@ -61,4 +49,4 @@ class DialogListPresenter extends MvpPresenter<DialogListView> {
     Timber.d("DialogId: %s, userId: %s", dialogId, userIdToRemove);
     //chatRepository.exitGroup(dialogId, userIdToRemove);
   }
-}
+}*/

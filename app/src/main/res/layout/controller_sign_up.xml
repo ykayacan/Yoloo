@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="@color/primary">
+  android:fitsSystemWindows="true">
+
+  <ImageView
+    android:id="@+id/iv_login_bg"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:scaleType="centerCrop"
+    android:src="@drawable/login_bg" />
 
   <android.support.design.widget.AppBarLayout
     android:layout_width="match_parent"
@@ -14,79 +23,138 @@
     app:elevation="0dp">
 
     <android.support.v7.widget.Toolbar
-      android:id="@+id/toolbar_sign_up"
+      android:id="@+id/toolbar"
       android:layout_width="match_parent"
       android:layout_height="?attr/actionBarSize"
       app:popupTheme="@style/Yoloo.PopupOverlay" />
 
   </android.support.design.widget.AppBarLayout>
 
-  <LinearLayout
+  <android.support.constraint.ConstraintLayout
     android:id="@+id/layout_login_input_container"
     style="@style/Widget.Yoloo.InputContainer"
     android:layout_width="@dimen/_272asdp"
     android:layout_height="wrap_content"
     android:layout_gravity="center|top"
-    android:layout_marginTop="@dimen/_32asdp"
+    android:layout_marginTop="@dimen/_24asdp"
+    android:paddingBottom="16dp"
+    android:paddingEnd="24dp"
+    android:paddingLeft="24dp"
+    android:paddingRight="24dp"
+    android:paddingStart="24dp"
+    android:paddingTop="16dp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <ImageView
+      android:id="@+id/iv_sign_up_avatar"
+      android:layout_width="56dp"
+      android:layout_height="56dp"
+      android:layout_marginBottom="16dp"
+      android:scaleType="centerCrop"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toTopOf="parent"
+      tools:src="@drawable/login_bg" />
 
     <EditText
       android:id="@+id/et_login_fullname"
-      android:layout_width="match_parent"
+      android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:layout_marginEnd="16dp"
-      android:layout_marginLeft="16dp"
-      android:layout_marginRight="16dp"
-      android:layout_marginStart="16dp"
-      android:layout_marginTop="16dp"
-      android:background="@drawable/edittext_login_bg"
+      android:layout_marginTop="8dp"
       android:hint="@string/hint_full_name"
-      android:inputType="textCapSentences" />
+      android:inputType="textCapSentences"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/iv_sign_up_avatar" />
 
-    <AutoCompleteTextView
-      android:id="@+id/et_login_email"
-      android:layout_width="match_parent"
+    <EditText
+      android:id="@+id/et_sign_up_username"
+      android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:layout_marginEnd="16dp"
-      android:layout_marginLeft="16dp"
-      android:layout_marginRight="16dp"
-      android:layout_marginStart="16dp"
-      android:layout_marginTop="16dp"
-      android:background="@drawable/edittext_login_bg"
+      android:hint="@string/hint_username"
+      android:inputType="text"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/et_login_fullname" />
+
+    <EditText
+      android:id="@+id/et_login_email"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
       android:hint="@string/hint_email"
       android:imeOptions="actionNext"
-      android:inputType="textEmailAddress" />
+      android:inputType="textEmailAddress"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/et_sign_up_username" />
 
     <EditText
       android:id="@+id/et_login_password"
-      android:layout_width="match_parent"
+      android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:layout_margin="16dp"
-      android:background="@drawable/edittext_login_bg"
       android:hint="@string/hint_password"
       android:imeActionId="@+id/sign_up"
       android:imeActionLabel="@string/action_sing_up_short"
-      android:imeOptions="actionUnspecified"
       android:inputType="textPassword"
-      android:maxLines="1" />
+      android:maxLines="1"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/et_login_email" />
 
-    <View
-      android:layout_width="match_parent"
-      android:layout_height="@dimen/divider_height"
-      android:background="@color/divider" />
+    <com.yoloo.android.ui.widget.CompatTextView
+      android:id="@+id/tv_login_birthdate"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:drawablePadding="16dp"
+      android:gravity="center_vertical"
+      android:padding="10dp"
+      android:text="@string/hint_birthdate"
+      android:textSize="16sp"
+      app:drawableStart="@drawable/ic_date_range_black_24dp"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/et_login_password" />
 
-    <Button
-      android:id="@+id/btn_login_ready"
-      style="@style/Widget.AppCompat.Button.Borderless"
+    <ImageButton
+      android:id="@+id/ib_sign_up_country_icon"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_gravity="center"
-      android:text="@string/action_login_ready"
-      android:textAllCaps="false"
-      android:textAppearance="@style/TextAppearance.AppCompat.Title"
-      android:textColor="@color/accent"
-      android:textStyle="bold" />
+      android:layout_marginTop="0dp"
+      android:layout_marginStart="8dp"
+      android:layout_marginLeft="8dp"
+      android:background="@android:color/transparent"
+      app:layout_constraintBottom_toBottomOf="@+id/spinner_country"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintTop_toTopOf="@+id/spinner_country"
+      app:srcCompat="@drawable/ic_place_black_24dp" />
 
-  </LinearLayout>
+    <Spinner
+      android:id="@+id/spinner_country"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginLeft="4dp"
+      android:layout_marginStart="4dp"
+      android:layout_marginTop="4dp"
+      android:drawSelectorOnTop="true"
+      android:entries="@array/countries_array"
+      android:padding="6dp"
+      android:prompt="@string/hint_country_prompt"
+      android:spinnerMode="dialog"
+      app:layout_constraintLeft_toRightOf="@id/ib_sign_up_country_icon"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/tv_login_birthdate" />
+
+    <android.support.v7.widget.AppCompatButton
+      android:id="@+id/btn_login_ready"
+      style="@style/Yoloo.Button.Auth"
+      android:layout_width="200dp"
+      android:layout_marginTop="16dp"
+      android:layout_height="wrap_content"
+      android:text="@string/action_login_ready"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/spinner_country" />
+
+  </android.support.constraint.ConstraintLayout>
 
 </android.support.design.widget.CoordinatorLayout>

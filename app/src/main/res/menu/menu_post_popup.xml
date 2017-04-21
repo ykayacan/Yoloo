@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-  <group android:id="@+id/group1">
-    <item
-      android:id="@+id/action_feed_popup_bookmark"
-      android:title="@string/action_feed_popup_bookmark" />
+  <groupId android:id="@+id/group1">
     <item
       android:id="@+id/action_feed_popup_unbookmark"
       android:title="@string/action_feed_popup_unbookmark"
@@ -12,10 +9,10 @@
     <item
       android:id="@+id/action_feed_popup_edit"
       android:title="@string/action_feed_popup_edit" />
-  </group>
-  <group android:id="@+id/group2">
+  </groupId>
+  <groupId android:id="@+id/group2">
     <item
       android:id="@+id/action_feed_popup_delete"
       android:title="@string/action_feed_popup_delete" />
-  </group>
+  </groupId>
 </menu>

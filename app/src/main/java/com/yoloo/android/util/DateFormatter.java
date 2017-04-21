@@ -6,11 +6,14 @@ public final class DateFormatter {
     if (isSameDay(date)) {
       return accountFor24HourTime(context, new SimpleDateFormat("h:mm a")).format(date);
     } else if (isSameWeek(date)) {
-      return DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_ABBREV_WEEKDAY);
+      return DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils
+      .FORMAT_ABBREV_WEEKDAY);
     } else if (isSameYear(date)) {
-      return DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_NO_YEAR | DateUtils.FORMAT_ABBREV_MONTH);
+      return DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE | DateUtils
+      .FORMAT_NO_YEAR | DateUtils.FORMAT_ABBREV_MONTH);
     } else {
-      return DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_MONTH);
+      return DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE | DateUtils
+      .FORMAT_ABBREV_MONTH);
     }
   }
 
@@ -31,10 +34,12 @@ public final class DateFormatter {
 
   private static boolean isYesterday(long date) {
     SimpleDateFormat formatter = new SimpleDateFormat("yD");
-    return Integer.parseInt(formatter.format(date)) + 1 == Integer.parseInt(formatter.format(System.currentTimeMillis()));
+    return Integer.parseInt(formatter.format(date)) + 1 == Integer.parseInt(formatter.format
+    (System.currentTimeMillis()));
   }
 
-  public static SimpleDateFormat accountFor24HourTime(Context context, SimpleDateFormat input) { //pass in 12 hour time. If needed, change to 24 hr.
+  public static SimpleDateFormat accountFor24HourTime(Context context, SimpleDateFormat input) {
+  //pass in 12 hour time. If needed, change to 24 hr.
     boolean isUsing24HourTime = DateFormat.is24HourFormat(context);
 
     if (isUsing24HourTime) {
@@ -49,16 +54,20 @@ public final class DateFormatter {
     } else if (isYesterday(date)) {
       return context.getString(R.string.date_yesterday) + time;
     } else if (isSameWeek(date)) {
-      return DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils.FORMAT_ABBREV_WEEKDAY) + time;
+      return DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_WEEKDAY | DateUtils
+      .FORMAT_ABBREV_WEEKDAY) + time;
     } else if (isSameYear(date)) {
-      return DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_NO_YEAR | DateUtils.FORMAT_ABBREV_MONTH) + time;
+      return DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE | DateUtils
+      .FORMAT_NO_YEAR | DateUtils.FORMAT_ABBREV_MONTH) + time;
     }
 
-    return DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_ABBREV_MONTH) + time;
+    return DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE | DateUtils
+    .FORMAT_ABBREV_MONTH) + time;
   }
 
   public static String getDate(Context context, long date) {
-    return DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE) + accountFor24HourTime(context, new SimpleDateFormat(", h:mm:ss a")).format(date);
+    return DateUtils.formatDateTime(context, date, DateUtils.FORMAT_SHOW_DATE) +
+    accountFor24HourTime(context, new SimpleDateFormat(", h:mm:ss a")).format(date);
   }
 
   public static String getRelativeTimestamp(long date) {

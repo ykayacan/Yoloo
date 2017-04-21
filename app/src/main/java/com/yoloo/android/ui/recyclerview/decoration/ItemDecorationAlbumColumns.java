@@ -3,6 +3,7 @@ package com.yoloo.android.ui.recyclerview.decoration;
 import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+
 import com.yoloo.android.util.DisplayUtil;
 
 public class ItemDecorationAlbumColumns extends RecyclerView.ItemDecoration {
@@ -18,10 +19,13 @@ public class ItemDecorationAlbumColumns extends RecyclerView.ItemDecoration {
   }
 
   @Override
-  public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-    int frameWidth = (int) ((parent.getWidth() - (float) mSizeGridSpacingPx * (mGridSize - 1)) / mGridSize);
+  public void getItemOffsets(Rect outRect, View view, RecyclerView parent,
+      RecyclerView.State state) {
+    int frameWidth = (int) ((parent.getWidth() - (float) mSizeGridSpacingPx * (mGridSize - 1))
+        / mGridSize);
     int padding = parent.getWidth() / mGridSize - frameWidth;
-    int itemPosition = ((RecyclerView.LayoutParams) view.getLayoutParams()).getViewAdapterPosition();
+    int itemPosition = ((RecyclerView.LayoutParams) view.getLayoutParams())
+        .getViewAdapterPosition();
     if (itemPosition < mGridSize) {
       outRect.top = 0;
     } else {
