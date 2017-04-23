@@ -56,7 +56,7 @@ public class TravelerGroupControllerTest extends TestBase {
     TravelerGroupEntity group = endpoint.insert("Adventure", TEST_IMG, user);
 
     assertEquals("Adventure", group.getName());
-    assertEquals(0L, group.getPosts());
+    assertEquals(0L, group.getPostCount());
     assertEquals(0.0D, group.getRank(), 0);
     assertEquals(ShardConfig.GROUP_SHARD_COUNTER, group.getShards().size());
   }
@@ -83,7 +83,7 @@ public class TravelerGroupControllerTest extends TestBase {
 
     TravelerGroupEntity adventure = ofy().load().entity(group).now();
 
-    assertTrue(adventure.getPosts() == 1L);
+    assertTrue(adventure.getPostCount() == 1L);
   }
 
   @Test
@@ -97,7 +97,7 @@ public class TravelerGroupControllerTest extends TestBase {
     assertEquals(3, response.getItems().size());
 
     Ix.from(response.getItems()).foreach(group -> {
-      assertEquals(0L, group.getPosts());
+      assertEquals(0L, group.getPostCount());
       assertEquals(0.0D, group.getRank(), 0);
       assertEquals(ShardConfig.GROUP_SHARD_COUNTER, group.getShards().size());
     });

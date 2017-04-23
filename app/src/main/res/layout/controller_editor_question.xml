@@ -124,7 +124,7 @@
       android:paddingStart="16dp"
       android:paddingTop="8dp"
       android:text="@string/action_editor_add_bounty"
-      app:drawableStart="@drawable/ic_bounty_coin_20dp" />
+      app:drawableStart="@drawable/ic_bounty_coin_24dp" />
 
     <!--<ImageButton
       android:id="@+id/ib_add_tag"

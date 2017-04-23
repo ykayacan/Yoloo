@@ -38,6 +38,7 @@ import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.ReadMoreUtil;
 import com.yoloo.android.util.TextViewUtil;
+import com.yoloo.android.util.VersionUtil;
 import java.util.List;
 
 @EpoxyModelClass(layout = R.layout.item_feed_question_rich)
@@ -54,7 +55,7 @@ public abstract class RichQuestionModel
         PostRealm payload = (PostRealm) payloads.get(0);
 
         if (post.getVoteCount() != payload.getVoteCount()) {
-          holder.voteView.setVotes(payload.getVoteCount());
+          holder.voteView.setVoteCount(payload.getVoteCount());
           post.setVoteCount(payload.getVoteCount());
         }
 
@@ -140,7 +141,7 @@ public abstract class RichQuestionModel
           });
     }
 
-    holder.voteView.setVotes(post.getVoteCount());
+    holder.voteView.setVoteCount(post.getVoteCount());
     holder.voteView.setVoteDirection(post.getVoteDir());
 
     final int drawableIconRes =
@@ -153,7 +154,7 @@ public abstract class RichQuestionModel
         tag.setText(context.getString(R.string.label_tag, tagName));
         tag.setGravity(Gravity.CENTER);
         tag.setPadding(16, 10, 16, 10);
-        tag.setBackground(ContextCompat.getDrawable(context, R.drawable.dialog_tag_bg));
+        //tag.setBackground(ContextCompat.getDrawable(context, R.drawable.dialog_tag_bg));
         TextViewUtil.setTextAppearance(tag, context, R.style.TextAppearance_AppCompat);
 
         holder.tagContainer.addView(tag);
@@ -197,8 +198,12 @@ public abstract class RichQuestionModel
       onVoteClickListener.onVoteClick(post.getId(), direction, OnVoteClickListener.Type.POST);
     });
 
-    holder.ivContentImage.setOnClickListener(
-        v -> onContentImageClickListener.onContentImageClick(v, post.getMedias().get(0)));
+    holder.ivContentImage.setOnClickListener(v -> {
+      if (VersionUtil.hasL()) {
+        holder.ivContentImage.setTransitionName("transition." + post.getMedias().get(0).getId());
+      }
+      onContentImageClickListener.onContentImageClick(v, post.getMedias().get(0));
+    });
   }
 
   @Override

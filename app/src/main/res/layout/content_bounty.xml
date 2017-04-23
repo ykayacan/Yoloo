@@ -29,7 +29,7 @@
     android:drawablePadding="8dp"
     android:gravity="center"
     android:textAppearance="@style/TextAppearance.AppCompat.Inverse"
-    app:drawableStart="@drawable/ic_bounty_coin_20dp"
+    app:drawableStart="@drawable/ic_bounty_coin_24dp"
     app:layout_constraintLeft_toLeftOf="@+id/gl_vertical"
     app:layout_constraintTop_toTopOf="parent"
     tools:text="100" />

@@ -7,15 +7,15 @@ import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
 import org.parceler.Parcel;
 
-@Parcel(implementations = { TagRealmRealmProxy.class },
-        value = Parcel.Serialization.FIELD,
-        analyze = { TagRealm.class })
+@Parcel(implementations = {TagRealmRealmProxy.class},
+    value = Parcel.Serialization.FIELD,
+    analyze = {TagRealm.class})
 public class TagRealm extends RealmObject implements Chipable {
 
   @PrimaryKey String id;
   String name;
   @Index long postCount;
-  @Index boolean isRecommended;
+  @Index boolean recommended;
   @Index boolean recent;
 
   public TagRealm() {
@@ -55,11 +55,11 @@ public class TagRealm extends RealmObject implements Chipable {
   }
 
   public boolean isRecommended() {
-    return isRecommended;
+    return recommended;
   }
 
   public TagRealm setRecommended(boolean recommended) {
-    isRecommended = recommended;
+    this.recommended = recommended;
     return this;
   }
 
@@ -72,13 +72,21 @@ public class TagRealm extends RealmObject implements Chipable {
     return this;
   }
 
-  @Override public String toString() {
-    return "TagRealm{" +
-        "id='" + id + '\'' +
-        ", name='" + name + '\'' +
-        ", postCount=" + postCount +
-        ", isRecommended=" + isRecommended +
-        ", recent=" + recent +
-        '}';
+  @Override
+  public String toString() {
+    return "TagRealm{"
+        + "id='"
+        + id
+        + '\''
+        + ", name='"
+        + name
+        + '\''
+        + ", postCount="
+        + postCount
+        + ", recommended="
+        + recommended
+        + ", recent="
+        + recent
+        + '}';
   }
 }

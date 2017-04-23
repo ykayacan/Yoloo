@@ -52,7 +52,8 @@ public class RevealFrameLayout extends FrameLayout {
     invalidate();
   }
 
-  @Override public void draw(Canvas canvas) {
+  @Override
+  public void draw(Canvas canvas) {
     if (!clipOutlines) {
       super.draw(canvas);
       return;

@@ -3,7 +3,7 @@ package com.yoloo.android.data.model;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.util.RealmListParcelConverter;
-import com.yoloo.backend.yolooApi.model.PostDTO;
+import com.yoloo.backend.yolooApi.model.Post;
 import io.realm.PostRealmRealmProxy;
 import io.realm.RealmList;
 import io.realm.RealmObject;
@@ -22,6 +22,7 @@ public class PostRealm extends RealmObject {
   public static final int TYPE_TEXT = 0;
   public static final int TYPE_RICH = 1;
   public static final int TYPE_BLOG = 2;
+  public static final int TYPE_PHOTO = 3;
 
   @PrimaryKey String id;
   @Index String ownerId;
@@ -50,7 +51,7 @@ public class PostRealm extends RealmObject {
     tags = new RealmList<>();
   }
 
-  public PostRealm(PostDTO dto) {
+  public PostRealm(Post dto) {
     this();
     id = dto.getId();
     ownerId = dto.getOwnerId();
@@ -71,6 +72,7 @@ public class PostRealm extends RealmObject {
     title = dto.getTitle();
     rank = dto.getRank();
     groupId = dto.getGroup();
+    postType = dto.getPostType();
   }
 
   public String getId() {
@@ -298,12 +300,20 @@ public class PostRealm extends RealmObject {
     return content.length() >= 200;
   }
 
-  public boolean isQuestion() {
-    return postType == TYPE_TEXT || postType == TYPE_RICH;
+  public boolean isTextQuestionPost() {
+    return postType == TYPE_TEXT;
   }
 
-  public boolean isBlog() {
+  public boolean isRichQuestionPost() {
+    return postType == TYPE_RICH;
+  }
+
+  public boolean isBlogPost() {
     return postType == TYPE_BLOG;
+  }
+
+  public boolean isPhotoPost() {
+    return postType == TYPE_PHOTO;
   }
 
   @Override

@@ -12,7 +12,7 @@ import com.yoloo.backend.notification.Notification;
 import com.yoloo.backend.notification.type.GameBonusNotifiable;
 import com.yoloo.backend.notification.type.LevelUpNotifiable;
 import com.yoloo.backend.notification.type.Notifiable;
-import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostEntity;
 import ix.Ix;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,10 +63,10 @@ public class GameService {
 
     List<GameInfo.GameHistory> histories = Ix.from(notifications).map(notification -> {
       Map<String, Object> payload = notification.getPayloads();
-      final int points = (Integer) payload.get("points");
-      final int bounties = (Integer) payload.get("bounties");
+      final long points = (long) payload.get("points");
+      final long bounties = (long) payload.get("bounties");
 
-      return GameInfo.GameHistory.builder().points(points).bounties(bounties).build();
+      return GameInfo.GameHistory.builder().points((int) points).bounties((int) bounties).build();
     }).toList();
 
     final int level = tracker.getLevel();
@@ -91,22 +91,22 @@ public class GameService {
    * @param tracker the tracker
    * @param listener the listener
    */
-  public void addFirstQuestionBonus(DeviceRecord record, Tracker tracker,
+  public void addShareFirstPostBonus(DeviceRecord record, Tracker tracker,
       NewNotificationListener listener) {
 
     if (!tracker.isFirstPost()) {
       List<Notifiable> bundles = new ArrayList<>(2);
 
-      tracker.addBounties(2);
+      tracker.addBounties(1);
       tracker.setFirstPost(true);
 
       boolean levelUpdated = false;
       int points = 0;
 
       if (!tracker.isCap()) {
-        tracker.addPoints(120);
+        points = 100;
+        tracker.addPoints(points);
         tracker.setPostBonusAwardedAt(DateTime.now());
-        points = 120;
         levelUpdated = updateLevel(tracker);
       }
 
@@ -126,7 +126,7 @@ public class GameService {
    * @param tracker the tracker
    * @param listener the listener
    */
-  public void addFirstAnswerBonus(DeviceRecord record, Tracker tracker,
+  public void addAnswerFirstQuestionBonus(DeviceRecord record, Tracker tracker,
       NewNotificationListener listener) {
 
     if (!tracker.isFirstComment()) {
@@ -139,8 +139,8 @@ public class GameService {
       int points = 0;
 
       if (!tracker.isCap()) {
-        tracker.addPoints(100);
         points = 100;
+        tracker.addPoints(points);
         levelUpdated = updateLevel(tracker);
       }
 
@@ -160,7 +160,7 @@ public class GameService {
    * @param tracker the tracker
    * @param listener the listener
    */
-  public void addAskQuestionPerDayBonus(DeviceRecord record, Tracker tracker,
+  public void addSharePostPerDayBonus(DeviceRecord record, Tracker tracker,
       NewNotificationListener listener) {
     final boolean isOneDayPassed =
         Days.daysBetween(DateTime.now(), tracker.getPostBonusAwardedAt()).getDays() == 1;
@@ -175,8 +175,8 @@ public class GameService {
       int points = 0;
 
       if (!tracker.isCap()) {
-        tracker.addPoints(20);
         points = 20;
+        tracker.addPoints(points);
         levelUpdated = updateLevel(tracker);
       }
 
@@ -194,17 +194,17 @@ public class GameService {
    *
    * @param record the record
    * @param tracker the tracker
-   * @param post the post
+   * @param postEntity the post
    * @param listener the listener
    */
-  public void addFirstAnswererPerDayBonus(DeviceRecord record, Tracker tracker, Post post,
+  public void addFirstCommenterBonus(DeviceRecord record, Tracker tracker, PostEntity postEntity,
       NewNotificationListener listener) {
-    if (!tracker.isCap() && !post.isCommented()) {
+    if (!tracker.isCap() && !postEntity.isCommented()) {
       List<Notifiable> bundles = new ArrayList<>(2);
 
-      tracker.addPoints(20);
+      tracker.addPoints(10);
 
-      bundles.add(GameBonusNotifiable.create(record, 20, 0));
+      bundles.add(GameBonusNotifiable.create(record, 10, 0));
       if (updateLevel(tracker)) {
         bundles.add(LevelUpNotifiable.create(record, tracker));
       }
@@ -218,20 +218,20 @@ public class GameService {
    *
    * @param record the record
    * @param tracker the tracker
-   * @param post the post
+   * @param postEntity the post
    * @param listener the listener
    */
-  public void addAnswerToUnansweredQuestionBonus(DeviceRecord record, Tracker tracker, Post post,
+  public void addAnswerToUnansweredQuestionBonus(DeviceRecord record, Tracker tracker, PostEntity postEntity,
       NewNotificationListener listener) {
     final boolean isOneHourPassed =
-        Hours.hoursBetween(DateTime.now(), post.getCreated()).getHours() == 1;
+        Hours.hoursBetween(DateTime.now(), postEntity.getCreated()).getHours() == 1;
 
     if (!tracker.isCap() && isOneHourPassed) {
       List<Notifiable> bundles = new ArrayList<>(2);
 
-      tracker.addPoints(10);
+      tracker.addPoints(20);
 
-      bundles.add(GameBonusNotifiable.create(record, 10, 0));
+      bundles.add(GameBonusNotifiable.create(record, 20, 0));
       if (updateLevel(tracker)) {
         bundles.add(LevelUpNotifiable.create(record, tracker));
       }
@@ -247,20 +247,20 @@ public class GameService {
    * @param answererTracker the answerer tracker
    * @param askerRecord the asker record
    * @param answererRecord the answerer record
-   * @param post the post
+   * @param postEntity the post
    * @param askerListener the asker listener
    * @param answererListener the answerer listener
    * @return the post
    */
-  public Post addAcceptCommentBonus(Tracker askerTracker, Tracker answererTracker,
-      DeviceRecord askerRecord, DeviceRecord answererRecord, Post post,
+  public PostEntity addAcceptCommentBonus(Tracker askerTracker, Tracker answererTracker,
+      DeviceRecord askerRecord, DeviceRecord answererRecord, PostEntity postEntity,
       NewNotificationListener askerListener, NewNotificationListener answererListener) {
-    if (post.getAcceptedCommentId() == null) {
+    if (postEntity.getAcceptedCommentId() == null) {
       List<Notifiable> askerBundle = new ArrayList<>(2);
       List<Notifiable> answererBundle = new ArrayList<>(2);
 
       final int bonusBounty =
-          answererTracker.getLevel() == 0 ? 1 : answererTracker.getLevel() + post.getBounty();
+          answererTracker.getLevel() == 0 ? 1 : answererTracker.getLevel() + postEntity.getBounty();
       answererTracker.addBounties(bonusBounty);
 
       boolean updatedAskerLevel = false;
@@ -292,10 +292,10 @@ public class GameService {
       askerListener.newNotifications(askerBundle);
       answererListener.newNotifications(answererBundle);
 
-      return post.withBounty(0);
+      return postEntity.withBounty(0);
     }
 
-    return post;
+    return postEntity;
   }
 
   /**
@@ -305,7 +305,7 @@ public class GameService {
    * @param tracker the tracker
    * @param listener the listener
    */
-  public void addShareQuestionBonus(DeviceRecord record, Tracker tracker,
+  public void addSharePostBonus(DeviceRecord record, Tracker tracker,
       NewNotificationListener listener) {
     if (!tracker.isCap()) {
       List<Notifiable> bundles = new ArrayList<>(2);
@@ -338,8 +338,8 @@ public class GameService {
     int points = 0;
 
     if (!tracker.isCap()) {
-      tracker.addPoints(10);
       points = 10;
+      tracker.addPoints(points);
       levelUpdated = updateLevel(tracker);
     }
 
@@ -368,12 +368,12 @@ public class GameService {
     int points = 0;
 
     if (!tracker.isCap()) {
-      tracker.addPoints(20);
       points = 20;
+      tracker.addPoints(points);
       levelUpdated = updateLevel(tracker);
     }
 
-    bundles.add(GameBonusNotifiable.create(record, points, 2));
+    bundles.add(GameBonusNotifiable.create(record, points, 10));
     if (levelUpdated) {
       bundles.add(LevelUpNotifiable.create(record, tracker));
     }

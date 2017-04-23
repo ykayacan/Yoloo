@@ -1,5 +1,6 @@
 package com.yoloo.backend.tag;
 
+import com.annimon.stream.Stream;
 import com.google.api.server.spi.response.CollectionResponse;
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.QueryResultIterator;
@@ -8,6 +9,7 @@ import com.google.common.collect.ImmutableSet;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.base.Controller;
+import com.yoloo.backend.post.PostEntity;
 import ix.Ix;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +17,6 @@ import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
 
-import static com.yoloo.backend.OfyService.factory;
 import static com.yoloo.backend.OfyService.ofy;
 
 @Log
@@ -36,18 +37,14 @@ public class TagController extends Controller {
    * @return the hash tag
    */
   public Tag insertTag(String name) {
-    final Key<Tag> tagKey = factory().allocateId(Tag.class);
-
     //Map<Ref<TagShard>, TagShard> shardMap = tagShardService.createShardMapWithRef(tagKey);
+    Key<Tag> tagKey = Tag.createKey(name);
 
-    Tag tag = Tag.builder()
-        .id(tagKey.getId())
-        .name(name)
-        .rank(0.0D)
+    Tag tag = Tag.builder().id(tagKey.getName()).name(name).rank(0.0D)
         //.shardRefs(Lists.newArrayList(shardMap.keySet()))
         .build();
 
-    ofy().save().entity(tag).now();
+    ofy().transact(() -> ofy().save().entity(tag).now());
 
     return tag;
   }
@@ -60,9 +57,10 @@ public class TagController extends Controller {
    * @return the hash tag
    */
   public Tag updateTag(String tagId, Optional<String> name) {
-    return Ix.just(ofy().load().key(Key.<Tag>create(tagId)).now())
+    return Ix
+        .just(ofy().load().key(Key.<Tag>create(tagId)).now())
         .map(tag -> name.isPresent() ? tag.withName(name.get()) : tag)
-        .doOnNext(tag -> ofy().save().entity(tag).now())
+        .doOnNext(tag -> ofy().transact(() -> ofy().save().entity(tag).now()))
         .single();
   }
 
@@ -94,7 +92,8 @@ public class TagController extends Controller {
       Optional<Integer> limit) {
     name = name.toLowerCase().trim();
 
-    Query<Tag> tagQuery = ofy().load()
+    Query<Tag> tagQuery = ofy()
+        .load()
         .type(Tag.class)
         .filter(Tag.FIELD_NAME + " >=", name)
         .filter(Tag.FIELD_NAME + " <", name + "\ufffd");
@@ -112,7 +111,36 @@ public class TagController extends Controller {
       tags.add(qi.next());
     }
 
-    return CollectionResponse.<Tag>builder().setItems(tags)
+    return CollectionResponse.<Tag>builder()
+        .setItems(tags)
+        .setNextPageToken(qi.getCursor().toWebSafeString())
+        .build();
+  }
+
+  public CollectionResponse<WrappedString> listUsedTags(String groupId, Optional<String> cursor,
+      Optional<Integer> limit) {
+    Query<PostEntity> postQuery = ofy()
+        .load()
+        .type(PostEntity.class)
+        .filter(PostEntity.FIELD_GROUP_KEY + " =", Key.create(groupId));
+
+    postQuery =
+        cursor.isPresent() ? postQuery.startAt(Cursor.fromWebSafeString(cursor.get())) : postQuery;
+
+    postQuery = postQuery.limit(limit.or(DEFAULT_LIST_LIMIT));
+
+    final QueryResultIterator<PostEntity> qi = postQuery.iterator();
+
+    List<WrappedString> wrappedStrings = Stream
+        .of(qi)
+        .map(PostEntity::getTags)
+        .distinct()
+        .flatMap(Stream::of)
+        .map(WrappedString::new)
+        .toList();
+
+    return CollectionResponse.<WrappedString>builder()
+        .setItems(wrappedStrings)
         .setNextPageToken(qi.getCursor().toWebSafeString())
         .build();
   }

@@ -24,7 +24,7 @@ import javax.inject.Named;
     namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
 @ApiClass(resource = "posts", clientIds = {
     Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
-}, audiences = { Constants.AUDIENCE_ID }, authenticators = { FirebaseAuthenticator.class })
+}, audiences = {Constants.AUDIENCE_ID}, authenticators = {FirebaseAuthenticator.class})
 public class PostEndpoint {
 
   private final PostController postController = PostControllerFactory.of().create();
@@ -38,9 +38,10 @@ public class PostEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(name = "posts.get", path = "posts/{postId}", httpMethod = ApiMethod.HttpMethod.GET)
-  public Post get(@Named("postId") String postId, User user) throws ServiceException {
+  public PostEntity get(@Named("postId") String postId, User user) throws ServiceException {
 
-    EndpointsValidator.create()
+    EndpointsValidator
+        .create()
         .on(BadRequestValidator.create(postId, "postId is required."))
         .on(AuthValidator.create(user));
 
@@ -59,7 +60,8 @@ public class PostEndpoint {
       httpMethod = ApiMethod.HttpMethod.DELETE)
   public void delete(@Named("postId") String postId, User user) throws ServiceException {
 
-    EndpointsValidator.create()
+    EndpointsValidator
+        .create()
         .on(BadRequestValidator.create(postId, "postId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(postId, "Invalid postId."))
@@ -82,14 +84,10 @@ public class PostEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(name = "posts.list", path = "posts", httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Post> list(
-      @Nullable @Named("userId") String userId,
-      @Nullable @Named("sort") PostSorter sorter,
-      @Nullable @Named("groupId") String groupId,
-      @Nullable @Named("tags") String tags,
-      @Nullable @Named("cursor") String cursor,
-      @Nullable @Named("limit") Integer limit,
-      User user) throws ServiceException {
+  public CollectionResponse<PostEntity> list(@Nullable @Named("userId") String userId,
+      @Nullable @Named("sort") PostSorter sorter, @Nullable @Named("groupId") String groupId,
+      @Nullable @Named("tags") String tags, @Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
@@ -110,7 +108,8 @@ public class PostEndpoint {
       httpMethod = ApiMethod.HttpMethod.PUT)
   public void report(@Named("postId") String postId, User user) throws ServiceException {
 
-    EndpointsValidator.create()
+    EndpointsValidator
+        .create()
         .on(BadRequestValidator.create(postId, "postId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(postId, "Invalid postId."));

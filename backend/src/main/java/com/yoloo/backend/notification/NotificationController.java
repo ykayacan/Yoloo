@@ -22,18 +22,16 @@ public class NotificationController extends Controller {
    */
   private static final int DEFAULT_LIST_LIMIT = 20;
 
-  public CollectionResponse<Notification> listNotifications(
-      Optional<String> cursor,
-      Optional<Integer> limit,
-      User user) {
+  public CollectionResponse<Notification> listNotifications(Optional<String> cursor,
+      Optional<Integer> limit, User user) {
 
-    Query<Notification> query = ofy().load().type(Notification.class)
+    Query<Notification> query = ofy()
+        .load()
+        .type(Notification.class)
         .ancestor(Key.create(user.getUserId()))
         .order("-" + Notification.FIELD_CREATED);
 
-    query = cursor.isPresent()
-        ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
-        : query;
+    query = cursor.isPresent() ? query.startAt(Cursor.fromWebSafeString(cursor.get())) : query;
 
     query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
 

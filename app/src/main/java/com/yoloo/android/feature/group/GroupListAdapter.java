@@ -84,13 +84,11 @@ public class GroupListAdapter extends EpoxyAdapter {
 
   public void addPosts(List<PostRealm> posts) {
     for (PostRealm post : posts) {
-      final int postType = post.getPostType();
-
-      if (postType == PostRealm.TYPE_TEXT) {
+      if (post.isTextQuestionPost()) {
         models.add(createTextQuestion(post));
-      } else if (postType == PostRealm.TYPE_RICH) {
+      } else if (post.isRichQuestionPost()) {
         models.add(createRichQuestion(post));
-      } else if (postType == PostRealm.TYPE_BLOG) {
+      } else if (post.isBlogPost()) {
         models.add(createBlog(post));
       }
     }
@@ -148,7 +146,8 @@ public class GroupListAdapter extends EpoxyAdapter {
   }
 
   private RichQuestionModel createRichQuestion(PostRealm post) {
-    return new RichQuestionModel_().onProfileClickListener(onProfileClickListener)
+    return new RichQuestionModel_()
+        .onProfileClickListener(onProfileClickListener)
         .onPostOptionsClickListener(onPostOptionsClickListener)
         .onItemClickListener(onPostClickListener)
         .onShareClickListener(onShareClickListener)
@@ -163,7 +162,8 @@ public class GroupListAdapter extends EpoxyAdapter {
   }
 
   private TextQuestionModel createTextQuestion(PostRealm post) {
-    return new TextQuestionModel_().onProfileClickListener(onProfileClickListener)
+    return new TextQuestionModel_()
+        .onProfileClickListener(onProfileClickListener)
         .onPostOptionsClickListener(onPostOptionsClickListener)
         .onItemClickListener(onPostClickListener)
         .onShareClickListener(onShareClickListener)
@@ -176,7 +176,8 @@ public class GroupListAdapter extends EpoxyAdapter {
   }
 
   private BlogModel createBlog(PostRealm post) {
-    return new BlogModel_().onProfileClickListener(onProfileClickListener)
+    return new BlogModel_()
+        .onProfileClickListener(onProfileClickListener)
         .onPostOptionsClickListener(onPostOptionsClickListener)
         .onItemClickListener(onPostClickListener)
         .onShareClickListener(onShareClickListener)

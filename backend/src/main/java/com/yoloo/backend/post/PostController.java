@@ -23,7 +23,7 @@ import com.yoloo.backend.feed.Feed;
 import com.yoloo.backend.game.GameService;
 import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.group.TravelerGroupEntity;
-import com.yoloo.backend.media.Media;
+import com.yoloo.backend.media.MediaEntity;
 import com.yoloo.backend.media.MediaService;
 import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.notification.type.Notifiable;
@@ -85,13 +85,14 @@ public final class PostController extends Controller {
    * @return the question
    * @throws NotFoundException the not found exception
    */
-  public Post getPost(String postId, User user) throws NotFoundException {
-    Post post = ofy().load().group(Post.ShardGroup.class).key(Key.<Post>create(postId)).now();
+  public PostEntity getPost(String postId, User user) throws NotFoundException {
+    PostEntity postEntity =
+        ofy().load().group(PostEntity.ShardGroup.class).key(Key.<PostEntity>create(postId)).now();
 
-    Guard.checkNotFound(post, "Could not find post with ID: " + postId);
+    Guard.checkNotFound(postEntity, "Could not find post with ID: " + postId);
 
     return postShardService
-        .mergeShards(post)
+        .mergeShards(postEntity)
         .flatMap(__ -> voteService.checkPostVote(__, Key.create(user.getUserId())))
         .blockingSingle();
   }
@@ -107,11 +108,13 @@ public final class PostController extends Controller {
    * @param user the user
    * @return the post
    */
-  public Post insertQuestion(String content, String tags, String groupId, Optional<String> mediaIds,
-      Optional<Integer> bounty, User user) {
+  public PostEntity insertQuestionPost(String content, String tags, String groupId,
+      Optional<String> mediaIds, Optional<Integer> bounty, User user) {
+    final PostEntity.Type type =
+        mediaIds.isPresent() ? PostEntity.Type.RICH_POST : PostEntity.Type.TEXT_POST;
 
-    return insertPost(content, tags, groupId, Optional.absent(), mediaIds, bounty,
-        Post.PostType.QUESTION, user);
+    return insertPost(Optional.of(content), tags, groupId, Optional.absent(), mediaIds, bounty,
+        type, user);
   }
 
   /**
@@ -126,15 +129,33 @@ public final class PostController extends Controller {
    * @param user the user
    * @return the post
    */
-  public Post insertBlog(String title, String content, String tags, String groupId,
+  public PostEntity insertBlogPost(String title, String content, String tags, String groupId,
       Optional<String> mediaIds, Optional<Integer> bounty, User user) {
 
-    return insertPost(content, tags, groupId, Optional.of(title), mediaIds, bounty,
-        Post.PostType.BLOG, user);
+    return insertPost(Optional.of(content), tags, groupId, Optional.of(title), mediaIds, bounty,
+        PostEntity.Type.BLOG, user);
   }
 
-  private Post insertPost(String content, String tags, String groupId, Optional<String> title,
-      Optional<String> mediaIds, Optional<Integer> bounty, Post.PostType postType, User user) {
+  /**
+   * Insert image post post entity.
+   *
+   * @param tags the tags
+   * @param groupId the group id
+   * @param mediaIds the media ids
+   * @param bounty the bounty
+   * @param user the user
+   * @return the post entity
+   */
+  public PostEntity insertImagePost(String tags, String groupId, Optional<String> mediaIds,
+      Optional<Integer> bounty, User user) {
+
+    return insertPost(Optional.absent(), tags, groupId, Optional.absent(), mediaIds, bounty,
+        PostEntity.Type.IMAGE_POST, user);
+  }
+
+  private PostEntity insertPost(Optional<String> content, String tags, String groupId,
+      Optional<String> title, Optional<String> mediaIds, Optional<Integer> bounty,
+      PostEntity.Type type, User user) {
 
     ImmutableList.Builder<Key<?>> keyBuilder = ImmutableList.builder();
 
@@ -158,7 +179,7 @@ public final class PostController extends Controller {
     if (mediaIds.isPresent()) {
       Ix
           .from(StringUtil.splitToIterable(mediaIds.get(), ","))
-          .map(Key::<Media>create)
+          .map(Key::<MediaEntity>create)
           .foreach(keyBuilder::add);
     }
 
@@ -178,39 +199,39 @@ public final class PostController extends Controller {
     //noinspection SuspiciousMethodCalls
     TravelerGroupEntity group = (TravelerGroupEntity) fetched.get(groupKey);
 
-    List<Media> medias = Collections.emptyList();
+    List<MediaEntity> mediaEntities = Collections.emptyList();
     if (mediaIds.isPresent()) {
       //noinspection SuspiciousMethodCalls
-      medias = Ix
+      mediaEntities = Ix
           .from(StringUtil.splitToIterable(mediaIds.get(), ","))
-          .map(Key::<Media>create)
+          .map(Key::<MediaEntity>create)
           .map(fetched::get)
-          .cast(Media.class)
+          .cast(MediaEntity.class)
           .toList();
     }
 
     // Create a new question from given inputs.
-    Post post =
-        postService.createPost(account, content, tags, group, title, bounty, medias, tracker,
-            postType);
+    PostEntity postEntity =
+        postService.createPost(account, content, tags, group, title, bounty, mediaEntities, tracker,
+            type);
 
     // Increase post count.
     accountShardService.updateCounter(accountShard, AccountShardService.Update.POST_UP);
 
-    List<Tag> tagList = tagService.updateTags(post.getTags());
+    List<Tag> tagList = tagService.updateTags(postEntity.getTags());
 
     // Increase post count.
     group = group.withPostCount(group.getPostCount() + 1);
 
     // Start gamification check.
     List<Notifiable> notifiables = new ArrayList<>(5);
-    gameService.addFirstQuestionBonus(record, tracker, notifiables::addAll);
-    gameService.addAskQuestionPerDayBonus(record, tracker, notifiables::addAll);
+    gameService.addShareFirstPostBonus(record, tracker, notifiables::addAll);
+    gameService.addSharePostPerDayBonus(record, tracker, notifiables::addAll);
 
     ImmutableSet.Builder<Object> saveBuilder = ImmutableSet
         .builder()
-        .add(post)
-        .addAll(post.getShardMap().values())
+        .add(postEntity)
+        .addAll(postEntity.getShardMap().values())
         .addAll(tagList)
         .add(group)
         .add(accountShard)
@@ -229,10 +250,10 @@ public final class PostController extends Controller {
     });
 
     if (!ServerConfig.isTest()) {
-      UpdateFeedServlet.addToQueue(user.getUserId(), post.getWebsafeId());
+      UpdateFeedServlet.addToQueue(user.getUserId(), postEntity.getWebsafeId());
     }
 
-    return post;
+    return postEntity;
   }
 
   /**
@@ -247,20 +268,20 @@ public final class PostController extends Controller {
    * @return the question
    * @throws NotFoundException the not found exception
    */
-  public Post updatePost(String postId, Optional<String> title, Optional<String> content,
+  public PostEntity updatePost(String postId, Optional<String> title, Optional<String> content,
       Optional<Integer> bounty, Optional<String> tags, Optional<String> mediaIds)
       throws NotFoundException {
 
     ImmutableList.Builder<Key<?>> keyBuilder = ImmutableList.builder();
 
     // Create post key from websafe post id.
-    final Key<Post> postKey = Key.create(postId);
+    final Key<PostEntity> postKey = Key.create(postId);
     keyBuilder.add(postKey);
 
     if (mediaIds.isPresent()) {
       Ix
           .from(StringUtil.splitToIterable(mediaIds.get(), ","))
-          .map(Key::<Media>create)
+          .map(Key::<MediaEntity>create)
           .foreach(keyBuilder::add);
     }
 
@@ -269,22 +290,22 @@ public final class PostController extends Controller {
         ofy().load().keys(batchKeys.toArray(new Key[batchKeys.size()]));
 
     //noinspection SuspiciousMethodCalls
-    Post original = (Post) fetched.get(postKey);
+    PostEntity original = (PostEntity) fetched.get(postKey);
 
-    List<Media> medias = Collections.emptyList();
+    List<MediaEntity> mediaEntities = Collections.emptyList();
     if (mediaIds.isPresent()) {
-      List<Key<Media>> originalMediaKeys =
-          Ix.from(original.getMedias()).map(Media::getKey).toList();
+      List<Key<MediaEntity>> originalMediaKeys =
+          Ix.from(original.getMedias()).map(MediaEntity::getKey).toList();
       mediaService.deleteMedias(originalMediaKeys);
       ofy().delete().keys(originalMediaKeys);
 
       //noinspection SuspiciousMethodCalls
       Ix
           .from(StringUtil.splitToIterable(mediaIds.get(), ","))
-          .map(Key::<Media>create)
+          .map(Key::<MediaEntity>create)
           .map(fetched::get)
-          .cast(Media.class)
-          .foreach(medias::add);
+          .cast(MediaEntity.class)
+          .foreach(mediaEntities::add);
     }
 
     return Single
@@ -294,7 +315,7 @@ public final class PostController extends Controller {
         .map(post -> content.isPresent() ? post.withContent(content.get()) : post)
         .map(post -> tags.isPresent() ? post.withTags(
             ImmutableSet.copyOf(splitToIterable(tags.get(), ","))) : post)
-        .map(post -> post.withMedias(medias))
+        .map(post -> post.withMedias(mediaEntities))
         .doOnSuccess(post -> ofy().transact(() -> ofy().save().entity(post).now()))
         .blockingGet();
   }
@@ -308,7 +329,7 @@ public final class PostController extends Controller {
     ImmutableList.Builder<Key<?>> deleteList = ImmutableList.builder();
 
     // Create post key from websafe id.
-    final Key<Post> postKey = Key.create(postId);
+    final Key<PostEntity> postKey = Key.create(postId);
     final Key<AccountShard> accountShardKey =
         accountShardService.getRandomShardKey(postKey.getParent());
 
@@ -317,12 +338,13 @@ public final class PostController extends Controller {
         (AccountShard) map.get(accountShardKey);
     shard.decreasePostCount();
 
-    @SuppressWarnings("SuspiciousMethodCalls") Post post = (Post) map.get(postKey);
-    List<Media> medias = post.getMedias();
+    @SuppressWarnings("SuspiciousMethodCalls") PostEntity postEntity =
+        (PostEntity) map.get(postKey);
+    List<MediaEntity> mediaEntities = postEntity.getMedias();
 
-    List<Key<Media>> mediaKeys = Collections.emptyList();
-    if (medias != null) {
-      Ix.from(medias).map(Key::<Media>create).foreach(mediaKey -> {
+    List<Key<MediaEntity>> mediaKeys = Collections.emptyList();
+    if (mediaEntities != null) {
+      Ix.from(mediaEntities).map(Key::<MediaEntity>create).foreach(mediaKey -> {
         mediaKeys.add(mediaKey);
         deleteList.add(mediaKey);
       });
@@ -346,7 +368,7 @@ public final class PostController extends Controller {
       ofy().defer().save().entity(shard);
       ofy().defer().delete().keys(deleteList.build());
 
-      if (medias != null) {
+      if (mediaEntities != null) {
         mediaService.deleteMedias(mediaKeys);
       }
     });
@@ -365,28 +387,30 @@ public final class PostController extends Controller {
    * @param user the user
    * @return the collection response
    */
-  public CollectionResponse<Post> listPosts(Optional<String> userId, Optional<PostSorter> sorter,
-      Optional<String> groupId, Optional<String> tags, Optional<Integer> limit,
-      Optional<String> cursor, Optional<Post.PostType> postType, User user) {
+  public CollectionResponse<PostEntity> listPosts(Optional<String> userId,
+      Optional<PostSorter> sorter, Optional<String> groupId, Optional<String> tags,
+      Optional<Integer> limit, Optional<String> cursor, Optional<PostEntity.Type> postType,
+      User user) {
 
-    Query<Post> query = ofy().load().group(Post.ShardGroup.class).type(Post.class);
+    Query<PostEntity> query =
+        ofy().load().group(PostEntity.ShardGroup.class).type(PostEntity.class);
 
     if (postType.isPresent()) {
-      query = query.filter(Post.FIELD_POST_TYPE + " =", postType.get());
+      query = query.filter(PostEntity.FIELD_POST_TYPE + " =", postType.get());
     }
 
     query = userId.isPresent() ? query.ancestor(Key.<Account>create(userId.get())) : query;
 
     if (groupId.isPresent()) {
-      query =
-          query.filter(Post.FIELD_GROUP_KEY + " =", Key.<TravelerGroupEntity>create(groupId.get()));
+      query = query.filter(PostEntity.FIELD_GROUP_KEY + " =",
+          Key.<TravelerGroupEntity>create(groupId.get()));
     }
 
     if (tags.isPresent()) {
       List<String> tagSet = split(tags.get(), ",");
 
       for (String tagName : tagSet) {
-        query = query.filter(Post.FIELD_TAGS + " =", tagName.trim().toLowerCase());
+        query = query.filter(PostEntity.FIELD_TAGS + " =", tagName.trim().toLowerCase());
       }
     }
 
@@ -394,16 +418,16 @@ public final class PostController extends Controller {
     query = cursor.isPresent() ? query.startAt(Cursor.fromWebSafeString(cursor.get())) : query;
     query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
 
-    List<Post> posts = new ArrayList<>(DEFAULT_LIST_LIMIT);
+    List<PostEntity> postEntities = new ArrayList<>(DEFAULT_LIST_LIMIT);
 
-    QueryResultIterator<Post> qi = query.iterator();
+    QueryResultIterator<PostEntity> qi = query.iterator();
 
     while (qi.hasNext()) {
-      posts.add(qi.next());
+      postEntities.add(qi.next());
     }
 
     return Observable
-        .just(posts)
+        .just(postEntities)
         .flatMap(postShardService::mergeShards)
         .flatMap(__ -> voteService.checkPostVote(__, Key.create(user.getUserId())))
         .compose(CollectionTransformer.create(qi.getCursor().toWebSafeString()))
@@ -417,9 +441,9 @@ public final class PostController extends Controller {
    * @param user the user
    */
   public void reportPost(String postId, User user) throws NotFoundException {
-    Post post = ofy().load().key(Key.<Post>create(postId)).now();
-    post.toBuilder().reportedByKey(Key.create(user.getUserId())).build();
+    PostEntity postEntity = ofy().load().key(Key.<PostEntity>create(postId)).now();
+    postEntity.toBuilder().reportedByKey(Key.create(user.getUserId())).build();
 
-    ofy().save().entity(post);
+    ofy().save().entity(postEntity);
   }
 }

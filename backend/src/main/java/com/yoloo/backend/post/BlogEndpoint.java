@@ -41,7 +41,7 @@ public class BlogEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(name = "blogs.get", path = "blogs/{blogId}", httpMethod = ApiMethod.HttpMethod.GET)
-  public Post get(@Named("blogId") String blogId, User user) throws ServiceException {
+  public PostEntity get(@Named("blogId") String blogId, User user) throws ServiceException {
 
     EndpointsValidator
         .create()
@@ -65,7 +65,7 @@ public class BlogEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(name = "blogs.insert", path = "blogs", httpMethod = ApiMethod.HttpMethod.POST)
-  public Post insert(@Named("title") String title, @Named("content") String content,
+  public PostEntity insert(@Named("title") String title, @Named("content") String content,
       @Named("tags") String tags, @Named("groupId") String groupId,
       @Nullable @Named("mediaIds") String mediaIds, @Nullable @Named("bounty") Integer bounty,
       User user) throws ServiceException {
@@ -78,8 +78,8 @@ public class BlogEndpoint {
         .on(BadRequestValidator.create(groupId, "groupId is required."))
         .on(AuthValidator.create(user));
 
-    return postController.insertBlog(title, content, tags, groupId, Optional.fromNullable(mediaIds),
-        Optional.fromNullable(bounty), user);
+    return postController.insertBlogPost(title, content, tags, groupId,
+        Optional.fromNullable(mediaIds), Optional.fromNullable(bounty), user);
   }
 
   /**
@@ -95,7 +95,7 @@ public class BlogEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(name = "blogs.update", path = "blogs/{blogId}", httpMethod = ApiMethod.HttpMethod.PUT)
-  public Post update(@Named("blogId") String blogId, @Nullable @Named("title") String title,
+  public PostEntity update(@Named("blogId") String blogId, @Nullable @Named("title") String title,
       @Nullable @Named("content") String content, @Nullable @Named("tags") String tags,
       @Nullable @Named("mediaId") String mediaId, User user) throws ServiceException {
 
@@ -133,26 +133,28 @@ public class BlogEndpoint {
   }
 
   /**
-   * List all entities.
+   * List collection response.
    *
+   * @param userId the user id
    * @param sorter the sorter
-   * @param category the category
-   * @param cursor used for pagination to determine which page to return
-   * @param limit the maximum number from entries to return
+   * @param groupId the group id
+   * @param tags the tags
+   * @param cursor the cursor
+   * @param limit the limit
    * @param user the user
-   * @return a response that encapsulates the result listFeed and the next page token/cursor
+   * @return the collection response
    * @throws ServiceException the service exception
    */
   @ApiMethod(name = "blogs.list", path = "blogs", httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Post> list(@Nullable @Named("userId") String userId,
-      @Nullable @Named("sort") PostSorter sorter, @Nullable @Named("category") String category,
+  public CollectionResponse<PostEntity> list(@Nullable @Named("userId") String userId,
+      @Nullable @Named("sort") PostSorter sorter, @Nullable @Named("groupId") String groupId,
       @Nullable @Named("tags") String tags, @Nullable @Named("cursor") String cursor,
       @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
     return postController.listPosts(Optional.fromNullable(userId), Optional.fromNullable(sorter),
-        Optional.fromNullable(category), Optional.fromNullable(tags), Optional.fromNullable(limit),
-        Optional.fromNullable(cursor), Optional.of(Post.PostType.BLOG), user);
+        Optional.fromNullable(groupId), Optional.fromNullable(tags), Optional.fromNullable(limit),
+        Optional.fromNullable(cursor), Optional.of(PostEntity.Type.BLOG), user);
   }
 }

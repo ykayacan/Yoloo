@@ -2,7 +2,6 @@ package com.yoloo.android.feature.feed.component.post;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.view.Gravity;
 import android.view.View;
@@ -38,7 +37,7 @@ public abstract class BlogModel extends BasePostModel<BlogModel.BlogHolder> {
         PostRealm payload = (PostRealm) payloads.get(0);
 
         if (post.getVoteCount() != payload.getVoteCount()) {
-          holder.voteView.setVotes(payload.getVoteCount());
+          holder.voteView.setVoteCount(payload.getVoteCount());
           post.setVoteCount(payload.getVoteCount());
         }
 
@@ -78,7 +77,7 @@ public abstract class BlogModel extends BasePostModel<BlogModel.BlogHolder> {
         .into(holder.ivBlogCover);
 
     holder.tvComment.setText(CountUtil.formatCount(post.getCommentCount()));
-    holder.voteView.setVotes(post.getVoteCount());
+    holder.voteView.setVoteCount(post.getVoteCount());
     holder.voteView.setVoteDirection(post.getVoteDir());
 
     final int drawableIconRes =
@@ -91,7 +90,7 @@ public abstract class BlogModel extends BasePostModel<BlogModel.BlogHolder> {
         tag.setText(context.getString(R.string.label_tag, tagName));
         tag.setGravity(Gravity.CENTER);
         tag.setPadding(16, 10, 16, 10);
-        tag.setBackground(ContextCompat.getDrawable(context, R.drawable.dialog_tag_bg));
+        //tag.setBackground(ContextCompat.getDrawable(context, R.drawable.dialog_tag_bg));
         TextViewUtil.setTextAppearance(tag, context, R.style.TextAppearance_AppCompat);
 
         holder.tagContainer.addView(tag);

@@ -22,7 +22,7 @@ import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.group.TravelerGroupController;
 import com.yoloo.backend.group.TravelerGroupControllerFactory;
-import com.yoloo.backend.media.Media;
+import com.yoloo.backend.media.MediaEntity;
 import com.yoloo.backend.relationship.RelationshipController;
 import com.yoloo.backend.relationship.RelationshipControllerFactory;
 import com.yoloo.backend.tag.Tag;
@@ -122,11 +122,11 @@ public class PostControllerTest extends TestBase {
   public void testGetQuestion() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    Post original =
-        postController.insertQuestion("Test content", "visa,passport", europe.getWebsafeId(),
+    PostEntity original =
+        postController.insertQuestionPost("Test content", "visa,passport", europe.getWebsafeId(),
             Optional.absent(), Optional.of(10), user);
 
-    Post fetched = postController.getPost(original.getWebsafeId(), user);
+    PostEntity fetched = postController.getPost(original.getWebsafeId(), user);
 
     assertNotNull(fetched.getKey());
     assertEquals("Test content", fetched.getContent());
@@ -152,12 +152,12 @@ public class PostControllerTest extends TestBase {
   public void testGetQuestion_withVote() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    Post original =
-        postController.insertQuestion("Test content", "visa,passport", europe.getWebsafeId(),
+    PostEntity original =
+        postController.insertQuestionPost("Test content", "visa,passport", europe.getWebsafeId(),
             Optional.absent(), Optional.of(10), user);
-    voteController.vote(original.getWebsafeId(), Vote.Direction.UP, user);
+    voteController.vote(original.getWebsafeId(), Vote.Direction.UP.getValue(), user);
 
-    Post fetched = postController.getPost(original.getWebsafeId(), user);
+    PostEntity fetched = postController.getPost(original.getWebsafeId(), user);
 
     assertNotNull(fetched.getKey());
     assertEquals("Test content", fetched.getContent());
@@ -186,23 +186,23 @@ public class PostControllerTest extends TestBase {
     String tags = visa.getName() + "," + visa2.getName();
     String categories = europe.getWebsafeId() + "," + budgetTravel.getWebsafeId();
 
-    Post post = postController.insertQuestion("Test content", tags, categories, Optional.absent(),
+    PostEntity postEntity = postController.insertQuestionPost("Test content", tags, categories, Optional.absent(),
         Optional.of(10), user);
 
-    assertNotNull(post.getKey());
-    assertEquals("Test content", post.getContent());
-    assertEquals(0, post.getBounty());
+    assertNotNull(postEntity.getKey());
+    assertEquals("Test content", postEntity.getContent());
+    assertEquals(0, postEntity.getBounty());
 
     Set<String> tagSet = new HashSet<>();
     tagSet.add(visa.getName());
     tagSet.add(visa2.getName());
-    assertEquals(tagSet, post.getTags());
+    assertEquals(tagSet, postEntity.getTags());
 
-    assertEquals(null, post.getAcceptedCommentKey());
-    assertEquals(false, post.isCommented());
-    assertEquals("Test user", post.getUsername());
-    assertEquals(new Link("Test avatar"), post.getAvatarUrl());
-    assertEquals(Vote.Direction.DEFAULT, post.getDir());
+    assertEquals(null, postEntity.getAcceptedCommentKey());
+    assertEquals(false, postEntity.isCommented());
+    assertEquals("Test user", postEntity.getUsername());
+    assertEquals(new Link("Test avatar"), postEntity.getAvatarUrl());
+    assertEquals(Vote.Direction.DEFAULT, postEntity.getDir());
 
     Set<String> categorySet = new HashSet<>();
     categorySet.add(budgetTravel.getName());
@@ -223,7 +223,7 @@ public class PostControllerTest extends TestBase {
     String tags = visa.getName() + "," + visa2.getName();
     String categories = europe.getWebsafeId() + "," + budgetTravel.getWebsafeId();
 
-    Media media = Media
+    MediaEntity mediaEntity = MediaEntity
         .builder()
         .id("bucket/test_item")
         .parent(owner.getKey())
@@ -231,27 +231,27 @@ public class PostControllerTest extends TestBase {
         .url("test url")
         .build();
 
-    Key<Media> mediaKey = ofy().save().entity(media).now();
+    Key<MediaEntity> mediaKey = ofy().save().entity(mediaEntity).now();
 
-    Post post = postController.insertQuestion("Test content", tags, categories,
+    PostEntity postEntity = postController.insertQuestionPost("Test content", tags, categories,
         Optional.of(mediaKey.toWebSafeString()), Optional.of(10), user);
 
-    assertNotNull(post.getKey());
-    assertEquals("Test content", post.getContent());
-    assertEquals(0, post.getBounty());
+    assertNotNull(postEntity.getKey());
+    assertEquals("Test content", postEntity.getContent());
+    assertEquals(0, postEntity.getBounty());
 
     Set<String> tagSet = new HashSet<>();
     tagSet.add(visa.getName());
     tagSet.add(visa2.getName());
-    assertEquals(tagSet, post.getTags());
+    assertEquals(tagSet, postEntity.getTags());
 
-    assertEquals(null, post.getAcceptedCommentKey());
-    assertEquals(false, post.isCommented());
-    assertEquals("Test user", post.getUsername());
-    assertEquals(new Link("Test avatar"), post.getAvatarUrl());
-    assertEquals(Vote.Direction.DEFAULT, post.getDir());
-    //assertEquals(media.getUrl(), post.getMedia().getUrl());
-    //assertEquals(media.getId(), post.getMedia().getId());
+    assertEquals(null, postEntity.getAcceptedCommentKey());
+    assertEquals(false, postEntity.isCommented());
+    assertEquals("Test user", postEntity.getUsername());
+    assertEquals(new Link("Test avatar"), postEntity.getAvatarUrl());
+    assertEquals(Vote.Direction.DEFAULT, postEntity.getDir());
+    //assertEquals(mediaEntity.getUrl(), post.getMedia().getUrl());
+    //assertEquals(mediaEntity.getId(), post.getMedia().getId());
 
     Set<String> categorySet = new HashSet<>();
     categorySet.add(budgetTravel.getName());
@@ -267,20 +267,20 @@ public class PostControllerTest extends TestBase {
     String categoryIds =
         europe.getWebsafeId() + "," + budgetTravel.getWebsafeId() + "," + america.getWebsafeId();
 
-    postController.insertQuestion("Test content", tags, categoryIds, Optional.absent(),
+    postController.insertQuestionPost("Test content", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
-    postController.insertQuestion("Test content", tags, categoryIds, Optional.absent(),
+    postController.insertQuestionPost("Test content", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
 
-    CollectionResponse<Post> response =
+    CollectionResponse<PostEntity> response =
         postController.listPosts(Optional.absent(), Optional.absent(),
             Optional.fromNullable(budgetTravel.getName()), Optional.absent(), Optional.absent(),
-            Optional.absent(), Optional.of(Post.PostType.QUESTION), user);
+            Optional.absent(), Optional.of(PostEntity.Type.TEXT_POST), user);
 
     assertNotNull(response.getItems());
     assertEquals(2, response.getItems().size());
-    for (Post post : response.getItems()) {
-      assertEquals("Test content", post.getContent());
+    for (PostEntity postEntity : response.getItems()) {
+      assertEquals("Test content", postEntity.getContent());
       //assertEquals("[budget travel, europe, america]", post.getCategories().toString());
     }
   }
@@ -292,23 +292,23 @@ public class PostControllerTest extends TestBase {
     String tags = visa.getName() + "," + visa2.getName();
     String categories1 = europe.getWebsafeId() + "," + budgetTravel.getWebsafeId();
 
-    postController.insertQuestion("Test content", tags, categories1, Optional.absent(),
+    postController.insertQuestionPost("Test content", tags, categories1, Optional.absent(),
         Optional.of(10), user);
 
     String categories2 = europe.getWebsafeId();
 
-    postController.insertQuestion("Test content", tags, categories2, Optional.absent(),
+    postController.insertQuestionPost("Test content", tags, categories2, Optional.absent(),
         Optional.of(10), user);
 
-    CollectionResponse<Post> response =
+    CollectionResponse<PostEntity> response =
         postController.listPosts(Optional.absent(), Optional.absent(),
             Optional.fromNullable(budgetTravel.getName()), Optional.absent(), Optional.absent(),
-            Optional.absent(), Optional.of(Post.PostType.QUESTION), user);
+            Optional.absent(), Optional.of(PostEntity.Type.TEXT_POST), user);
 
     assertNotNull(response.getItems());
     assertEquals(1, response.getItems().size());
-    for (Post post : response.getItems()) {
-      assertEquals("Test content", post.getContent());
+    for (PostEntity postEntity : response.getItems()) {
+      assertEquals("Test content", postEntity.getContent());
       //assertEquals("[budget travel, europe]", post.getCategories().toString());
     }
   }
@@ -320,49 +320,49 @@ public class PostControllerTest extends TestBase {
     String tags = visa.getName() + "," + visa2.getName();
     String categoryIds = europe.getWebsafeId() + "," + budgetTravel.getWebsafeId();
 
-    Post p1 = postController.insertQuestion("1. post", tags, categoryIds, Optional.absent(),
+    PostEntity p1 = postController.insertQuestionPost("1. post", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
     commentController.insertComment(p1.getWebsafeId(), "Test comment", user);
-    voteController.vote(p1.getWebsafeId(), Vote.Direction.UP, user);
+    voteController.vote(p1.getWebsafeId(), Vote.Direction.UP.getValue(), user);
 
-    Post p2 = postController.insertQuestion("2. post", tags, categoryIds, Optional.absent(),
+    PostEntity p2 = postController.insertQuestionPost("2. post", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
 
-    Post p3 = postController.insertQuestion("3. post", tags, categoryIds, Optional.absent(),
+    PostEntity p3 = postController.insertQuestionPost("3. post", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
     commentController.insertComment(p3.getWebsafeId(), "Test comment", user);
-    voteController.vote(p3.getWebsafeId(), Vote.Direction.DOWN, user);
+    voteController.vote(p3.getWebsafeId(), Vote.Direction.DOWN.getValue(), user);
 
-    Post p4 = postController.insertQuestion("4. post", tags, categoryIds, Optional.absent(),
+    PostEntity p4 = postController.insertQuestionPost("4. post", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
     commentController.insertComment(p4.getWebsafeId(), "Test comment", user);
     commentController.insertComment(p4.getWebsafeId(), "Test comment 2", user);
 
-    CollectionResponse<Post> response =
+    CollectionResponse<PostEntity> response =
         postController.listPosts(Optional.absent(), Optional.absent(),
             Optional.fromNullable(budgetTravel.getName()), Optional.absent(), Optional.absent(),
-            Optional.absent(), Optional.of(Post.PostType.QUESTION), user);
+            Optional.absent(), Optional.of(PostEntity.Type.TEXT_POST), user);
 
     assertNotNull(response.getItems());
     assertEquals(4, response.getItems().size());
 
-    for (Post post : response.getItems()) {
-      if (post.getKey().equivalent(p1.getKey())) {
-        assertEquals(1, post.getCommentCount());
-        assertEquals(1, post.getVoteCount());
-        assertEquals(Vote.Direction.UP, post.getDir());
-      } else if (post.getKey().equivalent(p2.getKey())) {
-        assertEquals(0, post.getCommentCount());
-        assertEquals(0, post.getVoteCount());
-        assertEquals(Vote.Direction.DEFAULT, post.getDir());
-      } else if (post.getKey().equivalent(p3.getKey())) {
-        assertEquals(1, post.getCommentCount());
-        assertEquals(-1, post.getVoteCount());
-        assertEquals(Vote.Direction.DOWN, post.getDir());
-      } else if (post.getKey().equivalent(p4.getKey())) {
-        assertEquals(2, post.getCommentCount());
-        assertEquals(0, post.getVoteCount());
-        assertEquals(Vote.Direction.DEFAULT, post.getDir());
+    for (PostEntity postEntity : response.getItems()) {
+      if (postEntity.getKey().equivalent(p1.getKey())) {
+        assertEquals(1, postEntity.getCommentCount());
+        assertEquals(1, postEntity.getVoteCount());
+        assertEquals(Vote.Direction.UP, postEntity.getDir());
+      } else if (postEntity.getKey().equivalent(p2.getKey())) {
+        assertEquals(0, postEntity.getCommentCount());
+        assertEquals(0, postEntity.getVoteCount());
+        assertEquals(Vote.Direction.DEFAULT, postEntity.getDir());
+      } else if (postEntity.getKey().equivalent(p3.getKey())) {
+        assertEquals(1, postEntity.getCommentCount());
+        assertEquals(-1, postEntity.getVoteCount());
+        assertEquals(Vote.Direction.DOWN, postEntity.getDir());
+      } else if (postEntity.getKey().equivalent(p4.getKey())) {
+        assertEquals(2, postEntity.getCommentCount());
+        assertEquals(0, postEntity.getVoteCount());
+        assertEquals(Vote.Direction.DEFAULT, postEntity.getDir());
       }
     }
   }

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <item
+    android:id="@+id/action_ask_question"
+    android:icon="@drawable/ic_edit_white_18dp"
+    android:title="@string/label_menu_ask_question" />
+  <item
+    android:id="@+id/action_write_blog"
+    android:icon="@drawable/ic_book_open_white_24dp"
+    android:title="@string/label_menu_write_blog" />
+</menu>

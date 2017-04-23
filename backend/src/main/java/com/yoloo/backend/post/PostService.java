@@ -10,7 +10,7 @@ import com.yoloo.backend.account.Account;
 import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.group.TravelerGroupEntity;
-import com.yoloo.backend.media.Media;
+import com.yoloo.backend.media.MediaEntity;
 import com.yoloo.backend.util.StringUtil;
 import com.yoloo.backend.vote.Vote;
 import io.reactivex.Observable;
@@ -27,40 +27,41 @@ public class PostService {
 
   private PostShardService postShardService;
 
-  public Post createPost(Account account, String content, String tags, TravelerGroupEntity group,
-      Optional<String> title, Optional<Integer> bounty, List<Media> medias, Tracker tracker,
-      Post.PostType postType) {
+  public PostEntity createPost(Account account, Optional<String> content, String tags,
+      TravelerGroupEntity group, Optional<String> title, Optional<Integer> bounty,
+      List<MediaEntity> mediaEntities, Tracker tracker, PostEntity.Type type) {
 
-    final Key<Post> postKey = factory().allocateId(account.getKey(), Post.class);
+    final Key<PostEntity> postKey = factory().allocateId(account.getKey(), PostEntity.class);
 
     Map<Ref<PostShard>, PostShard> shardMap = postShardService.createShardMapWithRef(postKey);
 
-    return Post
+    return PostEntity
         .builder()
         .id(postKey.getId())
         .parent(account.getKey())
         .avatarUrl(account.getAvatarUrl())
         .username(account.getUsername())
         .title(title.orNull())
-        .content(content)
+        .content(content.orNull())
         .shardRefs(ImmutableList.copyOf(shardMap.keySet()))
         .tags(ImmutableSet.copyOf(StringUtil.splitToIterable(tags, ",")))
         .travelerGroup(group.getKey())
         .dir(Vote.Direction.DEFAULT)
         .bounty(checkBounty(bounty, tracker))
         .acceptedCommentKey(null)
-        .medias(medias)
+        .medias(mediaEntities)
         .commentCount(0L)
         .voteCount(0L)
         .reportCount(0)
-        .commented(null)
-        .postType(postType)
+        .commented(false)
+        .postType(type.getType())
         .created(DateTime.now())
         .shardMap(shardMap)
         .build();
   }
 
-  public Observable<QueryResultIterable<Key<Comment>>> getCommentKeysObservable(Key<Post> postKey) {
+  public Observable<QueryResultIterable<Key<Comment>>> getCommentKeysObservable(
+      Key<PostEntity> postKey) {
     return Observable.fromCallable(() -> ofy()
         .load()
         .type(Comment.class)
@@ -69,7 +70,7 @@ public class PostService {
         .iterable());
   }
 
-  public Observable<QueryResultIterable<Key<Vote>>> getVoteKeysObservable(Key<Post> postKey) {
+  public Observable<QueryResultIterable<Key<Vote>>> getVoteKeysObservable(Key<PostEntity> postKey) {
     return Observable.fromCallable(() -> ofy()
         .load()
         .type(Vote.class)
@@ -78,7 +79,7 @@ public class PostService {
         .iterable());
   }
 
-  public List<Key<Comment>> getCommentKeys(Key<Post> postKey) {
+  public List<Key<Comment>> getCommentKeys(Key<PostEntity> postKey) {
     return ofy()
         .load()
         .type(Comment.class)
@@ -87,7 +88,7 @@ public class PostService {
         .list();
   }
 
-  public List<Key<Vote>> getVoteKeys(Key<Post> postKey) {
+  public List<Key<Vote>> getVoteKeys(Key<PostEntity> postKey) {
     return ofy()
         .load()
         .type(Vote.class)

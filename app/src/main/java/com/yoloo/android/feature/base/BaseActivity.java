@@ -24,7 +24,7 @@ import com.yoloo.android.R;
 import com.yoloo.android.fcm.FCMListener;
 import com.yoloo.android.fcm.FCMManager;
 import com.yoloo.android.feature.auth.welcome.WelcomeController;
-import com.yoloo.android.feature.feed.home.FeedHomeController;
+import com.yoloo.android.feature.feed.FeedHomeController;
 import com.yoloo.android.notificationhandler.NotificationHandler;
 import com.yoloo.android.notificationhandler.NotificationConstants;
 import com.yoloo.android.util.Preconditions;

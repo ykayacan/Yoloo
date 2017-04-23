@@ -1,7 +1,6 @@
 package com.yoloo.android.ui.widget;
 
 import android.content.Context;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.AppCompatAutoCompleteTextView;
 import android.util.AttributeSet;
 import com.yoloo.android.R;
@@ -40,7 +39,7 @@ public class TagAutoCompleteTextView extends AppCompatAutoCompleteTextView {
     adapter = new AutoCompleteTagAdapter(getContext());
 
     setHint(R.string.tag_hint);
-    setBackground(ContextCompat.getDrawable(getContext(), R.drawable.dialog_tag_bg));
+    //setBackground(ContextCompat.getDrawable(getContext(), R.drawable.dialog_tag_bg));
     setTextSize(14F);
     setAdapter(adapter);
 
@@ -54,7 +53,7 @@ public class TagAutoCompleteTextView extends AppCompatAutoCompleteTextView {
         .switchMap(query -> tagRepository.searchTag(query, null, 5))
         .observeOn(AndroidSchedulers.mainThread())
         .map(Response::getData)
-        .subscribe(tags-> {
+        .subscribe(tags -> {
           Timber.d("Tags: %s", tags);
           adapter.replaceItems(tags);
           handler.post(this::showDropDown);

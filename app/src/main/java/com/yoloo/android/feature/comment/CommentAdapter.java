@@ -5,8 +5,8 @@ import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import com.airbnb.epoxy.EpoxyAdapter;
 import com.airbnb.epoxy.EpoxyModel;
+import com.annimon.stream.Stream;
 import com.bumptech.glide.RequestManager;
-import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
@@ -57,30 +57,13 @@ class CommentAdapter extends EpoxyAdapter {
     this.onMarkAsAcceptedClickListener = listener;
   }
 
-  void addComments(List<CommentRealm> comments, AccountRealm account, String postOwnerId,
-      boolean acceptedPost) {
-    for (CommentRealm comment : comments) {
-      // Don't addPost accepted comment twice.
-      if (comment.isAccepted()) {
-        continue;
-      }
-
-      models.add(createCommentModel(comment, isPostOwner(postOwnerId, account),
-          isCommentOwner(comment, account), acceptedPost));
-    }
-
+  void addComments(List<? extends CommentRealm> comments) {
+    models.addAll(Stream.of(comments).map(this::createCommentModel).toList());
     notifyModelsChanged();
   }
 
-  void addAcceptedComment(CommentRealm comment, AccountRealm account, String postOwnerId,
-      boolean acceptedPost) {
-    insertModelBefore(createCommentModel(comment, isPostOwner(postOwnerId, account),
-        isCommentOwner(comment, account), acceptedPost), models.get(0));
-  }
-
-  void addComment(CommentRealm comment, AccountRealm account, String postOwnerId,
-      boolean acceptedPost) {
-    addModel(createCommentModel(comment, isPostOwner(postOwnerId, account), true, acceptedPost));
+  void addComment(CommentRealm comment) {
+    addModel(createCommentModel(comment));
   }
 
   void delete(EpoxyModel<?> model) {
@@ -91,13 +74,10 @@ class CommentAdapter extends EpoxyAdapter {
     recyclerView.smoothScrollToPosition(getItemCount() - 1);
   }
 
-  private CommentModel createCommentModel(CommentRealm comment, boolean isPostOwner,
-      boolean isCommentOwner, boolean acceptedPost) {
-    return new CommentModel_().glide(glide)
+  private CommentModel createCommentModel(CommentRealm comment) {
+    return new CommentModel_()
+        .glide(glide)
         .comment(comment)
-        .isCommentOwner(isCommentOwner)
-        .isPostOwner(isPostOwner)
-        .postAccepted(acceptedPost)
         .postType(postType)
         .backgroundColor(Color.TRANSPARENT)
         .circleTransformation(cropCircleTransformation)
@@ -106,13 +86,5 @@ class CommentAdapter extends EpoxyAdapter {
         .onMentionClickListener(onMentionClickListener)
         .onMarkAsAcceptedClickListener(onMarkAsAcceptedClickListener)
         .onVoteClickListener(onVoteClickListener);
-  }
-
-  private boolean isCommentOwner(CommentRealm comment, AccountRealm account) {
-    return comment.getOwnerId().equals(account.getId());
-  }
-
-  private boolean isPostOwner(String postOwnerId, AccountRealm account) {
-    return postOwnerId.equals(account.getId());
   }
 }

@@ -40,8 +40,8 @@ class PointsHistoryAdapter extends EpoxyAdapter {
           res.getString(R.string.label_earned_points, gameHistory.getPoints()));
 
       holder.tvEarnedBounties.setVisibility(
-          gameHistory.getBounties() != 0 ? View.VISIBLE : View.GONE);
-      holder.tvEarnedPoints.setText(
+          gameHistory.getBounties() == 0 ? View.GONE : View.VISIBLE);
+      holder.tvEarnedBounties.setText(
           res.getString(R.string.label_earned_bounties, gameHistory.getBounties()));
     }
 

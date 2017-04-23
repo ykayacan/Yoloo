@@ -92,7 +92,7 @@ class UserRemoteDataStore {
             List<File> files = Collections.singletonList(new File(avatarUrl));
 
             return UploadManager.INSTANCE
-                .upload(account.getId(), files)
+                .upload(account.getId(), files, UploadManager.MediaOrigin.PROFILE)
                 .map(response -> response.body().string())
                 .map(json -> {
                   Moshi moshi = new Moshi.Builder().build();

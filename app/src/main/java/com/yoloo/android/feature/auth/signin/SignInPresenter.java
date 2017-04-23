@@ -11,6 +11,7 @@ import com.yoloo.android.feature.auth.provider.GoogleProvider;
 import com.yoloo.android.framework.MvpPresenter;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import javax.annotation.Nonnull;
 import timber.log.Timber;
 
 class SignInPresenter extends MvpPresenter<SignInView> {
@@ -27,7 +28,7 @@ class SignInPresenter extends MvpPresenter<SignInView> {
     super.onDetachView();
   }
 
-  void signIn(IdpResponse response) {
+  void signIn(@Nonnull IdpResponse response) {
     final String providerType = response.getProviderType();
     if (providerType.equals(AuthUI.GOOGLE_PROVIDER)) {
       processFirebase(GoogleProvider.createAuthCredential(response));
@@ -36,7 +37,7 @@ class SignInPresenter extends MvpPresenter<SignInView> {
     }
   }
 
-  void signIn(String email, String password) {
+  void signIn(@Nonnull String email, @Nonnull String password) {
     processFirebase(EmailAuthProvider.getCredential(email, password));
   }
 

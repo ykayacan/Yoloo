@@ -84,13 +84,11 @@ public class PostListAdapter extends EpoxyAdapter {
 
   public void addPosts(List<PostRealm> posts) {
     for (PostRealm post : posts) {
-      final int postType = post.getPostType();
-
-      if (postType == PostRealm.TYPE_TEXT) {
+      if (post.isTextQuestionPost()) {
         models.add(createTextQuestion(post));
-      } else if (postType == PostRealm.TYPE_RICH) {
+      } else if (post.isRichQuestionPost()) {
         models.add(createRichQuestion(post));
-      } else if (postType == PostRealm.TYPE_BLOG) {
+      } else if (post.isBlogPost()) {
         models.add(createBlog(post));
       }
     }

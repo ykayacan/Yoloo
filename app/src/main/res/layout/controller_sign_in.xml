@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent">
 
@@ -19,7 +20,7 @@
     app:elevation="0dp">
 
     <android.support.v7.widget.Toolbar
-      android:id="@+id/toolbar_sign_in"
+      android:id="@+id/toolbar"
       android:layout_width="match_parent"
       android:layout_height="?attr/actionBarSize"
       app:popupTheme="@style/Yoloo.PopupOverlay" />
@@ -32,31 +33,32 @@
     android:fillViewport="true"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <LinearLayout
-      android:layout_width="match_parent"
+    <android.support.constraint.ConstraintLayout
+      android:layout_width="@dimen/_272asdp"
       android:layout_height="wrap_content"
-      android:gravity="center_horizontal"
-      android:orientation="vertical"
-      android:paddingBottom="@dimen/_16asdp"
-      android:paddingTop="@dimen/_64asdp">
+      android:layout_gravity="center|top"
+      android:layout_marginTop="@dimen/_24asdp">
 
       <LinearLayout
-        android:id="@+id/layout_login_input_container"
+        android:id="@+id/input_wrapper"
         style="@style/Widget.Yoloo.InputContainer"
-        android:layout_width="@dimen/_272asdp"
-        android:layout_height="wrap_content">
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingTop="24dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <AutoCompleteTextView
+        <EditText
           android:id="@+id/et_login_email"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginBottom="8dp"
-          android:layout_marginEnd="16dp"
-          android:layout_marginLeft="16dp"
-          android:layout_marginRight="16dp"
-          android:layout_marginStart="16dp"
-          android:layout_marginTop="16dp"
-          android:background="@drawable/edittext_login_bg"
+          android:layout_marginEnd="24dp"
+          android:layout_marginLeft="24dp"
+          android:layout_marginRight="24dp"
+          android:layout_marginStart="24dp"
           android:hint="@string/hint_email"
           android:imeOptions="actionNext"
           android:inputType="textEmailAddress" />
@@ -65,35 +67,28 @@
           android:id="@+id/et_login_password"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginBottom="8dp"
-          android:layout_marginEnd="16dp"
-          android:layout_marginLeft="16dp"
-          android:layout_marginRight="16dp"
-          android:layout_marginStart="16dp"
-          android:layout_marginTop="8dp"
-          android:background="@drawable/edittext_login_bg"
+          android:layout_marginEnd="24dp"
+          android:layout_marginLeft="24dp"
+          android:layout_marginRight="24dp"
+          android:layout_marginStart="24dp"
           android:hint="@string/hint_password"
-          android:imeActionLabel="@string/action_sign_in_short"
-          android:imeOptions="actionUnspecified"
+          android:imeActionId="@+id/sign_up"
+          android:imeActionLabel="@string/action_sing_up_short"
           android:inputType="textPassword"
           android:maxLines="1" />
 
-        <View
-          android:layout_width="match_parent"
-          android:layout_height="@dimen/divider_height"
-          android:layout_marginTop="8dp"
-          android:background="@color/divider" />
-
         <Button
           android:id="@+id/btn_login_ready"
-          style="@style/Widget.AppCompat.Button.Borderless"
-          android:layout_width="wrap_content"
+          fontPath="fonts/OpenSans-Bold.ttf"
+          android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_gravity="center"
+          android:layout_marginTop="16dp"
+          android:background="@color/primary"
+          android:gravity="center"
+          android:padding="16dp"
           android:text="@string/action_login_sign_in"
-          android:textAllCaps="false"
-          android:textAppearance="@style/TextAppearance.AppCompat.Title"
-          android:textColor="@color/accent" />
+          android:textColor="@android:color/white"
+          tools:ignore="MissingPrefix" />
 
       </LinearLayout>
 
@@ -104,9 +99,9 @@
         android:padding="16dp"
         android:text="@string/label_login_or"
         android:textColor="@android:color/white"
-        app:layout_constraintLeft_toLeftOf="@+id/layout_login_input_container"
-        app:layout_constraintRight_toRightOf="@+id/layout_login_input_container"
-        app:layout_constraintTop_toBottomOf="@+id/layout_login_input_container" />
+        app:layout_constraintLeft_toLeftOf="@+id/input_wrapper"
+        app:layout_constraintRight_toRightOf="@+id/input_wrapper"
+        app:layout_constraintTop_toBottomOf="@+id/input_wrapper" />
 
       <Button
         android:id="@+id/btn_facebook_sign_in"
@@ -114,8 +109,8 @@
         android:layout_width="@dimen/_240asdp"
         android:layout_height="40dp"
         android:text="@string/action_login_facebook_sing_in"
-        app:layout_constraintLeft_toLeftOf="@+id/layout_login_input_container"
-        app:layout_constraintRight_toRightOf="@+id/layout_login_input_container"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_login_or" />
 
       <Button
@@ -129,7 +124,7 @@
         app:layout_constraintRight_toRightOf="@+id/btn_facebook_sign_in"
         app:layout_constraintTop_toBottomOf="@+id/btn_facebook_sign_in" />
 
-    </LinearLayout>
+    </android.support.constraint.ConstraintLayout>
 
   </ScrollView>
 

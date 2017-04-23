@@ -19,7 +19,8 @@ public class LevelProgressView extends AppCompatSeekBar {
     super(context, attrs, defStyleAttr);
   }
 
-  @SuppressLint("ClickableViewAccessibility") @Override
+  @SuppressLint("ClickableViewAccessibility")
+  @Override
   public boolean onTouchEvent(MotionEvent event) {
     return false;
   }

@@ -24,10 +24,8 @@ import javax.inject.Named;
     version = "v1",
     namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
 @ApiClass(resource = "tags", clientIds = {
-    Constants.ANDROID_CLIENT_ID,
-    Constants.IOS_CLIENT_ID,
-    Constants.WEB_CLIENT_ID
-}, audiences = { Constants.AUDIENCE_ID })
+    Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
+}, audiences = {Constants.AUDIENCE_ID})
 public class TagEndpoint {
 
   private final TagController tagController = TagControllerFactory.of().create();
@@ -44,8 +42,7 @@ public class TagEndpoint {
       path = "tags",
       httpMethod = ApiMethod.HttpMethod.POST,
       authenticators = {
-          AdminAuthenticator.class,
-          FirebaseAuthenticator.class
+          AdminAuthenticator.class, FirebaseAuthenticator.class
       })
   public Tag insert(@Named("name") String name, User user) throws ServiceException {
 
@@ -66,7 +63,7 @@ public class TagEndpoint {
   @ApiMethod(name = "tags.update",
       path = "tags/{tagId}",
       httpMethod = ApiMethod.HttpMethod.PUT,
-      authenticators = { AdminAuthenticator.class })
+      authenticators = {AdminAuthenticator.class})
   public Tag update(@Named("tagId") String tagId, @Nullable @Named("name") String name, User user)
       throws ServiceException {
 
@@ -88,7 +85,8 @@ public class TagEndpoint {
       authenticators = AdminAuthenticator.class)
   public void delete(@Named("tagId") String tagId, User user) throws ServiceException {
 
-    EndpointsValidator.create()
+    EndpointsValidator
+        .create()
         .on(BadRequestValidator.create(tagId, "tagId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(tagId, "Invalid tagId."))
@@ -110,7 +108,7 @@ public class TagEndpoint {
   @ApiMethod(name = "tags.list",
       path = "tags",
       httpMethod = ApiMethod.HttpMethod.GET,
-      authenticators = { AdminAuthenticator.class, FirebaseAuthenticator.class })
+      authenticators = {AdminAuthenticator.class, FirebaseAuthenticator.class})
   public CollectionResponse<Tag> list(@Named("name") String name,
       @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
       throws ServiceException {
@@ -118,6 +116,20 @@ public class TagEndpoint {
     EndpointsValidator.create().on(AuthValidator.create(user));
 
     return tagController.list(name, Optional.fromNullable(cursor), Optional.fromNullable(limit));
+  }
+
+  @ApiMethod(name = "tags.listUsedTags",
+      path = "groups/{groupId}/tags",
+      httpMethod = ApiMethod.HttpMethod.GET,
+      authenticators = {AdminAuthenticator.class, FirebaseAuthenticator.class})
+  public CollectionResponse<WrappedString> listUsedTags(@Named("groupId") String groupId,
+      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
+      throws ServiceException {
+
+    EndpointsValidator.create().on(AuthValidator.create(user));
+
+    return tagController.listUsedTags(groupId, Optional.fromNullable(cursor),
+        Optional.fromNullable(limit));
   }
 
   /**
@@ -130,9 +142,8 @@ public class TagEndpoint {
   @ApiMethod(name = "tags.recommended",
       path = "tags/recommended",
       httpMethod = ApiMethod.HttpMethod.GET,
-      authenticators = { AdminAuthenticator.class, FirebaseAuthenticator.class })
-  public List<Tag> recommended(User user)
-      throws ServiceException {
+      authenticators = {AdminAuthenticator.class, FirebaseAuthenticator.class})
+  public List<Tag> recommended(User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 

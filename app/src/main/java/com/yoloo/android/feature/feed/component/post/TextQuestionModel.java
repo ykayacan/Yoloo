@@ -40,7 +40,7 @@ public abstract class TextQuestionModel extends BasePostModel<TextQuestionModel.
         PostRealm payload = (PostRealm) payloads.get(0);
 
         if (post.getVoteCount() != payload.getVoteCount()) {
-          holder.voteView.setVotes(payload.getVoteCount());
+          holder.voteView.setVoteCount(payload.getVoteCount());
           post.setVoteCount(payload.getVoteCount());
         }
 
@@ -77,7 +77,7 @@ public abstract class TextQuestionModel extends BasePostModel<TextQuestionModel.
     holder.tvContent.setText(
         isNormal() ? ReadMoreUtil.addReadMore(context, post.getContent(), 200) : post.getContent());
     holder.tvComment.setText(CountUtil.formatCount(post.getCommentCount()));
-    holder.voteView.setVotes(post.getVoteCount());
+    holder.voteView.setVoteCount(post.getVoteCount());
     holder.voteView.setVoteDirection(post.getVoteDir());
 
     final int drawableIconRes =
@@ -90,7 +90,7 @@ public abstract class TextQuestionModel extends BasePostModel<TextQuestionModel.
         tag.setText(context.getString(R.string.label_tag, tagName));
         tag.setGravity(Gravity.CENTER);
         tag.setPadding(16, 10, 16, 10);
-        tag.setBackground(ContextCompat.getDrawable(context, R.drawable.dialog_tag_bg));
+        //tag.setBackground(ContextCompat.getDrawable(context, R.drawable.dialog_tag_bg));
         TextViewUtil.setTextAppearance(tag, context, R.style.TextAppearance_AppCompat);
 
         holder.tagContainer.addView(tag);

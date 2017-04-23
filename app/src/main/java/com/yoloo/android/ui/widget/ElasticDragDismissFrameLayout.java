@@ -60,42 +60,44 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     this(context, attrs, 0, 0);
   }
 
-  public ElasticDragDismissFrameLayout(Context context, AttributeSet attrs,
-      int defStyleAttr) {
+  public ElasticDragDismissFrameLayout(Context context, AttributeSet attrs, int defStyleAttr) {
     this(context, attrs, defStyleAttr, 0);
   }
 
-  public ElasticDragDismissFrameLayout(Context context, AttributeSet attrs,
-      int defStyleAttr, int defStyleRes) {
+  public ElasticDragDismissFrameLayout(Context context, AttributeSet attrs, int defStyleAttr,
+      int defStyleRes) {
     super(context, attrs, defStyleAttr, defStyleRes);
 
-    final TypedArray a = getContext().obtainStyledAttributes(
-        attrs, R.styleable.ElasticDragDismissFrameLayout, 0, 0);
+    final TypedArray a =
+        getContext().obtainStyledAttributes(attrs, R.styleable.ElasticDragDismissFrameLayout, 0, 0);
 
     if (a.hasValue(R.styleable.ElasticDragDismissFrameLayout_dragDismissDistance)) {
-      dragDismissDistance = a.getDimensionPixelSize(R.styleable
-          .ElasticDragDismissFrameLayout_dragDismissDistance, 0);
+      dragDismissDistance =
+          a.getDimensionPixelSize(R.styleable.ElasticDragDismissFrameLayout_dragDismissDistance, 0);
     } else if (a.hasValue(R.styleable.ElasticDragDismissFrameLayout_dragDismissFraction)) {
-      dragDismissFraction = a.getFloat(R.styleable
-          .ElasticDragDismissFrameLayout_dragDismissFraction, dragDismissFraction);
+      dragDismissFraction =
+          a.getFloat(R.styleable.ElasticDragDismissFrameLayout_dragDismissFraction,
+              dragDismissFraction);
     }
     if (a.hasValue(R.styleable.ElasticDragDismissFrameLayout_dragDismissScale)) {
-      dragDismissScale = a.getFloat(R.styleable
-          .ElasticDragDismissFrameLayout_dragDismissScale, dragDismissScale);
+      dragDismissScale =
+          a.getFloat(R.styleable.ElasticDragDismissFrameLayout_dragDismissScale, dragDismissScale);
       shouldScale = dragDismissScale != 1f;
     }
     if (a.hasValue(R.styleable.ElasticDragDismissFrameLayout_dragElasticity)) {
-      dragElasticity = a.getFloat(R.styleable.ElasticDragDismissFrameLayout_dragElasticity,
-          dragElasticity);
+      dragElasticity =
+          a.getFloat(R.styleable.ElasticDragDismissFrameLayout_dragElasticity, dragElasticity);
     }
     a.recycle();
   }
 
-  @Override public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
+  @Override
+  public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
     return (nestedScrollAxes & View.SCROLL_AXIS_VERTICAL) != 0;
   }
 
-  @Override public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
+  @Override
+  public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
     // if we're in a drag gesture and the user reverses up the we should take those events
     if (draggingDown && dy > 0 || draggingUp && dy < 0) {
       dragScale(dy);
@@ -103,12 +105,14 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     }
   }
 
-  @Override public void onNestedScroll(View target, int dxConsumed, int dyConsumed,
-      int dxUnconsumed, int dyUnconsumed) {
+  @Override
+  public void onNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed,
+      int dyUnconsumed) {
     dragScale(dyUnconsumed);
   }
 
-  @Override public void onStopNestedScroll(View child) {
+  @Override
+  public void onStopNestedScroll(View child) {
     if (Math.abs(totalDrag) >= dragDismissDistance) {
       dispatchDismissCallback();
     } else { // settle back to natural position
@@ -126,7 +130,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
     }
   }
 
-  @Override protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+  @Override
+  protected void onSizeChanged(int w, int h, int oldw, int oldh) {
     super.onSizeChanged(w, h, oldw, oldh);
     if (dragDismissFraction > 0f) {
       dragDismissDistance = h * dragDismissFraction;
@@ -188,8 +193,7 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
 
     // if we've reversed direction and gone past the settle point then clear the flags to
     // allow the listNotifications to get the scroll events & reset any transforms
-    if ((draggingDown && totalDrag >= 0)
-        || (draggingUp && totalDrag <= 0)) {
+    if ((draggingDown && totalDrag >= 0) || (draggingUp && totalDrag <= 0)) {
       totalDrag = dragTo = dragFraction = 0;
       draggingDown = draggingUp = false;
       setTranslationY(0f);
@@ -200,12 +204,11 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
         Math.min(1f, Math.abs(totalDrag) / dragDismissDistance), totalDrag);
   }
 
-  private void dispatchDragCallback(float elasticOffset, float elasticOffsetPixels,
-      float rawOffset, float rawOffsetPixels) {
+  private void dispatchDragCallback(float elasticOffset, float elasticOffsetPixels, float rawOffset,
+      float rawOffsetPixels) {
     if (callbacks != null && !callbacks.isEmpty()) {
       for (ElasticDragDismissCallback callback : callbacks) {
-        callback.onDrag(elasticOffset, elasticOffsetPixels,
-            rawOffset, rawOffsetPixels);
+        callback.onDrag(elasticOffset, elasticOffsetPixels, rawOffset, rawOffsetPixels);
       }
     }
   }
@@ -227,8 +230,8 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
      * applied. A value from 1 indicates that the dismiss distance has been reached.
      * @param rawOffsetPixels The raw distance the user has dragged
      */
-    void onDrag(float elasticOffset, float elasticOffsetPixels,
-        float rawOffset, float rawOffsetPixels) {
+    void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset,
+        float rawOffsetPixels) {
     }
 
     /**
@@ -257,23 +260,32 @@ public class ElasticDragDismissFrameLayout extends FrameLayout {
       fadeNavBar = ViewUtils.isNavBarOnBottom(activity);
     }
 
-    @Override public void onDrag(float elasticOffset, float elasticOffsetPixels,
-        float rawOffset, float rawOffsetPixels) {
+    @Override
+    public void onDrag(float elasticOffset, float elasticOffsetPixels, float rawOffset,
+        float rawOffsetPixels) {
       if (elasticOffsetPixels > 0) {
         // dragging downward, fade the status bar in proportion
-        activity.getWindow().setStatusBarColor(ColorUtils.modifyAlpha(activity.getWindow()
-            .getStatusBarColor(), (int) ((1f - rawOffset) * statusBarAlpha)));
+        activity
+            .getWindow()
+            .setStatusBarColor(ColorUtils.modifyAlpha(activity.getWindow().getStatusBarColor(),
+                (int) ((1f - rawOffset) * statusBarAlpha)));
       } else if (elasticOffsetPixels == 0) {
         // reset
-        activity.getWindow().setStatusBarColor(ColorUtils.modifyAlpha(
-            activity.getWindow().getStatusBarColor(), statusBarAlpha));
-        activity.getWindow().setNavigationBarColor(ColorUtils.modifyAlpha(
-            activity.getWindow().getNavigationBarColor(), navBarAlpha));
+        activity
+            .getWindow()
+            .setStatusBarColor(
+                ColorUtils.modifyAlpha(activity.getWindow().getStatusBarColor(), statusBarAlpha));
+        activity
+            .getWindow()
+            .setNavigationBarColor(
+                ColorUtils.modifyAlpha(activity.getWindow().getNavigationBarColor(), navBarAlpha));
       } else if (fadeNavBar) {
         // dragging upward, fade the navigation bar in proportion
-        activity.getWindow().setNavigationBarColor(
-            ColorUtils.modifyAlpha(activity.getWindow().getNavigationBarColor(),
-                (int) ((1f - rawOffset) * navBarAlpha)));
+        activity
+            .getWindow()
+            .setNavigationBarColor(
+                ColorUtils.modifyAlpha(activity.getWindow().getNavigationBarColor(),
+                    (int) ((1f - rawOffset) * navBarAlpha)));
       }
     }
 

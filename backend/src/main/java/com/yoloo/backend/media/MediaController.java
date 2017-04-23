@@ -10,13 +10,10 @@ import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.util.CollectionTransformer;
-
+import io.reactivex.Observable;
 import java.util.Iterator;
 import java.util.logging.Logger;
-
 import javax.annotation.Nonnull;
-
-import io.reactivex.Observable;
 import lombok.AllArgsConstructor;
 
 import static com.yoloo.backend.OfyService.ofy;
@@ -24,8 +21,7 @@ import static com.yoloo.backend.OfyService.ofy;
 @AllArgsConstructor(staticName = "create")
 public class MediaController extends Controller {
 
-  private static final Logger logger =
-      Logger.getLogger(MediaController.class.getName());
+  private static final Logger logger = Logger.getLogger(MediaController.class.getName());
 
   /**
    * Maximum number of questions to return.
@@ -41,9 +37,9 @@ public class MediaController extends Controller {
    * @param user the user
    * @return the media
    */
-  public Media getMedia(@Nonnull String mediaId, User user) {
+  public MediaEntity getMedia(@Nonnull String mediaId, User user) {
 
-    final Key<Media> mediaKey = Key.create(mediaId);
+    final Key<MediaEntity> mediaKey = Key.create(mediaId);
 
     return ofy().load().key(mediaKey).now();
   }
@@ -57,27 +53,46 @@ public class MediaController extends Controller {
    * @param user the user
    * @return the collection response
    */
-  public CollectionResponse<Media> listMedias(
-      String userId,
-      Optional<Integer> limit,
-      Optional<String> cursor,
-      User user) {
+  public CollectionResponse<MediaEntity> listMedias(String userId, Optional<Integer> limit,
+      Optional<String> cursor, User user) {
 
     // Create account key from websafe id.
     final Key<Account> authKey = Key.create(userId);
 
-    Query<Media> query = ofy().load().type(Media.class).ancestor(authKey);
+    Query<MediaEntity> query =
+        ofy().load().type(MediaEntity.class).ancestor(authKey).order("-" + MediaEntity.FIELD_CREATED);
 
     // Fetch items from beginning from cursor.
-    query = cursor.isPresent()
-        ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
-        : query;
+    query = cursor.isPresent() ? query.startAt(Cursor.fromWebSafeString(cursor.get())) : query;
 
     query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
 
-    final QueryResultIterator<Media> qi = query.iterator();
+    final QueryResultIterator<MediaEntity> qi = query.iterator();
 
-    return Observable.just(qi)
+    return Observable
+        .just(qi)
+        .filter(Iterator::hasNext)
+        .map(Iterator::next)
+        .toList(DEFAULT_LIST_LIMIT)
+        .toObservable()
+        .compose(CollectionTransformer.create(qi.getCursor().toWebSafeString()))
+        .blockingSingle();
+  }
+
+  public CollectionResponse<MediaEntity> listRecentMedias(Optional<Integer> limit,
+      Optional<String> cursor) {
+
+    Query<MediaEntity> query = ofy().load().type(MediaEntity.class).order("-" + MediaEntity.FIELD_CREATED);
+
+    // Fetch items from beginning from cursor.
+    query = cursor.isPresent() ? query.startAt(Cursor.fromWebSafeString(cursor.get())) : query;
+
+    query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
+
+    final QueryResultIterator<MediaEntity> qi = query.iterator();
+
+    return Observable
+        .just(qi)
         .filter(Iterator::hasNext)
         .map(Iterator::next)
         .toList(DEFAULT_LIST_LIMIT)

@@ -8,7 +8,8 @@ import com.yoloo.backend.notification.Action;
 import com.yoloo.backend.notification.Notification;
 import com.yoloo.backend.notification.PushConstants;
 import com.yoloo.backend.notification.PushMessage;
-import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostEntity;
+import com.yoloo.backend.post.PostEntity;
 import java.util.Collections;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,7 @@ public class CommentNotifiable implements Notifiable {
   private Account sender;
   private DeviceRecord record;
   private Comment comment;
-  private Post post;
+  private PostEntity postEntity;
 
   @Override public List<Notification> getNotifications() {
     Notification notification = Notification.builder()
@@ -43,7 +44,7 @@ public class CommentNotifiable implements Notifiable {
         .value(PushConstants.QUESTION_ID, comment.getPostKey().toWebSafeString())
         .value(PushConstants.SENDER_USERNAME, sender.getUsername())
         .value(PushConstants.SENDER_AVATAR_URL, sender.getAvatarUrl().getValue())
-        .value(PushConstants.ACCEPTED_ID, post.getAcceptedCommentId())
+        .value(PushConstants.ACCEPTED_ID, postEntity.getAcceptedCommentId())
         .build();
 
     return PushMessage.builder().to(record.getRegId()).data(dataBody).build();

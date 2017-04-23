@@ -89,17 +89,13 @@ class PostDetailAdapter extends EpoxyAdapter {
   }
 
   void addPost(PostRealm post) {
-    final int postType = post.getPostType();
-
-    if (postType == PostRealm.TYPE_TEXT) {
+    if (post.isTextQuestionPost()) {
       addModel(createNormalQuestionDetail(post));
-    } else if (postType == PostRealm.TYPE_RICH) {
+    } else if (post.isRichQuestionPost()) {
       addModel(createRichQuestionDetail(post));
-    } else if (postType == PostRealm.TYPE_BLOG) {
+    } else if (post.isBlogPost()) {
       addModel(createBlogDetail(post));
     }
-
-    //addModel(commentHeaderModel);
   }
 
   void addComments(List<CommentRealm> comments, AccountRealm account, PostRealm post) {
@@ -136,9 +132,6 @@ class PostDetailAdapter extends EpoxyAdapter {
       PostRealm post) {
     return new CommentModel_().glide(glide)
         .comment(comment)
-        .isCommentOwner(isCommentOwner(comment, account))
-        .isPostOwner(isPostOwner(post, account))
-        .postAccepted(isAccepted(post))
         .postType(post.getPostType())
         .backgroundColor(Color.WHITE)
         .circleTransformation(cropCircleTransformation)

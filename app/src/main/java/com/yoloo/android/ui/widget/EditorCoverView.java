@@ -15,7 +15,7 @@ import com.yoloo.android.R;
 
 public class EditorCoverView extends FrameLayout {
 
-  @BindView(R.id.iv_cover) ImageView ivCover;
+  @BindView(R.id.iv_slide) ImageView ivCover;
   @BindView(R.id.tv_add_cover) TextView tvAddCoverText;
 
   @BindString(R.string.label_click_add_image) String clickToAddString;
@@ -48,7 +48,7 @@ public class EditorCoverView extends FrameLayout {
     this.onAddImageListener = onAddImageListener;
   }
 
-  @OnClick({R.id.iv_cover, R.id.tv_add_cover})
+  @OnClick({R.id.iv_slide, R.id.tv_add_cover})
   void addImage() {
     if (ivCover.getDrawable() == null) {
       onAddImageListener.onAddImage();

@@ -13,9 +13,9 @@ import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.group.TravelerGroupShard;
 import com.yoloo.backend.travelertype.TravelerTypeEntity;
-import com.yoloo.backend.media.Media;
+import com.yoloo.backend.media.MediaEntity;
 import com.yoloo.backend.notification.Notification;
-import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.post.PostShard;
 import com.yoloo.backend.relationship.Relationship;
 import com.yoloo.backend.tag.Tag;
@@ -38,7 +38,7 @@ public class TestBase extends GAETestBase {
     fact().register(Account.class);
     fact().register(AccountShard.class);
 
-    fact().register(Post.class);
+    fact().register(PostEntity.class);
     fact().register(PostShard.class);
 
     fact().register(Tag.class);
@@ -57,7 +57,7 @@ public class TestBase extends GAETestBase {
     fact().register(Tracker.class);
     fact().register(DeviceRecord.class);
     fact().register(Notification.class);
-    fact().register(Media.class);
+    fact().register(MediaEntity.class);
     fact().register(Bookmark.class);
   }
 

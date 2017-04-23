@@ -15,9 +15,7 @@ import butterknife.OnClick;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.CommentRealm;
-import com.yoloo.android.data.repository.comment.CommentRepository;
-import com.yoloo.android.data.repository.comment.datasource.CommentDiskDataStore;
-import com.yoloo.android.data.repository.comment.datasource.CommentRemoteDataStore;
+import com.yoloo.android.data.repository.comment.CommentRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.framework.MvpLinearLayout;
 import com.yoloo.android.ui.tokenizer.SpaceTokenizer;
@@ -72,7 +70,8 @@ public class CommentAutocomplete
     setOrientation(LinearLayout.HORIZONTAL);
   }
 
-  @Override protected void onFinishInflate() {
+  @Override
+  protected void onFinishInflate() {
     super.onFinishInflate();
     if (isInEditMode()) {
       return;
@@ -80,14 +79,16 @@ public class CommentAutocomplete
 
     setupMentionsAdapter();
 
-    mentionAdapter.getQuery()
+    mentionAdapter
+        .getQuery()
         .filter(s -> !s.isEmpty())
         .debounce(AUTOCOMPLETE_DELAY, TimeUnit.MILLISECONDS)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(query -> getPresenter().suggestUsers(query));
   }
 
-  @Override public void onAttachedToWindow() {
+  @Override
+  public void onAttachedToWindow() {
     super.onAttachedToWindow();
     if (isInEditMode()) {
       return;
@@ -95,27 +96,32 @@ public class CommentAutocomplete
     getPresenter().loadMe();
   }
 
-  @Override public void onMeLoaded(AccountRealm me) {
+  @Override
+  public void onMeLoaded(AccountRealm me) {
     this.me = me;
   }
 
-  @Override public void onSuggestionsLoaded(List<AccountRealm> suggestions) {
+  @Override
+  public void onSuggestionsLoaded(List<AccountRealm> suggestions) {
     mentionAdapter.replaceItems(suggestions);
     tvComment.post(mentionDropdownRunnable);
   }
 
-  @Override public void onNewComment(CommentRealm comment) {
+  @Override
+  public void onNewComment(CommentRealm comment) {
     newCommentListener.onNewComment(comment);
   }
 
-  @Override public void onError(Throwable throwable) {
+  @Override
+  public void onError(Throwable throwable) {
     Timber.e(throwable);
   }
 
-  @NonNull @Override public CommentAutocompletePresenter createPresenter() {
+  @NonNull
+  @Override
+  public CommentAutocompletePresenter createPresenter() {
     return new CommentAutocompletePresenter(UserRepositoryProvider.getRepository(),
-        CommentRepository.getInstance(CommentRemoteDataStore.getInstance(),
-            CommentDiskDataStore.getInstance()));
+        CommentRepositoryProvider.getRepository());
   }
 
   public void setPostId(String postId) {
@@ -135,7 +141,8 @@ public class CommentAutocomplete
     KeyboardUtil.hideKeyboard(tvComment);
   }
 
-  @OnClick(R.id.btn_send_comment) void sendComment() {
+  @OnClick(R.id.btn_send_comment)
+  void sendComment() {
     final String content = tvComment.getText().toString().trim();
 
     if (TextUtils.isEmpty(content)) {
@@ -145,7 +152,8 @@ public class CommentAutocomplete
     Preconditions.checkNotNull(postId, "postId can not be null!");
     Preconditions.checkNotNull(newCommentListener, "NewCommentListener is null!");
 
-    CommentRealm comment = new CommentRealm().setId(UUID.randomUUID().toString())
+    CommentRealm comment = new CommentRealm()
+        .setId(UUID.randomUUID().toString())
         .setPostId(postId)
         .setOwnerId(me.getId())
         .setUsername(me.getUsername())

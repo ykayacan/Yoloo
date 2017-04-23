@@ -32,7 +32,7 @@ public final class PostShard implements FeedShard, Shardable.Shard {
 
   private int reports;
 
-  public static Key<PostShard> createKey(Key<Post> postKey, int shardNum) {
+  public static Key<PostShard> createKey(Key<PostEntity> postKey, int shardNum) {
     return Key.create(PostShard.class, postKey.toWebSafeString() + ":" + shardNum);
   }
 

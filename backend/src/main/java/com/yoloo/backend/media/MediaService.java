@@ -15,11 +15,11 @@ public class MediaService {
 
   private static final Storage STORAGE = StorageOptions.getDefaultInstance().getService();
 
-  public void deleteMedia(Key<Media> mediaKey) {
+  public void deleteMedia(Key<MediaEntity> mediaKey) {
     deleteMedias(Collections.singleton(mediaKey));
   }
 
-  public void deleteMedias(Collection<Key<Media>> mediaKeys) {
+  public void deleteMedias(Collection<Key<MediaEntity>> mediaKeys) {
     Ix.from(mediaKeys)
         .map(mediaKey -> StringUtil.split(mediaKey.getName(), "/"))
         .map(s -> BlobId.of(s.get(0), s.get(1)))

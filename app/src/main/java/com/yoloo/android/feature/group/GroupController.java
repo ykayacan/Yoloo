@@ -33,13 +33,14 @@ import com.yoloo.android.data.model.GroupRealm;
 import com.yoloo.android.data.repository.group.GroupRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.group.groupuserslist.GroupUsersListController;
+import com.yoloo.android.feature.group.taglist.TagListController;
 import com.yoloo.android.feature.postlist.PostListController;
-import com.yoloo.android.feature.profile.photos.PhotosController;
 import com.yoloo.android.feature.search.SearchController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.Pair;
+import com.yoloo.android.util.UpdateCallback;
 import java.util.ArrayList;
 import java.util.List;
 import timber.log.Timber;
@@ -95,7 +96,7 @@ public class GroupController extends MvpController<GroupView, GroupPresenter> im
 
     List<Pair<String, Controller>> pairs = new ArrayList<>(3);
     pairs.add(Pair.create(postsTabString, PostListController.ofGroup(groupId)));
-    pairs.add(Pair.create(tagsTabString, PhotosController.create(groupId)));
+    pairs.add(Pair.create(tagsTabString, TagListController.create(groupId)));
     pairs.add(Pair.create(usersTabString, GroupUsersListController.create(groupId)));
 
     final RouterPagerAdapter pagerAdapter = new GroupPagerAdapter(this, pairs);
@@ -187,6 +188,12 @@ public class GroupController extends MvpController<GroupView, GroupPresenter> im
     }
 
     group.setSubscribed(!group.isSubscribed());
+
+    Controller targetController = getTargetController();
+    if (targetController != null) {
+      //noinspection unchecked
+      ((UpdateCallback<GroupRealm>) targetController).onModelUpdated(group);
+    }
   }
 
   private void setupToolbar() {

@@ -7,7 +7,8 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostEntity;
+import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.vote.Vote;
 import io.reactivex.Observable;
 import java.util.Collection;
@@ -24,7 +25,7 @@ public class CommentService {
 
   private CommentShardService commentShardService;
 
-  public CommentEntity createComment(Account account, Key<Post> postKey, String content) {
+  public CommentEntity createComment(Account account, Key<PostEntity> postKey, String content) {
     final Key<Comment> commentKey = factory().allocateId(account.getKey(), Comment.class);
 
     Map<Ref<CommentShard>, CommentShard> shardMap =

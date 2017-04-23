@@ -55,7 +55,6 @@ class SignUpPresenter extends MvpPresenter<SignUpView> {
       @Nonnull Date birthdate, @Nonnull String country, @Nonnull List<String> travelerTypeIds,
       @Nonnull String locale) {
     if (response.getProviderType().equals(AuthUI.EMAIL_PROVIDER)) {
-      Timber.d("Password: %s", password);
       signUpWithPassword(response, username, password, birthdate, country, travelerTypeIds, locale);
     } else {
       signUpWithProvider(response, username, birthdate, country, travelerTypeIds, locale);

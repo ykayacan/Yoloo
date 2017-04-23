@@ -31,9 +31,6 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
   private static final int DEFAULT_BACKGROUND_COLOR = Color.WHITE;
 
   @EpoxyAttribute CommentRealm comment;
-  @EpoxyAttribute boolean isPostOwner;
-  @EpoxyAttribute boolean isCommentOwner;
-  @EpoxyAttribute boolean postAccepted;
   @EpoxyAttribute int postType;
   @EpoxyAttribute @ColorInt int backgroundColor;
   @EpoxyAttribute(hash = false) RequestManager glide;
@@ -44,13 +41,15 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
   @EpoxyAttribute(hash = false) OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener;
   @EpoxyAttribute(hash = false) CropCircleTransformation circleTransformation;
 
-  @Override public void bind(CommentHolder holder) {
+  @Override
+  public void bind(CommentHolder holder) {
     final Context context = holder.itemView.getContext();
 
     backgroundColor = backgroundColor == 0 ? DEFAULT_BACKGROUND_COLOR : backgroundColor;
     holder.itemView.setBackgroundColor(backgroundColor);
 
-    glide.load(comment.getAvatarUrl())
+    glide
+        .load(comment.getAvatarUrl())
         .bitmapTransform(circleTransformation)
         .placeholder(R.drawable.ic_player_72dp)
         .into(holder.ivUserAvatar);
@@ -58,21 +57,23 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
     holder.tvUsername.setText(comment.getUsername());
     holder.tvTime.setTimeStamp(comment.getCreated().getTime() / 1000);
     holder.tvContent.setText(comment.getContent());
-    holder.voteView.setVotes(comment.getVoteCount());
+    holder.voteView.setVoteCount(comment.getVoteCount());
     holder.voteView.setVoteDirection(comment.getVoteDir());
 
     holder.tvAcceptedMark.setVisibility(comment.isAccepted() ? View.VISIBLE : View.GONE);
-    holder.tvAccept.setVisibility(isPostOwner
-        /*&& !isCommentOwner*/ && !postAccepted && postType != PostRealm.TYPE_BLOG
+    holder.tvAccept.setVisibility(comment.isPostOwner()
+        /*&& !isCommentOwner*/ && !comment.isPostAccepted() && postType != PostRealm.TYPE_BLOG
         ? View.VISIBLE
         : View.GONE);
 
-    DrawableHelper.create()
+    DrawableHelper
+        .create()
         .withDrawable(holder.tvAccept.getCompoundDrawables()[0])
         .withColor(context, android.R.color.secondary_text_dark)
         .tint();
 
-    DrawableHelper.create()
+    DrawableHelper
+        .create()
         .withDrawable(holder.tvAcceptedMark.getCompoundDrawables()[1])
         .withColor(context, R.color.accepted)
         .tint();
@@ -81,7 +82,7 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
   }
 
   private void setupClickListeners(CommentHolder holder) {
-    if (isCommentOwner) {
+    if (comment.isOwner()) {
       holder.itemView.setOnLongClickListener(v -> {
         onCommentLongClickListener.onItemLongClick(v, this, comment);
         return true;
@@ -101,7 +102,8 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
       comment.setAccepted(true);
       holder.tvAccept.setVisibility(View.GONE);
       holder.tvAcceptedMark.setVisibility(View.VISIBLE);
-      DrawableHelper.create()
+      DrawableHelper
+          .create()
           .withDrawable(holder.tvAcceptedMark.getCompoundDrawables()[1])
           .withColor(v.getContext(), R.color.accepted)
           .tint();
@@ -118,7 +120,7 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
     @BindView(R.id.iv_comment_user_avatar) ImageView ivUserAvatar;
     @BindView(R.id.tv_comment_username) TextView tvUsername;
     @BindView(R.id.tv_comment_time) TimeTextView tvTime;
-    @BindView(R.id.tv_comment_accepted) TextView tvAcceptedMark;
+    @BindView(R.id.tv_comment_accepted_indicator) TextView tvAcceptedMark;
     @BindView(R.id.tv_comment_content) LinkableTextView tvContent;
     @BindView(R.id.tv_comment_vote) VoteView voteView;
     @BindView(R.id.tv_mark_as_accepted) TextView tvAccept;

@@ -113,6 +113,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
   @Override
   protected void onViewBound(@NonNull View view) {
+    super.onViewBound(view);
     setupToolbar();
 
     userId = getArgs().getString(KEY_USER_ID);
@@ -140,6 +141,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
   @Override
   protected void onAttach(@NonNull View view) {
+    super.onAttach(view);
     getPresenter().loadUserProfile(userId);
   }
 

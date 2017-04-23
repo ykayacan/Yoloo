@@ -24,7 +24,8 @@ import com.yoloo.backend.notification.type.AcceptNotifiable;
 import com.yoloo.backend.notification.type.CommentNotifiable;
 import com.yoloo.backend.notification.type.MentionNotification;
 import com.yoloo.backend.notification.type.Notifiable;
-import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostEntity;
+import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.post.PostShard;
 import com.yoloo.backend.post.PostShardService;
 import com.yoloo.backend.vote.Vote;
@@ -104,7 +105,7 @@ public class CommentController extends Controller {
     keyBuilder.add(accountKey);
 
     // Create post key from websafe id.
-    final Key<Post> questionKey = Key.create(postId);
+    final Key<PostEntity> questionKey = Key.create(postId);
     keyBuilder.add(questionKey);
 
     // Get a random shard key.
@@ -127,7 +128,7 @@ public class CommentController extends Controller {
     //noinspection SuspiciousMethodCalls
     Account account = (Account) fetched.get(accountKey);
     //noinspection SuspiciousMethodCalls
-    Post post = (Post) fetched.get(questionKey);
+    PostEntity postEntity = (PostEntity) fetched.get(questionKey);
     //noinspection SuspiciousMethodCalls
     PostShard qqs = (PostShard) fetched.get(questionShardKey);
     //noinspection SuspiciousMethodCalls
@@ -141,23 +142,23 @@ public class CommentController extends Controller {
     Comment comment = entity.getComment();
     Collection<CommentShard> shards = entity.getShards().values();
 
-    post = post.withCommented(!post.isCommented());
+    postEntity = postEntity.withCommented(!postEntity.isCommented());
 
     // Increase total comment count.
     qqs.increaseComments();
 
     // Start gamification check.
     List<Notifiable> notifiables = Lists.newArrayList();
-    gameService.addFirstAnswerBonus(record, tracker, notifiables::addAll);
-    gameService.addFirstAnswererPerDayBonus(record, tracker, post, notifiables::addAll);
-    gameService.addAnswerToUnansweredQuestionBonus(record, tracker, post,
+    gameService.addAnswerFirstQuestionBonus(record, tracker, notifiables::addAll);
+    gameService.addFirstCommenterBonus(record, tracker, postEntity, notifiables::addAll);
+    gameService.addAnswerToUnansweredQuestionBonus(record, tracker, postEntity,
         notifiables::addAll);
 
     ImmutableSet.Builder<Object> saveBuilder = ImmutableSet.builder()
         .add(comment)
         .addAll(shards)
         .add(qqs)
-        .add(post)
+        .add(postEntity)
         .add(tracker);
 
     for (Notifiable bundle : notifiables) {
@@ -183,7 +184,7 @@ public class CommentController extends Controller {
             .keys(DeviceUtil.createKeysFromAccount(accountKeys)).values();
 
         MentionNotification mentionNotification =
-            MentionNotification.create(post, account, records, comment);
+            MentionNotification.create(postEntity, account, records, comment);
 
         notificationService.send(mentionNotification);
 
@@ -191,7 +192,7 @@ public class CommentController extends Controller {
       }
 
       CommentNotifiable commentNotifiable =
-          CommentNotifiable.create(account, record, comment, post);
+          CommentNotifiable.create(account, record, comment, postEntity);
 
       if (sendCommentNotification) {
         notificationService.send(commentNotifiable);
@@ -235,7 +236,7 @@ public class CommentController extends Controller {
     final Key<Account> accountKey = Key.create(user.getUserId());
 
     // Create post key from websafe id.
-    final Key<Post> postKey = Key.create(postId);
+    final Key<PostEntity> postKey = Key.create(postId);
 
     // Create comment key from websafe id.
     final Key<Comment> commentKey = Key.create(commentId);
@@ -263,7 +264,7 @@ public class CommentController extends Controller {
     //noinspection SuspiciousMethodCalls
     Comment comment = (Comment) fetched.get(commentKey);
     //noinspection SuspiciousMethodCalls
-    Post post = (Post) fetched.get(postKey);
+    PostEntity postEntity = (PostEntity) fetched.get(postKey);
     //noinspection SuspiciousMethodCalls
     DeviceRecord askerRecord = (DeviceRecord) fetched.get(askerRecordKey);
     //noinspection SuspiciousMethodCalls
@@ -277,14 +278,14 @@ public class CommentController extends Controller {
 
     // Start gamification check.
     List<Notifiable> notifiables = Lists.newArrayList();
-    if (accepted.isPresent() && post.getParent().equivalent(accountKey)) {
+    if (accepted.isPresent() && postEntity.getParent().equivalent(accountKey)) {
 
-      post = post.withAcceptedCommentKey(comment.getKey());
+      postEntity = postEntity.withAcceptedCommentKey(comment.getKey());
       comment = comment.withAccepted(true);
-      post = gameService.addAcceptCommentBonus(askerTracker, answererTracker, askerRecord,
-          answererRecord, post, notifiables::addAll, notifiables::addAll);
+      postEntity = gameService.addAcceptCommentBonus(askerTracker, answererTracker, askerRecord,
+          answererRecord, postEntity, notifiables::addAll, notifiables::addAll);
 
-      notifiables.add(AcceptNotifiable.create(account, answererRecord, post));
+      notifiables.add(AcceptNotifiable.create(account, answererRecord, postEntity));
 
       saveBuilder.add(askerRecord).add(answererRecord);
 
@@ -293,7 +294,7 @@ public class CommentController extends Controller {
       }
     }
 
-    saveBuilder.add(post).add(comment);
+    saveBuilder.add(postEntity).add(comment);
 
     return ofy().transact(() -> {
       Map<Key<Object>, Object> saved = ofy().save().entities(saveBuilder.build()).now();
@@ -317,7 +318,7 @@ public class CommentController extends Controller {
   public void deleteComment(String postId, String commentId, User user) {
     // Create comment key from websafe id.
     final Key<Comment> commentKey = Key.create(commentId);
-    final Key<Post> postKey = Key.create(postId);
+    final Key<PostEntity> postKey = Key.create(postId);
     final Key<PostShard> shardKey = postShardService.getRandomShardKey(postKey);
 
     final List<Key<Vote>> voteKeys = ofy().load().type(Vote.class)
@@ -356,7 +357,7 @@ public class CommentController extends Controller {
       Optional<Integer> limit,
       User user) {
     final Key<Account> authKey = Key.create(user.getUserId());
-    final Key<Post> questionKey = Key.create(questionId);
+    final Key<PostEntity> questionKey = Key.create(questionId);
 
     Query<Comment> query = ofy().load()
         .group(Comment.ShardGroup.class)

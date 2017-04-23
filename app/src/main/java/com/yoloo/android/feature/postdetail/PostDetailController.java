@@ -27,9 +27,7 @@ import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.data.model.MediaRealm;
 import com.yoloo.android.data.model.PostRealm;
-import com.yoloo.android.data.repository.comment.CommentRepository;
-import com.yoloo.android.data.repository.comment.datasource.CommentDiskDataStore;
-import com.yoloo.android.data.repository.comment.datasource.CommentRemoteDataStore;
+import com.yoloo.android.data.repository.comment.CommentRepositoryProvider;
 import com.yoloo.android.data.repository.post.PostRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.comment.OnMarkAsAcceptedClickListener;
@@ -202,10 +200,8 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   @NonNull
   @Override
   public PostDetailPresenter createPresenter() {
-    return new PostDetailPresenter(
-        CommentRepository.getInstance(CommentRemoteDataStore.getInstance(),
-            CommentDiskDataStore.getInstance()), PostRepositoryProvider.getRepository(),
-        UserRepositoryProvider.getRepository());
+    return new PostDetailPresenter(CommentRepositoryProvider.getRepository(),
+        PostRepositoryProvider.getRepository(), UserRepositoryProvider.getRepository());
   }
 
   @Override
@@ -238,7 +234,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   @Override
   public void onContentImageClick(View v, MediaRealm media) {
-    startTransaction(FullscreenPhotoController.create(media.getLargeSizeUrl()),
+    startTransaction(FullscreenPhotoController.create(media.getLargeSizeUrl(), media.getId()),
         new ArcFadeMoveChangeHandlerCompat());
   }
 

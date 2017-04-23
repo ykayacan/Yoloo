@@ -1,10 +1,8 @@
 package com.yoloo.android.ui.recyclerview;
 
 import android.support.v4.util.SparseArrayCompat;
-
 import com.airbnb.epoxy.EpoxyAdapter;
 import com.airbnb.epoxy.EpoxyModel;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +20,8 @@ public abstract class SelectableAdapter extends EpoxyAdapter implements Selectab
     this.selectedItems = new SparseArrayCompat<>();
   }
 
-  @Override public void clearSelection() {
+  @Override
+  public void clearSelection() {
     List<EpoxyModel<?>> items = getSelectedItems();
     selectedItems.clear();
     for (EpoxyModel<?> model : items) {
@@ -30,11 +29,13 @@ public abstract class SelectableAdapter extends EpoxyAdapter implements Selectab
     }
   }
 
-  @Override public int getSelectedItemCount() {
+  @Override
+  public int getSelectedItemCount() {
     return selectedItems.size();
   }
 
-  @Override public List<EpoxyModel<?>> getSelectedItems() {
+  @Override
+  public List<EpoxyModel<?>> getSelectedItems() {
     final int size = getSelectedItemCount();
     selectedItemsList.clear();
     for (int i = 0; i < size; i++) {
@@ -43,19 +44,23 @@ public abstract class SelectableAdapter extends EpoxyAdapter implements Selectab
     return selectedItemsList;
   }
 
-  @Override public boolean isMaxSelectionReached() {
+  @Override
+  public boolean isMaxSelectionReached() {
     return getSelectedItemCount() == maxSelection;
   }
 
-  @Override public boolean isSelected(EpoxyModel<?> model) {
+  @Override
+  public boolean isSelected(EpoxyModel<?> model) {
     return selectedItems.indexOfValue(model) != -1;
   }
 
-  @Override public boolean canSelect(EpoxyModel<?> model) {
+  @Override
+  public boolean canSelect(EpoxyModel<?> model) {
     return isSelected(model) || getSelectedItemCount() < maxSelection;
   }
 
-  @Override public boolean toggleSelection(EpoxyModel<?> model) {
+  @Override
+  public boolean toggleSelection(EpoxyModel<?> model) {
     final int id = (int) model.id();
     if (selectedItems.get(id) != null) {
       selectedItems.delete(id);
@@ -81,7 +86,8 @@ public abstract class SelectableAdapter extends EpoxyAdapter implements Selectab
     }
   }
 
-  @Override public void setMaxSelection(int maxSelection) {
+  @Override
+  public void setMaxSelection(int maxSelection) {
     this.maxSelection = maxSelection;
   }
 

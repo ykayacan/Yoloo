@@ -25,16 +25,11 @@
 
   <dimen name="lce_content_view_animation_translate_y">40dp</dimen>
 
-  <dimen name="app_bar_height">180dp</dimen>
+  <dimen name="app_bar_height">192dp</dimen>
 
   <dimen name="fab_margin">16dp</dimen>
   <dimen name="nav_header_vertical_spacing">16dp</dimen>
   <dimen name="nav_header_height">196dp</dimen>
-
-  <!-- FloatingActionMenu -->
-  <dimen name="fam_spacing">16dp</dimen>
-  <dimen name="fam_label_spacing">16dp</dimen>
-  <dimen name="dim_elevation">5dp</dimen>
 
   <dimen name="profile_avatar_width">72dp</dimen>
 

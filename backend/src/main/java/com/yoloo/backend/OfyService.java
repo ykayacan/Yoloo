@@ -12,12 +12,12 @@ import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentShard;
 import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.feed.Feed;
+import com.yoloo.backend.media.MediaEntity;
 import com.yoloo.backend.travelertype.TravelerTypeEntity;
-import com.yoloo.backend.media.Media;
 import com.yoloo.backend.relationship.Relationship;
 import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.notification.Notification;
-import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.post.PostShard;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagShard;
@@ -37,7 +37,7 @@ public final class OfyService {
     factory().register(AccountShard.class);
 
     factory().register(Feed.class);
-    factory().register(Post.class);
+    factory().register(PostEntity.class);
     factory().register(PostShard.class);
 
     factory().register(Tag.class);
@@ -60,7 +60,7 @@ public final class OfyService {
     factory().register(DeviceRecord.class);
 
     factory().register(Notification.class);
-    factory().register(Media.class);
+    factory().register(MediaEntity.class);
   }
 
   public static Objectify ofy() {

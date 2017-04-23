@@ -9,7 +9,7 @@ import com.yoloo.backend.notification.Action;
 import com.yoloo.backend.notification.Notification;
 import com.yoloo.backend.notification.PushConstants;
 import com.yoloo.backend.notification.PushMessage;
-import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostEntity;
 import io.reactivex.Observable;
 import java.util.Collection;
 import java.util.List;
@@ -19,7 +19,7 @@ import org.joda.time.DateTime;
 @AllArgsConstructor(staticName = "create")
 public class MentionNotification implements Notifiable {
 
-  private Post post;
+  private PostEntity postEntity;
   private Account sender;
   private Collection<DeviceRecord> records;
   private Comment comment;
@@ -50,7 +50,7 @@ public class MentionNotification implements Notifiable {
         .value(PushConstants.SENDER_USERNAME, sender.getUsername())
         .value(PushConstants.SENDER_AVATAR_URL, sender.getAvatarUrl().getValue())
         .value(PushConstants.COMMENT, CommentUtil.trimContent(comment.getContent(), 50))
-        .value(PushConstants.ACCEPTED_ID, post.getAcceptedCommentId())
+        .value(PushConstants.ACCEPTED_ID, postEntity.getAcceptedCommentId())
         .build();
 
     return PushMessage.builder()

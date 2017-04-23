@@ -5,7 +5,7 @@ import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.MediaRealm;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.sorter.PostSorter;
-import com.yoloo.backend.yolooApi.model.MediaDTO;
+import com.yoloo.backend.yolooApi.model.Media;
 import com.yoloo.backend.yolooApi.model.Size;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -136,7 +136,13 @@ public class PostRepository {
     Observable<Response<List<PostRealm>>> diskObservable =
         diskDataStore.listByFeed().subscribeOn(Schedulers.io());
 
-    return diskObservable;
+    return diskObservable.flatMap(response -> {
+      if (response.getData().isEmpty()) {
+        return remoteObservable;
+      }
+
+      return Observable.just(response);
+    });
   }
 
   /**
@@ -240,7 +246,7 @@ public class PostRepository {
     sizes.add(medium);
     sizes.add(large);
 
-    MediaDTO dto = new MediaDTO().setSizes(sizes);
+    Media dto = new Media().setSizes(sizes);
 
     MediaRealm media = new MediaRealm(dto);
 

@@ -45,7 +45,13 @@ public class GroupRepository {
         .list(sorter, cursor, limit)
         .doOnNext(response -> diskDataStore.addAll(response.getData()));
 
-    return Observable.mergeDelayError(diskObservable, remoteObservable).distinct();
+    return diskObservable.flatMap(response -> {
+      if (response.getData().isEmpty()) {
+        return remoteObservable;
+      } else {
+        return Observable.just(response);
+      }
+    });
   }
 
   public Observable<List<GroupRealm>> listSubscribedGroups(@Nonnull String userId) {
@@ -55,6 +61,11 @@ public class GroupRepository {
   public Observable<Response<List<AccountRealm>>> listGroupUsers(@Nonnull String groupId,
       @Nullable String cursor, int limit) {
     return remoteDataStore.listGroupUsers(groupId, cursor, limit).subscribeOn(Schedulers.io());
+  }
+
+  public Observable<Response<List<String>>> listGroupTags(@Nonnull String groupId,
+      @Nullable String cursor, int limit) {
+    return remoteDataStore.listGroupTags(groupId, cursor, limit).subscribeOn(Schedulers.io());
   }
 
   public Observable<List<GroupRealm>> searchGroups(@Nonnull String query) {

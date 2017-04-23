@@ -15,18 +15,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyModel;
+import com.annimon.stream.Stream;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.data.model.PostRealm;
-import com.yoloo.android.data.repository.comment.CommentRepository;
-import com.yoloo.android.data.repository.comment.datasource.CommentDiskDataStore;
-import com.yoloo.android.data.repository.comment.datasource.CommentRemoteDataStore;
+import com.yoloo.android.data.repository.comment.CommentRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
@@ -58,7 +56,6 @@ public class CommentController extends MvpController<CommentView, CommentPresent
 
   private CommentAdapter adapter;
 
-  private AccountRealm account;
   private PostRealm post;
 
   private boolean reEnter;
@@ -119,19 +116,12 @@ public class CommentController extends MvpController<CommentView, CommentPresent
 
   @Override
   public void onLoaded(List<CommentRealm> comments) {
-    adapter.addComments(comments, account, post.getOwnerId(),
-        !TextUtils.isEmpty(post.getAcceptedCommentId()));
-  }
-
-  @Override
-  public void onAccountLoaded(AccountRealm account) {
-    this.account = account;
-  }
-
-  @Override
-  public void onAcceptedCommentLoaded(CommentRealm comment) {
-    adapter.addAcceptedComment(comment, account, post.getOwnerId(),
-        !TextUtils.isEmpty(post.getAcceptedCommentId()));
+    adapter.addComments(Stream
+        .of(comments)
+        .map(comment -> comment
+            .setPostAccepted(!TextUtils.isEmpty(post.getAcceptedCommentId()))
+            .setPostOwner(post.getOwnerId().equals(comment.getOwnerId())))
+        .toList());
   }
 
   @Override
@@ -153,8 +143,11 @@ public class CommentController extends MvpController<CommentView, CommentPresent
 
   @Override
   public void onNewComment(CommentRealm comment) {
-    adapter.addComment(comment, account, post.getOwnerId(),
-        !TextUtils.isEmpty(post.getAcceptedCommentId()));
+    adapter.addComment(comment
+        .setOwner(true)
+        .setPostAccepted(!TextUtils.isEmpty(post.getAcceptedCommentId()))
+        .setPostOwner(post.getOwnerId().equals(comment.getOwnerId())));
+
     adapter.scrollToEnd(rvComment);
 
     modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, post);
@@ -168,8 +161,8 @@ public class CommentController extends MvpController<CommentView, CommentPresent
   @NonNull
   @Override
   public CommentPresenter createPresenter() {
-    return new CommentPresenter(CommentRepository.getInstance(CommentRemoteDataStore.getInstance(),
-        CommentDiskDataStore.getInstance()), UserRepositoryProvider.getRepository());
+    return new CommentPresenter(CommentRepositoryProvider.getRepository(),
+        UserRepositoryProvider.getRepository());
   }
 
   @Override

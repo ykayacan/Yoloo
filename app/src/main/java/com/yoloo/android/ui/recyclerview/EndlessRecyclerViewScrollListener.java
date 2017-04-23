@@ -48,9 +48,9 @@ public final class EndlessRecyclerViewScrollListener extends RecyclerView.OnScro
     if (layoutManager.canScrollVertically() != isOrientationHelperVertical
         || orientationHelper == null) {
       isOrientationHelperVertical = layoutManager.canScrollVertically();
-      orientationHelper =
-          isOrientationHelperVertical ? OrientationHelper.createVerticalHelper(layoutManager)
-              : OrientationHelper.createHorizontalHelper(layoutManager);
+      orientationHelper = isOrientationHelperVertical
+          ? OrientationHelper.createVerticalHelper(layoutManager)
+          : OrientationHelper.createHorizontalHelper(layoutManager);
     }
 
     final int start = orientationHelper.getStartAfterPadding();
@@ -81,7 +81,8 @@ public final class EndlessRecyclerViewScrollListener extends RecyclerView.OnScro
     return partiallyVisible;
   }
 
-  @Override public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+  @Override
+  public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
     super.onScrolled(recyclerView, dx, dy);
     if (layoutManager == null) {
       layoutManager = recyclerView.getLayoutManager();

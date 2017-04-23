@@ -14,6 +14,7 @@ import com.yoloo.android.util.NotificationUtil;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import java.util.UUID;
 import org.parceler.Parcels;
+import timber.log.Timber;
 
 public final class SendPostJob extends Job {
 
@@ -52,11 +53,14 @@ public final class SendPostJob extends Job {
         .doOnSuccess(this::broadcastNewPostEvent)
         .flatMapCompletable(ignored -> postRepository.deleteDraft())
         .observeOn(AndroidSchedulers.mainThread())
+        .doOnError(ignored -> NotificationUtil.cancel(NOTIFICATION_SENDING_ID))
         .doOnError(this::showErrorNotification)
         .doOnComplete(() -> NotificationUtil.cancel(NOTIFICATION_SENDING_ID))
         .blockingGet();
 
-    return throwable == null ? Result.SUCCESS : Result.RESCHEDULE;
+    Timber.e(throwable);
+
+    return Result.SUCCESS;
   }
 
   private PostRealm prepareDraft(PostRealm draft) {

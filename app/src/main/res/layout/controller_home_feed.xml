@@ -52,7 +52,7 @@
 
   </android.support.v4.widget.SwipeRefreshLayout>
 
-  <com.yoloo.android.ui.widget.RevealFrameLayout
+  <!--<com.yoloo.android.ui.widget.RevealFrameLayout
     android:id="@+id/menu_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -84,36 +84,18 @@
         app:fabIcon="@drawable/ic_edit_white_18dp"
         app:fabText="Write Memory" />
 
-      <com.yoloo.android.ui.widget.FabGroupView
-        android:id="@+id/arc_menu_share_photo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        app:fabIcon="@drawable/ic_add_a_photo_black_24dp"
-        app:fabText="Share Photo" />
-
-      <!--<com.yoloo.android.ui.widget.FabGroupView
-        android:id="@+id/arc_menu_checkin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        app:fabIcon="@drawable/ic_add_location_black_24dp"
-        app:fabText="Check In" />-->
-
     </com.ogaclejapan.arclayout.ArcLayout>
 
-  </com.yoloo.android.ui.widget.RevealFrameLayout>
+  </com.yoloo.android.ui.widget.RevealFrameLayout>-->
 
-  <android.support.design.widget.FloatingActionButton
-    android:id="@+id/fab_show_menu"
+  <com.github.ag.floatingactionmenu.OptionsFabLayout
+    android:id="@+id/fab_menu"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_gravity="bottom|end"
-    android:layout_margin="@dimen/fab_margin"
-    android:elevation="6dp"
-    android:tint="@android:color/white"
-    app:fabSize="normal"
-    app:pressedTranslationZ="12dp"
-    app:srcCompat="@drawable/ic_add_black_24dp" />
+    app:background_color="@color/background_lightish"
+    app:color="@color/primary"
+    app:options_color="@color/primary"
+    app:options_menu="@menu/menu_fab"
+    app:src="@drawable/ic_add_white_24dp" />
 
 </com.yoloo.android.ui.widget.StateLayout>

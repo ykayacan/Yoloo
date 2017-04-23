@@ -9,7 +9,6 @@ import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
@@ -36,9 +35,9 @@ public class NotificationController extends MvpController<NotificationView, Noti
     implements NotificationView, EndlessRecyclerViewScrollListener.OnLoadMoreListener,
     SwipeRefreshLayout.OnRefreshListener, OnProfileClickListener {
 
-  @BindView(R.id.rv_notification) RecyclerView rvNotification;
+  @BindView(R.id.recycler_view) RecyclerView rvNotification;
   @BindView(R.id.swipe_notification) SwipeRefreshLayout swipeRefreshLayout;
-  @BindView(R.id.toolbar_notification) Toolbar toolbar;
+  @BindView(R.id.toolbar) Toolbar toolbar;
   @BindView(R.id.loading_view) ProgressBar loadingView;
   @BindView(R.id.error_view) TextView errorView;
 
@@ -62,7 +61,6 @@ public class NotificationController extends MvpController<NotificationView, Noti
     setupPullToRefresh();
     setupRecyclerView();
     setupToolbar();
-    setHasOptionsMenu(true);
   }
 
   @Override protected void onAttach(@NonNull View view) {
@@ -73,18 +71,6 @@ public class NotificationController extends MvpController<NotificationView, Noti
   @Override protected void onDetach(@NonNull View view) {
     super.onDetach(view);
     rvNotification.removeOnScrollListener(endlessRecyclerViewScrollListener);
-  }
-
-  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    // handle arrow click here
-    final int itemId = item.getItemId();
-    switch (itemId) {
-      case android.R.id.home:
-        getRouter().handleBack();
-        return true;
-      default:
-        return super.onOptionsItemSelected(item);
-    }
   }
 
   @Override public void onLoading(boolean pullToRefresh) {
@@ -159,14 +145,10 @@ public class NotificationController extends MvpController<NotificationView, Noti
   private void setupToolbar() {
     setSupportActionBar(toolbar);
 
-    // addPostToBeginning back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
-    if (ab != null) {
-      ab.setTitle(R.string.label_notification_title);
-      ab.setDisplayHomeAsUpEnabled(true);
-      ab.setHomeAsUpIndicator(AppCompatResources.getDrawable(getActivity(),
-          R.drawable.ic_close_white_24dp));
-      ab.setDisplayShowHomeEnabled(true);
-    }
+    ab.setTitle(R.string.label_notification_title);
+    ab.setDisplayHomeAsUpEnabled(true);
+    ab.setHomeAsUpIndicator(AppCompatResources.getDrawable(getActivity(),
+        R.drawable.ic_close_white_24dp));
   }
 }

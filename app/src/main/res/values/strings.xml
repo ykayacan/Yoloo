@@ -18,6 +18,7 @@
 
   <!-- NAV DRAWER -->
   <string name="label_nav_profile">Profile</string>
+  <string name="label_nav_explore">Explore</string>
   <string name="label_nav_bookmarks">Bookmarks</string>
   <string name="label_nav_invite_friends">Invite Friends</string>
   <string name="label_nav_settings">Settings</string>
@@ -344,5 +345,12 @@
 
   <string name="label_explore_recent_medias_title">Recent Photos</string>
   <string name="label_explore_recent_medias_more">See All</string>
+  <string name="label_menu_ask_question">Ask Question</string>
+  <string name="label_menu_write_blog">Write Blog</string>
+  <string name="label_explore_all_groups_title">All Groups</string>
+
+  <string name="label_explore_title">Explore</string>
+
+  <string name="label_blog_username_info">%1$s &#8226; %2$s</string>
 
 </resources>

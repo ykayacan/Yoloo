@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string-array name="traveler_types_ids">
+    <item>agx5b2xvby0xNTE3MTlyLgsSElRyYXZlbGVyVHlwZUVudGl0eSIWdHJhdmVsZXJfdHlwZTpFc2NhcGlzdAw</item>
+    <item>agx5b2xvby0xNTE3MTlyOQsSElRyYXZlbGVyVHlwZUVudGl0eSIhdHJhdmVsZXJfdHlwZTpHdWlkZWJvb2sgTWVtb3JpemVyDA</item>
+    <item>agx5b2xvby0xNTE3MTlyMQsSElRyYXZlbGVyVHlwZUVudGl0eSIZdHJhdmVsZXJfdHlwZTpLbm93LUl0LUFsbAw</item>
+    <item>agx5b2xvby0xNTE3MTlyOQsSElRyYXZlbGVyVHlwZUVudGl0eSIhdHJhdmVsZXJfdHlwZTpOby1FeHBlbnNlIFRyYXZlbGVyDA</item>
+    <item>agx5b2xvby0xNTE3MTlyLQsSElRyYXZlbGVyVHlwZUVudGl0eSIVdHJhdmVsZXJfdHlwZTpQYXJ0aWVyDA</item>
+    <item>agx5b2xvby0xNTE3MTlyLQsSElRyYXZlbGVyVHlwZUVudGl0eSIVdHJhdmVsZXJfdHlwZTpQbGFubmVyDA</item>
+    <item>agx5b2xvby0xNTE3MTlyLgsSElRyYXZlbGVyVHlwZUVudGl0eSIWdHJhdmVsZXJfdHlwZTpSZXBlYXRlcgw</item>
+    <item>agx5b2xvby0xNTE3MTlyMwsSElRyYXZlbGVyVHlwZUVudGl0eSIbdHJhdmVsZXJfdHlwZTpTb2xvIFRyYXZlbGVyDA</item>
+    <item>agx5b2xvby0xNTE3MTlyMwsSElRyYXZlbGVyVHlwZUVudGl0eSIbdHJhdmVsZXJfdHlwZTpUaHJpbGwtU2Vla2VyDA</item>
+    <item>agx5b2xvby0xNTE3MTlyOAsSElRyYXZlbGVyVHlwZUVudGl0eSIgdHJhdmVsZXJfdHlwZTpUcmF2ZWwgTWF0ZSBTZWVrZXIM</item>
+  </string-array>
+</resources>

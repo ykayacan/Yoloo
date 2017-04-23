@@ -185,7 +185,7 @@ public class TagSelectDialog extends MvpAlertDialog<TagSelectDialogView, TagSele
 
   private void setupRecyclerView() {
     chipAdapter = new ChipAdapter<>(this);
-    chipAdapter.setBackgroundDrawable(R.drawable.dialog_tag_bg);
+    //chipAdapter.setBackgroundDrawable(R.drawable.dialog_tag_bg);
 
     final FlexboxLayoutManager lm = new FlexboxLayoutManager();
     lm.setFlexDirection(FlexDirection.ROW);

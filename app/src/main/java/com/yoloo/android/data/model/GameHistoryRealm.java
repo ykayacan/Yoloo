@@ -27,7 +27,8 @@ public class GameHistoryRealm extends RealmObject {
     return bounties;
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "GameHistoryRealm{"
         + "id='"
         + id

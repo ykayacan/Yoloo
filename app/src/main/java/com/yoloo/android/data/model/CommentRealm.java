@@ -1,30 +1,28 @@
 package com.yoloo.android.data.model;
 
 import com.yoloo.backend.yolooApi.model.CommentDTO;
-
+import io.realm.RealmObject;
+import io.realm.annotations.Ignore;
+import io.realm.annotations.Index;
+import io.realm.annotations.PrimaryKey;
 import java.util.Date;
 import java.util.Objects;
 
-import io.realm.RealmObject;
-import io.realm.annotations.Index;
-import io.realm.annotations.PrimaryKey;
-
 public class CommentRealm extends RealmObject {
 
-  @PrimaryKey
-  private String id;
+  @PrimaryKey private String id;
   private String ownerId;
   private String username;
   private String avatarUrl;
-  @Index
-  private String postId;
+  @Index private String postId;
   private String content;
-  @Index
-  private Date created;
+  @Index private Date created;
   private int voteDir;
-  @Index
-  private boolean accepted;
+  @Index private boolean accepted;
   private long voteCount;
+  @Ignore boolean owner;
+  @Ignore boolean postAccepted;
+  @Ignore boolean postOwner;
 
   public CommentRealm() {
     // empty constructor
@@ -133,6 +131,33 @@ public class CommentRealm extends RealmObject {
     return this;
   }
 
+  public boolean isOwner() {
+    return owner;
+  }
+
+  public CommentRealm setOwner(boolean owner) {
+    this.owner = owner;
+    return this;
+  }
+
+  public boolean isPostAccepted() {
+    return postAccepted;
+  }
+
+  public CommentRealm setPostAccepted(boolean postAccepted) {
+    this.postAccepted = postAccepted;
+    return this;
+  }
+
+  public boolean isPostOwner() {
+    return postOwner;
+  }
+
+  public CommentRealm setPostOwner(boolean postOwner) {
+    this.postOwner = postOwner;
+    return this;
+  }
+
   public void increaseVotes() {
     ++this.voteCount;
   }
@@ -141,39 +166,58 @@ public class CommentRealm extends RealmObject {
     --this.voteCount;
   }
 
-  @Override public boolean equals(Object o) {
+  @Override
+  public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     CommentRealm that = (CommentRealm) o;
-    return voteDir == that.voteDir &&
-        accepted == that.accepted &&
-        voteCount == that.voteCount &&
-        Objects.equals(id, that.id) &&
-        Objects.equals(ownerId, that.ownerId) &&
-        Objects.equals(username, that.username) &&
-        Objects.equals(avatarUrl, that.avatarUrl) &&
-        Objects.equals(postId, that.postId) &&
-        Objects.equals(content, that.content) &&
-        Objects.equals(created, that.created);
+    return voteDir == that.voteDir
+        && accepted == that.accepted
+        && voteCount == that.voteCount
+        && Objects.equals(id, that.id)
+        && Objects.equals(ownerId, that.ownerId)
+        && Objects.equals(username, that.username)
+        && Objects.equals(avatarUrl, that.avatarUrl)
+        && Objects.equals(postId, that.postId)
+        && Objects.equals(content, that.content)
+        && Objects.equals(created, that.created);
   }
 
-  @Override public int hashCode() {
+  @Override
+  public int hashCode() {
     return Objects.hash(id, ownerId, username, avatarUrl, postId, content, created, voteDir,
         accepted, voteCount);
   }
 
-  @Override public String toString() {
-    return "CommentRealm{" +
-        "id='" + id + '\'' +
-        ", ownerId='" + ownerId + '\'' +
-        ", username='" + username + '\'' +
-        ", avatarUrl='" + avatarUrl + '\'' +
-        ", postId='" + postId + '\'' +
-        ", content='" + content + '\'' +
-        ", created=" + created +
-        ", voteDir=" + voteDir +
-        ", accepted=" + accepted +
-        ", voteCount=" + voteCount +
-        '}';
+  @Override
+  public String toString() {
+    return "CommentRealm{"
+        + "id='"
+        + id
+        + '\''
+        + ", ownerId='"
+        + ownerId
+        + '\''
+        + ", username='"
+        + username
+        + '\''
+        + ", avatarUrl='"
+        + avatarUrl
+        + '\''
+        + ", postId='"
+        + postId
+        + '\''
+        + ", content='"
+        + content
+        + '\''
+        + ", created="
+        + created
+        + ", voteDir="
+        + voteDir
+        + ", accepted="
+        + accepted
+        + ", voteCount="
+        + voteCount
+        + '}';
   }
 }

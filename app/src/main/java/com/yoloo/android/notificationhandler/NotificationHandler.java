@@ -12,6 +12,7 @@ import com.yoloo.android.notificationhandler.notificationtypes.FollowNotificatio
 import com.yoloo.android.notificationhandler.notificationtypes.GameNotification;
 import com.yoloo.android.notificationhandler.notificationtypes.MentionNotification;
 import java.util.Map;
+import timber.log.Timber;
 
 import static com.yoloo.android.notificationhandler.NotificationConstants.ACCEPT;
 import static com.yoloo.android.notificationhandler.NotificationConstants.COMMENT;
@@ -49,6 +50,7 @@ public final class NotificationHandler {
 
   private Notification getNotification(Context context, PendingIntent intent) {
     final String action = data.get(KEY_ACTION);
+    Timber.d("Action: %s", action);
 
     switch (action) {
       case FOLLOW:

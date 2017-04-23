@@ -170,7 +170,7 @@ public class VoteView extends BaselineGridTextView {
     return votes;
   }
 
-  public void setVotes(long votes) {
+  public void setVoteCount(long votes) {
     this.votes = votes;
     setText(CountUtil.formatCount(this.votes));
   }

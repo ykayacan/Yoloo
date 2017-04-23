@@ -1,10 +1,9 @@
 package com.yoloo.android.data.model;
 
-import com.yoloo.backend.yolooApi.model.MediaDTO;
+import com.yoloo.backend.yolooApi.model.Media;
 import com.yoloo.backend.yolooApi.model.Size;
 import io.realm.MediaRealmRealmProxy;
 import io.realm.RealmObject;
-import io.realm.annotations.Ignore;
 import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
 import java.util.List;
@@ -24,23 +23,22 @@ public class MediaRealm extends RealmObject {
   String lowSizeUrl;
   String mediumSizeUrl;
   String largeSizeUrl;
-  @Ignore String tempPath;
+  String tempPath;
 
   public MediaRealm() {
     // empty constructor
   }
 
-  public MediaRealm(MediaDTO dto) {
+  public MediaRealm(Media dto) {
     id = dto.getId();
     ownerId = dto.getOwnerId();
     mime = dto.getMime();
 
     List<Size> sizes = dto.getSizes();
     thumbSizeUrl = sizes.get(0).getUrl();
-    miniSizeUrl = sizes.get(1).getUrl();
-    lowSizeUrl = sizes.get(2).getUrl();
-    mediumSizeUrl = sizes.get(3).getUrl();
-    largeSizeUrl = sizes.get(4).getUrl();
+    lowSizeUrl = sizes.get(1).getUrl();
+    mediumSizeUrl = sizes.get(2).getUrl();
+    largeSizeUrl = sizes.get(3).getUrl();
   }
 
   public String getId() {
@@ -92,17 +90,15 @@ public class MediaRealm extends RealmObject {
     return tempPath;
   }
 
-  public void setTempPath(String tempPath) {
+  public MediaRealm setTempPath(String tempPath) {
     this.tempPath = tempPath;
+    return this;
   }
 
-  @Override public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
     MediaRealm that = (MediaRealm) o;
     return Objects.equals(id, that.id)
         && Objects.equals(ownerId, that.ownerId)
@@ -111,40 +107,13 @@ public class MediaRealm extends RealmObject {
         && Objects.equals(miniSizeUrl, that.miniSizeUrl)
         && Objects.equals(lowSizeUrl, that.lowSizeUrl)
         && Objects.equals(mediumSizeUrl, that.mediumSizeUrl)
-        && Objects.equals(largeSizeUrl, that.largeSizeUrl);
+        && Objects.equals(largeSizeUrl, that.largeSizeUrl)
+        && Objects.equals(tempPath, that.tempPath);
   }
 
-  @Override public int hashCode() {
+  @Override
+  public int hashCode() {
     return Objects.hash(id, ownerId, mime, thumbSizeUrl, miniSizeUrl, lowSizeUrl, mediumSizeUrl,
-        largeSizeUrl);
-  }
-
-  @Override public String toString() {
-    return "MediaRealm{"
-        + "id='"
-        + id
-        + '\''
-        + ", ownerId='"
-        + ownerId
-        + '\''
-        + ", mime='"
-        + mime
-        + '\''
-        + ", thumbSizeUrl='"
-        + thumbSizeUrl
-        + '\''
-        + ", miniSizeUrl='"
-        + miniSizeUrl
-        + '\''
-        + ", lowSizeUrl='"
-        + lowSizeUrl
-        + '\''
-        + ", mediumSizeUrl='"
-        + mediumSizeUrl
-        + '\''
-        + ", largeSizeUrl='"
-        + largeSizeUrl
-        + '\''
-        + '}';
+        largeSizeUrl, tempPath);
   }
 }

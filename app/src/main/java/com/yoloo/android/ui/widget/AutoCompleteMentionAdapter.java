@@ -73,7 +73,8 @@ public class AutoCompleteMentionAdapter extends ArrayAdapter<AccountRealm> {
       holder = (MentionViewHolder) convertView.getTag();
     }
 
-    Glide.with(getContext())
+    Glide
+        .with(getContext())
         .load(item.getAvatarUrl())
         .bitmapTransform(circleTransformation)
         .placeholder(R.drawable.ic_player_72dp)
@@ -111,7 +112,8 @@ public class AutoCompleteMentionAdapter extends ArrayAdapter<AccountRealm> {
       this.subject = subject;
     }
 
-    @Override protected FilterResults performFiltering(CharSequence constraint) {
+    @Override
+    protected FilterResults performFiltering(CharSequence constraint) {
       items.clear();
 
       if (isValid(constraint)) {
@@ -121,7 +123,8 @@ public class AutoCompleteMentionAdapter extends ArrayAdapter<AccountRealm> {
       return null;
     }
 
-    @Override protected void publishResults(CharSequence constraint, FilterResults results) {
+    @Override
+    protected void publishResults(CharSequence constraint, FilterResults results) {
       if (items != null && !items.isEmpty()) {
         adapter.notifyDataSetChanged();
       }

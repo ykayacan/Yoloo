@@ -7,10 +7,10 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" />
 
-  <com.yoloo.android.ui.widget.fabmenu.LabelView
+  <!--<com.yoloo.android.ui.widget.fabmenu.LabelView
     android:id="@+id/label"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    app:labelBackgroundColor="@color/accepted" />
+    app:labelBackgroundColor="@color/accepted" />-->
 
 </merge>

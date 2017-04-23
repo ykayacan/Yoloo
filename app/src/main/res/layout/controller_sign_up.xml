@@ -17,7 +17,6 @@
   <android.support.design.widget.AppBarLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="24dp"
     android:background="@android:color/transparent"
     android:theme="@style/Yoloo.AppBarOverlay"
     app:elevation="0dp">
@@ -31,17 +30,12 @@
   </android.support.design.widget.AppBarLayout>
 
   <android.support.constraint.ConstraintLayout
-    android:id="@+id/layout_login_input_container"
     style="@style/Widget.Yoloo.InputContainer"
     android:layout_width="@dimen/_272asdp"
     android:layout_height="wrap_content"
     android:layout_gravity="center|top"
     android:layout_marginTop="@dimen/_24asdp"
-    android:paddingBottom="16dp"
-    android:paddingEnd="24dp"
-    android:paddingLeft="24dp"
-    android:paddingRight="24dp"
-    android:paddingStart="24dp"
+
     android:paddingTop="16dp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
@@ -60,7 +54,11 @@
       android:id="@+id/et_login_fullname"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:layout_marginTop="8dp"
+      android:layout_marginEnd="16dp"
+      android:layout_marginLeft="16dp"
+      android:layout_marginRight="16dp"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="24dp"
       android:hint="@string/hint_full_name"
       android:inputType="textCapSentences"
       app:layout_constraintLeft_toLeftOf="parent"
@@ -71,6 +69,10 @@
       android:id="@+id/et_sign_up_username"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
+      android:layout_marginEnd="16dp"
+      android:layout_marginLeft="16dp"
+      android:layout_marginRight="16dp"
+      android:layout_marginStart="16dp"
       android:hint="@string/hint_username"
       android:inputType="text"
       app:layout_constraintLeft_toLeftOf="parent"
@@ -81,6 +83,10 @@
       android:id="@+id/et_login_email"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
+      android:layout_marginEnd="16dp"
+      android:layout_marginLeft="16dp"
+      android:layout_marginRight="16dp"
+      android:layout_marginStart="16dp"
       android:hint="@string/hint_email"
       android:imeOptions="actionNext"
       android:inputType="textEmailAddress"
@@ -92,6 +98,10 @@
       android:id="@+id/et_login_password"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
+      android:layout_marginEnd="16dp"
+      android:layout_marginLeft="16dp"
+      android:layout_marginRight="16dp"
+      android:layout_marginStart="16dp"
       android:hint="@string/hint_password"
       android:imeActionId="@+id/sign_up"
       android:imeActionLabel="@string/action_sing_up_short"
@@ -105,6 +115,10 @@
       android:id="@+id/tv_login_birthdate"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
+      android:layout_marginEnd="16dp"
+      android:layout_marginLeft="16dp"
+      android:layout_marginRight="16dp"
+      android:layout_marginStart="16dp"
       android:drawablePadding="16dp"
       android:gravity="center_vertical"
       android:padding="10dp"
@@ -119,9 +133,10 @@
       android:id="@+id/ib_sign_up_country_icon"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginTop="0dp"
-      android:layout_marginStart="8dp"
-      android:layout_marginLeft="8dp"
+      android:layout_marginEnd="16dp"
+      android:layout_marginLeft="26dp"
+      android:layout_marginRight="16dp"
+      android:layout_marginStart="26dp"
       android:background="@android:color/transparent"
       app:layout_constraintBottom_toBottomOf="@+id/spinner_country"
       app:layout_constraintLeft_toLeftOf="parent"
@@ -144,16 +159,22 @@
       app:layout_constraintRight_toRightOf="parent"
       app:layout_constraintTop_toBottomOf="@+id/tv_login_birthdate" />
 
-    <android.support.v7.widget.AppCompatButton
+    <TextView
       android:id="@+id/btn_login_ready"
-      style="@style/Yoloo.Button.Auth"
-      android:layout_width="200dp"
-      android:layout_marginTop="16dp"
+      fontPath="fonts/OpenSans-Bold.ttf"
+      android:layout_width="0dp"
       android:layout_height="wrap_content"
+      android:layout_marginTop="24dp"
+      android:background="@color/primary"
+      android:gravity="center"
+      android:padding="16dp"
       android:text="@string/action_login_ready"
+      android:textAllCaps="true"
+      android:textColor="@android:color/white"
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/spinner_country" />
+      app:layout_constraintTop_toBottomOf="@+id/spinner_country"
+      tools:ignore="MissingPrefix" />
 
   </android.support.constraint.ConstraintLayout>
 

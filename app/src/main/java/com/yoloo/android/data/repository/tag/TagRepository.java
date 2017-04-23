@@ -59,7 +59,17 @@ public class TagRepository {
   }
 
   public Observable<List<TagRealm>> listRecommendedTags() {
-    return remoteDataStore.listRecommendedTags();
+    Observable<List<TagRealm>> remoteObservable = remoteDataStore.listRecommendedTags();
+
+    Observable<List<TagRealm>> diskObservable = diskDataStore.listRecommendedTags();
+
+    return diskObservable.flatMap(tagRealms -> {
+      if (tagRealms.isEmpty()) {
+        return remoteObservable.doOnNext(diskDataStore::addAll);
+      }
+
+      return Observable.just(tagRealms);
+    });
   }
 
   public Observable<Response<List<TagRealm>>> searchTag(@Nonnull String query,

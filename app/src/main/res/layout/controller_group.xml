@@ -18,10 +18,9 @@
       android:layout_height="match_parent"
       android:fitsSystemWindows="true"
       app:contentScrim="?attr/colorPrimary"
-      app:expandedTitleMarginBottom="56dp"
+      app:expandedTitleMarginBottom="64dp"
       app:layout_scrollFlags="scroll|exitUntilCollapsed"
-      app:title="@string/label_bloglist_title"
-      app:toolbarId="@+id/toolbar_bloglist">
+      app:toolbarId="@+id/toolbar">
 
       <ImageView
         android:id="@+id/iv_group_cover"
@@ -45,7 +44,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="12dp"
         android:layout_marginLeft="32dp"
         android:layout_marginStart="32dp"
         android:drawablePadding="8dp"

@@ -37,7 +37,8 @@ public abstract class NewcomersModel extends EpoxyModelWithHolder<NewcomersModel
     lm.setInitialPrefetchItemCount(4);
   }
 
-  @Override public void bind(NewcomersHolder holder) {
+  @Override
+  public void bind(NewcomersHolder holder) {
     holder.rvNewcomers.removeItemDecoration(itemDecoration);
     holder.rvNewcomers.addItemDecoration(itemDecoration);
 
@@ -58,7 +59,8 @@ public abstract class NewcomersModel extends EpoxyModelWithHolder<NewcomersModel
     holder.tvMore.setOnClickListener(v -> onHeaderClickListener.onClick(v));
   }
 
-  @Override public void unbind(NewcomersHolder holder) {
+  @Override
+  public void unbind(NewcomersHolder holder) {
     holder.tvMore.setOnClickListener(null);
   }
 

@@ -22,7 +22,7 @@ import javax.inject.Named;
     namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
 @ApiClass(resource = "medias", clientIds = {
     Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
-}, audiences = { Constants.AUDIENCE_ID }, authenticators = { FirebaseAuthenticator.class })
+}, audiences = {Constants.AUDIENCE_ID}, authenticators = {FirebaseAuthenticator.class})
 public class MediaEndpoint {
 
   /**
@@ -34,9 +34,10 @@ public class MediaEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(name = "medias.get", path = "medias/{mediaId}", httpMethod = ApiMethod.HttpMethod.GET)
-  public Media get(@Named("mediaId") String mediaId, User user) throws ServiceException {
+  public MediaEntity get(@Named("mediaId") String mediaId, User user) throws ServiceException {
 
-    EndpointsValidator.create()
+    EndpointsValidator
+        .create()
         .on(BadRequestValidator.create(mediaId, "mediaId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(mediaId, "Invalid mediaId."));
@@ -55,17 +56,30 @@ public class MediaEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(name = "medias.list", path = "medias/{userId}", httpMethod = ApiMethod.HttpMethod.POST)
-  public CollectionResponse<Media> list(@Named("userId") String userId,
+  public CollectionResponse<MediaEntity> list(@Named("userId") String userId,
       @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
       throws ServiceException {
 
-    EndpointsValidator.create()
+    EndpointsValidator
+        .create()
         .on(BadRequestValidator.create(userId, "userId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(userId, "Invalid userId."));
 
     return getMediaController().listMedias(userId, Optional.fromNullable(limit),
         Optional.fromNullable(cursor), user);
+  }
+
+  @ApiMethod(name = "medias.listRecentMedias",
+      path = "medias",
+      httpMethod = ApiMethod.HttpMethod.POST)
+  public CollectionResponse<MediaEntity> listRecentMedia(@Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
+
+    EndpointsValidator.create().on(AuthValidator.create(user));
+
+    return getMediaController().listRecentMedias(Optional.fromNullable(limit),
+        Optional.fromNullable(cursor));
   }
 
   private MediaController getMediaController() {

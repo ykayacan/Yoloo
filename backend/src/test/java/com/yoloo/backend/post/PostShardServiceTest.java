@@ -18,10 +18,10 @@ import static org.junit.Assert.assertTrue;
 public class PostShardServiceTest extends TestBase {
 
   @Test public void testCreateShard() {
-    Shardable<PostShard, Post> shardable = PostShardService.create();
+    Shardable<PostShard, PostEntity> shardable = PostShardService.create();
 
     Key<Account> accountKey = factory().allocateId(Account.class);
-    Key<Post> postKey = factory().allocateId(accountKey, Post.class);
+    Key<PostEntity> postKey = factory().allocateId(accountKey, PostEntity.class);
 
     Map<Ref<PostShard>, PostShard> map = shardable.createShardMapWithRef(postKey);
 
@@ -34,15 +34,15 @@ public class PostShardServiceTest extends TestBase {
   }
 
   @Test public void testCreateShards() {
-    Shardable<PostShard, Post> shardable = PostShardService.create();
+    Shardable<PostShard, PostEntity> shardable = PostShardService.create();
 
     Key<Account> accountKey = factory().allocateId(Account.class);
 
-    Key<Post> postKey1 = factory().allocateId(accountKey, Post.class);
-    Key<Post> postKey2 = factory().allocateId(accountKey, Post.class);
-    Key<Post> postKey3 = factory().allocateId(accountKey, Post.class);
+    Key<PostEntity> postKey1 = factory().allocateId(accountKey, PostEntity.class);
+    Key<PostEntity> postKey2 = factory().allocateId(accountKey, PostEntity.class);
+    Key<PostEntity> postKey3 = factory().allocateId(accountKey, PostEntity.class);
 
-    List<Key<Post>> keys = new ArrayList<>();
+    List<Key<PostEntity>> keys = new ArrayList<>();
     keys.add(postKey1);
     keys.add(postKey2);
     keys.add(postKey3);
@@ -51,7 +51,7 @@ public class PostShardServiceTest extends TestBase {
 
     assertEquals(ShardConfig.POST_SHARD_COUNTER * keys.size(), map.size());
 
-    for (Key<Post> postKey : keys) {
+    for (Key<PostEntity> postKey : keys) {
       for (int shardNum = 1; shardNum <= ShardConfig.POST_SHARD_COUNTER; shardNum++) {
         Ref<PostShard> ref = Ref.create(PostShard.createKey(postKey, shardNum));
         assertTrue(map.containsKey(ref));

@@ -2,15 +2,10 @@ package com.yoloo.android.data.repository.media;
 
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.MediaRealm;
-import com.yoloo.android.data.repository.media.datasource.MediaDiskDataStore;
-import com.yoloo.android.data.repository.media.datasource.MediaRemoteDataStore;
-
+import io.reactivex.Observable;
 import java.util.List;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import io.reactivex.Observable;
 
 public class MediaRepository {
 
@@ -19,8 +14,7 @@ public class MediaRepository {
   private final MediaRemoteDataStore remoteDataStore;
   private final MediaDiskDataStore diskDataStore;
 
-  private MediaRepository(MediaRemoteDataStore remoteDataStore,
-      MediaDiskDataStore diskDataStore) {
+  private MediaRepository(MediaRemoteDataStore remoteDataStore, MediaDiskDataStore diskDataStore) {
     this.remoteDataStore = remoteDataStore;
     this.diskDataStore = diskDataStore;
   }
@@ -36,5 +30,10 @@ public class MediaRepository {
   public Observable<Response<List<MediaRealm>>> listMedias(@Nonnull String userId,
       @Nullable String cursor, int limit) {
     return remoteDataStore.list(userId, cursor, limit);
+  }
+
+  public Observable<Response<List<MediaRealm>>> listRecentMedias(@Nullable String cursor,
+      int limit) {
+    return remoteDataStore.listRecentMedias(cursor, limit);
   }
 }

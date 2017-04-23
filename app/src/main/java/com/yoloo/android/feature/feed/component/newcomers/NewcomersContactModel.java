@@ -29,10 +29,12 @@ abstract class NewcomersContactModel
   @EpoxyAttribute(hash = false) OnItemClickListener<AccountRealm> onItemClickListener;
   @EpoxyAttribute(hash = false) OnFollowClickListener onFollowClickListener;
 
-  @Override public void bind(NewcomersContactHolder holder) {
+  @Override
+  public void bind(NewcomersContactHolder holder) {
     final Context context = holder.itemView.getContext();
 
-    Glide.with(context)
+    Glide
+        .with(context)
         .load(account.getAvatarUrl()/* + "=s80-rw"*/)
         .asBitmap()
         .diskCacheStrategy(DiskCacheStrategy.SOURCE)

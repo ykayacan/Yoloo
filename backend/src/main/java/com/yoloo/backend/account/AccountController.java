@@ -31,7 +31,7 @@ import com.yoloo.backend.game.GameService;
 import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.group.TravelerGroupService;
-import com.yoloo.backend.media.Media;
+import com.yoloo.backend.media.MediaEntity;
 import com.yoloo.backend.media.MediaService;
 import com.yoloo.backend.media.Size;
 import com.yoloo.backend.media.size.ThumbSize;
@@ -274,8 +274,8 @@ public final class AccountController extends Controller {
           }
 
           if (mediaId.isPresent()) {
-            Media media = (Media) fetched.get(Key.create(mediaId.get()));
-            Size size = ThumbSize.of(media.getUrl());
+            MediaEntity mediaEntity = (MediaEntity) fetched.get(Key.create(mediaId.get()));
+            Size size = ThumbSize.of(mediaEntity.getUrl());
             updated = updated.withAvatarUrl(new Link(size.getUrl()));
           }
 
@@ -307,8 +307,8 @@ public final class AccountController extends Controller {
       List<Key<Object>> keys = ofy().load().ancestor(accountKey).keys().list();
       final Key<Tracker> trackerKey = Tracker.createKey(accountKey);
 
-      List<Key<Media>> mediaKeys =
-          ofy().load().type(Media.class).ancestor(accountKey).keys().list();
+      List<Key<MediaEntity>> mediaKeys =
+          ofy().load().type(MediaEntity.class).ancestor(accountKey).keys().list();
 
       ImmutableSet<Key<?>> deleteList = ImmutableSet.<Key<?>>builder()
           .addAll(keys)

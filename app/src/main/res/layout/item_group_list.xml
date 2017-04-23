@@ -21,12 +21,14 @@
 
   <TextView
     android:id="@+id/tv_title"
+    fontPath="fonts/OpenSans-Semibold.ttf"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginStart="16dp"
     android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
     app:layout_constraintBottom_toTopOf="@+id/guideline"
     app:layout_constraintStart_toEndOf="@+id/iv_small_image"
+    tools:ignore="MissingPrefix"
     tools:text="Solo Travel" />
 
   <android.support.constraint.Guideline
@@ -52,7 +54,7 @@
 
   <Button
     android:id="@+id/btn_subscribe"
-    style="@style/Yoloo.Button.Colored"
+    style="@style/Yoloo.Button.Colored.Subscribe"
     android:layout_width="wrap_content"
     android:layout_height="40dp"
     android:layout_marginBottom="0dp"
@@ -60,6 +62,7 @@
     android:layout_marginTop="0dp"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintTop_toTopOf="parent" />
+    app:layout_constraintTop_toTopOf="parent"
+    tools:text="Subscribe" />
 
 </android.support.constraint.ConstraintLayout>

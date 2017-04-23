@@ -5,7 +5,7 @@
   android:layout_height="192dp">
 
   <ImageView
-    android:id="@+id/iv_cover"
+    android:id="@+id/iv_slide"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/primary"

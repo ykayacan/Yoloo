@@ -16,7 +16,6 @@ import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
 import com.yoloo.backend.post.sort_strategy.PostSorter;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
@@ -27,8 +26,6 @@ import javax.inject.Named;
     Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
 }, audiences = {Constants.AUDIENCE_ID}, authenticators = {FirebaseAuthenticator.class})
 public class QuestionEndpoint {
-
-  private static final Logger LOG = Logger.getLogger(QuestionEndpoint.class.getSimpleName());
 
   private final PostController postController = PostControllerFactory.of().create();
 
@@ -43,7 +40,7 @@ public class QuestionEndpoint {
   @ApiMethod(name = "questions.get",
       path = "questions/{questionId}",
       httpMethod = ApiMethod.HttpMethod.GET)
-  public Post get(@Named("questionId") String questionId, User user) throws ServiceException {
+  public PostEntity get(@Named("questionId") String questionId, User user) throws ServiceException {
 
     EndpointsValidator
         .create()
@@ -66,7 +63,7 @@ public class QuestionEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(name = "questions.insert", path = "questions", httpMethod = ApiMethod.HttpMethod.POST)
-  public Post insert(@Named("content") String content, @Named("tags") String tags,
+  public PostEntity insert(@Named("content") String content, @Named("tags") String tags,
       @Named("groupId") String groupId, @Nullable @Named("mediaId") String mediaId,
       @Nullable @Named("bounty") Integer bounty, User user) throws ServiceException {
 
@@ -77,7 +74,7 @@ public class QuestionEndpoint {
         .on(BadRequestValidator.create(groupId, "groupId is required."))
         .on(AuthValidator.create(user));
 
-    return postController.insertQuestion(content, tags, groupId, Optional.fromNullable(mediaId),
+    return postController.insertQuestionPost(content, tags, groupId, Optional.fromNullable(mediaId),
         Optional.fromNullable(bounty), user);
   }
 
@@ -96,7 +93,7 @@ public class QuestionEndpoint {
   @ApiMethod(name = "questions.update",
       path = "questions/{questionId}",
       httpMethod = ApiMethod.HttpMethod.PUT)
-  public Post update(@Named("questionId") String questionId,
+  public PostEntity update(@Named("questionId") String questionId,
       @Nullable @Named("bounty") Integer bounty, @Nullable @Named("content") String content,
       @Nullable @Named("tags") String tags, @Nullable @Named("mediaId") String mediaId, User user)
       throws ServiceException {
@@ -138,7 +135,7 @@ public class QuestionEndpoint {
    * List all entities.
    *
    * @param sorter the sorter
-   * @param category the category
+   * @param groupId the category
    * @param cursor used for pagination to determine which page to return
    * @param limit the maximum number from entries to return
    * @param user the user
@@ -146,15 +143,15 @@ public class QuestionEndpoint {
    * @throws ServiceException the service exception
    */
   @ApiMethod(name = "questions.list", path = "questions", httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Post> list(@Nullable @Named("userId") String userId,
-      @Nullable @Named("sort") PostSorter sorter, @Nullable @Named("category") String category,
+  public CollectionResponse<PostEntity> list(@Nullable @Named("userId") String userId,
+      @Nullable @Named("sort") PostSorter sorter, @Nullable @Named("groupId") String groupId,
       @Nullable @Named("tags") String tags, @Nullable @Named("cursor") String cursor,
       @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
     return postController.listPosts(Optional.fromNullable(userId), Optional.fromNullable(sorter),
-        Optional.fromNullable(category), Optional.fromNullable(tags), Optional.fromNullable(limit),
-        Optional.fromNullable(cursor), Optional.of(Post.PostType.QUESTION), user);
+        Optional.fromNullable(groupId), Optional.fromNullable(tags), Optional.fromNullable(limit),
+        Optional.fromNullable(cursor), Optional.of(PostEntity.Type.TEXT_POST), user);
   }
 }

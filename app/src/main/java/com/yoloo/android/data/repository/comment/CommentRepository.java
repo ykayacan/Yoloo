@@ -3,8 +3,6 @@ package com.yoloo.android.data.repository.comment;
 import com.annimon.stream.Optional;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.CommentRealm;
-import com.yoloo.android.data.repository.comment.datasource.CommentDiskDataStore;
-import com.yoloo.android.data.repository.comment.datasource.CommentRemoteDataStore;
 
 import java.util.List;
 

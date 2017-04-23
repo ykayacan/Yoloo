@@ -12,45 +12,28 @@ import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
 import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
 import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
-
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
-@Api(
-    name = "yolooApi",
+@Api(name = "yolooApi",
     version = "v1",
-    namespace = @ApiNamespace(
-        ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER)
-)
-@ApiClass(
-    resource = "notifications",
-    clientIds = {
-        Constants.ANDROID_CLIENT_ID,
-        Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID
-    },
-    audiences = { Constants.AUDIENCE_ID, },
-    authenticators = { FirebaseAuthenticator.class }
-)
+    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
+@ApiClass(resource = "notifications", clientIds = {
+    Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
+}, audiences = {Constants.AUDIENCE_ID,}, authenticators = {FirebaseAuthenticator.class})
 public class NotificationEndpoint {
 
   private final NotificationController notificationController = NotificationController.create();
 
-  @ApiMethod(
-      name = "users.me.notifications.list",
+  @ApiMethod(name = "users.me.notifications.list",
       path = "users/me/notifications",
       httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Notification> list(
-      @Nullable @Named("cursor") String cursor,
-      @Nullable @Named("limit") Integer limit,
-      User user) throws ServiceException {
+  public CollectionResponse<Notification> list(@Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
-    return notificationController.listNotifications(
-        Optional.fromNullable(cursor),
-        Optional.fromNullable(limit),
-        user);
+    return notificationController.listNotifications(Optional.fromNullable(cursor),
+        Optional.fromNullable(limit), user);
   }
 }

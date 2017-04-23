@@ -3,7 +3,7 @@ package com.yoloo.backend.vote;
 import com.googlecode.objectify.Key;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.comment.Comment;
-import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.util.Group;
 import io.reactivex.Observable;
 import java.util.Collections;
@@ -21,16 +21,16 @@ public class VoteService {
   /**
    * Check post vote observable.
    *
-   * @param post the post
+   * @param postEntity the post
    * @param accountKey the account key
    * @return the observable
    */
-  public Observable<Post> checkPostVote(Post post, Key<Account> accountKey) {
-    List<Post> posts = Collections.singletonList(post);
+  public Observable<PostEntity> checkPostVote(PostEntity postEntity, Key<Account> accountKey) {
+    List<PostEntity> postEntities = Collections.singletonList(postEntity);
 
-    return getVotesObservable(posts, accountKey)
-        .flatMap(voteMap -> mergeVoteDirection(posts, accountKey, voteMap))
-        .cast(Post.class);
+    return getVotesObservable(postEntities, accountKey)
+        .flatMap(voteMap -> mergeVoteDirection(postEntities, accountKey, voteMap))
+        .cast(PostEntity.class);
   }
 
   /**
@@ -40,10 +40,11 @@ public class VoteService {
    * @param accountKey the account key
    * @return the observable
    */
-  public Observable<List<Post>> checkPostVote(List<? extends Post> posts, Key<Account> accountKey) {
+  public Observable<List<PostEntity>> checkPostVote(List<? extends PostEntity> posts,
+      Key<Account> accountKey) {
     return getVotesObservable(posts, accountKey)
         .flatMap(voteMap -> mergeVoteDirection(posts, accountKey, voteMap))
-        .cast(Post.class)
+        .cast(PostEntity.class)
         .toList()
         .toObservable();
   }
@@ -94,7 +95,8 @@ public class VoteService {
         .fromIterable(votables)
         .map(votable -> Group.OfTwo.create(Vote.createKey(votable.getVotableKey(), accountKey),
             votable))
-        .map(group -> voteMap.containsKey(group.first) ? group.second.setVoteDir(
-            Vote.parse(voteMap.get(group.first).getDir())) : group.second);
+        .map(group -> voteMap.containsKey(group.first)
+            ? group.second.setVoteDir(Vote.parse(voteMap.get(group.first).getDir()))
+            : group.second.setVoteDir(Vote.Direction.DEFAULT));
   }
 }

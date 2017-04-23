@@ -9,5 +9,5 @@
   android:gravity="center"
   android:textAppearance="@style/TextAppearance.AppCompat.Headline"
   android:textColor="@android:color/white"
-  app:drawableStart="@drawable/ic_bounty_coin_20dp"
+  app:drawableStart="@drawable/ic_bounty_coin_24dp"
   tools:text="10" />

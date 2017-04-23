@@ -15,6 +15,9 @@ public abstract class Size {
       url = url + "-c";
     }
 
+    // force webp format
+    url = url + "-rw";
+
     return url;
   }
 

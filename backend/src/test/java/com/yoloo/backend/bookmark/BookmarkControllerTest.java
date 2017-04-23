@@ -19,7 +19,7 @@ import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.group.TravelerGroupController;
 import com.yoloo.backend.group.TravelerGroupControllerFactory;
-import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.post.PostController;
 import com.yoloo.backend.post.PostControllerFactory;
 import com.yoloo.backend.tag.Tag;
@@ -41,7 +41,7 @@ public class BookmarkControllerTest extends TestBase {
   private static final String USER_EMAIL = "test@gmail.com";
   private static final String USER_AUTH_DOMAIN = "gmail.com";
 
-  private Post post;
+  private PostEntity postEntity;
 
   private PostController postController;
   private BookmarkController bookmarkController;
@@ -90,15 +90,15 @@ public class BookmarkControllerTest extends TestBase {
 
     ofy().save().entities(saveList).now();
 
-    post =
-        postController.insertQuestion("Test content", "visa,passport", "europe", Optional.absent(),
+    postEntity =
+        postController.insertQuestionPost("Test content", "visa,passport", "europe", Optional.absent(),
             Optional.absent(), user);
   }
 
   @Test public void testSaveQuestion() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    bookmarkController.insertBookmark(post.getWebsafeId(), user);
+    bookmarkController.insertBookmark(postEntity.getWebsafeId(), user);
 
     List<Bookmark> bookmarks =
         ofy().load().type(Bookmark.class).ancestor(Key.<Account>create(user.getUserId())).list();
@@ -109,14 +109,14 @@ public class BookmarkControllerTest extends TestBase {
   @Test public void testUnSaveQuestion() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    bookmarkController.insertBookmark(post.getWebsafeId(), user);
+    bookmarkController.insertBookmark(postEntity.getWebsafeId(), user);
 
     List<Bookmark> bookmarks1 =
         ofy().load().type(Bookmark.class).ancestor(Key.<Account>create(user.getUserId())).list();
 
     assertEquals(1, bookmarks1.size());
 
-    bookmarkController.deleteBookmark(post.getWebsafeId(), user);
+    bookmarkController.deleteBookmark(postEntity.getWebsafeId(), user);
 
     List<Bookmark> bookmarks2 =
         ofy().load().type(Bookmark.class).ancestor(Key.<Account>create(user.getUserId())).list();
@@ -127,12 +127,12 @@ public class BookmarkControllerTest extends TestBase {
   @Test public void testListSavedQuestions() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    Post post2 =
-        postController.insertQuestion("Test content", "visa,passport", "europe", Optional.absent(),
+    PostEntity postEntity2 =
+        postController.insertQuestionPost("Test content", "visa,passport", "europe", Optional.absent(),
             Optional.absent(), user);
 
-    bookmarkController.insertBookmark(post.getWebsafeId(), user);
-    bookmarkController.insertBookmark(post2.getWebsafeId(), user);
+    bookmarkController.insertBookmark(postEntity.getWebsafeId(), user);
+    bookmarkController.insertBookmark(postEntity2.getWebsafeId(), user);
 
     List<Bookmark> bookmarks =
         ofy().load().type(Bookmark.class).ancestor(Key.<Account>create(user.getUserId())).list();

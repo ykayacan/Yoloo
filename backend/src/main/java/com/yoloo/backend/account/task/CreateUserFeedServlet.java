@@ -7,7 +7,7 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.feed.Feed;
 import com.yoloo.backend.group.TravelerGroupEntity;
-import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.util.KeyUtil;
 import ix.Ix;
 import java.io.IOException;
@@ -51,14 +51,14 @@ public class CreateUserFeedServlet extends HttpServlet {
 
     List<Key<TravelerGroupEntity>> groupKeys = KeyUtil.extractKeysFromIds(stringifiedSubscribedIds, ",");
 
-    Query<Post> query = ofy().load().type(Post.class);
+    Query<PostEntity> query = ofy().load().type(PostEntity.class);
 
     for (Key<TravelerGroupEntity> key : groupKeys) {
-      query = query.filter(Post.FIELD_GROUP_KEY + " =", key);
+      query = query.filter(PostEntity.FIELD_GROUP_KEY + " =", key);
     }
 
-    List<Key<Post>> postKeys =
-        query.order("-" + Post.FIELD_CREATED).limit(getRequiredEntitySize(groupKeys)).keys().list();
+    List<Key<PostEntity>> postKeys =
+        query.order("-" + PostEntity.FIELD_CREATED).limit(getRequiredEntitySize(groupKeys)).keys().list();
 
     List<Feed> feeds = Ix.from(postKeys).map(postKey -> getFeed(userId, postKey)).toList();
 
@@ -67,7 +67,7 @@ public class CreateUserFeedServlet extends HttpServlet {
     ofy().save().entities(feeds);
   }
 
-  private Feed getFeed(String userId, Key<Post> postKey) {
+  private Feed getFeed(String userId, Key<PostEntity> postKey) {
     return Feed.builder().id(Feed.createId(postKey)).parent(Key.create(userId)).build();
   }
 

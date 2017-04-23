@@ -34,8 +34,10 @@ public class NewcomersContactAdapter extends EpoxyAdapter {
       throw new IllegalStateException("onFollowClickListener is null.");
     }
 
-    return Stream.of(items)
-        .map(account -> new NewcomersContactModel_().account(account)
+    return Stream
+        .of(items)
+        .map(account -> new NewcomersContactModel_()
+            .account(account)
             .onItemClickListener(onItemClickListener)
             .onFollowClickListener(onFollowClickListener))
         .toList();

@@ -9,6 +9,6 @@ import lombok.Value;
 @Builder
 class PostBundle {
 
-  private Post post;
+  private PostEntity postEntity;
   private Map<Ref<PostShard>, PostShard> shards;
 }

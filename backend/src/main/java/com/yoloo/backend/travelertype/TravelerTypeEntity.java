@@ -16,9 +16,7 @@ import lombok.NoArgsConstructor;
 import lombok.Value;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.Wither;
-import lombok.extern.java.Log;
 
-@Log
 @Cache
 @Entity
 @Value

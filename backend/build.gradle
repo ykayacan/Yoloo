@@ -5,7 +5,7 @@ buildscript {
   dependencies {
     classpath 'me.tatarka:gradle-retrolambda:3.6.0'
     classpath 'com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0-beta7'
-    classpath 'com.google.cloud.tools:appengine-gradle-plugin:1.3.0'
+    classpath 'com.google.cloud.tools:appengine-gradle-plugin:1.1.1'
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.14.0'
   }
 }

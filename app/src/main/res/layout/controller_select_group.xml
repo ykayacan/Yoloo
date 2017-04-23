@@ -25,9 +25,10 @@
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:background="@android:color/white"
+      android:drawableEnd="@drawable/ic_search_black_24dp"
       android:drawableRight="@drawable/ic_search_black_24dp"
       android:hint="Search a group"
-      android:padding="10dp"
+      android:padding="16dp"
       android:textColor="@android:color/secondary_text_light"
       android:textColorHint="?android:attr/textColorSecondaryInverse" />
 

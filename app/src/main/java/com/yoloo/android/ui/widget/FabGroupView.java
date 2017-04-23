@@ -9,7 +9,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.Gravity;
-import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import butterknife.BindView;
@@ -45,8 +44,8 @@ public class FabGroupView extends LinearLayout {
     setOrientation(LinearLayout.VERTICAL);
     setGravity(Gravity.CENTER);
 
-    View view = inflate(getContext(), R.layout.view_fab_group, this);
-    ButterKnife.bind(view);
+    inflate(getContext(), R.layout.view_fab_group, this);
+    ButterKnife.bind(this);
 
     final TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.FabGroupView);
 

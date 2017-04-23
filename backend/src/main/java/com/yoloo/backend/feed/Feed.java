@@ -9,8 +9,7 @@ import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
 import com.googlecode.objectify.annotation.Parent;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.post.Post;
-
+import com.yoloo.backend.post.PostEntity;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,28 +28,21 @@ public class Feed {
   public static final String FIELD_POST = "post";
 
   // feed:postWebsafeId
-  @Id
-  private String id;
+  @Id private String id;
 
-  @Parent
-  @NonFinal
-  private Key<Account> parent;
+  @Parent @NonFinal private Key<Account> parent;
 
-  @NonFinal
-  @Load
-  @Index
-  private Ref<Post> post;
+  @NonFinal @Load @Index private Ref<PostEntity> post;
 
-  public static String createId(Key<Post> postKey) {
+  public static String createId(Key<PostEntity> postKey) {
     return "feed:" + postKey.toWebSafeString();
   }
 
-  public static Key<Feed> createKey(Key<Post> postKey, Key<Account> parentKey) {
-    return Key.create(parentKey, Feed.class, postKey.toWebSafeString());
+  public static Key<Feed> createKey(Key<PostEntity> postKey, Key<Account> parentKey) {
+    return Key.create(parentKey, Feed.class, "feed:" + postKey.toWebSafeString());
   }
 
-  public static Key<Post> getPostKey(Key<Feed> feedKey) {
-    final String name = feedKey.getName();
-    return Key.create(name.substring(name.indexOf(":")));
+  public static Key<PostEntity> getPostKey(Key<Feed> feedKey) {
+    return Key.create(feedKey.getName().split(":")[1]);
   }
 }

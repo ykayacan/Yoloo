@@ -9,6 +9,10 @@
       android:icon="@drawable/ic_person_black_24dp"
       android:title="@string/label_nav_profile" />
     <item
+      android:id="@+id/action_nav_explore"
+      android:icon="@drawable/ic_explore_black_24dp"
+      android:title="@string/label_nav_explore" />
+    <item
       android:id="@+id/action_nav_bookmarks"
       android:icon="@drawable/ic_bookmark_black_24dp"
       android:title="@string/label_nav_bookmarks" />

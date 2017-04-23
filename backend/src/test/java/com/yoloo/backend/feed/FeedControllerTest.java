@@ -11,7 +11,7 @@ import com.google.common.base.Optional;
 import com.googlecode.objectify.Key;
 import com.yoloo.backend.account.AccountController;
 import com.yoloo.backend.account.AccountControllerProvider;
-import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.post.PostController;
 import com.yoloo.backend.post.PostControllerFactory;
 import com.yoloo.backend.util.TestBase;
@@ -48,13 +48,13 @@ public class FeedControllerTest extends TestBase {
   @Test public void testFeedList() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
-    Post post = postController.insertQuestion("Test content", "", "", Optional.absent(),
+    PostEntity postEntity = postController.insertQuestionPost("Test content", "", "", Optional.absent(),
         Optional.absent(), user);
 
     QueueFactory.getDefaultQueue().add(TaskOptions.Builder
         .withUrl("/tasks/update/feed")
         .param("accountId", user.getUserId())
-        .param("postId", post.getWebsafeId()));
+        .param("postId", postEntity.getWebsafeId()));
 
     Thread.sleep(1000L);
 

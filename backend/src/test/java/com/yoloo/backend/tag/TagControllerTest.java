@@ -12,16 +12,19 @@ public class TagControllerTest extends TestBase {
   private static final String USER_EMAIL = "test@gmail.com";
   private static final String USER_AUTH_DOMAIN = "gmail.com";
 
-  @Override public void setUpGAE() {
+  @Override
+  public void setUpGAE() {
     super.setUpGAE();
 
-    helper.setEnvIsLoggedIn(true)
+    helper
+        .setEnvIsLoggedIn(true)
         .setEnvIsAdmin(true)
         .setEnvAuthDomain(USER_AUTH_DOMAIN)
         .setEnvEmail(USER_EMAIL);
   }
 
-  @Test public void testSuggestTags_suggestByTagSimilarity() throws Exception {
+  @Test
+  public void testSuggestTags_suggestByTagSimilarity() throws Exception {
     TagController tagController = TagControllerFactory.of().create();
 
     Tag cheap = tagController.insertTag("cheap");

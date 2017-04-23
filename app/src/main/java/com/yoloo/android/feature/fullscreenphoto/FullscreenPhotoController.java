@@ -22,6 +22,7 @@ import com.yoloo.android.util.ViewUtils;
 public class FullscreenPhotoController extends BaseController {
 
   private static final String KEY_PHOTO_URL = "PHOTO_URL";
+  private static final String KEY_MEDIA_ID = "MEDIA_ID";
 
   @BindView(R.id.iv_photo) PhotoView ivPhoto;
   @BindView(R.id.toolbar) Toolbar toolbar;
@@ -34,8 +35,11 @@ public class FullscreenPhotoController extends BaseController {
     super(args);
   }
 
-  public static FullscreenPhotoController create(String photoUrl) {
-    final Bundle bundle = new BundleBuilder().putString(KEY_PHOTO_URL, photoUrl).build();
+  public static FullscreenPhotoController create(String photoUrl, String mediaId) {
+    final Bundle bundle = new BundleBuilder()
+        .putString(KEY_PHOTO_URL, photoUrl)
+        .putString(KEY_MEDIA_ID, mediaId)
+        .build();
 
     return new FullscreenPhotoController(bundle);
   }
@@ -45,13 +49,13 @@ public class FullscreenPhotoController extends BaseController {
     return inflater.inflate(R.layout.controller_photo, container, false);
   }
 
-  @Override protected void onViewBound(@NonNull View view) {
+  @Override
+  protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
-    ViewUtils.setStatusBarColor(getActivity(), Color.BLACK);
-
     if (VersionUtil.hasL()) {
       chromeFader = new ElasticDragDismissFrameLayout.SystemChromeFader(getActivity()) {
-        @Override public void onDragDismissed() {
+        @Override
+        public void onDragDismissed() {
           getRouter().popController(FullscreenPhotoController.this);
         }
       };
@@ -62,13 +66,26 @@ public class FullscreenPhotoController extends BaseController {
     setupToolbar();
 
     if (VersionUtil.hasL()) {
-      ivPhoto.setTransitionName("image.test");
+      ivPhoto.setTransitionName("transition." + getArgs().getString(KEY_MEDIA_ID));
     }
 
     Glide.with(getActivity()).load(getArgs().getString(KEY_PHOTO_URL)).into(ivPhoto);
   }
 
-  @Override protected void onDestroyView(@NonNull View view) {
+  @Override
+  protected void onAttach(@NonNull View view) {
+    super.onAttach(view);
+    ViewUtils.setStatusBarColor(getActivity(), Color.BLACK);
+  }
+
+  @Override
+  protected void onDetach(@NonNull View view) {
+    super.onDetach(view);
+    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
+  }
+
+  @Override
+  protected void onDestroyView(@NonNull View view) {
     super.onDestroyView(view);
     if (VersionUtil.hasL()) {
       ((ElasticDragDismissFrameLayout) view).removeListener(chromeFader);

@@ -20,7 +20,7 @@
     android:drawablePadding="8dp"
     android:gravity="center_vertical"
     android:text="@string/label_earned_points"
-    android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
+    android:textAppearance="@style/Base.TextAppearance.AppCompat.Body2"
     app:drawableStart="@drawable/ic_bookmark_star_24dp" />
 
   <com.yoloo.android.ui.widget.BaselineGridTextView
@@ -31,8 +31,8 @@
     android:drawablePadding="8dp"
     android:gravity="center_vertical"
     android:text="@string/label_earned_bounties"
-    android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
+    android:textAppearance="@style/Base.TextAppearance.AppCompat.Body2"
     android:visibility="gone"
-    app:drawableStart="@drawable/ic_coin_stack_24dp"
+    app:drawableStart="@drawable/ic_bounty_coin_24dp"
     tools:visibility="visible" />
 </LinearLayout>

@@ -1,8 +1,11 @@
 package com.yoloo.android.feature.grouplist;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -12,43 +15,43 @@ import com.airbnb.epoxy.EpoxyAttribute;
 import com.airbnb.epoxy.EpoxyModelClass;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.GroupRealm;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.DrawableHelper;
-import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.List;
 
-class GroupListAdapter extends EpoxyAdapter {
+public class GroupListAdapter extends EpoxyAdapter {
 
   private final RequestManager glide;
-  private final CropCircleTransformation cropCircleTransformation;
 
   private OnItemClickListener<GroupRealm> onItemClickListener;
   private OnSubscribeListener onSubscribeClickListener;
 
-  GroupListAdapter(RequestManager glide, Context context) {
+  public GroupListAdapter(RequestManager glide, Context context) {
     this.glide = glide;
-    this.cropCircleTransformation = new CropCircleTransformation(context);
   }
 
-  void setOnItemClickListener(OnItemClickListener<GroupRealm> onItemClickListener) {
+  public void setOnItemClickListener(OnItemClickListener<GroupRealm> onItemClickListener) {
     this.onItemClickListener = onItemClickListener;
   }
 
-  void setOnSubscribeClickListener(OnSubscribeListener onSubscribeClickListener) {
+  public void setOnSubscribeClickListener(OnSubscribeListener onSubscribeClickListener) {
     this.onSubscribeClickListener = onSubscribeClickListener;
   }
 
-  void addGroups(List<GroupRealm> groups) {
+  public void addGroups(List<GroupRealm> groups) {
     for (GroupRealm group : groups) {
       addModel(createModel(group));
     }
   }
 
-  void clear() {
+  public void clear() {
     removeAllModels();
   }
 
@@ -56,24 +59,40 @@ class GroupListAdapter extends EpoxyAdapter {
     return new GroupListAdapter$GroupListItemModel_()
         .group(group)
         .glide(glide)
-        .cropCircleTransformation(cropCircleTransformation)
         .onItemClickListener(onItemClickListener)
         .onSubscribeClickListener(onSubscribeClickListener);
   }
 
-  interface OnSubscribeListener {
+  public interface OnSubscribeListener {
     void onSubscribe(@NonNull String groupId, boolean subscribed);
   }
 
   @EpoxyModelClass(layout = R.layout.item_group_list)
-  static abstract class GroupListItemModel
+  public static abstract class GroupListItemModel
       extends EpoxyModelWithHolder<GroupListItemModel.GroupListHolder> {
 
     @EpoxyAttribute GroupRealm group;
     @EpoxyAttribute(hash = false) RequestManager glide;
-    @EpoxyAttribute(hash = false) CropCircleTransformation cropCircleTransformation;
     @EpoxyAttribute(hash = false) OnItemClickListener<GroupRealm> onItemClickListener;
     @EpoxyAttribute(hash = false) OnSubscribeListener onSubscribeClickListener;
+
+    @Override
+    public void bind(GroupListHolder holder, List<Object> payloads) {
+      if (!payloads.isEmpty()) {
+        if (payloads.get(0) instanceof GroupRealm) {
+          GroupRealm payload = (GroupRealm) payloads.get(0);
+
+          if (group.isSubscribed() != payload.isSubscribed()) {
+            int buttonText =
+                group.isSubscribed() ? R.string.group_unsubscribe : R.string.group_subscribe;
+            holder.btnSubscribe.setText(buttonText);
+          }
+        }
+      } else {
+        super.bind(holder, payloads);
+      }
+      super.bind(holder, payloads);
+    }
 
     @Override
     public void bind(GroupListHolder holder) {
@@ -82,8 +101,18 @@ class GroupListAdapter extends EpoxyAdapter {
 
       glide
           .load(group.getBackgroundUrl())
-          .bitmapTransform(cropCircleTransformation)
-          .into(holder.ivSmallImage);
+          .asBitmap()
+          .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+          .into(new SimpleTarget<Bitmap>() {
+            @Override
+            public void onResourceReady(Bitmap resource,
+                GlideAnimation<? super Bitmap> glideAnimation) {
+              RoundedBitmapDrawable rbd =
+                  RoundedBitmapDrawableFactory.create(context.getResources(), resource);
+              rbd.setCornerRadius(6f);
+              holder.ivSmallImage.setImageDrawable(rbd);
+            }
+          });
 
       holder.tvTitle.setText(group.getName());
       holder.tvSubscriberCount.setText(CountUtil.formatCount(group.getSubscriberCount()));
@@ -110,6 +139,10 @@ class GroupListAdapter extends EpoxyAdapter {
       super.unbind(holder);
       holder.itemView.setOnClickListener(null);
       holder.btnSubscribe.setOnClickListener(null);
+    }
+
+    public GroupRealm getGroup() {
+      return group;
     }
 
     static class GroupListHolder extends BaseEpoxyHolder {

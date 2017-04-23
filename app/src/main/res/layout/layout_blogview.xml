@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:orientation="vertical"
+  tools:parentTag="android.widget.LinearLayout">
+
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_blog_title"
+    style="@style/TextAppearance.AppCompat.Title"
+    fontPath="fonts/OpenSans-Bold.ttf"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginTop="24dp"
+    android:textColor="@color/lucky_point"
+    tools:text="10 Reasons to book your tickets to Kashmir" />
+
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_blog_user_info"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="16dp"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp"
+    android:layout_marginStart="16dp"
+    android:textColor="@color/primary"
+    tools:text="Duygu Keskek &#8226; Traveler Expert" />
+
+  <View
+    android:layout_width="72dp"
+    android:layout_height="1dp"
+    android:layout_marginBottom="24dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginTop="24dp"
+    android:background="@color/blog_divider" />
+
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_blog_content"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp"
+    android:layout_marginStart="16dp"
+    android:textColor="@color/lucky_point"
+    tools:text="@string/lorem_ipsum_long" />
+
+</merge>

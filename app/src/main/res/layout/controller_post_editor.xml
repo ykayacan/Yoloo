@@ -7,19 +7,7 @@
   android:background="@android:color/white"
   android:fitsSystemWindows="true">
 
-  <android.support.design.widget.AppBarLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:theme="@style/Yoloo.AppBarOverlay">
-
-    <android.support.v7.widget.Toolbar
-      android:id="@+id/toolbar"
-      android:layout_width="match_parent"
-      android:layout_height="?attr/actionBarSize"
-      android:background="?attr/colorPrimary"
-      app:popupTheme="@style/Yoloo.PopupOverlay" />
-
-  </android.support.design.widget.AppBarLayout>
+  <include layout="@layout/merge_appbar" />
 
   <android.support.constraint.ConstraintLayout
     android:layout_width="match_parent"
@@ -81,14 +69,13 @@
 
     <com.yoloo.android.ui.widget.CompatTextView
       android:id="@+id/tv_editor_post_add_media"
-      style="@style/TextAppearance.AppCompat.Body2"
+      style="@style/TextAppearance.EditorItemText"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:background="?attr/selectableItemBackground"
       android:drawablePadding="16dp"
       android:gravity="center_vertical"
-      android:paddingBottom="12dp"
-      android:paddingTop="12dp"
+      android:padding="16dp"
       android:text="@string/label_editor_add_media"
       app:drawableStart="@drawable/ic_add_a_photo_black_24dp"
       app:layout_constraintLeft_toLeftOf="parent"
@@ -99,51 +86,59 @@
       android:id="@+id/divider2"
       android:layout_width="0dp"
       android:layout_height="1dp"
+      android:layout_marginEnd="0dp"
+      android:layout_marginStart="0dp"
       android:background="@color/divider"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintEnd_toEndOf="@+id/tv_editor_post_add_media"
+      app:layout_constraintStart_toStartOf="@+id/tv_editor_post_add_media"
       app:layout_constraintTop_toBottomOf="@+id/tv_editor_post_add_media" />
 
     <com.yoloo.android.ui.widget.CompatTextView
       android:id="@+id/tv_editor_post_select_group"
-      style="@style/TextAppearance.AppCompat.Body2"
+      style="@style/TextAppearance.EditorItemText"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
+      android:layout_marginEnd="0dp"
+      android:layout_marginStart="0dp"
       android:background="?attr/selectableItemBackground"
       android:drawablePadding="16dp"
       android:gravity="center_vertical"
-      android:paddingBottom="12dp"
-      android:paddingTop="12dp"
+      android:padding="16dp"
       android:text="@string/label_editor_select_group"
       app:drawableStart="@drawable/ic_local_library_black_24dp"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintEnd_toEndOf="@+id/tv_editor_post_add_media"
+      app:layout_constraintStart_toStartOf="@+id/tv_editor_post_add_media"
       app:layout_constraintTop_toBottomOf="@+id/divider2" />
 
     <View
       android:id="@+id/divider3"
       android:layout_width="0dp"
       android:layout_height="1dp"
+      android:layout_marginEnd="0dp"
+      android:layout_marginStart="0dp"
       android:background="@color/divider"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintEnd_toEndOf="@+id/tv_editor_post_select_group"
+      app:layout_constraintStart_toStartOf="@+id/tv_editor_post_select_group"
       app:layout_constraintTop_toBottomOf="@+id/tv_editor_post_select_group" />
 
     <com.hootsuite.nachos.NachoTextView
       android:id="@+id/et_editor_post_tags"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
+      android:layout_marginEnd="0dp"
       android:background="@android:color/transparent"
       android:drawableLeft="@drawable/ic_local_offer_black_24dp"
       android:drawablePadding="16dp"
       android:drawableStart="@drawable/ic_local_offer_black_24dp"
       android:hint="@string/hint_editor_tag"
-      android:paddingBottom="2dp"
-      android:paddingTop="2dp"
+      android:paddingBottom="6dp"
+      android:paddingLeft="16dp"
+      android:paddingStart="16dp"
+      android:paddingTop="6dp"
       android:textSize="14sp"
       app:chipTextSize="14sp"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintEnd_toEndOf="@+id/tv_editor_post_select_group"
+      app:layout_constraintStart_toStartOf="@+id/tv_editor_post_select_group"
       app:layout_constraintTop_toBottomOf="@+id/divider3" />
 
     <TextView
@@ -198,7 +193,7 @@
         android:drawablePadding="8dp"
         android:gravity="center"
         android:text="@string/action_editor_add_bounty"
-        app:drawableStart="@drawable/ic_bounty_coin_20dp" />
+        app:drawableStart="@drawable/ic_bounty_coin_24dp" />
 
     </FrameLayout>
 

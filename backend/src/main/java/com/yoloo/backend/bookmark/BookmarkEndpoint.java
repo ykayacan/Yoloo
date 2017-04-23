@@ -15,7 +15,7 @@ import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
 import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
-import com.yoloo.backend.post.dto.PostDTO;
+import com.yoloo.backend.post.dto.Post;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
@@ -79,7 +79,7 @@ public class BookmarkEndpoint {
    */
   @ApiMethod(name = "posts.bookmarkPost.list",
       path = "posts/bookmarks",
-      httpMethod = ApiMethod.HttpMethod.GET) public CollectionResponse<PostDTO> list(
+      httpMethod = ApiMethod.HttpMethod.GET) public CollectionResponse<Post> list(
       @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
       throws ServiceException {
 

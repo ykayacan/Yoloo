@@ -18,12 +18,12 @@ import com.yoloo.backend.account.AccountShardService;
 import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.game.GameService;
 import com.yoloo.backend.game.Tracker;
-import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.group.TravelerGroupController;
 import com.yoloo.backend.group.TravelerGroupControllerFactory;
-import com.yoloo.backend.post.Post;
+import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.post.PostController;
 import com.yoloo.backend.post.PostControllerFactory;
+import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.post.PostShardService;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagController;
@@ -50,7 +50,7 @@ public class CommentControllerTest extends TestBase {
   private static final String USER_AUTH_DOMAIN = "gmail.com";
 
   private Account owner;
-  private Post post;
+  private PostEntity postEntity;
 
   private TravelerGroupEntity europe;
 
@@ -63,7 +63,8 @@ public class CommentControllerTest extends TestBase {
   public void setUpGAE() {
     super.setUpGAE();
 
-    helper.setEnvIsLoggedIn(true)
+    helper
+        .setEnvIsLoggedIn(true)
         .setEnvIsAdmin(true)
         .setEnvAuthDomain(USER_AUTH_DOMAIN)
         .setEnvEmail(USER_EMAIL);
@@ -87,7 +88,8 @@ public class CommentControllerTest extends TestBase {
     DeviceRecord record = createRecord(owner);
     Tracker tracker = GameService.create().createTracker(owner.getKey());
 
-    ImmutableSet<Object> saveList = ImmutableSet.builder()
+    ImmutableSet<Object> saveList = ImmutableSet
+        .builder()
         .add(owner)
         .addAll(model.getShards().values())
         .add(record)
@@ -103,8 +105,9 @@ public class CommentControllerTest extends TestBase {
     Tag passport = tagController.insertTag("passport");
     tagController.insertTag("visa");
 
-    post = postController.insertQuestion("Test content", "visa,passport", europe.getWebsafeId(),
-        Optional.absent(), Optional.absent(), user);
+    postEntity =
+        postController.insertQuestionPost("Test content", "visa,passport", europe.getWebsafeId(),
+            Optional.absent(), Optional.absent(), user);
   }
 
   @Test
@@ -113,7 +116,8 @@ public class CommentControllerTest extends TestBase {
 
     String content = "Test comment";
 
-    Comment comment = commentController.insertComment(this.post.getWebsafeId(), content, user);
+    Comment comment =
+        commentController.insertComment(this.postEntity.getWebsafeId(), content, user);
 
     assertEquals(content, comment.getContent());
     assertEquals(Key.create(user.getUserId()), comment.getParent());
@@ -123,13 +127,13 @@ public class CommentControllerTest extends TestBase {
     assertEquals(0, comment.getVoteCount());
     assertEquals(false, comment.isAccepted());
 
-    Post post = Observable.just(
-        ofy().load().group(Post.ShardGroup.class).key(comment.getPostKey()).now())
+    PostEntity postEntity = Observable
+        .just(ofy().load().group(PostEntity.ShardGroup.class).key(comment.getPostKey()).now())
         .flatMap(postShardService::mergeShards)
         .blockingSingle();
 
-    assertEquals(1, post.getCommentCount());
-    assertEquals(true, post.isCommented());
+    assertEquals(1, postEntity.getCommentCount());
+    assertEquals(true, postEntity.isCommented());
 
     Tracker tracker = ofy().load().key(Tracker.createKey(Key.create(user.getUserId()))).now();
 
@@ -146,12 +150,12 @@ public class CommentControllerTest extends TestBase {
     final Key<Tracker> trackerKey = Tracker.createKey(Key.create(user.getUserId()));
 
     Comment comment =
-        commentController.insertComment(post.getWebsafeId(), "Test comment", user);
+        commentController.insertComment(this.postEntity.getWebsafeId(), "Test comment", user);
 
     Tracker tracker = ofy().load().key(trackerKey).now();
-    Post post = ofy().load().key(comment.getPostKey()).now();
+    PostEntity postEntity = ofy().load().key(comment.getPostKey()).now();
 
-    assertEquals(true, post.isCommented());
+    assertEquals(true, postEntity.isCommented());
     assertEquals(true, tracker.isFirstComment());
     //assertEquals(240, tracker.getPoints());
     //assertEquals(3, tracker.getBounties());
@@ -164,15 +168,16 @@ public class CommentControllerTest extends TestBase {
     String originalContent = "Test comment";
 
     Comment original =
-        commentController.insertComment(post.getWebsafeId(), originalContent, user);
+        commentController.insertComment(postEntity.getWebsafeId(), originalContent, user);
 
     assertEquals(originalContent, original.getContent());
     assertEquals(false, original.isAccepted());
 
     String changedContent = "Hello Yoloo";
 
-    Comment changed = commentController.updateComment(post.getWebsafeId(), original.getWebsafeId(),
-        Optional.of(changedContent), Optional.absent(), user);
+    Comment changed =
+        commentController.updateComment(postEntity.getWebsafeId(), original.getWebsafeId(),
+            Optional.of(changedContent), Optional.absent(), user);
 
     assertEquals(changedContent, changed.getContent());
     assertEquals(false, changed.isAccepted());
@@ -185,16 +190,17 @@ public class CommentControllerTest extends TestBase {
     String originalContent = "Test comment";
 
     Comment original =
-        commentController.insertComment(post.getWebsafeId(), originalContent, user);
+        commentController.insertComment(this.postEntity.getWebsafeId(), originalContent, user);
 
-    Comment changed = commentController.updateComment(post.getWebsafeId(), original.getWebsafeId(),
-        Optional.absent(), Optional.of(true), user);
+    Comment changed =
+        commentController.updateComment(this.postEntity.getWebsafeId(), original.getWebsafeId(),
+            Optional.absent(), Optional.of(true), user);
 
     assertEquals(originalContent, changed.getContent());
     assertEquals(true, changed.isAccepted());
 
-    Post post = ofy().load().key(changed.getPostKey()).now();
-    assertEquals(changed.getKey(), post.getAcceptedCommentKey());
+    PostEntity postEntity = ofy().load().key(changed.getPostKey()).now();
+    assertEquals(changed.getKey(), postEntity.getAcceptedCommentKey());
   }
 
   @Test(expected = NotFoundException.class)
@@ -203,10 +209,9 @@ public class CommentControllerTest extends TestBase {
 
     String content = "Test comment";
 
-    Comment comment =
-        commentController.insertComment(post.getWebsafeId(), content, user);
+    Comment comment = commentController.insertComment(postEntity.getWebsafeId(), content, user);
 
-    commentController.deleteComment(post.getWebsafeId(), comment.getWebsafeId(), user);
+    commentController.deleteComment(postEntity.getWebsafeId(), comment.getWebsafeId(), user);
 
     ofy().load().key(comment.getKey()).safe();
   }
@@ -217,17 +222,17 @@ public class CommentControllerTest extends TestBase {
 
     String content = "Test comment";
 
-    Comment comment =
-        commentController.insertComment(post.getWebsafeId(), content, user);
+    Comment comment = commentController.insertComment(postEntity.getWebsafeId(), content, user);
 
-    voteController.vote(comment.getWebsafeId(), Vote.Direction.UP, user);
+    voteController.vote(comment.getWebsafeId(), Vote.Direction.UP.getValue(), user);
 
-    commentController.deleteComment(post.getWebsafeId(), comment.getWebsafeId(), user);
+    commentController.deleteComment(postEntity.getWebsafeId(), comment.getWebsafeId(), user);
 
     assertEquals(null, ofy().load().key(comment.getKey()).now());
     assertEquals(true, ofy().load().refs(comment.getShardRefs()).isEmpty());
 
-    List<Key<Vote>> voteKeys = ofy().load()
+    List<Key<Vote>> voteKeys = ofy()
+        .load()
         .type(Vote.class)
         .filter(Vote.FIELD_VOTABLE_KEY + " =", comment.getKey())
         .keys()
@@ -241,22 +246,22 @@ public class CommentControllerTest extends TestBase {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     Comment comment1 =
-        commentController.insertComment(post.getWebsafeId(), "Test comment1", user);
+        commentController.insertComment(postEntity.getWebsafeId(), "Test comment1", user);
     Comment comment2 =
-        commentController.insertComment(post.getWebsafeId(), "Test comment2", user);
+        commentController.insertComment(postEntity.getWebsafeId(), "Test comment2", user);
     Comment comment3 =
-        commentController.insertComment(post.getWebsafeId(), "Test comment3", user);
+        commentController.insertComment(postEntity.getWebsafeId(), "Test comment3", user);
     Comment comment4 =
-        commentController.insertComment(post.getWebsafeId(), "Test comment4", user);
+        commentController.insertComment(postEntity.getWebsafeId(), "Test comment4", user);
 
-    voteController.vote(comment1.getWebsafeId(), Vote.Direction.UP, user);
-    voteController.vote(comment2.getWebsafeId(), Vote.Direction.UP, user);
-    voteController.vote(comment3.getWebsafeId(), Vote.Direction.UP, user);
-    voteController.vote(comment4.getWebsafeId(), Vote.Direction.UP, user);
+    voteController.vote(comment1.getWebsafeId(), Vote.Direction.UP.getValue(), user);
+    voteController.vote(comment2.getWebsafeId(), Vote.Direction.UP.getValue(), user);
+    voteController.vote(comment3.getWebsafeId(), Vote.Direction.UP.getValue(), user);
+    voteController.vote(comment4.getWebsafeId(), Vote.Direction.UP.getValue(), user);
 
     CollectionResponse<Comment> response =
-        commentController.listComments(post.getWebsafeId(), Optional.absent(), Optional.absent(),
-            user);
+        commentController.listComments(postEntity.getWebsafeId(), Optional.absent(),
+            Optional.absent(), user);
 
     assertEquals(4, response.getItems().size());
 
@@ -274,7 +279,8 @@ public class CommentControllerTest extends TestBase {
 
     Map<Ref<AccountShard>, AccountShard> map = ass.createShardMapWithRef(ownerKey);
 
-    Account account = Account.builder()
+    Account account = Account
+        .builder()
         .id(ownerKey.getId())
         .avatarUrl(new Link("Test avatar"))
         .email(new Email(USER_EMAIL))
@@ -283,14 +289,12 @@ public class CommentControllerTest extends TestBase {
         .created(DateTime.now())
         .build();
 
-    return AccountBundle.builder()
-        .account(account)
-        .shards(map)
-        .build();
+    return AccountBundle.builder().account(account).shards(map).build();
   }
 
   private DeviceRecord createRecord(Account owner) {
-    return DeviceRecord.builder()
+    return DeviceRecord
+        .builder()
         .id(owner.getWebsafeId())
         .parent(owner.getKey())
         .regId(UUID.randomUUID().toString())

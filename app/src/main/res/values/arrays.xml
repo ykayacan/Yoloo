@@ -43,7 +43,7 @@
     <item>@color/primary</item>
     <item>@color/primary_blue</item>
     <item>@color/primary_yellow</item>
-    <item>@color/greenEnd</item>
+    <item>@color/accepted</item>
   </integer-array>
 
   <string-array name="bounty_times">

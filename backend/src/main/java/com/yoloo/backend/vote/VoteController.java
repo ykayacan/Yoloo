@@ -10,7 +10,7 @@ import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.comment.CommentShardService;
-import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.post.PostShardService;
 import com.yoloo.backend.shard.Shardable;
 import ix.Ix;
@@ -117,7 +117,7 @@ public final class VoteController extends Controller {
 
   private Shardable.Shard getShard(Key<? extends Votable> votableKey) {
     Key<?> shardKey;
-    if (votableKey.getKind().equals(Key.getKind(Post.class))) {
+    if (votableKey.getKind().equals(Key.getKind(PostEntity.class))) {
       shardKey = postShardService.getRandomShardKey(Key.create(votableKey.getRaw()));
     } else {
       shardKey = commentShardService.getRandomShardKey(Key.create(votableKey.getRaw()));

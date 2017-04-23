@@ -9,7 +9,7 @@ import android.support.v4.util.ArrayMap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.TextView;
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -28,7 +28,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class SelectTypeController extends BaseController {
 
   @BindView(R.id.bubblepicker) BubblePicker picker;
-  @BindView(R.id.btn_sign_up_init_getting_started) Button btnGettingStarted;
+  @BindView(R.id.btn_sign_up_init_get_started) TextView tvGetStarted;
 
   @BindArray(R.array.colors) int[] colors;
   @BindArray(R.array.traveler_types_images) TypedArray travelerTypeDrawables;
@@ -85,7 +85,7 @@ public class SelectTypeController extends BaseController {
           selectedTypeIds.add(types.get(pickerItem.getTitle()));
 
           if (selectedTypeIds.size() >= 3) {
-            btnGettingStarted.setVisibility(View.VISIBLE);
+            tvGetStarted.setVisibility(View.VISIBLE);
           }
         }
       }
@@ -96,14 +96,14 @@ public class SelectTypeController extends BaseController {
           selectedTypeIds.remove(types.get(pickerItem.getTitle()));
 
           if (selectedTypeIds.size() < 3) {
-            btnGettingStarted.setVisibility(View.GONE);
+            tvGetStarted.setVisibility(View.GONE);
           }
         }
       }
     });
   }
 
-  @OnClick(R.id.btn_sign_up_init_getting_started)
+  @OnClick(R.id.btn_sign_up_init_get_started)
   void showSignUpScreen() {
     getRouter().pushController(RouterTransaction
         .with(SignUpInitController.create(selectedTypeIds))

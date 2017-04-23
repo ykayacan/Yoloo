@@ -31,7 +31,7 @@ public class UploadServletTest extends TestBase {
         super.setUp();
 
         fact().register(Account.class);
-        fact().register(Media.class);
+        fact().register(MediaEntity.class);
 
         Key<Account> ownerKey = fact().allocateId(Account.class);
     }

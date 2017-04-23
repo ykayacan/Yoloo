@@ -27,7 +27,8 @@ public class GameInfoRealm extends RealmObject {
     this.level = info.getLevel();
     this.nextLevel = info.getNextLevel();
     if (info.getHistories() != null) {
-      Stream.of(info.getHistories())
+      Stream
+          .of(info.getHistories())
           .map(GameHistoryRealm::new)
           .forEach(gameHistoryRealm -> histories.add(gameHistoryRealm));
     }
@@ -53,7 +54,8 @@ public class GameInfoRealm extends RealmObject {
     return histories;
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "GameInfoRealm{"
         + "id='"
         + id

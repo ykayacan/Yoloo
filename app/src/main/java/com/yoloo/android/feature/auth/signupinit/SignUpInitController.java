@@ -1,7 +1,6 @@
 package com.yoloo.android.feature.auth.signupinit;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -60,7 +59,7 @@ public class SignUpInitController extends BaseController implements IdpProvider.
 
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
-    return inflater.inflate(R.layout.controller_signupinit, container, false);
+    return inflater.inflate(R.layout.controller_signup_init, container, false);
   }
 
   @Override
@@ -73,13 +72,13 @@ public class SignUpInitController extends BaseController implements IdpProvider.
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
+    ViewUtils.hideStatusBar(view);
   }
 
   @Override
   protected void onDetach(@NonNull View view) {
     super.onDetach(view);
-    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
+    ViewUtils.clearHideStatusBar(view);
   }
 
   @Override

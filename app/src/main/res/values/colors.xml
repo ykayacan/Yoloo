@@ -46,4 +46,7 @@
   <color name="label_background_color_light">#ffffff</color>
   <color name="label_ripple_color_light">#1f000000</color>
 
+  <color name="lucky_point">#313446</color>
+  <color name="blog_divider">#CFD0D1</color>
+
 </resources>

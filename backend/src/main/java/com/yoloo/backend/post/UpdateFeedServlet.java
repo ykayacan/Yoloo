@@ -50,7 +50,7 @@ public class UpdateFeedServlet extends HttpServlet {
     final String postId = req.getParameter(POST_ID);
 
     final Key<Account> accountKey = Key.create(accountId);
-    final Key<Post> postKey = Key.create(postId);
+    final Key<PostEntity> postKey = Key.create(postId);
 
     List<Feed> feeds = Ix.from(findFollowersOfUser(accountKey))
         .map(Key::<Account>getParent)
@@ -69,7 +69,7 @@ public class UpdateFeedServlet extends HttpServlet {
         .keys().list();
   }
 
-  private Feed createFeed(Key<Account> followerKey, Key<Post> postKey) {
+  private Feed createFeed(Key<Account> followerKey, Key<PostEntity> postKey) {
     return Feed.builder()
         .id(Feed.createId(postKey))
         .parent(followerKey)

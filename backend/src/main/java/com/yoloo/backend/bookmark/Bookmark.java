@@ -7,7 +7,8 @@ import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Parent;
 import com.yoloo.backend.account.Account;
-import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostEntity;
+import com.yoloo.backend.post.PostEntity;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -40,7 +41,7 @@ public class Bookmark {
   @NonFinal
   private DateTime created;
 
-  public Key<Post> getSavedPostKey() {
+  public Key<PostEntity> getSavedPostKey() {
     return Key.create(id);
   }
 }

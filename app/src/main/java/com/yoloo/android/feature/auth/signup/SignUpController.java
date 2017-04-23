@@ -30,12 +30,13 @@ import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.auth.AuthUI;
 import com.yoloo.android.feature.auth.IdpResponse;
 import com.yoloo.android.feature.base.BaseActivity;
-import com.yoloo.android.feature.feed.home.FeedHomeController;
+import com.yoloo.android.feature.feed.FeedHomeController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.FormUtil;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.LocaleUtil;
+import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import io.reactivex.subjects.PublishSubject;
 import java.net.SocketTimeoutException;
@@ -117,19 +118,24 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
     travelerTypeIds = getArgs().getStringArrayList(KEY_TRAVELER_TYPE_IDS);
     idpResponse = getArgs().getParcelable(KEY_IDP_RESPONSE);
 
-    travelerTypeIds.add(
-        "agx5b2xvby0xNTE3MTlyLgsSElRyYXZlbGVyVHlwZUVudGl0eSIWdHJhdmVsZXJfdHlwZTpFc2NhcGlzdAw");
-    travelerTypeIds.add(
-        "agx5b2xvby0xNTE3MTlyOQsSElRyYXZlbGVyVHlwZUVudGl0eSIhdHJhdmVsZXJfdHlwZTpHdWlkZWJvb2sgTWVtb3JpemVyDA");
-    travelerTypeIds.add(
-        "agx5b2xvby0xNTE3MTlyMQsSElRyYXZlbGVyVHlwZUVudGl0eSIZdHJhdmVsZXJfdHlwZTpLbm93LUl0LUFsbAw");
-
     handleIdpResponse();
 
     usernameSubject
         .filter(username -> !TextUtils.isEmpty(username))
         .debounce(400, TimeUnit.MILLISECONDS)
         .subscribe(username -> getPresenter().checkUsername(username));
+  }
+
+  @Override
+  protected void onAttach(@NonNull View view) {
+    super.onAttach(view);
+    ViewUtils.hideStatusBar(view);
+  }
+
+  @Override
+  protected void onDetach(@NonNull View view) {
+    super.onDetach(view);
+    ViewUtils.clearHideStatusBar(view);
   }
 
   private void handleIdpResponse() {
@@ -293,9 +299,14 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
       // form field with an error.
       focusView.requestFocus();
     } else {
-      KeyboardUtil.hideKeyboard(etPassword);
+      KeyboardUtil.hideKeyboard(getView());
 
       String locale = LocaleUtil.getCurrentLocale(getActivity()).getISO3Country();
+
+      if (TextUtils.isEmpty(idpResponse.getEmail())) {
+        idpResponse = new IdpResponse(idpResponse.getProviderType(), etEmail.getText().toString(),
+            idpResponse.getIdpToken(), idpResponse.getName(), idpResponse.getPictureUrl());
+      }
 
       getPresenter().signUp(idpResponse, username, password, new Date(birthDate), country,
           travelerTypeIds, locale);

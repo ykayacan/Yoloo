@@ -15,20 +15,25 @@ import okhttp3.Response;
 public enum UploadManager {
   INSTANCE;
 
-  public Single<Response> upload(@Nonnull String userId, List<File> files) {
+  public Single<Response> upload(@Nonnull String userId, List<File> files, MediaOrigin origin) {
     return Single.fromCallable(() -> {
       final MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
 
-      Stream.of(files)
+      Stream
+          .of(files)
           .forEach(file -> builder.addFormDataPart("file", file.getName(),
-              RequestBody.create(MediaType.parse("image/*"), file)));
+              RequestBody.create(MediaType.parse("image/webp"), file)));
 
-      final Request request =
-          new Request.Builder().url(BuildConfig.UPLOAD_URL + "?userId=" + userId)
-              .post(builder.build())
-              .build();
+      final Request request = new Request.Builder()
+          .url(BuildConfig.UPLOAD_URL + "?userId=" + userId + "&mediaOrigin=" + origin.name())
+          .post(builder.build())
+          .build();
 
       return ApiManager.INSTANCE.getOkHttpClient().newCall(request).execute();
     });
+  }
+
+  public enum MediaOrigin {
+    POST, PROFILE
   }
 }

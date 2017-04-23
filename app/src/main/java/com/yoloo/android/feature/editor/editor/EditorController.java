@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -26,7 +25,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import butterknife.BindColor;
 import butterknife.BindDimen;
-import butterknife.BindDrawable;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -77,8 +75,8 @@ import java.util.Date;
 import java.util.List;
 import timber.log.Timber;
 
-public class EditorController extends MvpController<EditorView, EditorPresenter>
-    implements EditorView, TagSelectDialog.OnTagsSelectedListener {
+public class EditorController extends MvpController<EditorQuestionView, EditorQuestionPresenter>
+    implements EditorQuestionView, TagSelectDialog.OnTagsSelectedListener {
 
   private static final String KEY_EDITOR_TYPE = "EDITOR_TYPE";
 
@@ -102,8 +100,6 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
 
   @BindColor(R.color.primary) int primaryColor;
   @BindColor(R.color.primary_dark) int primaryDarkColor;
-
-  @BindDrawable(R.drawable.dialog_tag_bg) Drawable tagBgDrawable;
 
   @BindDimen(R.dimen.spacing_normal) int normalSpaceDimen;
 
@@ -175,7 +171,7 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
       KeyboardUtil.hideKeyboard(etEditor);
       showDiscardDraftDialog();
       /*setTempDraft();
-      getPresenter().updateDraft(draft, EditorPresenter.NAV_BACK);*/
+      getPresenter().updateDraft(draft, EditorQuestionPresenter.NAV_BACK);*/
       return false;
     }
 
@@ -203,8 +199,8 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
 
   @NonNull
   @Override
-  public EditorPresenter createPresenter() {
-    return new EditorPresenter(
+  public EditorQuestionPresenter createPresenter() {
+    return new EditorQuestionPresenter(
         TagRepository.getInstance(TagRemoteDataStore.getInstance(), TagDiskDataStore.getInstance()),
         PostRepositoryProvider.getRepository(), UserRepositoryProvider.getRepository());
   }
@@ -216,7 +212,7 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
 
   @Override
   public void onDraftUpdated(int navigation) {
-    if (navigation == EditorPresenter.NAV_SELECT_GROUP) {
+    if (navigation == EditorQuestionPresenter.NAV_SELECT_GROUP) {
       Controller controller = SelectGroupController.create();
       controller.setTargetController(this);
 
@@ -226,14 +222,14 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
           .popChangeHandler(new VerticalChangeHandler());
 
       getRouter().pushController(transaction);
-    } else if (navigation == EditorPresenter.NAV_BOUNTY) {
+    } else if (navigation == EditorQuestionPresenter.NAV_BOUNTY) {
       getRouter().pushController(RouterTransaction
           .with(BountySelectController.create())
           .pushChangeHandler(new VerticalChangeHandler())
           .popChangeHandler(new VerticalChangeHandler()));
-    } else if (navigation == EditorPresenter.NAV_POST) {
+    } else if (navigation == EditorQuestionPresenter.NAV_POST) {
       showTagDialog();
-    } else if (navigation == EditorPresenter.NAV_SEND) {
+    } else if (navigation == EditorQuestionPresenter.NAV_SEND) {
       /*Intent intent = new Intent(getActivity(), SendPostService.class);
       getActivity().startService(intent);*/
 
@@ -276,7 +272,7 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
       KeyboardUtil.hideKeyboard(etEditor);
       setTempDraft();
 
-      getPresenter().updateDraft(draft, EditorPresenter.NAV_BOUNTY);
+      getPresenter().updateDraft(draft, EditorQuestionPresenter.NAV_BOUNTY);
     } else {
       Snackbar.make(getView(), R.string.error_bounty_network, Snackbar.LENGTH_LONG).show();
     }
@@ -314,7 +310,7 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
       Snackbar.make(getView(), "Select a group!", Snackbar.LENGTH_SHORT).show();
     } else {
       setTempDraft();
-      getPresenter().updateDraft(draft, EditorPresenter.NAV_POST);
+      getPresenter().updateDraft(draft, EditorQuestionPresenter.NAV_POST);
     }
   }
 
@@ -334,14 +330,14 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
   @Optional
   @OnClick(R.id.tv_editor_select_group)
   void openGroupSelectScreen() {
-    getPresenter().updateDraft(draft, EditorPresenter.NAV_SELECT_GROUP);
+    getPresenter().updateDraft(draft, EditorQuestionPresenter.NAV_SELECT_GROUP);
   }
 
   @Override
   public void onTagsSelected(List<TagRealm> tags) {
     Stream.of(tags).forEach(tagRealm -> draft.addTag(tagRealm));
 
-    getPresenter().updateDraft(draft, EditorPresenter.NAV_SEND);
+    getPresenter().updateDraft(draft, EditorQuestionPresenter.NAV_SEND);
 
     /*tagContainer.setVisibility(View.VISIBLE);
     tagContainer.removeAllViews();
@@ -562,7 +558,7 @@ public class EditorController extends MvpController<EditorView, EditorPresenter>
         tag.setText(getActivity().getString(R.string.label_tag, tagName));
         tag.setGravity(Gravity.CENTER);
         tag.setPadding(16, 10, 16, 10);
-        tag.setBackground(tagBgDrawable);
+        //tag.setBackground(tagBgDrawable);
         TextViewUtil.setTextAppearance(tag, getActivity(), R.style.TextAppearance_AppCompat);
 
         tagContainer.addView(tag);

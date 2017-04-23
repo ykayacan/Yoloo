@@ -78,7 +78,8 @@ public class SpannedGridLayoutManager extends RecyclerView.LayoutManager {
     this.spanLookup = spanLookup;
   }
 
-  @Override public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
+  @Override
+  public void onLayoutChildren(RecyclerView.Recycler recycler, RecyclerView.State state) {
     calculateWindowSize();
     calculateCellPositions(recycler, state);
 
@@ -117,16 +118,19 @@ public class SpannedGridLayoutManager extends RecyclerView.LayoutManager {
     layoutDisappearingViews(recycler, state, startTop);
   }
 
-  @Override public RecyclerView.LayoutParams generateDefaultLayoutParams() {
+  @Override
+  public RecyclerView.LayoutParams generateDefaultLayoutParams() {
     return new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
         ViewGroup.LayoutParams.WRAP_CONTENT);
   }
 
-  @Override public RecyclerView.LayoutParams generateLayoutParams(Context c, AttributeSet attrs) {
+  @Override
+  public RecyclerView.LayoutParams generateLayoutParams(Context c, AttributeSet attrs) {
     return new LayoutParams(c, attrs);
   }
 
-  @Override public RecyclerView.LayoutParams generateLayoutParams(ViewGroup.LayoutParams lp) {
+  @Override
+  public RecyclerView.LayoutParams generateLayoutParams(ViewGroup.LayoutParams lp) {
     if (lp instanceof ViewGroup.MarginLayoutParams) {
       return new LayoutParams((ViewGroup.MarginLayoutParams) lp);
     } else {
@@ -134,7 +138,8 @@ public class SpannedGridLayoutManager extends RecyclerView.LayoutManager {
     }
   }
 
-  @Override public boolean checkLayoutParams(RecyclerView.LayoutParams lp) {
+  @Override
+  public boolean checkLayoutParams(RecyclerView.LayoutParams lp) {
     return lp instanceof LayoutParams;
   }
 
@@ -144,11 +149,13 @@ public class SpannedGridLayoutManager extends RecyclerView.LayoutManager {
     reset();
   }
 
-  @Override public boolean supportsPredictiveItemAnimations() {
+  @Override
+  public boolean supportsPredictiveItemAnimations() {
     return true;
   }
 
-  @Override public boolean canScrollVertically() {
+  @Override
+  public boolean canScrollVertically() {
     return true;
   }
 
@@ -204,7 +211,8 @@ public class SpannedGridLayoutManager extends RecyclerView.LayoutManager {
     return scrolled;
   }
 
-  @Override public void scrollToPosition(int position) {
+  @Override
+  public void scrollToPosition(int position) {
     if (position >= getItemCount()) position = getItemCount() - 1;
 
     firstVisibleRow = getRowTopIndex(position);
@@ -214,12 +222,14 @@ public class SpannedGridLayoutManager extends RecyclerView.LayoutManager {
     requestLayout();
   }
 
-  @Override public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State state,
+  @Override
+  public void smoothScrollToPosition(RecyclerView recyclerView, RecyclerView.State state,
       int position) {
     if (position >= getItemCount()) position = getItemCount() - 1;
 
     LinearSmoothScroller scroller = new LinearSmoothScroller(recyclerView.getContext()) {
-      @Override public PointF computeScrollVectorForPosition(int targetPosition) {
+      @Override
+      public PointF computeScrollVectorForPosition(int targetPosition) {
         final int rowOffset = getRowTopIndex(targetPosition) - firstVisibleRow;
         return new PointF(0, rowOffset * cellHeight);
       }
@@ -228,22 +238,26 @@ public class SpannedGridLayoutManager extends RecyclerView.LayoutManager {
     startSmoothScroll(scroller);
   }
 
-  @Override public int computeVerticalScrollRange(RecyclerView.State state) {
+  @Override
+  public int computeVerticalScrollRange(RecyclerView.State state) {
     // TODO update this to incrementally calculate
     if (firstChildPositionForRow == null) return 0;
     return getSpannedRowCount() * cellHeight + getPaddingTop() + getPaddingBottom();
   }
 
-  @Override public int computeVerticalScrollExtent(RecyclerView.State state) {
+  @Override
+  public int computeVerticalScrollExtent(RecyclerView.State state) {
     return getHeight();
   }
 
-  @Override public int computeVerticalScrollOffset(RecyclerView.State state) {
+  @Override
+  public int computeVerticalScrollOffset(RecyclerView.State state) {
     if (getChildCount() == 0) return 0;
     return getPaddingTop() + (firstVisibleRow * cellHeight) - getDecoratedTop(getChildAt(0));
   }
 
-  @Override public View findViewByPosition(int position) {
+  @Override
+  public View findViewByPosition(int position) {
     if (position < firstVisiblePosition || position > lastVisiblePosition) return null;
     return getChildAt(position - firstVisiblePosition);
   }

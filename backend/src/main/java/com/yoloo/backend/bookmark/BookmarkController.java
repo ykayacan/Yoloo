@@ -10,9 +10,9 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
-import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.post.PostShardService;
-import com.yoloo.backend.post.dto.PostDTO;
+import com.yoloo.backend.post.dto.Post;
 import com.yoloo.backend.post.transformer.PostTransformer;
 import com.yoloo.backend.vote.VoteService;
 import ix.Ix;
@@ -50,7 +50,7 @@ public class BookmarkController extends Controller {
     // Create user key from user id.
     final Key<Account> authKey = Key.create(user.getUserId());
 
-    final Key<Post> postKey = Key.create(questionId);
+    final Key<PostEntity> postKey = Key.create(questionId);
 
     Bookmark saved = createBookmark(postKey, authKey);
 
@@ -80,7 +80,7 @@ public class BookmarkController extends Controller {
    * @param user the user
    * @return the collection response
    */
-  public CollectionResponse<PostDTO> listBookmarks(
+  public CollectionResponse<Post> listBookmarks(
       Optional<Integer> limit,
       Optional<String> cursor,
       User user) {
@@ -104,26 +104,26 @@ public class BookmarkController extends Controller {
 
     final QueryResultIterator<Bookmark> qi = query.iterator();
 
-    List<Key<Post>> postKeys = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
+    List<Key<PostEntity>> postKeys = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
 
     while (qi.hasNext()) {
       postKeys.add(qi.next().getSavedPostKey());
     }
 
-    Collection<Post> posts = ofy().load().keys(postKeys).values();
+    Collection<PostEntity> postEntities = ofy().load().keys(postKeys).values();
 
-    List<PostDTO> postDTOs = postShardService.mergeShards(posts)
+    List<Post> posts = postShardService.mergeShards(postEntities)
         .flatMap(__ -> voteService.checkPostVote(__, authKey))
         .map(__ -> Ix.from(__).map(post -> postTransformer.transformTo(post)).toList())
         .blockingSingle();
 
-    return CollectionResponse.<PostDTO>builder()
-        .setItems(postDTOs)
+    return CollectionResponse.<Post>builder()
+        .setItems(posts)
         .setNextPageToken(qi.getCursor().toWebSafeString())
         .build();
   }
 
-  private Bookmark createBookmark(Key<Post> questionKey, Key<Account> parentKey) {
+  private Bookmark createBookmark(Key<PostEntity> questionKey, Key<Account> parentKey) {
     return Bookmark.builder()
         .id(questionKey.toWebSafeString())
         .parent(parentKey)

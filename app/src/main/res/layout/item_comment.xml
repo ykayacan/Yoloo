@@ -2,6 +2,7 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/root_view"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
   android:descendantFocusability="blocksDescendants"
@@ -51,7 +52,7 @@
     tools:text="1m" />
 
   <com.yoloo.android.ui.widget.BaselineGridTextView
-    android:id="@+id/tv_comment_accepted"
+    android:id="@+id/tv_comment_accepted_indicator"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/spacing_normal"

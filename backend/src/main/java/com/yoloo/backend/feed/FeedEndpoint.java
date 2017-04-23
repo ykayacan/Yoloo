@@ -12,33 +12,20 @@ import com.yoloo.backend.Constants;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
 import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
 import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
-import com.yoloo.backend.post.Post;
-
+import com.yoloo.backend.post.PostEntity;
 import java.util.logging.Logger;
-
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
-@Api(
-    name = "yolooApi",
+@Api(name = "yolooApi",
     version = "v1",
-    namespace = @ApiNamespace(
-        ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER)
-)
-@ApiClass(
-    clientIds = {
-        Constants.ANDROID_CLIENT_ID,
-        Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID
-    },
-    audiences = { Constants.AUDIENCE_ID, },
-    authenticators = { FirebaseAuthenticator.class }
-)
+    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
+@ApiClass(clientIds = {
+    Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
+}, audiences = {Constants.AUDIENCE_ID,}, authenticators = {FirebaseAuthenticator.class})
 public class FeedEndpoint {
 
-  private static final Logger LOG =
-      Logger.getLogger(FeedEndpoint.class.getSimpleName());
+  private static final Logger LOG = Logger.getLogger(FeedEndpoint.class.getSimpleName());
 
   private final FeedController feedController = FeedControllerFactory.of().create();
 
@@ -51,20 +38,13 @@ public class FeedEndpoint {
    * @return the collection response
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "users.me.feed",
-      path = "users/me/feed",
-      httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Post> list(
-      @Nullable @Named("cursor") String cursor,
-      @Nullable @Named("limit") Integer limit,
-      User user) throws ServiceException {
+  @ApiMethod(name = "users.me.feed", path = "users/me/feed", httpMethod = ApiMethod.HttpMethod.GET)
+  public CollectionResponse<PostEntity> list(@Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
-    return feedController.listFeed(
-        Optional.fromNullable(limit),
-        Optional.fromNullable(cursor),
+    return feedController.listFeed(Optional.fromNullable(limit), Optional.fromNullable(cursor),
         user);
   }
 }

@@ -36,8 +36,9 @@ public class TagDiskDataStore {
     Realm realm = Realm.getDefaultInstance();
 
     realm.executeTransaction(tx -> {
-      tx.where(TagRealm.class)
-          .equalTo(TagRealmFields.IS_RECOMMENDED, true)
+      tx
+          .where(TagRealm.class)
+          .equalTo(TagRealmFields.RECOMMENDED, true)
           .findAll()
           .deleteAllFromRealm();
 
@@ -54,8 +55,9 @@ public class TagDiskDataStore {
       List<TagRealm> tags;
       switch (sorter) {
         case RECOMMENDED:
-          tags = realm.copyFromRealm(realm.where(TagRealm.class)
-              .equalTo(TagRealmFields.IS_RECOMMENDED, true)
+          tags = realm.copyFromRealm(realm
+              .where(TagRealm.class)
+              .equalTo(TagRealmFields.RECOMMENDED, true)
               .findAllSorted(TagRealmFields.POST_COUNT, Sort.DESCENDING));
           break;
         case DEFAULT:
@@ -83,6 +85,21 @@ public class TagDiskDataStore {
         realm.close();
         return tags;
       }
+    });
+  }
+
+  public Observable<List<TagRealm>> listRecommendedTags() {
+    return Observable.fromCallable(() -> {
+      Realm realm = Realm.getDefaultInstance();
+
+      RealmResults<TagRealm> results =
+          realm.where(TagRealm.class).equalTo(TagRealmFields.RECOMMENDED, true).findAll();
+
+      List<TagRealm> tags =
+          results.isEmpty() ? Collections.emptyList() : realm.copyFromRealm(results);
+      realm.close();
+
+      return tags;
     });
   }
 }

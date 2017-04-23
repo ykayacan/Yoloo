@@ -11,39 +11,37 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
-import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.OnEditorAction;
-import butterknife.OnFocusChange;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.yoloo.android.R;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
-import com.yoloo.android.feature.feed.home.FeedHomeController;
 import com.yoloo.android.feature.auth.AuthUI;
+import com.yoloo.android.feature.auth.IdpResponse;
 import com.yoloo.android.feature.auth.provider.FacebookProvider;
 import com.yoloo.android.feature.auth.provider.GoogleProvider;
 import com.yoloo.android.feature.auth.provider.IdpProvider;
-import com.yoloo.android.feature.auth.IdpResponse;
+import com.yoloo.android.feature.feed.FeedHomeController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.FormUtil;
 import com.yoloo.android.util.KeyboardUtil;
+import com.yoloo.android.util.ViewUtils;
 import java.net.SocketTimeoutException;
 import timber.log.Timber;
 
 public class SignInController extends MvpController<SignInView, SignInPresenter>
     implements SignInView, IdpProvider.IdpCallback {
 
-  @BindView(R.id.et_login_email) AutoCompleteTextView etEmail;
+  @BindView(R.id.et_login_email) EditText etEmail;
   @BindView(R.id.et_login_password) EditText etPassword;
-  @BindView(R.id.toolbar_sign_in) Toolbar toolbar;
+  @BindView(R.id.toolbar) Toolbar toolbar;
 
   @BindString(R.string.error_google_play_services) String errorGooglePlayServicesString;
   @BindString(R.string.error_auth_failed) String errorAuthFailedString;
@@ -66,64 +64,63 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
     return inflater.inflate(R.layout.controller_sign_in, container, false);
   }
 
-  @Override protected void onViewBound(@NonNull View view) {
-    setHasOptionsMenu(true);
+  @Override
+  protected void onViewBound(@NonNull View view) {
+    super.onViewBound(view);
     setupToolbar();
 
     getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
   }
 
-  @Override protected void onAttach(@NonNull View view) {
+  @Override
+  protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-    if (idpProvider instanceof GoogleProvider) {
-      ((GoogleProvider) idpProvider).connect();
-    }
+    ViewUtils.hideStatusBar(view);
   }
 
-  @Override protected void onDestroy() {
-    super.onDestroy();
-    if (idpProvider instanceof GoogleProvider) {
-      ((GoogleProvider) idpProvider).disconnect();
-    }
+  @Override
+  protected void onDetach(@NonNull View view) {
+    super.onDetach(view);
+    ViewUtils.clearHideStatusBar(view);
+  }
 
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
     if (idpProvider != null) {
       idpProvider.setAuthenticationCallback(null);
     }
   }
 
-  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    final int itemId = item.getItemId();
-    if (itemId == android.R.id.home) {
-      getRouter().handleBack();
-      return true;
-    }
-
-    return super.onOptionsItemSelected(item);
-  }
-
-  @NonNull @Override public SignInPresenter createPresenter() {
+  @NonNull
+  @Override
+  public SignInPresenter createPresenter() {
     return new SignInPresenter(UserRepositoryProvider.getRepository());
   }
 
-  @Override public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+  @Override
+  public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
     idpProvider.onActivityResult(requestCode, resultCode, data);
   }
 
-  @OnClick(R.id.btn_google_sign_in) void signInWithGoogle() {
+  @OnClick(R.id.btn_google_sign_in)
+  void signInWithGoogle() {
     idpProvider = getIdpProvider(AuthUI.GOOGLE_PROVIDER);
     idpProvider.setAuthenticationCallback(this);
 
     idpProvider.startLogin(this);
   }
 
-  @OnClick(R.id.btn_facebook_sign_in) void signInWithFacebook() {
+  @OnClick(R.id.btn_facebook_sign_in)
+  void signInWithFacebook() {
     idpProvider = getIdpProvider(AuthUI.FACEBOOK_PROVIDER);
     idpProvider.setAuthenticationCallback(this);
 
     idpProvider.startLogin(this);
   }
 
-  @OnClick(R.id.btn_login_ready) void signInWithEmail() {
+  @OnClick(R.id.btn_login_ready)
+  void signInWithEmail() {
     etEmail.setError(null);
     etPassword.setError(null);
 
@@ -160,19 +157,14 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
       // form field with an error.
       focusView.requestFocus();
     } else {
-      KeyboardUtil.hideKeyboard(etPassword);
+      KeyboardUtil.hideKeyboard(getView());
 
       getPresenter().signIn(email, password);
     }
   }
 
-  @OnFocusChange(R.id.et_login_email) void onEmailFocusChanged(boolean hasFocus) {
-    if (hasFocus) {
-      FormUtil.populateEmail(getActivity(), etEmail);
-    }
-  }
-
-  @OnEditorAction(R.id.et_login_password) boolean onEditorAction(int actionId) {
+  @OnEditorAction(R.id.et_login_password)
+  boolean onEditorAction(int actionId) {
     if (actionId == R.id.sign_up || actionId == EditorInfo.IME_NULL) {
       signInWithEmail();
       return true;
@@ -180,13 +172,13 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
     return false;
   }
 
-  @Override public void onSignedIn() {
+  @Override
+  public void onSignedIn() {
     getRouter().setRoot(RouterTransaction.with(FeedHomeController.create()));
-    //getParentController().getRouter().setRoot(RouterTransaction.with(FeedHomeController.create
-    // ()));
   }
 
-  @Override public void onError(Throwable t) {
+  @Override
+  public void onError(Throwable t) {
     Timber.e(t);
     Snackbar.make(getView(), errorAuthFailedString, Snackbar.LENGTH_SHORT).show();
 
@@ -198,7 +190,8 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
     AuthUI.getInstance().signOut((FragmentActivity) getActivity());
   }
 
-  @Override public void onShowLoading() {
+  @Override
+  public void onShowLoading() {
     if (progressDialog == null) {
       progressDialog = new ProgressDialog(getActivity());
       progressDialog.setMessage(loadingString);
@@ -208,17 +201,20 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
     progressDialog.show();
   }
 
-  @Override public void onHideLoading() {
+  @Override
+  public void onHideLoading() {
     if (progressDialog != null && progressDialog.isShowing()) {
       progressDialog.dismiss();
     }
   }
 
-  @Override public void onSuccess(IdpResponse idpResponse) {
+  @Override
+  public void onSuccess(IdpResponse idpResponse) {
     getPresenter().signIn(idpResponse);
   }
 
-  @Override public void onFailure(Bundle extra) {
+  @Override
+  public void onFailure(Bundle extra) {
     //Snackbar.make(getView(), extra.getString("error", null), Snackbar.LENGTH_SHORT).show();
   }
 
@@ -238,12 +234,8 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
   private void setupToolbar() {
     setSupportActionBar(toolbar);
 
-    // addPost back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
-    if (ab != null) {
-      ab.setDisplayShowTitleEnabled(false);
-      ab.setDisplayHomeAsUpEnabled(true);
-      ab.setDisplayShowHomeEnabled(true);
-    }
+    ab.setDisplayShowTitleEnabled(false);
+    ab.setDisplayHomeAsUpEnabled(true);
   }
 }

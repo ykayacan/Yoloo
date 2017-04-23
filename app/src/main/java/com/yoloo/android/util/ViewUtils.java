@@ -179,6 +179,18 @@ public final class ViewUtils {
     }
   }
 
+  public static void hideStatusBar(@NonNull View view) {
+    int flags = view.getSystemUiVisibility();
+    flags |= View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+    view.setSystemUiVisibility(flags);
+  }
+
+  public static void clearHideStatusBar(@NonNull View view) {
+    int flags = view.getSystemUiVisibility();
+    flags &= ~View.SYSTEM_UI_FLAG_FULLSCREEN | ~View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+    view.setSystemUiVisibility(flags);
+  }
+
   /**
    * Recursive binary search to find the best size for the text.
    *

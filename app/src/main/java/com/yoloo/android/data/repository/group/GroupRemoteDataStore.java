@@ -7,10 +7,12 @@ import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.GroupRealm;
 import com.yoloo.android.data.repository.user.UserResponseTransformer;
 import com.yoloo.android.data.sorter.GroupSorter;
+import com.yoloo.backend.yolooApi.model.WrappedString;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
+import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -96,6 +98,31 @@ class GroupRemoteDataStore {
                 .execute())
             .subscribeOn(Schedulers.io()))
         .compose(UserResponseTransformer.create());
+  }
+
+  Observable<Response<List<String>>> listGroupTags(@Nonnull String groupId, @Nullable String cursor,
+      int limit) {
+    return getIdToken()
+        .flatMapObservable(idToken -> Observable
+            .fromCallable(() -> INSTANCE
+                .getApi()
+                .tags()
+                .listUsedTags(groupId)
+                .setCursor(cursor)
+                .setLimit(limit)
+                .setRequestHeaders(setIdTokenHeader(idToken))
+                .execute())
+            .subscribeOn(Schedulers.io()))
+        .map(response -> {
+          if (response.getItems() == null) {
+            return Response.create(Collections.emptyList(), null);
+          } else {
+            List<String> tagNames =
+                Stream.of(response.getItems()).map(WrappedString::getTagName).toList();
+
+            return Response.create(tagNames, response.getNextPageToken());
+          }
+        });
   }
 
   /**

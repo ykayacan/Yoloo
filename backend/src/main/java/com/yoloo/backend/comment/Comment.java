@@ -15,7 +15,7 @@ import com.googlecode.objectify.annotation.Parent;
 import com.googlecode.objectify.condition.IfNotDefault;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.comment.transformer.CommentTransformer;
-import com.yoloo.backend.post.Post;
+import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.util.Deref;
 import com.yoloo.backend.vote.Votable;
 import com.yoloo.backend.vote.Vote;
@@ -55,7 +55,7 @@ public class Comment implements Votable {
 
   @Load(ShardGroup.class) private List<Ref<CommentShard>> shardRefs;
 
-  @Index private Key<Post> postKey;
+  @Index private Key<PostEntity> postKey;
 
   @Wither @Index(IfNotDefault.class) private boolean accepted;
 

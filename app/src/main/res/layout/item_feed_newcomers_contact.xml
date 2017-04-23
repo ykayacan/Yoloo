@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:tools="http://schemas.android.com/tools"
-  android:layout_width="96dp"
+  android:layout_width="80dp"
   android:layout_height="wrap_content"
   android:gravity="center"
   android:orientation="vertical">
@@ -9,13 +9,13 @@
   <ImageView
     android:id="@+id/iv_newcomers_avatar"
     android:layout_width="match_parent"
-    android:layout_height="96dp"
+    android:layout_height="80dp"
     android:scaleType="centerCrop"
     tools:src="@drawable/login_bg" />
 
   <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_newcomers_username"
-    style="@style/Widget.Yoloo.Username"
+    style="@style/Widget.Yoloo.NewcomersUsername"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="@dimen/spacing_micro"
@@ -29,8 +29,9 @@
 
   <Button
     android:id="@+id/btn_newcomers_follow"
-    style="@style/Yoloo.Button.Follow"
+    style="@style/Yoloo.Button.Colored.Subscribe"
     android:layout_width="wrap_content"
+    android:layout_height="40dp"
     android:text="@string/action_profile_follow"
     android:textAllCaps="false" />
 

@@ -315,7 +315,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
 
   @Override
   public void onContentImageClick(View v, MediaRealm media) {
-    startTransaction(FullscreenPhotoController.create(media.getLargeSizeUrl()),
+    startTransaction(FullscreenPhotoController.create(media.getLargeSizeUrl(), media.getId()),
         new FadeChangeHandler());
   }
 
@@ -416,8 +416,16 @@ public class PostListController extends MvpController<PostListView, PostListPres
   }
 
   private void startTransaction(Controller to, ControllerChangeHandler handler) {
-    getRouter().pushController(
-        RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
+    Controller parentController = getParentController();
+    if (parentController == null) {
+      getRouter().pushController(
+          RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
+    } else {
+      parentController
+          .getRouter()
+          .pushController(
+              RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
+    }
   }
 
   private void chooseLoadMethod(boolean pullToRefresh) {

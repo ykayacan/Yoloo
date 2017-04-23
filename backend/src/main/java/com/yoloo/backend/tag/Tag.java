@@ -30,7 +30,8 @@ public class Tag {
   public static final String FIELD_POST_COUNT = "postCount";
   public static final String FIELD_RANK = "rank";
 
-  @Id private Long id;
+  // tag:name
+  @Id private String id;
 
   //@Load @NonFinal private List<Ref<TagShard>> shardRefs;
 
@@ -38,13 +39,21 @@ public class Tag {
 
   private long postCount;
 
-  @Builder.Default private double numOfDays = 0.0D;
+  private double numOfDays;
 
-  @Builder.Default private double sumOfUsage = 0.0D;
+  private double sumOfUsage;
 
-  @Builder.Default private double sumOfUsageSquared = 0.0D;
+  private double sumOfUsageSquared;
 
   @Index private double rank;
+
+  public static String extractNameFromKey(Key<Tag> tagKey) {
+    return tagKey.getName().split(":")[1]; // Extract identifier
+  }
+
+  public static Key<Tag> createKey(String tagName) {
+    return Key.create(Tag.class, "tag:" + tagName);
+  }
 
   public Key<Tag> getKey() {
     return Key.create(Tag.class, id);

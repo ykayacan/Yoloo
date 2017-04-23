@@ -8,7 +8,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -45,11 +44,11 @@ public class SearchController extends BaseController {
     return inflater.inflate(R.layout.controller_search, container, false);
   }
 
-  @Override protected void onViewBound(@NonNull View view) {
+  @Override
+  protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
 
-    final RouterPagerAdapter pagerAdapter =
-        new SearchPagerAdapter(this, getResources());
+    final RouterPagerAdapter pagerAdapter = new SearchPagerAdapter(this, getResources());
 
     viewPager.setAdapter(pagerAdapter);
     tabLayout.setupWithViewPager(viewPager);
@@ -58,33 +57,25 @@ public class SearchController extends BaseController {
     setHasOptionsMenu(true);
   }
 
-  @Override protected void onDestroyView(@NonNull View view) {
+  @Override
+  protected void onDestroyView(@NonNull View view) {
     viewPager.setAdapter(null);
     super.onDestroyView(view);
   }
 
-  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    // handle arrow click here
-    final int itemId = item.getItemId();
-    switch (itemId) {
-      case android.R.id.home:
-        getRouter().handleBack();
-        return true;
-      default:
-        return super.onOptionsItemSelected(item);
-    }
-  }
-
-  @Override public boolean handleBack() {
+  @Override
+  public boolean handleBack() {
     KeyboardUtil.hideKeyboard(etSearch);
     return super.handleBack();
   }
 
-  @OnTextChanged(R.id.et_search) void listenSearch(CharSequence text) {
+  @OnTextChanged(R.id.et_search)
+  void listenSearch(CharSequence text) {
     ibSearchClear.setVisibility(TextUtils.isEmpty(text) ? View.GONE : View.VISIBLE);
   }
 
-  @OnClick(R.id.ib_search_clear) void clearSearch() {
+  @OnClick(R.id.ib_search_clear)
+  void clearSearch() {
     etSearch.setText("");
   }
 
@@ -92,11 +83,8 @@ public class SearchController extends BaseController {
     setSupportActionBar(toolbar);
 
     final ActionBar ab = getSupportActionBar();
-    if (ab != null) {
-      ab.setDisplayShowTitleEnabled(false);
-      ab.setDisplayHomeAsUpEnabled(true);
-      ab.setDisplayShowHomeEnabled(true);
-    }
+    ab.setDisplayShowTitleEnabled(false);
+    ab.setDisplayHomeAsUpEnabled(true);
   }
 
   private static class SearchPagerAdapter extends RouterPagerAdapter {
@@ -108,11 +96,13 @@ public class SearchController extends BaseController {
       this.resources = resources;
     }
 
-    @Override public int getCount() {
+    @Override
+    public int getCount() {
       return 2;
     }
 
-    @Override public CharSequence getPageTitle(int position) {
+    @Override
+    public CharSequence getPageTitle(int position) {
       switch (position) {
         case 0:
           return resources.getString(R.string.label_search_tags);
@@ -123,7 +113,8 @@ public class SearchController extends BaseController {
       }
     }
 
-    @Override public void configureRouter(@NonNull Router router, int position) {
+    @Override
+    public void configureRouter(@NonNull Router router, int position) {
       @SearchType final int searchType = position == 0 ? SearchType.TAG : SearchType.USER;
 
       if (!router.hasRootController()) {

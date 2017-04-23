@@ -1,7 +1,7 @@
 package com.yoloo.android.feature.explore.model;
 
+import android.support.v7.widget.CardView;
 import android.view.View;
-import android.widget.TextView;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyAttribute;
 import com.airbnb.epoxy.EpoxyModelClass;
@@ -20,12 +20,12 @@ public abstract class ExploreButtonModel
   public void bind(ExploreButtonHolder holder) {
     super.bind(holder);
 
-    holder.tvTrending.setOnClickListener(v -> onTrendingClickListener.onClick(v));
-    holder.tvNew.setOnClickListener(v -> onNewClickListener.onClick(v));
+    holder.cardTrending.setOnClickListener(v -> onTrendingClickListener.onClick(v));
+    holder.cardNew.setOnClickListener(v -> onNewClickListener.onClick(v));
   }
 
   static class ExploreButtonHolder extends BaseEpoxyHolder {
-    @BindView(R.id.tv_explore_trending) TextView tvTrending;
-    @BindView(R.id.tv_explore_new) TextView tvNew;
+    @BindView(R.id.card_explore_trending) CardView cardTrending;
+    @BindView(R.id.card_explore_new) CardView cardNew;
   }
 }

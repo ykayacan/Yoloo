@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -50,7 +49,6 @@ import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.MediaUtil;
 import com.yoloo.android.util.TextViewUtil;
 import com.yoloo.android.util.VersionUtil;
-import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -115,16 +113,19 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     return inflater.inflate(R.layout.controller_profile_edit, container, false);
   }
 
-  @Override protected void onViewBound(@NonNull View view) {
-    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
-
+  @Override
+  protected void onViewBound(@NonNull View view) {
+    super.onViewBound(view);
     setupToolbar();
 
     ControllerUtil.preventDefaultBackPressAction(view, this::showDiscardDialog);
   }
 
-  @Override protected void onAttach(@NonNull View view) {
-    usernameSubject.filter(s -> !s.equals(original.getUsername()))
+  @Override
+  protected void onAttach(@NonNull View view) {
+    super.onAttach(view);
+    usernameSubject
+        .filter(s -> !s.equals(original.getUsername()))
         .filter(s -> !s.isEmpty())
         .debounce(400, TimeUnit.MILLISECONDS)
         .observeOn(AndroidSchedulers.mainThread())
@@ -132,8 +133,8 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
         .subscribe();
 
     // TODO: 19.03.2017 Fix error handling
-    disposable =
-        Observable.combineLatest(realNameErrorSubject, usernameErrorSubject, emailErrorSubject,
+    disposable = Observable
+        .combineLatest(realNameErrorSubject, usernameErrorSubject, emailErrorSubject,
             passwordErrorSubject, websiteErrorSubject,
             (validRealName, validUsername, validEmail, validPassword, validWebsiteUrl) ->
                 validRealName
@@ -141,15 +142,16 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
                     && validEmail
                     && validPassword
                     && validWebsiteUrl)
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(enabled -> {
-              Timber.d("Enabled: %s", enabled);
-              ivSaveIcon.setImageAlpha(enabled ? 255 : 138);
-              ivSaveIcon.setEnabled(enabled);
-            });
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(enabled -> {
+          Timber.d("Enabled: %s", enabled);
+          ivSaveIcon.setImageAlpha(enabled ? 255 : 138);
+          ivSaveIcon.setEnabled(enabled);
+        });
   }
 
-  @Override public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+  @Override
+  public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
     if (requestCode == REQUEST_SELECT_MEDIA) {
       if (resultCode == Activity.RESULT_OK) {
         handleGalleryResult(data);
@@ -167,15 +169,16 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     }
   }
 
-  @Override protected void onDestroy() {
+  @Override
+  protected void onDestroy() {
     super.onDestroy();
-    ViewUtils.setStatusBarColor(getActivity(), Color.BLACK);
     if (disposable != null && !disposable.isDisposed()) {
       disposable.dispose();
     }
   }
 
-  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+  @Override
+  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     final int itemId = item.getItemId();
     if (itemId == android.R.id.home) {
       showDiscardDialog();
@@ -185,68 +188,85 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   }
 
   private void showDiscardDialog() {
-    new AlertDialog.Builder(getActivity()).setTitle(R.string.action_catalog_discard_draft)
+    new AlertDialog.Builder(getActivity())
+        .setTitle(R.string.action_catalog_discard_draft)
         .setCancelable(false)
         .setPositiveButton(android.R.string.ok, (dialog, which) -> getRouter().handleBack())
         .setNegativeButton(android.R.string.cancel, null)
         .show();
   }
 
-  @Override public void onAccountUpdated(AccountRealm account) {
+  @Override
+  public void onAccountUpdated(AccountRealm account) {
     Timber.d("Account: %s", account);
     getRouter().handleBack();
   }
 
-  @Override public void onUsernameUnavailable() {
+  @Override
+  public void onUsernameUnavailable() {
     tilUsername.setError(usernameUnavailableString);
   }
 
-  @Override public void onLoading(boolean pullToRefresh) {
+  @Override
+  public void onLoading(boolean pullToRefresh) {
 
   }
 
-  @Override public void onLoaded(AccountRealm account) {
+  @Override
+  public void onLoaded(AccountRealm account) {
     original = account;
-    draft.setId(account.getId()).setMe(account.isMe()).setSubscribedGroupIds(account.getSubscribedGroupIds());
+    draft
+        .setId(account.getId())
+        .setMe(account.isMe())
+        .setSubscribedGroupIds(account.getSubscribedGroupIds());
     setProfile(account);
   }
 
-  @Override public void onError(Throwable e) {
+  @Override
+  public void onError(Throwable e) {
 
   }
 
-  @Override public void onEmpty() {
+  @Override
+  public void onEmpty() {
 
   }
 
-  @NonNull @Override public ProfileEditPresenter createPresenter() {
+  @NonNull
+  @Override
+  public ProfileEditPresenter createPresenter() {
     return new ProfileEditPresenter(UserRepositoryProvider.getRepository());
   }
 
-  @OnTextChanged(R.id.et_profile_edit_realname) void listenRealNameChange(CharSequence text) {
+  @OnTextChanged(R.id.et_profile_edit_realname)
+  void listenRealNameChange(CharSequence text) {
     tilRealName.setError(TextUtils.isEmpty(text) ? realNameEmptyErrorString : null);
     realNameErrorSubject.onNext(!TextUtils.isEmpty(text));
   }
 
-  @OnTextChanged(R.id.et_profile_edit_username) void listenUsernameChange(CharSequence text) {
+  @OnTextChanged(R.id.et_profile_edit_username)
+  void listenUsernameChange(CharSequence text) {
     usernameSubject.onNext(text.toString());
     tilUsername.setError(TextUtils.isEmpty(text) ? usernameEmptyErrorString : null);
     usernameErrorSubject.onNext(!TextUtils.isEmpty(text));
   }
 
-  @OnTextChanged(R.id.et_profile_edit_email) void listenEmailChange(CharSequence text) {
+  @OnTextChanged(R.id.et_profile_edit_email)
+  void listenEmailChange(CharSequence text) {
     tilEmail.setError(TextUtils.isEmpty(text) ? emailEmptyErrorString : null);
     tilEmail.setError(FormUtil.isEmailAddress(text) ? null : invalidEmailString);
     emailErrorSubject.onNext(!TextUtils.isEmpty(text) || !FormUtil.isEmailAddress(text));
   }
 
-  @OnTextChanged(R.id.et_profile_edit_password) void listenPasswordChange(CharSequence text) {
+  @OnTextChanged(R.id.et_profile_edit_password)
+  void listenPasswordChange(CharSequence text) {
     tilPassword.setError(FormUtil.isPasswordValid(text) ? null : invalidPasswordString);
     tilPassword.setError(TextUtils.isEmpty(text) ? null : passwordEmptyErrorString);
     passwordErrorSubject.onNext(!TextUtils.isEmpty(text) || !FormUtil.isPasswordValid(text));
   }
 
-  @OnTextChanged(R.id.et_profile_edit_website) void listenWebsiteChange(CharSequence text) {
+  @OnTextChanged(R.id.et_profile_edit_website)
+  void listenWebsiteChange(CharSequence text) {
     if (TextUtils.isEmpty(text)) {
       return;
     }
@@ -255,9 +275,11 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   }
 
   @OnClick({
-               R.id.iv_profile_edit_avatar, R.id.tv_profile_edit_change_photo
-           }) void changeAvatar() {
-    new AlertDialog.Builder(getActivity()).setTitle(R.string.label_editor_select_media_source_title)
+      R.id.iv_profile_edit_avatar, R.id.tv_profile_edit_change_photo
+  })
+  void changeAvatar() {
+    new AlertDialog.Builder(getActivity())
+        .setTitle(R.string.label_editor_select_media_source_title)
         .setItems(R.array.action_editor_list_media_source, (dialog, which) -> {
           KeyboardUtil.hideKeyboard(getActivity().getCurrentFocus());
 
@@ -270,7 +292,8 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
         .show();
   }
 
-  @OnClick(R.id.iv_profile_edit_save) void saveProfile() {
+  @OnClick(R.id.iv_profile_edit_save)
+  void saveProfile() {
     String realName = tilRealName.getEditText().getText().toString();
     if (!realName.equals(original.getRealname())) {
       draft.setRealname(realName);
@@ -315,7 +338,8 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   }
 
   private void setProfile(AccountRealm account) {
-    Glide.with(getActivity())
+    Glide
+        .with(getActivity())
         .load(account.getAvatarUrl().replace("s96-c", "s80-c-rw"))
         .bitmapTransform(new CropCircleTransformation(getActivity()))
         .into(ivAvatar);
@@ -350,32 +374,29 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   private void setupToolbar() {
     setSupportActionBar(toolbar);
 
-    // addPostToBeginning back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
-    if (ab != null) {
-      ab.setTitle(R.string.label_profile_edit_title);
-      ab.setDisplayHomeAsUpEnabled(true);
-      ab.setHomeAsUpIndicator(
-          AppCompatResources.getDrawable(getActivity(), R.drawable.ic_close_white_24dp));
-      ab.setDisplayShowHomeEnabled(true);
-    }
+    ab.setTitle(R.string.label_profile_edit_title);
+    ab.setDisplayHomeAsUpEnabled(true);
+    ab.setHomeAsUpIndicator(
+        AppCompatResources.getDrawable(getActivity(), R.drawable.ic_close_white_24dp));
   }
 
   private void checkCameraPermissions() {
     new Permissive.Request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        Manifest.permission.RECORD_AUDIO).whenPermissionsGranted(permissions -> openCamera())
-        .whenPermissionsRefused(
-            permissions -> Snackbar.make(getView(), "Permission is denied!", Snackbar.LENGTH_SHORT)
-                .show())
+        Manifest.permission.RECORD_AUDIO)
+        .whenPermissionsGranted(permissions -> openCamera())
+        .whenPermissionsRefused(permissions -> Snackbar
+            .make(getView(), "Permission is denied!", Snackbar.LENGTH_SHORT)
+            .show())
         .execute(getActivity());
   }
 
   private void checkGalleryPermissions() {
-    new Permissive.Request(Manifest.permission.WRITE_EXTERNAL_STORAGE).whenPermissionsGranted(
-        permissions -> openGallery())
-        .whenPermissionsRefused(
-            permissions -> Snackbar.make(getView(), "Permission is denied!", Snackbar.LENGTH_SHORT)
-                .show())
+    new Permissive.Request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        .whenPermissionsGranted(permissions -> openGallery())
+        .whenPermissionsRefused(permissions -> Snackbar
+            .make(getView(), "Permission is denied!", Snackbar.LENGTH_SHORT)
+            .show())
         .execute(getActivity());
   }
 
@@ -426,7 +447,8 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     final Uri destUri =
         Uri.fromFile(new File(YolooApp.getCacheDirectory(), MediaUtil.createImageName()));
 
-    Intent intent = UCrop.of(uri, destUri)
+    Intent intent = UCrop
+        .of(uri, destUri)
         .withAspectRatio(1, 1)
         .withMaxResultSize(180, 180)
         .withOptions(createUCropOptions())
@@ -440,7 +462,8 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     if (uri != null) {
       draft.setAvatarUrl(uri.getPath());
 
-      Glide.with(getActivity())
+      Glide
+          .with(getActivity())
           .load(uri)
           .bitmapTransform(new CropCircleTransformation(getActivity()))
           .into(ivAvatar);

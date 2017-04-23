@@ -17,7 +17,7 @@ import com.googlecode.objectify.Key;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.config.MediaConfig;
-import com.yoloo.backend.media.dto.MediaDTO;
+import com.yoloo.backend.media.dto.Media;
 import com.yoloo.backend.media.transformer.MediaTransformer;
 import com.yoloo.backend.util.ServerConfig;
 import io.reactivex.Observable;
@@ -33,6 +33,7 @@ import lombok.extern.java.Log;
 import org.apache.commons.fileupload.FileItemIterator;
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.joda.time.DateTime;
 
 import static com.yoloo.backend.OfyService.ofy;
 
@@ -129,17 +130,18 @@ public class UploadServlet extends HttpServlet {
           ServingUrlOptions options =
               ServingUrlOptions.Builder.withGoogleStorageFileName(path).secureUrl(true);
 
-          Media media = Media
+          MediaEntity mediaEntity = MediaEntity
               .builder()
               .id(blob.getBucket() + "/" + blob.getName())
               .parent(accountKey)
               .mime(mime)
               .url(ServerConfig.isDev() ? "" : imagesService.getServingUrl(options))
               .originalPath(blob.getName())
-              .mediaOrigin(Media.parse(mediaOrigin))
+              .mediaOrigin(MediaEntity.parse(mediaOrigin))
+              .created(DateTime.now())
               .build();
 
-          return Observable.just(media);
+          return Observable.just(mediaEntity);
         })
         .toList()
         .doOnSuccess(medias -> ofy().transact(() -> ofy().save().entities(medias).now()))
@@ -159,10 +161,10 @@ public class UploadServlet extends HttpServlet {
     resp.setCharacterEncoding("UTF-8");
   }
 
-  private void printSuccessResponse(final Collection<MediaDTO> collection, final PrintWriter out)
+  private void printSuccessResponse(final Collection<Media> collection, final PrintWriter out)
       throws IOException {
     final String json =
-        OW.writeValueAsString(CollectionResponse.<MediaDTO>builder().setItems(collection).build());
+        OW.writeValueAsString(CollectionResponse.<Media>builder().setItems(collection).build());
 
     out.print(json);
   }
