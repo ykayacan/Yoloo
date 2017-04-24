@@ -189,8 +189,6 @@
       android:layout_height="wrap_content"
       android:background="@android:color/white"
       app:tabBackground="@android:color/white"
-      app:tabGravity="fill"
-      app:tabMode="scrollable"
       app:tabSelectedTextColor="@color/accent"
       app:tabTextColor="@color/profile_card_text" />
 

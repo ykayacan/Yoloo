@@ -85,7 +85,6 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
   @BindString(R.string.label_profile_tab_posts) String profilePostsTabString;
   @BindString(R.string.label_profile_tab_photos) String profilePhotosTabString;
-  @BindString(R.string.label_profile_tab_countries) String profileCountriesTabString;
   @BindString(R.string.label_profile_tab_interests) String profileInterestsTabString;
 
   private String userId;
@@ -121,7 +120,6 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     List<Pair<String, Controller>> pairs = new ArrayList<>(4);
     pairs.add(Pair.create(profilePostsTabString, PostListController.ofUser(userId)));
     pairs.add(Pair.create(profilePhotosTabString, PhotoListController.create(userId)));
-    pairs.add(Pair.create(profileCountriesTabString, PhotoListController.create(userId)));
     pairs.add(Pair.create(profileInterestsTabString, GroupGridOverviewController.create(userId, 3)));
 
     final RouterPagerAdapter pagerAdapter = new ProfilePagerAdapter(this, pairs);
@@ -248,7 +246,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
     Glide
         .with(getActivity())
-        .load(account.getAvatarUrl().replace("s96-c", "s80-c-rw"))
+        .load(account.getAvatarUrl().replace("s96-c", "s96-c-rw"))
         .bitmapTransform(new CropCircleTransformation(getActivity()))
         .into(ivProfileAvatar);
 

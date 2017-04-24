@@ -131,7 +131,6 @@
   <string name="label_profile_countries">%1$d\nCOUNTRIES</string>
   <string name="label_profile_tab_posts">Posts</string>
   <string name="label_profile_tab_photos">Photos</string>
-  <string name="label_profile_tab_countries">Countries</string>
   <string name="label_profile_tab_interests">Interests</string>
   <string name="label_profile_username">\@%1$s</string>
 
