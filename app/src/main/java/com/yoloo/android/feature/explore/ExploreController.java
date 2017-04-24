@@ -105,7 +105,7 @@ public class ExploreController extends MvpController<ExploreView, ExplorePresent
 
     });
     adapter.setOnMediaClickListener((v, model, item) -> {
-
+      Timber.d("onMediaClick(): %s", item.getLargeSizeUrl());
     });
     adapter.setOnNewClickListener(v -> {
 

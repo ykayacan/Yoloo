@@ -67,8 +67,7 @@ class FeedHomePresenter extends MvpPresenter<FeedHomeView> {
             getFeedObservable().doOnNext(
                 response -> Timber.d("Posts size: %s", response.getData().size())),
             getNewUsersObservable().doOnNext(
-                listOptional -> Timber.d("New users: %s", listOptional.size())),
-            Group.Of6::create)
+                listOptional -> Timber.d("New users: %s", listOptional.size())), Group.Of6::create)
         .doOnNext(group -> {
           getView().onMeLoaded(group.first);
           totalPostCount = group.fifth.getData().size();
@@ -140,6 +139,16 @@ class FeedHomePresenter extends MvpPresenter<FeedHomeView> {
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(() -> {
         }, throwable -> getView().onError(throwable));
+
+    getDisposable().add(d);
+  }
+
+  void follow(String userId, int direction) {
+    Disposable d = userRepository
+        .relationship(userId, direction)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(() -> {
+        }, Timber::e);
 
     getDisposable().add(d);
   }

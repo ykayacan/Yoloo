@@ -1,30 +1,31 @@
 package com.yoloo.android.data.model;
 
-import com.yoloo.backend.yolooApi.model.JsonMap;
 import com.yoloo.backend.yolooApi.model.NotificationDTO;
+import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 public class NotificationRealm extends RealmObject {
 
-  public static final String FOLLOW = "1";
-  public static final String COMMENT = "2";
-  public static final String MENTION = "3";
-  public static final String GAME = "4";
-  public static final String ACCEPT = "5";
+  public static final String FOLLOW = "FOLLOW";
+  public static final String COMMENT = "COMMENT";
+  public static final String MENTION = "MENTION";
+  public static final String GAME = "GAME";
+  public static final String ACCEPT = "ACCEPT";
 
-  @PrimaryKey
-  private String id;
+  @PrimaryKey private String id;
   private String senderId;
   private String senderUsername;
   private String senderAvatarUrl;
   private String action;
   private String message;
-  private String questionId;
-  @Index
-  private Date created;
+  private String postId;
+  private RealmList<PayloadMap> payload;
+  @Index private Date created;
 
   public NotificationRealm() {
   }
@@ -37,13 +38,11 @@ public class NotificationRealm extends RealmObject {
     action = dto.getAction();
     created = new Date(dto.getCreated().getValue());
 
-    final JsonMap map = dto.getPayload();
-    if (map.containsKey("questionId")) {
-      questionId = (String) map.get("questionId");
-    }
-
-    if (map.containsKey("message")) {
-      message = (String) map.get("message");
+    payload = new RealmList<>();
+    if (dto.getPayload() != null) {
+      for (Map.Entry<String, Object> entry : dto.getPayload().entrySet()) {
+        payload.add(new PayloadMap(entry.getKey(), (String) entry.getValue()));
+      }
     }
   }
 
@@ -101,12 +100,12 @@ public class NotificationRealm extends RealmObject {
     return this;
   }
 
-  public String getQuestionId() {
-    return questionId;
+  public String getPostId() {
+    return postId;
   }
 
-  public NotificationRealm setQuestionId(String questionId) {
-    this.questionId = questionId;
+  public NotificationRealm setPostId(String postId) {
+    this.postId = postId;
     return this;
   }
 
@@ -116,6 +115,15 @@ public class NotificationRealm extends RealmObject {
 
   public NotificationRealm setCreated(Date created) {
     this.created = created;
+    return this;
+  }
+
+  public List<PayloadMap> getPayload() {
+    return payload;
+  }
+
+  public NotificationRealm setPayload(RealmList<PayloadMap> payload) {
+    this.payload = payload;
     return this;
   }
 }

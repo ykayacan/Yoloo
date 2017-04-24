@@ -1,4 +1,4 @@
-package com.yoloo.android.feature.category;
+package com.yoloo.android.ui.widget;
 
 import android.support.annotation.ColorRes;
 import android.support.annotation.DrawableRes;

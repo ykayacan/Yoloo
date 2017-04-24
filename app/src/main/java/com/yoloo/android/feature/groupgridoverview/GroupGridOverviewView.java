@@ -1,10 +1,10 @@
-package com.yoloo.android.feature.category;
+package com.yoloo.android.feature.groupgridoverview;
 
 import com.yoloo.android.data.model.GroupRealm;
 import com.yoloo.android.framework.MvpView;
 import java.util.List;
 
-interface GroupOverviewView extends MvpView {
+interface GroupGridOverviewView extends MvpView {
 
   void onGroupsLoaded(List<GroupRealm> categories);
 

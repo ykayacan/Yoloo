@@ -33,7 +33,7 @@ public class GroupListAdapter extends EpoxyAdapter {
   private OnItemClickListener<GroupRealm> onItemClickListener;
   private OnSubscribeListener onSubscribeClickListener;
 
-  public GroupListAdapter(RequestManager glide, Context context) {
+  public GroupListAdapter(RequestManager glide) {
     this.glide = glide;
   }
 

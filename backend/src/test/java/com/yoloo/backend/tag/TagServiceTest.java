@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
 
+import static com.yoloo.backend.util.TestObjectifyService.ofy;
 import static org.junit.Assert.assertEquals;
 
 public class TagServiceTest extends TestBase {
@@ -35,16 +36,27 @@ public class TagServiceTest extends TestBase {
     Tag tag2 = tagEndpoint.insert("test2", user);
 
     TagService tagService = new TagService();
-    List<Tag> updated = tagService.updateTags(Arrays.asList(tag1.getName(), tag2.getName()));
+    List<Tag> updated =
+        tagService.updateTags(Arrays.asList(tag1.getName(), tag1.getName(), tag2.getName()));
+    ofy().save().entities(updated).now();
 
-    Ix.from(updated).foreach(tag -> assertEquals(1, tag.getPostCount()));
+    Ix
+        .from(ofy().load().entities(updated).values())
+        .foreach(tag -> assertEquals(1, tag.getPostCount()));
+
+    List<Tag> updated2 =
+        tagService.updateTags(Arrays.asList(tag1.getName(), tag1.getName(), tag2.getName()));
+    ofy().save().entities(updated2).now();
+
+    Ix
+        .from(ofy().load().entities(updated).values())
+        .foreach(tag -> assertEquals(2, tag.getPostCount()));
   }
 
   @Test
   public void testUpdateTagsWithNewTags() throws Exception {
     TagService tagService = new TagService();
-    List<Tag> updated =
-        tagService.updateTags(Arrays.asList("test1", "test2", "test3"));
+    List<Tag> updated = tagService.updateTags(Arrays.asList("test1", "test2", "test3"));
 
     Ix.from(updated).foreach(tag -> assertEquals(1, tag.getPostCount()));
   }
@@ -58,8 +70,7 @@ public class TagServiceTest extends TestBase {
     Tag tag2 = tagEndpoint.insert("test2", user);
 
     TagService tagService = new TagService();
-    List<Tag> updated =
-        tagService.updateTags(Arrays.asList("test1", "test2", "test3"));
+    List<Tag> updated = tagService.updateTags(Arrays.asList("test1", "test2", "test3"));
 
     Ix.from(updated).foreach(tag -> assertEquals(1, tag.getPostCount()));
   }

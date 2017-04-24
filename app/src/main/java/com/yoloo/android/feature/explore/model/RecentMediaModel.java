@@ -55,12 +55,16 @@ public abstract class RecentMediaModel
 
     if (holder.recyclerView.getAdapter() == null) {
       holder.recyclerView.setAdapter(adapter);
-      adapter.addItems(medias);
       adapter.setOnItemClickListener(onItemClickListener);
+      adapter.addItems(medias);
     }
 
     if (onHeaderClickListener == null) {
       throw new IllegalStateException("onHeaderClickListener is null.");
+    }
+
+    if (onItemClickListener == null) {
+      throw new IllegalStateException("onItemClickListener is null.");
     }
 
     holder.tvMore.setOnClickListener(v -> onHeaderClickListener.onClick(v));

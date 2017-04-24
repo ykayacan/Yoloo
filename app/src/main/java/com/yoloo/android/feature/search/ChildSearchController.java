@@ -21,9 +21,7 @@ import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.TagRealm;
-import com.yoloo.android.data.repository.tag.TagRepository;
-import com.yoloo.android.data.repository.tag.datasource.TagDiskDataStore;
-import com.yoloo.android.data.repository.tag.datasource.TagRemoteDataStore;
+import com.yoloo.android.data.repository.tag.TagRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.postlist.PostListController;
@@ -45,15 +43,18 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
   private final PublishSubject<String> searchSubject = PublishSubject.create();
 
   private final TextWatcher watcher = new TextWatcher() {
-    @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
     }
 
-    @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {
       searchSubject.onNext(s.toString());
     }
 
-    @Override public void afterTextChanged(Editable s) {
+    @Override
+    public void afterTextChanged(Editable s) {
 
     }
   };
@@ -68,7 +69,8 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
 
   private ViewPager.OnPageChangeListener onPageChangeListener =
       new ViewPager.SimpleOnPageChangeListener() {
-        @Override public void onPageSelected(int position) {
+        @Override
+        public void onPageSelected(int position) {
           etSearch.setText("");
         }
       };
@@ -88,7 +90,8 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
     return inflater.inflate(R.layout.controller_child_search, container, false);
   }
 
-  @Override protected void onViewBound(@NonNull View view) {
+  @Override
+  protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
 
     searchType = getArgs().getInt(KEY_SEARCH_TYPE);
@@ -98,7 +101,8 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
     setupRecyclerView();
   }
 
-  @Override protected void onAttach(@NonNull View view) {
+  @Override
+  protected void onAttach(@NonNull View view) {
     super.onAttach(view);
 
     viewPager = ButterKnife.findById(getParentController().getView(), R.id.viewpager_search);
@@ -113,53 +117,66 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
 
     etSearch.addTextChangedListener(watcher);
 
-    searchSubject.filter(s -> !s.isEmpty())
+    searchSubject
+        .filter(s -> !s.isEmpty())
         .debounce(400, TimeUnit.MILLISECONDS)
         .subscribe(query -> loadBySearchType(query, true));
   }
 
-  @Override protected void onDetach(@NonNull View view) {
+  @Override
+  protected void onDetach(@NonNull View view) {
     super.onDetach(view);
     etSearch.removeTextChangedListener(watcher);
     viewPager.removeOnPageChangeListener(onPageChangeListener);
   }
 
-  @NonNull @Override public ChildSearchPresenter createPresenter() {
-    return new ChildSearchPresenter(
-        TagRepository.getInstance(TagRemoteDataStore.getInstance(), TagDiskDataStore.getInstance()),
+  @NonNull
+  @Override
+  public ChildSearchPresenter createPresenter() {
+    return new ChildSearchPresenter(TagRepositoryProvider.getRepository(),
         UserRepositoryProvider.getRepository());
   }
 
-  @Override public void onRecentTagsLoaded(List<TagRealm> tags) {
+  @Override
+  public void onRecentTagsLoaded(List<TagRealm> tags) {
     adapter.replaceTags(tags);
   }
 
-  @Override public void onTagsLoaded(List<TagRealm> tags) {
+  @Override
+  public void onTagsLoaded(List<TagRealm> tags) {
     adapter.replaceTags(tags);
   }
 
-  @Override public void onRecentUsersLoaded(List<AccountRealm> accounts) {
+  @Override
+  public void onRecentUsersLoaded(List<AccountRealm> accounts) {
     adapter.replaceUsers(accounts);
   }
 
-  @Override public void onUsersLoaded(List<AccountRealm> accounts) {
+  @Override
+  public void onUsersLoaded(List<AccountRealm> accounts) {
     adapter.replaceUsers(accounts);
   }
 
-  @Override public void onItemClick(View v, EpoxyModel<?> model, TagRealm item) {
+  @Override
+  public void onItemClick(View v, EpoxyModel<?> model, TagRealm item) {
     KeyboardUtil.hideKeyboard(etSearch);
 
-    getParentController().getRouter()
-        .pushController(RouterTransaction.with(PostListController.ofTag(item.getName()))
+    getParentController()
+        .getRouter()
+        .pushController(RouterTransaction
+            .with(PostListController.ofTag(item.getName()))
             .pushChangeHandler(new VerticalChangeHandler())
             .popChangeHandler(new VerticalChangeHandler()));
   }
 
-  @Override public void onProfileClick(View v, EpoxyModel<?> model, String userId) {
+  @Override
+  public void onProfileClick(View v, EpoxyModel<?> model, String userId) {
     KeyboardUtil.hideKeyboard(etSearch);
 
-    getParentController().getRouter()
-        .pushController(RouterTransaction.with(ProfileController.create(userId))
+    getParentController()
+        .getRouter()
+        .pushController(RouterTransaction
+            .with(ProfileController.create(userId))
             .pushChangeHandler(new VerticalChangeHandler())
             .popChangeHandler(new VerticalChangeHandler()));
   }

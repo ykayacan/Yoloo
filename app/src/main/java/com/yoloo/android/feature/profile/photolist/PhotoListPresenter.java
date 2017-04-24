@@ -1,4 +1,4 @@
-package com.yoloo.android.feature.profile.photos;
+package com.yoloo.android.feature.profile.photolist;
 
 import com.yoloo.android.data.repository.media.MediaRepository;
 import com.yoloo.android.framework.MvpPresenter;
@@ -8,13 +8,13 @@ import javax.annotation.Nonnull;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 
-class PhotosPresenter extends MvpPresenter<PhotosView> {
+class PhotoListPresenter extends MvpPresenter<PhotoListView> {
 
   private final MediaRepository mediaRepository;
 
   private String cursor;
 
-  PhotosPresenter(MediaRepository mediaRepository) {
+  PhotoListPresenter(MediaRepository mediaRepository) {
     this.mediaRepository = mediaRepository;
   }
 

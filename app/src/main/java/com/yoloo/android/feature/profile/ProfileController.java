@@ -32,10 +32,10 @@ import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
-import com.yoloo.android.feature.category.GroupOverviewController;
+import com.yoloo.android.feature.groupgridoverview.GroupGridOverviewController;
 import com.yoloo.android.feature.follow.FollowController;
 import com.yoloo.android.feature.postlist.PostListController;
-import com.yoloo.android.feature.profile.photos.PhotosController;
+import com.yoloo.android.feature.profile.photolist.PhotoListController;
 import com.yoloo.android.feature.profile.pointsoverview.PointsOverviewController;
 import com.yoloo.android.feature.profile.profileedit.ProfileEditController;
 import com.yoloo.android.framework.MvpController;
@@ -120,9 +120,9 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
     List<Pair<String, Controller>> pairs = new ArrayList<>(4);
     pairs.add(Pair.create(profilePostsTabString, PostListController.ofUser(userId)));
-    pairs.add(Pair.create(profilePhotosTabString, PhotosController.create(userId)));
-    pairs.add(Pair.create(profileCountriesTabString, PhotosController.create(userId)));
-    pairs.add(Pair.create(profileInterestsTabString, GroupOverviewController.create(userId, 3)));
+    pairs.add(Pair.create(profilePhotosTabString, PhotoListController.create(userId)));
+    pairs.add(Pair.create(profileCountriesTabString, PhotoListController.create(userId)));
+    pairs.add(Pair.create(profileInterestsTabString, GroupGridOverviewController.create(userId, 3)));
 
     final RouterPagerAdapter pagerAdapter = new ProfilePagerAdapter(this, pairs);
 

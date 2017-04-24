@@ -27,11 +27,12 @@ android {
 
   dexOptions {
     preDexLibraries true
+    jumboMode true
   }
 
   splits {
     abi {
-      enable false
+      enable true
       reset()
       include 'x86', 'armeabi', 'armeabi-v7a', 'mips'
       universalApk true
@@ -142,7 +143,7 @@ dependencies {
   compile "com.android.support:cardview-v7:$supportLibs_version"
   compile "com.android.support:support-compat:$supportLibs_version"
   compile "com.android.support:customtabs:$supportLibs_version"
-  compile "com.android.support.constraint:constraint-layout:$constraintLayout_version" 
+  compile "com.android.support.constraint:constraint-layout:$constraintLayout_version"
   compile "com.android.support:multidex:$multidex_version"
 
   // Firebase

@@ -63,16 +63,6 @@ public class NotificationController extends MvpController<NotificationView, Noti
     setupToolbar();
   }
 
-  @Override protected void onAttach(@NonNull View view) {
-    super.onAttach(view);
-    rvNotification.addOnScrollListener(endlessRecyclerViewScrollListener);
-  }
-
-  @Override protected void onDetach(@NonNull View view) {
-    super.onDetach(view);
-    rvNotification.removeOnScrollListener(endlessRecyclerViewScrollListener);
-  }
-
   @Override public void onLoading(boolean pullToRefresh) {
     if (!pullToRefresh) {
       LceAnimator.showLoading(loadingView, swipeRefreshLayout, errorView);
@@ -106,7 +96,6 @@ public class NotificationController extends MvpController<NotificationView, Noti
   }
 
   @Override public void onRefresh() {
-    endlessRecyclerViewScrollListener.resetState();
     adapter.clear();
 
     getPresenter().loadNotifications(true, 20);
@@ -134,7 +123,7 @@ public class NotificationController extends MvpController<NotificationView, Noti
     rvNotification.setHasFixedSize(true);
     rvNotification.setAdapter(adapter);
 
-    endlessRecyclerViewScrollListener = new EndlessRecyclerViewScrollListener(layoutManager, this);
+    //endlessRecyclerViewScrollListener = new EndlessRecyclerViewScrollListener(layoutManager, this);
   }
 
   private void setupPullToRefresh() {

@@ -1,9 +1,9 @@
-package com.yoloo.android.feature.category;
+package com.yoloo.android.feature.groupgridoverview;
 
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-
+import butterknife.BindView;
+import com.airbnb.epoxy.EpoxyAdapter;
 import com.airbnb.epoxy.EpoxyAttribute;
 import com.airbnb.epoxy.EpoxyModelClass;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
@@ -13,34 +13,24 @@ import com.yoloo.android.R;
 import com.yoloo.android.data.model.GroupRealm;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
-import com.yoloo.android.ui.recyclerview.SelectableAdapter;
-
 import java.util.List;
 
-import butterknife.BindView;
-
-class CategoryAdapter extends SelectableAdapter {
+class GroupGridAdapter extends EpoxyAdapter {
 
   private final OnItemClickListener<GroupRealm> onItemClickListener;
 
-  CategoryAdapter(OnItemClickListener<GroupRealm> onItemClickListener) {
+  GroupGridAdapter(OnItemClickListener<GroupRealm> onItemClickListener) {
     this.onItemClickListener = onItemClickListener;
   }
 
-  void addCategories(List<GroupRealm> categories) {
-    addModels(Stream.of(categories)
-        .map(category -> new CategoryAdapter$CategoryModel_()
+  void addCategories(List<GroupRealm> groups) {
+    addModels(Stream
+        .of(groups)
+        .map(group -> new GroupGridAdapter$CategoryModel_()
             .adapter(this)
-            .category(category)
+            .category(group)
             .onItemClickListener(onItemClickListener))
         .toList());
-  }
-
-  List<GroupRealm> getSelectedCategories() {
-    return Stream.of(getSelectedItems())
-        .select(CategoryModel.class)
-        .map(CategoryModel::getCategory)
-        .toList();
   }
 
   @EpoxyModelClass(layout = R.layout.item_category)
@@ -49,24 +39,18 @@ class CategoryAdapter extends SelectableAdapter {
 
     @EpoxyAttribute GroupRealm category;
     @EpoxyAttribute(hash = false) OnItemClickListener<GroupRealm> onItemClickListener;
-    @EpoxyAttribute(hash = false) CategoryAdapter adapter;
+    @EpoxyAttribute(hash = false) GroupGridAdapter adapter;
 
-    @Override public void bind(CategoryHolder holder) {
-      Glide.with(holder.itemView.getContext())
+    @Override
+    public void bind(CategoryHolder holder) {
+      Glide
+          .with(holder.itemView.getContext())
           .load(category.getBackgroundUrl() + "=s220-rw")
           .into(holder.ivCategoryBackground);
 
       holder.tvCategoryText.setText(category.getName());
 
-      final boolean isSelected = adapter.isSelected(this);
-      holder.ivCategoryBackground.setSelected(isSelected);
-      holder.tvCategoryText.setSelected(isSelected);
-      holder.checkmarkView.setVisibility(isSelected ? View.VISIBLE : View.GONE);
-
-      holder.itemView.setOnClickListener(v -> {
-        adapter.toggleSelection(this);
-        onItemClickListener.onItemClick(v, this, category);
-      });
+      holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(v, this, category));
     }
 
     GroupRealm getCategory() {
@@ -76,7 +60,6 @@ class CategoryAdapter extends SelectableAdapter {
     static class CategoryHolder extends BaseEpoxyHolder {
       @BindView(R.id.iv_category_bg) ImageView ivCategoryBackground;
       @BindView(R.id.tv_category_text) TextView tvCategoryText;
-      @BindView(R.id.view_category_checkmark) View checkmarkView;
     }
   }
 }

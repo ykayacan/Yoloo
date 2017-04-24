@@ -13,9 +13,12 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import com.annimon.stream.Stream;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.util.WeakHandler;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -26,6 +29,7 @@ public class SliderView extends FrameLayout {
   @BindView(R.id.indicator) CircleIndicator indicator;
 
   private int currentPage = 0;
+  private SliderPagerAdapter adapter;
 
   public SliderView(@NonNull Context context) {
     super(context);
@@ -46,15 +50,19 @@ public class SliderView extends FrameLayout {
     inflate(getContext(), R.layout.layout_image_slider, this);
 
     ButterKnife.bind(this);
+
+    adapter = new SliderPagerAdapter(getContext());
+    viewPager.setAdapter(adapter);
+    indicator.setViewPager(viewPager);
   }
 
   public void setImageUrls(List<String> imageUrls) {
-    viewPager.setAdapter(new SliderPagerAdapter(imageUrls, getContext()));
-    indicator.setViewPager(viewPager);
+    Stream.of(imageUrls).forEach(s -> adapter.addUrl(s));
 
     if (imageUrls.size() == 1) {
       indicator.setVisibility(GONE);
     } else {
+      indicator.setVisibility(VISIBLE);
       WeakHandler handler = new WeakHandler();
 
       Runnable runnable = () -> {
@@ -74,15 +82,23 @@ public class SliderView extends FrameLayout {
     }
   }
 
+  public void addImageUrl(String url) {
+    setImageUrls(Collections.singletonList(url));
+  }
+
   static class SliderPagerAdapter extends PagerAdapter {
-    private final List<String> urls;
+    private final List<String> urls = new ArrayList<>(3);
     private final LayoutInflater inflater;
     private final Context context;
 
-    SliderPagerAdapter(List<String> urls, Context context) {
+    SliderPagerAdapter(Context context) {
       this.context = context;
-      this.urls = urls;
       this.inflater = LayoutInflater.from(context);
+    }
+
+    public void addUrl(@NonNull String url) {
+      urls.add(url);
+      notifyDataSetChanged();
     }
 
     @Override

@@ -44,9 +44,9 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   private static final String KEY_VIEW_TYPE = "VIEW_TYPE";
   private static final String KEY_USER_ID = "USER_ID";
 
-  @BindView(R.id.rv_follow) RecyclerView rvFollow;
+  @BindView(R.id.recycler_view) RecyclerView rvFollow;
   @BindView(R.id.swipe_follow) SwipeRefreshLayout swipeRefreshLayout;
-  @BindView(R.id.toolbar_follow) Toolbar toolbar;
+  @BindView(R.id.toolbar) Toolbar toolbar;
 
   @BindColor(R.color.primary) int colorPrimary;
 
@@ -152,15 +152,10 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
 
     // addPostToBeginning back arrow to toolbar
     final ActionBar ab = getSupportActionBar();
-    if (ab != null) {
-      ab.setTitle(viewType == TYPE_FOLLOWERS
-          ? R.string.label_follow_followers_title
-          : R.string.label_follow_following_title);
-      ab.setDisplayHomeAsUpEnabled(true);
-      ab.setDisplayShowHomeEnabled(true);
-    }
-
-    toolbar.setNavigationOnClickListener(v -> getRouter().handleBack());
+    ab.setTitle(viewType == TYPE_FOLLOWERS
+        ? R.string.label_follow_followers_title
+        : R.string.label_follow_following_title);
+    ab.setDisplayHomeAsUpEnabled(true);
   }
 
   private void setupRecyclerView() {

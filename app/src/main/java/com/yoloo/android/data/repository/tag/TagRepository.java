@@ -2,8 +2,6 @@ package com.yoloo.android.data.repository.tag;
 
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.TagRealm;
-import com.yoloo.android.data.repository.tag.datasource.TagDiskDataStore;
-import com.yoloo.android.data.repository.tag.datasource.TagRemoteDataStore;
 import com.yoloo.android.data.sorter.TagSorter;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;

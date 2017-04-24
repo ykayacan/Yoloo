@@ -1,4 +1,4 @@
-package com.yoloo.android.data.repository.tag.datasource;
+package com.yoloo.android.data.repository.tag;
 
 import com.annimon.stream.Stream;
 import com.google.api.client.http.HttpHeaders;
@@ -17,25 +17,25 @@ import timber.log.Timber;
 import static com.yoloo.android.data.ApiManager.INSTANCE;
 import static com.yoloo.android.data.ApiManager.getIdToken;
 
-public class TagRemoteDataStore {
+class TagRemoteDataStore {
 
   private static TagRemoteDataStore instance;
 
   private TagRemoteDataStore() {
   }
 
-  public static TagRemoteDataStore getInstance() {
+  static TagRemoteDataStore getInstance() {
     if (instance == null) {
       instance = new TagRemoteDataStore();
     }
     return instance;
   }
 
-  public Observable<List<TagRealm>> list(TagSorter sorter) {
+  Observable<List<TagRealm>> list(TagSorter sorter) {
     return getIdToken().toObservable().flatMap(s -> Observable.empty());
   }
 
-  public Observable<List<TagRealm>> listRecommendedTags() {
+  Observable<List<TagRealm>> listRecommendedTags() {
     return getIdToken()
         .flatMapObservable(idToken -> Observable
             .fromCallable(() -> INSTANCE
@@ -57,8 +57,8 @@ public class TagRemoteDataStore {
    * @param limit the limit
    * @return the observable
    */
-  public Observable<Response<List<TagRealm>>> searchTag(@Nonnull String query,
-      @Nullable String cursor, int limit) {
+  Observable<Response<List<TagRealm>>> searchTag(@Nonnull String query, @Nullable String cursor,
+      int limit) {
     return getIdToken()
         .flatMapObservable(idToken -> Observable
             .fromCallable(() -> INSTANCE

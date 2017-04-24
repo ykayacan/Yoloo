@@ -1,6 +1,8 @@
 package com.yoloo.android.feature.editor.selectgroup;
 
-import android.content.Context;
+import android.graphics.Bitmap;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindView;
@@ -9,6 +11,9 @@ import com.airbnb.epoxy.EpoxyAttribute;
 import com.airbnb.epoxy.EpoxyModelClass;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.GroupRealm;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
@@ -19,13 +24,11 @@ import java.util.List;
 class SelectGroupAdapter extends EpoxyAdapter {
 
   private final RequestManager glide;
-  private final CropCircleTransformation cropCircleTransformation;
 
   private OnItemClickListener<GroupRealm> onItemClickListener;
 
-  SelectGroupAdapter(RequestManager glide, Context context) {
+  SelectGroupAdapter(RequestManager glide) {
     this.glide = glide;
-    cropCircleTransformation = new CropCircleTransformation(context);
   }
 
   public void setOnItemClickListener(OnItemClickListener<GroupRealm> onItemClickListener) {
@@ -46,7 +49,6 @@ class SelectGroupAdapter extends EpoxyAdapter {
     return new SelectGroupAdapter$GroupModel_()
         .group(group)
         .glide(glide)
-        .cropCircleTransformation(cropCircleTransformation)
         .onItemClickListener(onItemClickListener);
   }
 
@@ -62,9 +64,20 @@ class SelectGroupAdapter extends EpoxyAdapter {
     public void bind(GroupViewHolder holder) {
       super.bind(holder);
       glide
-          .load(group.getBackgroundUrl())
-          .bitmapTransform(cropCircleTransformation)
-          .into(holder.ivSelectGroupImage);
+          .load(group.getBackgroundUrl() + "=s100-rw")
+          .asBitmap()
+          .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+          .into(new SimpleTarget<Bitmap>() {
+            @Override
+            public void onResourceReady(Bitmap resource,
+                GlideAnimation<? super Bitmap> glideAnimation) {
+              RoundedBitmapDrawable rbd =
+                  RoundedBitmapDrawableFactory.create(holder.itemView.getContext().getResources(),
+                      resource);
+              rbd.setCornerRadius(6f);
+              holder.ivSelectGroupImage.setImageDrawable(rbd);
+            }
+          });
 
       holder.tvSelectGroupTitle.setText(group.getName());
 

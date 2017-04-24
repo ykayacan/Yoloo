@@ -52,42 +52,6 @@
 
   </android.support.v4.widget.SwipeRefreshLayout>
 
-  <!--<com.yoloo.android.ui.widget.RevealFrameLayout
-    android:id="@+id/menu_layout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/white"
-    android:elevation="6dp"
-    android:visibility="gone">
-
-    <com.ogaclejapan.arclayout.ArcLayout
-      android:id="@+id/menu_arc_layout"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      app:arc_axisRadius="@dimen/layout_arc_child_offset"
-      app:arc_origin="center"
-      app:arc_radius="@dimen/layout_arc_radius">
-
-      <com.yoloo.android.ui.widget.FabGroupView
-        android:id="@+id/arc_menu_ask_question"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        app:fabIcon="@drawable/ic_edit_white_18dp"
-        app:fabText="Ask Question" />
-
-      <com.yoloo.android.ui.widget.FabGroupView
-        android:id="@+id/arc_menu_write_memory"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        app:fabIcon="@drawable/ic_edit_white_18dp"
-        app:fabText="Write Memory" />
-
-    </com.ogaclejapan.arclayout.ArcLayout>
-
-  </com.yoloo.android.ui.widget.RevealFrameLayout>-->
-
   <com.github.ag.floatingactionmenu.OptionsFabLayout
     android:id="@+id/fab_menu"
     android:layout_width="wrap_content"

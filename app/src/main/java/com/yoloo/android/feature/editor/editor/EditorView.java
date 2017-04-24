@@ -5,7 +5,7 @@ import com.yoloo.android.data.model.TagRealm;
 import com.yoloo.android.framework.MvpView;
 import java.util.List;
 
-interface EditorQuestionView extends MvpView {
+interface EditorView extends MvpView {
 
   void onDraftCreated(PostRealm draft);
 

@@ -1,7 +1,5 @@
 package com.yoloo.backend.tag;
 
-import com.google.common.base.Predicates;
-import com.google.common.collect.Collections2;
 import ix.Ix;
 import java.util.Collection;
 import java.util.List;
@@ -23,24 +21,20 @@ public class TagService {
 
     List<String> persistentTagsAsNames = Ix.from(persistentTags).map(Tag::getName).toList();
 
-    Collection<String> newTagNames =
-        Collections2.filter(tagNames, Predicates.not(Predicates.in(persistentTagsAsNames)));
-
-    if (!newTagNames.isEmpty()) {
-      List<Tag> newTags = Ix
-          .from(newTagNames)
-          .map(tagName -> Tag
-              .builder()
-              .id(Tag.createKey(tagName).getName())
-              .name(tagName)
-              .rank(0.0D)
-              .postCount(1L)
-              .build())
-          .toList();
-
-      persistentTags.addAll(newTags);
-    }
-
-    return persistentTags;
+    return Ix
+        .from(tagNames)
+        .filter(s -> !persistentTagsAsNames.contains(s))
+        .collectToList()
+        .filter(strings -> !strings.isEmpty())
+        .flatMap(Ix::from)
+        .map(tagName -> Tag
+            .builder()
+            .id(Tag.createKey(tagName).getName())
+            .name(tagName)
+            .rank(0.0D)
+            .postCount(1L)
+            .build())
+        .mergeWith(persistentTags)
+        .toList();
   }
 }

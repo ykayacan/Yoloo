@@ -1,9 +1,8 @@
 package com.yoloo.android;
 
-import android.app.Application;
 import android.content.Context;
 import android.os.StrictMode;
-import android.support.multidex.MultiDex;
+import android.support.multidex.MultiDexApplication;
 import android.support.v7.app.AppCompatDelegate;
 import android.util.Log;
 import com.evernote.android.job.JobManager;
@@ -21,7 +20,7 @@ import org.solovyev.android.checkout.Billing;
 import timber.log.Timber;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
-public class YolooApp extends Application {
+public class YolooApp extends MultiDexApplication {
 
   private static Context appContext;
 
@@ -66,12 +65,6 @@ public class YolooApp extends Application {
 
     //enabledStrictMode();
     //TinyDancer.create().show(this);
-  }
-
-  @Override
-  protected void attachBaseContext(Context base) {
-    super.attachBaseContext(base);
-    MultiDex.install(this);
   }
 
   private void initCalligraphy() {

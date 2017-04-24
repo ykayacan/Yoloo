@@ -14,7 +14,7 @@ import java.util.Date;
 import javax.annotation.Nonnull;
 import timber.log.Timber;
 
-class EditorQuestionPresenter extends MvpPresenter<EditorQuestionView> {
+class EditorPresenter extends MvpPresenter<EditorView> {
 
   static final int NAV_SELECT_GROUP = 0;
   static final int NAV_BOUNTY = 1;
@@ -25,7 +25,7 @@ class EditorQuestionPresenter extends MvpPresenter<EditorQuestionView> {
   private final PostRepository postRepository;
   private final UserRepository userRepository;
 
-  EditorQuestionPresenter(TagRepository tagRepository, PostRepository postRepository,
+  EditorPresenter(TagRepository tagRepository, PostRepository postRepository,
       UserRepository userRepository) {
     this.tagRepository = tagRepository;
     this.postRepository = postRepository;
@@ -33,7 +33,7 @@ class EditorQuestionPresenter extends MvpPresenter<EditorQuestionView> {
   }
 
   @Override
-  public void onAttachView(EditorQuestionView view) {
+  public void onAttachView(EditorView view) {
     super.onAttachView(view);
     createDraft();
     loadRecommendedTags();

@@ -36,8 +36,7 @@ import com.yoloo.android.data.repository.post.PostRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.data.sorter.PostSorter;
 import com.yoloo.android.feature.comment.CommentController;
-import com.yoloo.android.feature.editor.EditorType;
-import com.yoloo.android.feature.editor.editor.EditorController;
+import com.yoloo.android.feature.editor.editor.PostEditorController;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
@@ -171,15 +170,14 @@ public class PostListController extends MvpController<PostListView, PostListPres
         ButterKnife.findById(stateView, R.id.btn_empty_action).setOnClickListener(v -> {
           Controller parentController = getParentController();
           if (parentController == null) {
-            startTransaction(EditorController.create(EditorType.ASK_QUESTION),
-                new VerticalChangeHandler());
+            startTransaction(PostEditorController.create(), new VerticalChangeHandler());
           } else {
             VerticalChangeHandler handler = new VerticalChangeHandler();
 
             parentController
                 .getRouter()
                 .pushController(RouterTransaction
-                    .with(EditorController.create(EditorType.ASK_QUESTION))
+                    .with(PostEditorController.create())
                     .pushChangeHandler(handler)
                     .popChangeHandler(handler));
           }

@@ -19,20 +19,6 @@
     app:layout_constraintTop_toTopOf="parent"
     tools:src="@drawable/login_bg" />
 
-  <View
-    android:id="@+id/view_category_checkmark"
-    android:layout_width="36dp"
-    android:layout_height="36dp"
-    android:layout_gravity="end"
-    android:layout_marginEnd="16dp"
-    android:layout_marginRight="16dp"
-    android:layout_marginTop="16dp"
-    android:background="@drawable/layer_checkmark"
-    android:visibility="gone"
-    app:layout_constraintRight_toRightOf="@+id/iv_category_bg"
-    app:layout_constraintTop_toTopOf="parent"
-    tools:visibility="visible" />
-
   <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_category_text"
     style="@style/TextAppearance.CatalogCategoryTitle"

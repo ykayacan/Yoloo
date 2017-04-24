@@ -12,7 +12,6 @@
   <android.support.constraint.ConstraintLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="16dp"
     android:paddingEnd="16dp"
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
@@ -71,7 +70,7 @@
       android:id="@+id/tv_editor_post_add_media"
       style="@style/TextAppearance.EditorItemText"
       android:layout_width="0dp"
-      android:layout_height="wrap_content"
+      android:layout_height="48dp"
       android:background="?attr/selectableItemBackground"
       android:drawablePadding="16dp"
       android:gravity="center_vertical"
@@ -97,7 +96,7 @@
       android:id="@+id/tv_editor_post_select_group"
       style="@style/TextAppearance.EditorItemText"
       android:layout_width="0dp"
-      android:layout_height="wrap_content"
+      android:layout_height="48dp"
       android:layout_marginEnd="0dp"
       android:layout_marginStart="0dp"
       android:background="?attr/selectableItemBackground"
@@ -158,7 +157,7 @@
     <android.support.v7.widget.RecyclerView
       android:id="@+id/recycler_view"
       android:layout_width="0dp"
-      android:layout_height="wrap_content"
+      android:layout_height="32dp"
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintRight_toRightOf="parent"
       app:layout_constraintTop_toBottomOf="@+id/tv_editor_post_trending_tag_title" />

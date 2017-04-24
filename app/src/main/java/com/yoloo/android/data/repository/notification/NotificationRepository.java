@@ -47,10 +47,15 @@ public class NotificationRepository {
 
   public Observable<Response<List<NotificationRealm>>> listNotifications(@Nullable String cursor,
       int limit) {
-    return Observable.mergeDelayError(diskDataStore.list(limit).subscribeOn(Schedulers.io()),
-        remoteDataStore
-            .list(cursor, limit)
+
+    Observable<Response<List<NotificationRealm>>> diskObservable =
+        diskDataStore.list(limit).subscribeOn(Schedulers.io());
+
+    Observable<Response<List<NotificationRealm>>> remoteObservable =
+        remoteDataStore.list(cursor, limit)
             .doOnNext(response -> diskDataStore.addAll(response.getData()))
-            .subscribeOn(Schedulers.io()));
+            .subscribeOn(Schedulers.io());
+
+    return remoteObservable;
   }
 }

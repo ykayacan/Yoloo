@@ -17,7 +17,7 @@ import com.yoloo.android.R;
 import com.yoloo.android.data.model.GroupRealm;
 import com.yoloo.android.data.repository.group.GroupRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
-import com.yoloo.android.feature.editor.editor.EditorQuestionController2;
+import com.yoloo.android.feature.editor.editor.PostEditorController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
@@ -114,13 +114,13 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
 
   @Override
   public void onItemClick(View v, EpoxyModel<?> model, GroupRealm item) {
-    ((EditorQuestionController2) getTargetController()).onGroupSelected(item);
+    ((PostEditorController) getTargetController()).onGroupSelected(item);
 
     getRouter().handleBack();
   }
 
   private void setupRecyclerview() {
-    adapter = new SelectGroupAdapter(Glide.with(getActivity()), getActivity());
+    adapter = new SelectGroupAdapter(Glide.with(getActivity()));
     adapter.setOnItemClickListener(this);
 
     rvSelectGroup.setLayoutManager(new LinearLayoutManager(getActivity()));

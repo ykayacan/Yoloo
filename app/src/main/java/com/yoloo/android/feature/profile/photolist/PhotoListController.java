@@ -1,4 +1,4 @@
-package com.yoloo.android.feature.profile.photos;
+package com.yoloo.android.feature.profile.photolist;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,12 +12,12 @@ import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.RouterTransaction;
+import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.MediaRealm;
 import com.yoloo.android.data.repository.media.MediaRepositoryProvider;
 import com.yoloo.android.feature.fullscreenphoto.FullscreenPhotoController;
 import com.yoloo.android.framework.MvpController;
-import com.yoloo.android.ui.changehandler.SharedElementDelayingChangeHandler;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.GridInsetItemDecoration;
@@ -26,8 +26,8 @@ import com.yoloo.android.util.DisplayUtil;
 import java.util.List;
 import timber.log.Timber;
 
-public class PhotosController extends MvpController<PhotosView, PhotosPresenter>
-    implements PhotosView, OnItemClickListener<MediaRealm> {
+public class PhotoListController extends MvpController<PhotoListView, PhotoListPresenter>
+    implements PhotoListView, OnItemClickListener<MediaRealm> {
 
   private static final String KEY_USER_ID = "USER_ID";
 
@@ -35,14 +35,14 @@ public class PhotosController extends MvpController<PhotosView, PhotosPresenter>
 
   private PhotosAdapter adapter;
 
-  public PhotosController(@Nullable Bundle args) {
+  public PhotoListController(@Nullable Bundle args) {
     super(args);
   }
 
-  public static PhotosController create(@NonNull String userId) {
+  public static PhotoListController create(@NonNull String userId) {
     final Bundle bundle = new BundleBuilder().putString(KEY_USER_ID, userId).build();
 
-    return new PhotosController(bundle);
+    return new PhotoListController(bundle);
   }
 
   @Override
@@ -84,8 +84,8 @@ public class PhotosController extends MvpController<PhotosView, PhotosPresenter>
 
   @NonNull
   @Override
-  public PhotosPresenter createPresenter() {
-    return new PhotosPresenter(MediaRepositoryProvider.getRepository());
+  public PhotoListPresenter createPresenter() {
+    return new PhotoListPresenter(MediaRepositoryProvider.getRepository());
   }
 
   @Override
@@ -93,8 +93,8 @@ public class PhotosController extends MvpController<PhotosView, PhotosPresenter>
     Controller controller = FullscreenPhotoController.create(item.getLargeSizeUrl(), item.getId());
     RouterTransaction transaction = RouterTransaction
         .with(controller)
-        .pushChangeHandler(new SharedElementDelayingChangeHandler())
-        .popChangeHandler(new SharedElementDelayingChangeHandler());
+        .pushChangeHandler(new FadeChangeHandler())
+        .popChangeHandler(new FadeChangeHandler());
 
     getParentController().getRouter().pushController(transaction);
   }

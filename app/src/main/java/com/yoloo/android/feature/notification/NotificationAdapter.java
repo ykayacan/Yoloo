@@ -21,7 +21,8 @@ class NotificationAdapter extends EpoxyAdapter {
   }
 
   void addAll(List<NotificationRealm> notifications) {
-    Stream.of(notifications)
+    Stream
+        .of(notifications)
         .forEach(notification -> addModel(new NotificationModel_()
             .notification(notification)
             .cropCircleTransformation(cropCircleTransformation)

@@ -23,7 +23,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import butterknife.BindColor;
@@ -36,7 +35,6 @@ import com.annimon.stream.Stream;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
-import com.bumptech.glide.Glide;
 import com.github.jksiezni.permissive.Permissive;
 import com.hootsuite.nachos.NachoTextView;
 import com.hootsuite.nachos.chip.Chip;
@@ -54,16 +52,15 @@ import com.yoloo.android.data.model.MediaRealm;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.model.TagRealm;
 import com.yoloo.android.data.repository.post.PostRepositoryProvider;
-import com.yoloo.android.data.repository.tag.TagRepository;
-import com.yoloo.android.data.repository.tag.datasource.TagDiskDataStore;
-import com.yoloo.android.data.repository.tag.datasource.TagRemoteDataStore;
+import com.yoloo.android.data.repository.tag.TagRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
-import com.yoloo.android.feature.category.ChipAdapter;
 import com.yoloo.android.feature.editor.selectbounty.BountySelectController;
 import com.yoloo.android.feature.editor.selectgroup.SelectGroupController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
 import com.yoloo.android.ui.widget.AutoCompleteTagAdapter;
+import com.yoloo.android.ui.widget.ChipAdapter;
+import com.yoloo.android.ui.widget.SliderView;
 import com.yoloo.android.util.Connectivity;
 import com.yoloo.android.util.ControllerUtil;
 import com.yoloo.android.util.DrawableHelper;
@@ -77,9 +74,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import timber.log.Timber;
 
-public class EditorQuestionController2
-    extends MvpController<EditorQuestionView, EditorQuestionPresenter>
-    implements EditorQuestionView, ChipAdapter.OnItemSelectListener<TagRealm> {
+public class BlogEditorController
+    extends MvpController<EditorView, EditorPresenter>
+    implements EditorView, ChipAdapter.OnItemSelectListener<TagRealm> {
 
   private static final int REQUEST_SELECT_MEDIA = 1;
   private static final int REQUEST_CAPTURE_MEDIA = 2;
@@ -87,10 +84,8 @@ public class EditorQuestionController2
   private final WeakHandler handler = new WeakHandler();
 
   @BindView(R.id.toolbar) Toolbar toolbar;
-  @BindView(R.id.iv_editor_post_image) ImageView ivEditorImage;
-  @BindView(R.id.tv_editor_post_image_counter) TextView tvEditorImageCounter;
-  @BindView(R.id.et_editor_post_content) EditText etEditorContent;
-  @BindView(R.id.tv_editor_post_add_media) TextView tvEditorAddMedia;
+  @BindView(R.id.slider) SliderView sliderView;
+  @BindView(R.id.et_blog_content) EditText etEditorContent;
   @BindView(R.id.tv_editor_post_select_group) TextView tvEditorSelectGroup;
   @BindView(R.id.et_editor_post_tags) NachoTextView etEditorTags;
   @BindView(R.id.recycler_view) RecyclerView rvEditorTrendingTags;
@@ -113,13 +108,13 @@ public class EditorQuestionController2
 
   private PostRealm draft;
 
-  public static EditorQuestionController2 create() {
-    return new EditorQuestionController2();
+  public static BlogEditorController create() {
+    return new BlogEditorController();
   }
 
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
-    return inflater.inflate(R.layout.controller_post_editor, container, false);
+    return inflater.inflate(R.layout.controller_editor_blog, container, false);
   }
 
   @Override
@@ -164,7 +159,7 @@ public class EditorQuestionController2
       showDiscardDraftDialog();
     } else if (itemId == R.id.action_share && isValidToSend()) {
       setTempDraft();
-      getPresenter().updateDraft(draft, EditorQuestionPresenter.NAV_SEND);
+      getPresenter().updateDraft(draft, EditorPresenter.NAV_SEND);
     }
 
     return false;
@@ -191,9 +186,8 @@ public class EditorQuestionController2
 
   @NonNull
   @Override
-  public EditorQuestionPresenter createPresenter() {
-    return new EditorQuestionPresenter(
-        TagRepository.getInstance(TagRemoteDataStore.getInstance(), TagDiskDataStore.getInstance()),
+  public EditorPresenter createPresenter() {
+    return new EditorPresenter(TagRepositoryProvider.getRepository(),
         PostRepositoryProvider.getRepository(), UserRepositoryProvider.getRepository());
   }
 
@@ -204,7 +198,7 @@ public class EditorQuestionController2
 
   @Override
   public void onDraftUpdated(int navigation) {
-    if (navigation == EditorQuestionPresenter.NAV_SEND) {
+    if (navigation == EditorPresenter.NAV_SEND) {
       getPresenter().sendPost();
 
       getRouter().handleBack();
@@ -227,7 +221,7 @@ public class EditorQuestionController2
     handler.post(etEditorTags::showDropDown);
   }
 
-  @OnClick(R.id.tv_editor_post_add_media)
+  @OnClick(R.id.tv_blog_add_image)
   void openAddMediaDialog() {
     new AlertDialog.Builder(getActivity())
         .setTitle(R.string.label_editor_select_media_source_title)
@@ -277,9 +271,9 @@ public class EditorQuestionController2
         .of(etEditorTags.getAllChips())
         .map(Chip::getText)
         .map(CharSequence::toString)
+        .distinct()
         .map(tagName -> new TagRealm().setName(tagName))
-        .reduce((value1, value2) -> value1.getName().equals(value2.getName()) ? value1 : null)
-        .executeIfPresent(tag -> draft.addTag(tag));
+        .forEach(tag -> draft.addTag(tag));
 
     // Set image Uris
     Stream
@@ -288,7 +282,7 @@ public class EditorQuestionController2
         .forEach(media -> draft.addMedia(media));
 
     // Set post type.
-    draft.setPostType(draft.getMedias().isEmpty() ? PostRealm.TYPE_TEXT : PostRealm.TYPE_RICH);
+    draft.setPostType(PostRealm.TYPE_BLOG);
   }
 
   private void setupToolbar() {
@@ -382,10 +376,7 @@ public class EditorQuestionController2
   private void addThumbView(Uri uri) {
     selectedImageUris.add(uri);
 
-    ivEditorImage.setVisibility(View.VISIBLE);
-    tvEditorImageCounter.setVisibility(selectedImageUris.size() > 1 ? View.VISIBLE : View.GONE);
-
-    Glide.with(getActivity()).load(uri).override(90, 90).into(ivEditorImage);
+    sliderView.addImageUrl(uri.getPath());
   }
 
   private void checkCameraPermissions() {
@@ -473,7 +464,7 @@ public class EditorQuestionController2
   }
 
   private boolean isValidToSend() {
-    if (ivEditorImage.getDrawable() == null) {
+    /*if (ivEditorImage.getDrawable() == null) {
       if (etEditorContent.getText().toString().isEmpty()) {
         showMessage("You must add text or image to post!");
         return false;
@@ -498,18 +489,12 @@ public class EditorQuestionController2
         showMessage("Tags are empty!");
         return false;
       }
-    }
+    }*/
 
     return true;
   }
 
   private void tintIcons() {
-    DrawableHelper
-        .create()
-        .withDrawable(tvEditorAddMedia.getCompoundDrawables()[0])
-        .withColor(secondaryTextColor)
-        .tint();
-
     DrawableHelper
         .create()
         .withDrawable(tvEditorSelectGroup.getCompoundDrawables()[0])

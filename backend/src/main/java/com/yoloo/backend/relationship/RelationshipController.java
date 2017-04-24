@@ -15,21 +15,17 @@ import com.yoloo.backend.account.AccountShard;
 import com.yoloo.backend.account.AccountShardService;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.device.DeviceRecord;
+import com.yoloo.backend.endpointsvalidator.Guard;
 import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.notification.type.FollowNotifiable;
-import com.yoloo.backend.endpointsvalidator.Guard;
 import java.util.Collection;
 import java.util.Map;
-import java.util.logging.Logger;
 import lombok.AllArgsConstructor;
 
 import static com.yoloo.backend.OfyService.ofy;
 
 @AllArgsConstructor(staticName = "create")
 public class RelationshipController extends Controller {
-
-  private static final Logger LOG =
-      Logger.getLogger(RelationshipController.class.getName());
 
   /**
    * Maximum number of follow entity to return.
@@ -55,8 +51,8 @@ public class RelationshipController extends Controller {
     Key<AccountShard> followerShardKey = accountShardService.getRandomShardKey(followerKey);
     Key<AccountShard> followingShardKey = accountShardService.getRandomShardKey(followingKey);
 
-    Map<Key<Object>, Object> fetched = ofy().load()
-        .keys(followerKey, recordKey, followerShardKey, followingShardKey);
+    Map<Key<Object>, Object> fetched =
+        ofy().load().keys(followerKey, recordKey, followerShardKey, followingShardKey);
 
     //noinspection SuspiciousMethodCalls
     Account follower = (Account) fetched.get(followerKey);
@@ -67,14 +63,15 @@ public class RelationshipController extends Controller {
     //noinspection SuspiciousMethodCalls
     AccountShard followingShard = (AccountShard) fetched.get(followingShardKey);
 
-    followerShard = accountShardService
-        .updateCounter(followerShard, AccountShardService.Update.FOLLOWING_UP);
-    followingShard = accountShardService
-        .updateCounter(followingShard, AccountShardService.Update.FOLLOWER_UP);
+    followerShard =
+        accountShardService.updateCounter(followerShard, AccountShardService.Update.FOLLOWING_UP);
+    followingShard =
+        accountShardService.updateCounter(followingShard, AccountShardService.Update.FOLLOWER_UP);
 
     FollowNotifiable notification = FollowNotifiable.create(follower, record);
 
-    ImmutableSet<Object> saveList = ImmutableSet.builder()
+    ImmutableSet<Object> saveList = ImmutableSet
+        .builder()
         .add(relationship)
         .add(followerShard)
         .add(followingShard)
@@ -93,35 +90,35 @@ public class RelationshipController extends Controller {
     // Create target user key from user id.
     final Key<Account> followingKey = Key.create(followingId);
 
-    final Key<Relationship> followKey = ofy().load().type(Relationship.class)
+    final Key<Relationship> followKey = ofy()
+        .load()
+        .type(Relationship.class)
         .ancestor(followerKey)
         .filter(Relationship.FIELD_FOLLOWING_KEY + " =", followingKey)
-        .keys().first().now();
+        .keys()
+        .first()
+        .now();
 
     Guard.checkNotFound(followKey, "Relationship is not found.");
 
-    Key<AccountShard> followerShardKey =
-        accountShardService.getRandomShardKey(followerKey);
-    Key<AccountShard> followingShardKey =
-        accountShardService.getRandomShardKey(followingKey);
+    Key<AccountShard> followerShardKey = accountShardService.getRandomShardKey(followerKey);
+    Key<AccountShard> followingShardKey = accountShardService.getRandomShardKey(followingKey);
 
-    Map<Key<Object>, Object> fetched = ofy().load()
-        .keys(followerKey, followerShardKey, followingShardKey);
+    Map<Key<Object>, Object> fetched =
+        ofy().load().keys(followerKey, followerShardKey, followingShardKey);
 
     //noinspection SuspiciousMethodCalls
     AccountShard followerShard = (AccountShard) fetched.get(followerShardKey);
     //noinspection SuspiciousMethodCalls
     AccountShard followingShard = (AccountShard) fetched.get(followingShardKey);
 
-    followerShard = accountShardService
-        .updateCounter(followerShard, AccountShardService.Update.FOLLOWING_DOWN);
-    followingShard = accountShardService
-        .updateCounter(followingShard, AccountShardService.Update.FOLLOWER_DOWN);
+    followerShard =
+        accountShardService.updateCounter(followerShard, AccountShardService.Update.FOLLOWING_DOWN);
+    followingShard =
+        accountShardService.updateCounter(followingShard, AccountShardService.Update.FOLLOWER_DOWN);
 
-    final ImmutableList<Object> saveList = ImmutableList.builder()
-        .add(followerShard)
-        .add(followingShard)
-        .build();
+    final ImmutableList<Object> saveList =
+        ImmutableList.builder().add(followerShard).add(followingShard).build();
 
     ofy().transact(() -> {
       ofy().defer().delete().key(followKey);
@@ -129,8 +126,8 @@ public class RelationshipController extends Controller {
     });
   }
 
-  public CollectionResponse<Account> list(String accountId, RelationshipType type, Optional<Integer> limit,
-      Optional<String> cursor) {
+  public CollectionResponse<Account> list(String accountId, RelationshipType type,
+      Optional<Integer> limit, Optional<String> cursor) {
     // Create account key from websafe id.
     final Key<Account> followerKey = Key.create(accountId);
 
@@ -144,9 +141,7 @@ public class RelationshipController extends Controller {
     }
 
     // Fetch items from beginning from cursor.
-    query = cursor.isPresent()
-        ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
-        : query;
+    query = cursor.isPresent() ? query.startAt(Cursor.fromWebSafeString(cursor.get())) : query;
 
     // Limit items.
     query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
@@ -172,9 +167,6 @@ public class RelationshipController extends Controller {
   }
 
   private Relationship followAccount(Key<Account> followerKey, Key<Account> followingKey) {
-    return Relationship.builder()
-        .followerKey(followerKey)
-        .followingKey(followingKey)
-        .build();
+    return Relationship.builder().followerKey(followerKey).followingKey(followingKey).build();
   }
 }

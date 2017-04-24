@@ -18,7 +18,7 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.Singular;
 import lombok.Value;
-import lombok.experimental.NonFinal;
+import lombok.experimental.FieldDefaults;
 import org.joda.time.DateTime;
 
 @Entity
@@ -27,6 +27,7 @@ import org.joda.time.DateTime;
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+@FieldDefaults(makeFinal = false)
 @ApiTransformer(NotificationTransformer.class)
 public class Notification {
 
@@ -35,19 +36,19 @@ public class Notification {
 
   @Id private Long id;
 
-  @NonFinal private Key<Account> senderKey;
+  private Key<Account> senderKey;
 
-  @Parent @NonFinal private Key<Account> receiverKey;
+  @Parent private Key<Account> receiverKey;
 
-  @NonFinal private String senderUsername;
+  private String senderUsername;
 
-  @NonFinal private Link senderAvatarUrl;
+  private Link senderAvatarUrl;
 
-  @Index(IfGameAction.class) @NonFinal private Action action;
+  @Index(IfGameAction.class) private Action action;
 
-  @Singular @NonFinal private Map<String, Object> payloads;
+  @Singular private Map<String, Object> payloads;
 
-  @Index @NonFinal private DateTime created;
+  @Index private DateTime created;
 
   public Key<Notification> getKey() {
     return Key.create(receiverKey, Notification.class, id);
@@ -58,6 +59,9 @@ public class Notification {
   }
 
   public String getSenderId() {
+    if (senderKey == null) {
+      return null;
+    }
     return senderKey.toWebSafeString();
   }
 }

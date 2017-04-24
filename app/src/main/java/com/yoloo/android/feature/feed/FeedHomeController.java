@@ -69,7 +69,8 @@ import com.yoloo.android.feature.auth.welcome.WelcomeController;
 import com.yoloo.android.feature.blog.BlogController;
 import com.yoloo.android.feature.bloglist.BlogListController;
 import com.yoloo.android.feature.comment.CommentController;
-import com.yoloo.android.feature.editor.editor.EditorQuestionController2;
+import com.yoloo.android.feature.editor.editor.BlogEditorController;
+import com.yoloo.android.feature.editor.editor.PostEditorController;
 import com.yoloo.android.feature.editor.job.SendPostJob;
 import com.yoloo.android.feature.explore.ExploreController;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
@@ -186,11 +187,11 @@ public class FeedHomeController extends MvpController<FeedHomeView, FeedHomePres
       switch (itemId) {
         case R.id.action_ask_question:
           fab.closeOptionsMenu();
-          startTransaction(EditorQuestionController2.create(), new VerticalChangeHandler());
+          startTransaction(PostEditorController.create(), new VerticalChangeHandler());
           break;
         case R.id.action_write_blog:
           fab.closeOptionsMenu();
-          startTransaction(EditorQuestionController2.create(), new VerticalChangeHandler());
+          startTransaction(BlogEditorController.create(), new VerticalChangeHandler());
           break;
       }
     });
@@ -380,17 +381,11 @@ public class FeedHomeController extends MvpController<FeedHomeView, FeedHomePres
       return true;
     }
 
-    /*if (menuLayout.getVisibility() == View.VISIBLE) {
-      int x = (fab.getLeft() + fab.getRight()) / 2;
-      int y = (fab.getTop() + fab.getBottom()) / 2;
-      float radiusOfFab = 1f * fab.getWidth() / 2f;
-      float radiusFromFabToRoot = (float) Math.hypot(Math.max(x, rootView.getWidth() - x),
-          Math.max(y, rootView.getHeight() - y));
-
-      hideMenu(x, y, radiusFromFabToRoot, radiusOfFab);
-      fab.setSelected(!fab.isSelected());
+    if (msv.isOpen()) {
+      msv.closeSearch();
       return true;
-    }*/
+    }
+
     return super.handleBack();
   }
 
@@ -565,11 +560,12 @@ public class FeedHomeController extends MvpController<FeedHomeView, FeedHomePres
       // TODO: 9.04.2017 Implement
     });
     adapter.setOnNewcomersFollowClickListener((v, model, account, direction) -> {
-      // TODO: 9.04.2017 Implement
+      getPresenter().follow(account.getId(), direction);
+      adapter.deleteNewcomersModel(model);
     });
-    adapter.setOnNewcomersItemClickListener((v, model, item) -> {
-      // TODO: 9.04.2017 Implement
-    });
+    adapter.setOnNewcomersItemClickListener(
+        (v, model, item) -> startTransaction(ProfileController.create(item.getId()),
+            new VerticalChangeHandler()));
 
     final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
 
@@ -588,17 +584,6 @@ public class FeedHomeController extends MvpController<FeedHomeView, FeedHomePres
       public void onLoadMore() {
         /*handler.postDelayed(
             () -> getPresenter().loadPosts(true, UUID.randomUUID().toString(), eTag, 20), 700);*/
-      }
-    });
-
-    rvFeed.addOnScrollListener(new RecyclerView.OnScrollListener() {
-      @Override
-      public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-        if (dy > 0 && fab.getVisibility() == View.VISIBLE) {
-          fab.setVisibility(View.GONE);
-        } else if (dy < 0 && fab.getVisibility() != View.VISIBLE) {
-          fab.setVisibility(View.VISIBLE);
-        }
       }
     });
   }

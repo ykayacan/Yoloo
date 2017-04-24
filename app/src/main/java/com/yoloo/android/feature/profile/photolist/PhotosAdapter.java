@@ -1,4 +1,4 @@
-package com.yoloo.android.feature.profile.photos;
+package com.yoloo.android.feature.profile.photolist;
 
 import android.widget.ImageView;
 

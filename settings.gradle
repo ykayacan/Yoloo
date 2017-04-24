@@ -1,1 +1,1 @@
-include ':app', ':nachos', /*':chatkit',*/ /*':bubblepicker' ,*/ ':backend'
+include ':app', ':backend', ':nachos' /*':chatkit',*/

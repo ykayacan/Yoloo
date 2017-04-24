@@ -120,7 +120,7 @@ public class GroupListController extends MvpController<GroupListView, GroupListP
   }
 
   private void setupRecyclerview() {
-    adapter = new GroupListAdapter(Glide.with(getActivity()), getActivity());
+    adapter = new GroupListAdapter(Glide.with(getActivity()));
     adapter.setOnItemClickListener(this);
     adapter.setOnSubscribeClickListener(this);
 

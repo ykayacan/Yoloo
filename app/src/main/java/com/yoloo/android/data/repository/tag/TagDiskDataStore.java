@@ -1,4 +1,4 @@
-package com.yoloo.android.data.repository.tag.datasource;
+package com.yoloo.android.data.repository.tag;
 
 import com.yoloo.android.data.model.TagRealm;
 import com.yoloo.android.data.model.TagRealmFields;
@@ -10,21 +10,21 @@ import io.realm.Sort;
 import java.util.Collections;
 import java.util.List;
 
-public class TagDiskDataStore {
+class TagDiskDataStore {
 
   private static TagDiskDataStore instance;
 
   private TagDiskDataStore() {
   }
 
-  public static TagDiskDataStore getInstance() {
+  static TagDiskDataStore getInstance() {
     if (instance == null) {
       instance = new TagDiskDataStore();
     }
     return instance;
   }
 
-  public void addAll(List<TagRealm> tags) {
+  void addAll(List<TagRealm> tags) {
     Realm realm = Realm.getDefaultInstance();
 
     realm.executeTransaction(tx -> tx.insertOrUpdate(tags));
@@ -32,7 +32,7 @@ public class TagDiskDataStore {
     realm.close();
   }
 
-  public void replace(List<TagRealm> realms) {
+  void replace(List<TagRealm> realms) {
     Realm realm = Realm.getDefaultInstance();
 
     realm.executeTransaction(tx -> {
@@ -48,7 +48,7 @@ public class TagDiskDataStore {
     realm.close();
   }
 
-  public Observable<List<TagRealm>> list(TagSorter sorter) {
+  Observable<List<TagRealm>> list(TagSorter sorter) {
     return Observable.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 
@@ -70,7 +70,7 @@ public class TagDiskDataStore {
     });
   }
 
-  public Observable<List<TagRealm>> listRecent() {
+  Observable<List<TagRealm>> listRecent() {
     return Observable.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 
@@ -88,7 +88,7 @@ public class TagDiskDataStore {
     });
   }
 
-  public Observable<List<TagRealm>> listRecommendedTags() {
+  Observable<List<TagRealm>> listRecommendedTags() {
     return Observable.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 
