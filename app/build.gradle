@@ -108,12 +108,6 @@ android {
       buildConfigField "String", "SERVER_URL", '"https://yoloo-151719.appspot.com/_ah/api/"'
       buildConfigField "String", "UPLOAD_URL", '"https://yoloo-151719.appspot.com/upload"'
     }
-
-    qa {
-      versionNameSuffix ".qa"
-      buildConfigField "String", "SERVER_URL", '"https://yoloo-151719.appspot.com/_ah/api/"'
-      buildConfigField "String", "UPLOAD_URL", '"https://yoloo-151719.appspot.com/upload"'
-    }
   }
 
   lintOptions {
