@@ -16,7 +16,6 @@ import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
-import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -136,13 +135,7 @@ public class UserRepository {
 
   public Observable<Response<List<AccountRealm>>> listFollowers(@Nonnull String userId,
       @Nullable String cursor, int limit) {
-    List<AccountRealm> realms = new ArrayList<>();
-    for (int i = 0; i < 5; i++) {
-      realms.add(AccountFaker.generateOne());
-    }
-    return Observable.just(Response.create(realms, null));
-
-    //return remoteDataStore.listFollowers(userId, cursor, limit).subscribeOn(Schedulers.io());
+    return remoteDataStore.listFollowers(userId, cursor, limit).subscribeOn(Schedulers.io());
   }
 
   public Observable<Response<List<AccountRealm>>> listFollowings(@Nonnull String userId,
