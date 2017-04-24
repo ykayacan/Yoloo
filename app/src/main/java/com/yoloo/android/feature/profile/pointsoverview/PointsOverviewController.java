@@ -1,5 +1,6 @@
 package com.yoloo.android.feature.profile.pointsoverview;
 
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -13,11 +14,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import butterknife.BindColor;
 import butterknife.BindView;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.GameInfoRealm;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.framework.MvpController;
+import com.yoloo.android.util.ViewUtils;
 import timber.log.Timber;
 
 public class PointsOverviewController
@@ -29,6 +32,8 @@ public class PointsOverviewController
   @BindView(R.id.seekBar_pointsoverview) SeekBar seekBar;
   @BindView(R.id.tv_pointsoverview_initial_level_points) TextView tvInitialPoints;
   @BindView(R.id.tv_pointsoverview_next_level_points) TextView tvNextPoints;
+
+  @BindColor(R.color.primary_dark) int colorPrimaryDark;
 
   private PointsHistoryAdapter adapter;
 
@@ -46,6 +51,18 @@ public class PointsOverviewController
     super.onViewBound(view);
     setupRecyclerView();
     setupToolbar();
+  }
+
+  @Override
+  protected void onAttach(@NonNull View view) {
+    super.onAttach(view);
+    ViewUtils.setStatusBarColor(getActivity(), colorPrimaryDark);
+  }
+
+  @Override
+  protected void onDetach(@NonNull View view) {
+    super.onDetach(view);
+    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
   }
 
   @NonNull

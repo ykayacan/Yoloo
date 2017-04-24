@@ -1,5 +1,6 @@
 package com.yoloo.android.feature.editor.selectgroup;
 
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -9,6 +10,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.OnTextChanged;
 import com.airbnb.epoxy.EpoxyModel;
@@ -23,6 +25,7 @@ import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
 import com.yoloo.android.util.DisplayUtil;
 import com.yoloo.android.util.KeyboardUtil;
+import com.yoloo.android.util.ViewUtils;
 import io.reactivex.subjects.PublishSubject;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +38,8 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
 
   @BindView(R.id.toolbar) Toolbar toolbar;
   @BindView(R.id.recycler_view) RecyclerView rvSelectGroup;
+
+  @BindColor(R.color.primary_dark) int colorPrimaryDark;
 
   private SelectGroupAdapter adapter;
 
@@ -59,6 +64,8 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
+    ViewUtils.setStatusBarColor(getActivity(), colorPrimaryDark);
+
     getPresenter().loadSubscribedGroups();
 
     querySubject
@@ -66,6 +73,12 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
         .filter(query -> query.length() > 3)
         .debounce(400, TimeUnit.MILLISECONDS)
         .subscribe(query -> getPresenter().searchGroups(query));
+  }
+
+  @Override
+  protected void onDetach(@NonNull View view) {
+    super.onDetach(view);
+    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
   }
 
   @Override

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -49,6 +50,7 @@ import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.MediaUtil;
 import com.yoloo.android.util.TextViewUtil;
 import com.yoloo.android.util.VersionUtil;
+import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -124,6 +126,8 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
+
     usernameSubject
         .filter(s -> !s.equals(original.getUsername()))
         .filter(s -> !s.isEmpty())
@@ -148,6 +152,12 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
           ivSaveIcon.setImageAlpha(enabled ? 255 : 138);
           ivSaveIcon.setEnabled(enabled);
         });
+  }
+
+  @Override
+  protected void onDetach(@NonNull View view) {
+    super.onDetach(view);
+    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
   }
 
   @Override
