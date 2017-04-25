@@ -67,7 +67,7 @@ public class GroupListAdapter extends EpoxyAdapter {
     void onSubscribe(@NonNull String groupId, boolean subscribed);
   }
 
-  @EpoxyModelClass(layout = R.layout.item_group_list)
+  @EpoxyModelClass(layout = R.layout.item_group)
   public static abstract class GroupListItemModel
       extends EpoxyModelWithHolder<GroupListItemModel.GroupListHolder> {
 
@@ -84,7 +84,7 @@ public class GroupListAdapter extends EpoxyAdapter {
 
           if (group.isSubscribed() != payload.isSubscribed()) {
             int buttonText =
-                group.isSubscribed() ? R.string.group_unsubscribe : R.string.group_subscribe;
+                group.isSubscribed() ? R.string.group_unsubscribed : R.string.group_subscribe;
             holder.btnSubscribe.setText(buttonText);
           }
         }
@@ -109,7 +109,7 @@ public class GroupListAdapter extends EpoxyAdapter {
                 GlideAnimation<? super Bitmap> glideAnimation) {
               RoundedBitmapDrawable rbd =
                   RoundedBitmapDrawableFactory.create(context.getResources(), resource);
-              rbd.setCornerRadius(6f);
+              rbd.setCornerRadius(24F);
               holder.ivSmallImage.setImageDrawable(rbd);
             }
           });
@@ -122,14 +122,16 @@ public class GroupListAdapter extends EpoxyAdapter {
           .withColor(ContextCompat.getColor(context, android.R.color.secondary_text_dark))
           .tint();
 
-      int buttonText = group.isSubscribed() ? R.string.group_unsubscribe : R.string.group_subscribe;
+      int buttonText = group.isSubscribed() ? R.string.group_unsubscribed : R.string.group_subscribe;
       holder.btnSubscribe.setText(buttonText);
+      holder.btnSubscribe.setSelected(group.isSubscribed());
 
       holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(v, this, group));
       holder.btnSubscribe.setOnClickListener(v -> {
         group.setSubscribed(!group.isSubscribed());
+        holder.btnSubscribe.setSelected(!group.isSubscribed());
         holder.btnSubscribe.setText(
-            group.isSubscribed() ? R.string.group_unsubscribe : R.string.group_subscribe);
+            group.isSubscribed() ? R.string.group_unsubscribed : R.string.group_subscribe);
         onSubscribeClickListener.onSubscribe(group.getId(), !group.isSubscribed());
       });
     }

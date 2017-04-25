@@ -29,7 +29,7 @@
 
   <Button
     android:id="@+id/btn_newcomers_follow"
-    style="@style/Yoloo.Button.Colored.Subscribe"
+    style="@style/Yoloo.Button.Follow.Small"
     android:layout_width="wrap_content"
     android:layout_height="40dp"
     android:text="@string/action_profile_follow"

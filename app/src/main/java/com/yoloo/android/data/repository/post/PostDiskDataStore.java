@@ -188,10 +188,12 @@ class PostDiskDataStore {
 
       PostRealm post = realm.where(PostRealm.class).equalTo(PostRealmFields.ID, postId).findFirst();
 
-      realm.executeTransaction(tx -> {
-        post.setBookmarked(true);
-        tx.insertOrUpdate(post);
-      });
+      if (post != null) {
+        realm.executeTransaction(tx -> {
+          post.setBookmarked(true);
+          tx.insertOrUpdate(post);
+        });
+      }
 
       realm.close();
     });
@@ -203,10 +205,12 @@ class PostDiskDataStore {
 
       PostRealm post = realm.where(PostRealm.class).equalTo(PostRealmFields.ID, postId).findFirst();
 
-      realm.executeTransaction(tx -> {
-        post.setBookmarked(false);
-        tx.insertOrUpdate(post);
-      });
+      if (post != null) {
+        realm.executeTransaction(tx -> {
+          post.setBookmarked(false);
+          tx.insertOrUpdate(post);
+        });
+      }
 
       realm.close();
     });

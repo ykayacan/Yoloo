@@ -37,6 +37,7 @@ public class PostTransformer implements Transformer<PostEntity, Post> {
         .voteCount(in.getVoteCount())
         .commentCount(in.getCommentCount())
         .reportCount(in.getReportCount())
+        .bookmarked(in.isBookmarked())
         .postType(in.getPostType())
         .created(in.getCreated().toDate())
         .build();

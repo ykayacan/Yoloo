@@ -58,7 +58,7 @@ public class GroupController extends MvpController<GroupView, GroupPresenter> im
   @BindView(R.id.btn_group_subscribe) Button btnSubscribe;
 
   @BindString(R.string.group_subscribe) String subscribeString;
-  @BindString(R.string.group_unsubscribe) String unsubscribeString;
+  @BindString(R.string.group_unsubscribed) String unsubscribeString;
 
   @BindString(R.string.group_tab_posts) String postsTabString;
   @BindString(R.string.group_tab_tags) String tagsTabString;

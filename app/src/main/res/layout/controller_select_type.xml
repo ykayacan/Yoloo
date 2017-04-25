@@ -54,9 +54,8 @@
     android:id="@+id/bubblepicker"
     android:layout_width="0dp"
     android:layout_height="0dp"
-    android:layout_marginBottom="96dp"
     android:visibility="gone"
-    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintBottom_toTopOf="@+id/btn_sign_up_init_get_started"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toBottomOf="@+id/hintTextView"
@@ -67,18 +66,26 @@
     fontPath="fonts/OpenSans-Bold.ttf"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="48dp"
     android:background="@color/primary"
     android:gravity="center"
     android:padding="16dp"
     android:text="Get Started"
     android:textAllCaps="true"
     android:textColor="@android:color/white"
-    android:visibility="gone"
-    app:layout_constraintBottom_toBottomOf="parent"
+    android:visibility="invisible"
+    app:layout_constraintBottom_toTopOf="@+id/space_workaround"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
     tools:ignore="MissingPrefix"
     tools:visibility="visible" />
+
+  <View
+    android:id="@+id/space_workaround"
+    android:layout_width="0dp"
+    android:layout_height="48dp"
+    android:visibility="invisible"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

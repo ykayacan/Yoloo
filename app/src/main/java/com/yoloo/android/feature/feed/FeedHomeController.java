@@ -63,9 +63,7 @@ import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.group.GroupRepositoryProvider;
 import com.yoloo.android.data.repository.post.PostRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
-import com.yoloo.android.feature.auth.AuthUI;
 import com.yoloo.android.feature.auth.util.GoogleApiHelper;
-import com.yoloo.android.feature.auth.welcome.WelcomeController;
 import com.yoloo.android.feature.blog.BlogController;
 import com.yoloo.android.feature.bloglist.BlogListController;
 import com.yoloo.android.feature.comment.CommentController;
@@ -89,6 +87,7 @@ import com.yoloo.android.feature.notification.NotificationController;
 import com.yoloo.android.feature.postdetail.PostDetailController;
 import com.yoloo.android.feature.postlist.PostListController;
 import com.yoloo.android.feature.profile.ProfileController;
+import com.yoloo.android.feature.settings.SettingsActivity;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.changehandler.ArcFadeMoveChangeHandler;
 import com.yoloo.android.ui.changehandler.SharedElementDelayingChangeHandler;
@@ -361,8 +360,9 @@ public class FeedHomeController extends MvpController<FeedHomeView, FeedHomePres
         break;
       case R.id.action_nav_settings:
         handler.postDelayed(() -> {
-          AuthUI.getInstance().signOut((FragmentActivity) getActivity());
-          startTransaction(WelcomeController.create(), new FadeChangeHandler());
+          startActivity(new Intent(getActivity(), SettingsActivity.class));
+          /*AuthUI.getInstance().signOut((FragmentActivity) getActivity());
+          startTransaction(WelcomeController.create(), new FadeChangeHandler());*/
         }, 400);
         break;
       default:
@@ -406,22 +406,16 @@ public class FeedHomeController extends MvpController<FeedHomeView, FeedHomePres
   @Override
   public void onPostOptionsClick(View v, EpoxyModel<?> model, PostRealm post) {
     final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
-    final boolean self = me.getId().equals(post.getOwnerId());
-    menu.getMenu().getItem(1).setVisible(self);
-    menu.getMenu().getItem(2).setVisible(self);
 
     menu.setOnMenuItemClickListener(item -> {
       final int itemId = item.getItemId();
-      switch (itemId) {
-        case R.id.action_feed_popup_edit:
-          return true;
-        case R.id.action_feed_popup_delete:
-          getPresenter().deletePost(post.getId());
-          adapter.delete(model);
-          return true;
-        default:
-          return false;
+      if (itemId == R.id.action_popup_delete) {
+        getPresenter().deletePost(post.getId());
+        adapter.delete(model);
+        return true;
       }
+
+      return super.onOptionsItemSelected(item);
     });
   }
 

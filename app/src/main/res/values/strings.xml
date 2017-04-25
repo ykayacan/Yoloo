@@ -292,7 +292,7 @@
   <string name="label_earned_bounties">%1$d bounties earned.</string>
 
   <string name="group_subscribe">Subscribe</string>
-  <string name="group_unsubscribe">Unsubscribe</string>
+  <string name="group_unsubscribed">Subscribed</string>
 
   <string name="group_tab_posts">Posts</string>
   <string name="group_tab_tags">Tags</string>

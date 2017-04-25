@@ -104,6 +104,9 @@
           android:scheme="https" />
       </intent-filter>
     </activity>
+    <activity
+      android:name=".feature.settings.SettingsActivity"
+      android:theme="@style/Yoloo" />
   </application>
 
 </manifest>

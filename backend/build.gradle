@@ -90,4 +90,8 @@ appengine {
     stopPreviousVersion = true
     promote = true
   }
+
+  stage {
+    enableJarClasses = true
+  }
 }

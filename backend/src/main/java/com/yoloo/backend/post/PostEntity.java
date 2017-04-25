@@ -107,6 +107,8 @@ public class PostEntity implements Votable {
 
   @Wither @Ignore private int reportCount;
 
+  @Wither @Ignore private boolean bookmarked;
+
   // Don't use this
   @Wither @Ignore private Map<Ref<PostShard>, PostShard> shardMap;
 
@@ -163,6 +165,7 @@ public class PostEntity implements Votable {
         .voteCount(voteCount)
         .reportCount(reportCount)
         .commented(commented)
+        .bookmarked(bookmarked)
         .postType(postType)
         .created(created)
         .build();

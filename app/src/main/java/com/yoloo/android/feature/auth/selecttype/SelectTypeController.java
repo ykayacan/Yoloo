@@ -29,6 +29,7 @@ public class SelectTypeController extends BaseController {
 
   @BindView(R.id.bubblepicker) BubblePicker picker;
   @BindView(R.id.btn_sign_up_init_get_started) TextView tvGetStarted;
+  @BindView(R.id.space_workaround) View space;
 
   @BindArray(R.array.colors) int[] colors;
   @BindArray(R.array.traveler_types_images) TypedArray travelerTypeDrawables;
@@ -51,6 +52,22 @@ public class SelectTypeController extends BaseController {
   @Override
   protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
+
+    View decorView = getActivity().getWindow().getDecorView();
+    decorView.setOnSystemUiVisibilityChangeListener(visibility -> {
+      if ((visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
+        // workaround: navigation bar is visible
+        // adjustments to your UI, such as showing the action bar or
+        // other navigational controls.
+        if (space != null) {
+          space.setVisibility(View.VISIBLE);
+        }
+      } else {
+        if (space != null) {
+          space.setVisibility(View.GONE);
+        }
+      }
+    });
 
     for (int i = 0; i < travelerTypeTitles.length; i++) {
       types.put(travelerTypeTitles[i], travelerTypeIds[i]);
@@ -80,7 +97,7 @@ public class SelectTypeController extends BaseController {
     picker.setBubbleSize(40);
     picker.setListener(new BubblePickerListener() {
       @Override
-      public void onBubbleSelected(PickerItem pickerItem) {
+      public void onBubbleSelected(@NonNull PickerItem pickerItem) {
         if (types.containsKey(pickerItem.getTitle())) {
           selectedTypeIds.add(types.get(pickerItem.getTitle()));
 
@@ -91,12 +108,12 @@ public class SelectTypeController extends BaseController {
       }
 
       @Override
-      public void onBubbleDeselected(PickerItem pickerItem) {
+      public void onBubbleDeselected(@NonNull PickerItem pickerItem) {
         if (types.containsKey(pickerItem.getTitle())) {
           selectedTypeIds.remove(types.get(pickerItem.getTitle()));
 
           if (selectedTypeIds.size() < 3) {
-            tvGetStarted.setVisibility(View.GONE);
+            tvGetStarted.setVisibility(View.INVISIBLE);
           }
         }
       }

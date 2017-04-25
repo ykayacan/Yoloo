@@ -13,6 +13,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import java.util.List;
 import javax.annotation.Nonnull;
+import timber.log.Timber;
 
 class PostListPresenter extends MvpPresenter<PostListView> {
 
@@ -129,15 +130,21 @@ class PostListPresenter extends MvpPresenter<PostListView> {
   }
 
   void bookmarkPost(@Nonnull String postId) {
-    Disposable d =
-        postRepository.bookmarkPost(postId).observeOn(AndroidSchedulers.mainThread()).subscribe();
+    Disposable d = postRepository
+        .bookmarkPost(postId)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(() -> {
+        }, Timber::e);
 
     getDisposable().add(d);
   }
 
   void unBookmarkPost(@Nonnull String postId) {
-    Disposable d =
-        postRepository.unBookmarkPost(postId).observeOn(AndroidSchedulers.mainThread()).subscribe();
+    Disposable d = postRepository
+        .unBookmarkPost(postId)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(() -> {
+        }, Timber::e);
 
     getDisposable().add(d);
   }

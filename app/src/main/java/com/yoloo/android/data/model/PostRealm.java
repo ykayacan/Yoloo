@@ -73,6 +73,7 @@ public class PostRealm extends RealmObject {
     rank = dto.getRank();
     groupId = dto.getGroup();
     postType = dto.getPostType();
+    bookmarked = dto.getBookmarked();
   }
 
   public String getId() {

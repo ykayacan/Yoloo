@@ -38,6 +38,8 @@
   <style name="Yoloo.Button.Colored.Subscribe">
     <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
     <item name="android:textSize">11sp</item>
+    <item name="android:textColor">@color/group_subscribe_text</item>
+    <item name="android:background">@drawable/btn_subscribe_bg</item>
   </style>
 
   <style name="Yoloo.Button.Auth" parent="Widget.AppCompat.Button.Colored">
@@ -73,6 +75,13 @@
   <style name="Yoloo.Button.Follow" parent="@style/Yoloo.Button.Colored">
     <item name="android:layout_width">wrap_content</item>
     <item name="android:layout_height">40dp</item>
+  </style>
+
+  <style name="Yoloo.Button.Follow.Small">
+    <item name="android:layout_width">wrap_content</item>
+    <item name="android:layout_height">40dp</item>
+    <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
+    <item name="android:textSize">11sp</item>
   </style>
 
   <style name="Yoloo.Button.Empty" parent="@style/Yoloo.Button.Colored">

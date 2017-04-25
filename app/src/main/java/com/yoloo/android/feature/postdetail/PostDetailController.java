@@ -218,7 +218,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
     optionsMenu.setOnMenuItemClickListener(item -> {
       final int itemId = item.getItemId();
-      if (itemId == R.id.action_feed_popup_delete) {
+      if (itemId == R.id.action_popup_delete) {
         processPostDelete(post);
         return true;
       }

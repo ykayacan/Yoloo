@@ -28,5 +28,6 @@ public class Post {
   private long commentCount;
   private int reportCount;
   private int postType;
+  private boolean bookmarked;
   private Date created;
 }

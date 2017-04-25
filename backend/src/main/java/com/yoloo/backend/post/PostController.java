@@ -14,6 +14,7 @@ import com.yoloo.backend.account.Account;
 import com.yoloo.backend.account.AccountShard;
 import com.yoloo.backend.account.AccountShardService;
 import com.yoloo.backend.base.Controller;
+import com.yoloo.backend.bookmark.Bookmark;
 import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentService;
 import com.yoloo.backend.comment.CommentShardService;
@@ -41,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
 
@@ -92,7 +94,7 @@ public final class PostController extends Controller {
     Guard.checkNotFound(postEntity, "Could not find post with ID: " + postId);
 
     return postShardService
-        .mergeShards(postEntity)
+        .mergeShards(postEntity, Key.create(user.getUserId()))
         .flatMap(__ -> voteService.checkPostVote(__, Key.create(user.getUserId())))
         .blockingSingle();
   }
@@ -333,7 +335,8 @@ public final class PostController extends Controller {
     final Key<AccountShard> accountShardKey =
         accountShardService.getRandomShardKey(postKey.getParent());
 
-    Map<Key<Object>, Object> map = ofy().load().keys(postKey, accountShardKey);
+    Map<Key<Object>, Object> map =
+        ofy().load().group(PostEntity.ShardGroup.class).keys(postKey, accountShardKey);
     @SuppressWarnings("SuspiciousMethodCalls") AccountShard shard =
         (AccountShard) map.get(accountShardKey);
     shard.decreasePostCount();
@@ -355,12 +358,19 @@ public final class PostController extends Controller {
     List<Key<Feed>> feedKeys =
         ofy().load().type(Feed.class).filter(Feed.FIELD_POST + "=", postKey).keys().list();
 
+    Set<Key<Bookmark>> bookmarkKeys =
+        Ix.from(postEntity.<PostShard>getShards()).reduce((s1, s2) -> {
+          s2.getBookmarkKeys().addAll(s1.getBookmarkKeys());
+          return s2;
+        }).map(PostShard::getBookmarkKeys).single();
+
     deleteList
         .addAll(commentShardService.createShardMapWithKey(commentKeys).keySet())
         .addAll(commentService.getVoteKeys(commentKeys))
         .addAll(commentKeys)
         .addAll(postService.getVoteKeys(postKey))
         .addAll(postShardService.createShardMapWithKey(postKey).keySet())
+        .addAll(bookmarkKeys)
         .add(postKey)
         .addAll(feedKeys);
 
@@ -426,10 +436,12 @@ public final class PostController extends Controller {
       postEntities.add(qi.next());
     }
 
+    Key<Account> accountKey = Key.create(user.getUserId());
+
     return Observable
         .just(postEntities)
-        .flatMap(postShardService::mergeShards)
-        .flatMap(__ -> voteService.checkPostVote(__, Key.create(user.getUserId())))
+        .flatMap(__ -> postShardService.mergeShards(__, accountKey))
+        .flatMap(__ -> voteService.checkPostVote(__, accountKey))
         .compose(CollectionTransformer.create(qi.getCursor().toWebSafeString()))
         .blockingSingle();
   }

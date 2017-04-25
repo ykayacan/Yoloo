@@ -16,12 +16,12 @@ import com.yoloo.backend.account.AccountShardService;
 import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.game.GameService;
 import com.yoloo.backend.game.Tracker;
-import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.group.TravelerGroupController;
 import com.yoloo.backend.group.TravelerGroupControllerFactory;
-import com.yoloo.backend.post.PostEntity;
+import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.post.PostController;
 import com.yoloo.backend.post.PostControllerFactory;
+import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagController;
 import com.yoloo.backend.tag.TagControllerFactory;
@@ -48,16 +48,19 @@ public class BookmarkControllerTest extends TestBase {
   private TagController tagController;
   private TravelerGroupController travelerGroupController;
 
-  @Override public void setUpGAE() {
+  @Override
+  public void setUpGAE() {
     super.setUpGAE();
 
-    helper.setEnvIsLoggedIn(true)
+    helper
+        .setEnvIsLoggedIn(true)
         .setEnvIsAdmin(true)
         .setEnvAuthDomain(USER_AUTH_DOMAIN)
         .setEnvEmail(USER_EMAIL);
   }
 
-  @Override public void setUp() {
+  @Override
+  public void setUp() {
     super.setUp();
 
     postController = PostControllerFactory.of().create();
@@ -73,12 +76,13 @@ public class BookmarkControllerTest extends TestBase {
 
     User user = new User(USER_EMAIL, USER_AUTH_DOMAIN, owner.getWebsafeId());
 
-    TravelerGroupEntity europe = travelerGroupController.insertGroup("europe", null);
+    TravelerGroupEntity europe = travelerGroupController.insertGroup("europe", "dev");
 
     Tag passport = tagController.insertTag("passport");
     Tag visa = tagController.insertTag("visa");
 
-    ImmutableSet<Object> saveList = ImmutableSet.builder()
+    ImmutableSet<Object> saveList = ImmutableSet
+        .builder()
         .add(owner)
         .addAll(model.getShards().values())
         .add(tracker)
@@ -91,11 +95,12 @@ public class BookmarkControllerTest extends TestBase {
     ofy().save().entities(saveList).now();
 
     postEntity =
-        postController.insertQuestionPost("Test content", "visa,passport", "europe", Optional.absent(),
-            Optional.absent(), user);
+        postController.insertQuestionPost("Test content", "visa,passport", europe.getWebsafeId(),
+            Optional.absent(), Optional.absent(), user);
   }
 
-  @Test public void testSaveQuestion() throws Exception {
+  @Test
+  public void testBookmark() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     bookmarkController.insertBookmark(postEntity.getWebsafeId(), user);
@@ -106,7 +111,8 @@ public class BookmarkControllerTest extends TestBase {
     assertEquals(1, bookmarks.size());
   }
 
-  @Test public void testUnSaveQuestion() throws Exception {
+  @Test
+  public void testUnbookmark() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     bookmarkController.insertBookmark(postEntity.getWebsafeId(), user);
@@ -124,12 +130,13 @@ public class BookmarkControllerTest extends TestBase {
     assertEquals(0, bookmarks2.size());
   }
 
-  @Test public void testListSavedQuestions() throws Exception {
+  @Test
+  public void testListSavedQuestions() throws Exception {
     final User user = UserServiceFactory.getUserService().getCurrentUser();
 
     PostEntity postEntity2 =
-        postController.insertQuestionPost("Test content", "visa,passport", "europe", Optional.absent(),
-            Optional.absent(), user);
+        postController.insertQuestionPost("Test content", "visa,passport", "europe",
+            Optional.absent(), Optional.absent(), user);
 
     bookmarkController.insertBookmark(postEntity.getWebsafeId(), user);
     bookmarkController.insertBookmark(postEntity2.getWebsafeId(), user);
@@ -147,7 +154,8 @@ public class BookmarkControllerTest extends TestBase {
 
     Map<Ref<AccountShard>, AccountShard> map = ass.createShardMapWithRef(ownerKey);
 
-    Account account = Account.builder()
+    Account account = Account
+        .builder()
         .id(ownerKey.getId())
         .avatarUrl(new Link("Test avatar"))
         .email(new Email(USER_EMAIL))
@@ -160,7 +168,8 @@ public class BookmarkControllerTest extends TestBase {
   }
 
   private DeviceRecord createRecord(Account owner) {
-    return DeviceRecord.builder()
+    return DeviceRecord
+        .builder()
         .id(owner.getWebsafeId())
         .parent(owner.getKey())
         .regId(UUID.randomUUID().toString())

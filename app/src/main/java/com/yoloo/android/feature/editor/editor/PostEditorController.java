@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -67,6 +68,7 @@ import com.yoloo.android.util.ControllerUtil;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.MediaUtil;
+import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.WeakHandler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import java.io.File;
@@ -136,6 +138,7 @@ public class PostEditorController
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
 
     tagAutoCompleteAdapter
         .getQuery()
@@ -144,6 +147,12 @@ public class PostEditorController
         .debounce(400, TimeUnit.MILLISECONDS)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(s -> getPresenter().searchTag(s));
+  }
+
+  @Override
+  protected void onDetach(@NonNull View view) {
+    super.onDetach(view);
+    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
   }
 
   @Override

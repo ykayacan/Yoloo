@@ -8,7 +8,6 @@ import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Parent;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.post.PostEntity;
-import com.yoloo.backend.post.PostEntity;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,7 +27,7 @@ public class Bookmark {
   public static final String FIELD_CREATED = "created";
 
   /**
-   * websafe question id.
+   * websafe post id.
    */
   @Id
   private String id;
@@ -40,6 +39,14 @@ public class Bookmark {
   @Index
   @NonFinal
   private DateTime created;
+
+  public static Key<Bookmark> createKey(Key<Account> accountKey, Key<PostEntity> postKey) {
+    return Key.create(accountKey, Bookmark.class, postKey.toWebSafeString());
+  }
+
+  public Key<Bookmark> getKey() {
+    return Key.create(parent, Bookmark.class, id);
+  }
 
   public Key<PostEntity> getSavedPostKey() {
     return Key.create(id);

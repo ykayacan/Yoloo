@@ -38,6 +38,7 @@ import com.yoloo.android.data.sorter.PostSorter;
 import com.yoloo.android.feature.comment.CommentController;
 import com.yoloo.android.feature.editor.editor.PostEditorController;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
+import com.yoloo.android.feature.feed.common.listener.OnBookmarkClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnModelUpdateEvent;
@@ -50,7 +51,6 @@ import com.yoloo.android.feature.postdetail.PostDetailController;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.search.SearchController;
 import com.yoloo.android.framework.MvpController;
-import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
@@ -66,7 +66,8 @@ import timber.log.Timber;
 public class PostListController extends MvpController<PostListView, PostListPresenter>
     implements PostListView, SwipeRefreshLayout.OnRefreshListener, OnProfileClickListener,
     OnPostOptionsClickListener, OnItemClickListener<PostRealm>, OnShareClickListener,
-    OnCommentClickListener, OnVoteClickListener, OnContentImageClickListener, OnModelUpdateEvent {
+    OnCommentClickListener, OnVoteClickListener, OnContentImageClickListener, OnModelUpdateEvent,
+    OnBookmarkClickListener {
 
   private static final int VIEW_TYPE_GROUP = 0;
   private static final int VIEW_TYPE_TAGS = 1;
@@ -269,6 +270,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
   @Override
   public void onAccountLoaded(AccountRealm account) {
     currentUserId = account.getId();
+    adapter.setUserId(currentUserId);
   }
 
   @NonNull
@@ -281,26 +283,16 @@ public class PostListController extends MvpController<PostListView, PostListPres
   @Override
   public void onPostOptionsClick(View v, EpoxyModel<?> model, PostRealm post) {
     final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
-    final boolean self = currentUserId.equals(post.getOwnerId());
-    menu.getMenu().getItem(0).setVisible(viewType != VIEW_TYPE_BOOKMARKED);
-    menu.getMenu().getItem(1).setVisible(viewType == VIEW_TYPE_BOOKMARKED);
-    menu.getMenu().getItem(2).setVisible(self);
-    menu.getMenu().getItem(3).setVisible(self);
 
     menu.setOnMenuItemClickListener(item -> {
       final int itemId = item.getItemId();
-      switch (itemId) {
-        case R.id.action_feed_popup_unbookmark:
-          unbookmarkPost(model, post);
-          return true;
-        case R.id.action_feed_popup_edit:
-          return true;
-        case R.id.action_feed_popup_delete:
-          deletePost(model, post);
-          return true;
-        default:
-          return false;
+      if (itemId == R.id.action_popup_delete) {
+        deletePost(model, post);
+        adapter.delete(model);
+        return true;
       }
+
+      return super.onOptionsItemSelected(item);
     });
   }
 
@@ -346,6 +338,15 @@ public class PostListController extends MvpController<PostListView, PostListPres
   }
 
   @Override
+  public void onBookmarkClick(@NonNull String postId, boolean bookmark) {
+    if (bookmark) {
+      getPresenter().bookmarkPost(postId);
+    } else {
+      getPresenter().unBookmarkPost(postId);
+    }
+  }
+
+  @Override
   public void onModelUpdateEvent(@FeedAction int action, @Nullable Object payload) {
     if (payload instanceof PostRealm) {
       adapter.updatePost(action, (PostRealm) payload);
@@ -361,6 +362,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
     adapter.setOnCommentClickListener(this);
     adapter.setOnShareClickListener(this);
     adapter.setOnVoteClickListener(this);
+    adapter.setOnBookmarkClickListener(this);
 
     final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
 
@@ -374,12 +376,12 @@ public class PostListController extends MvpController<PostListView, PostListPres
     rvPostFeed.setHasFixedSize(true);
     rvPostFeed.setAdapter(adapter);
 
-    rvPostFeed.addOnScrollListener(new EndlessRecyclerOnScrollListener() {
+    /*rvPostFeed.addOnScrollListener(new EndlessRecyclerOnScrollListener() {
       @Override
       public void onLoadMore() {
         handler.postDelayed(() -> chooseLoadMethod(true), 700);
       }
-    });
+    });*/
   }
 
   private void setupPullToRefresh() {

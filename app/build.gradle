@@ -121,6 +121,18 @@ android {
   }
 }
 
+configurations.all {
+  resolutionStrategy {
+    eachDependency { DependencyResolveDetails details ->
+      final name = details.requested.name
+
+      if (details.requested.group == 'com.android.support' && !name.contains('multidex')) {
+        details.useVersion "$supportLibs_version"
+      }
+    }
+  }
+}
+
 dependencies {
   compile fileTree(include: ['*.jar'], dir: 'libs')
   endpointsServer project(path: ':backend', configuration: 'endpoints')
@@ -191,9 +203,7 @@ dependencies {
   //compile 'com.hootsuite.android:nachos:1.1.1'
   compile 'com.github.chrisbanes:PhotoView:2.0.0'
   compile 'com.yalantis:ucrop:2.2.0'
-  compile('com.github.claudiodegio:MsvSearch:1.2.0', {
-    exclude group: 'com.android.support'
-  })
+  compile 'com.github.claudiodegio:MsvSearch:1.2.0'
   compile 'com.ogaclejapan.arclayout:library:1.1.0@aar'
   compile 'com.nightonke:boommenu:2.0.9'
   compile('com.github.igalata:Bubble-Picker:v0.2.1', {
@@ -201,10 +211,9 @@ dependencies {
     exclude group: 'org.slf4j'
   })
   compile 'com.github.k0shk0sh:RetainedDateTimePickers:1.0.2'
-  compile ('com.github.arthurghazaryan:floatingactionmenu:1.0.0', {
-    exclude group: 'com.android.support'
-  })
-  compile 'com.github.eggheadgames:android-about-box:1.1.0'
+  compile 'com.github.arthurghazaryan:floatingactionmenu:1.0.0'
+  compile 'com.github.daniel-stoneuk:material-about-library:1.8.2'
+  //compile 'com.nihaskalam.android:progress-button:1.0.1'
 
   compile 'com.facebook.android:facebook-android-sdk:4.22.0'
 
