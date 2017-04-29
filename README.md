@@ -1,8 +1,8 @@
 # Yoloo
 
-Yoloo is a social portal which allows travelers ask questions such as accommodation, transportation, currency, food, budget, and places to visit. In addition, travelers can comment on questions, thus, they can share experiences.
+Yoloo is a social portal which allows travelers ask questions such as accommodation, transportation, currency, food, budget, and places to visit. If you are travelling solo or in a group, even if you are just dreaming about travelling the whole world, Yoloo is a great place to start your adventure.  We help travelers to meet numerous locals, organize their trips with the help of the community, and share their experiences.  
 
-This project is specifically designed for the use of travelers. The product will work as a social travel Q&A portal. 
+This project is specifically designed for the use of travelers. The product will work as a social traveler network. 
 
 > This project is also a senior project for Izmir University of Economics.
 
