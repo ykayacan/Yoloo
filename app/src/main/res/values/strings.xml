@@ -131,7 +131,6 @@
   <string name="label_profile_countries">%1$d\nCOUNTRIES</string>
   <string name="label_profile_tab_posts">Posts</string>
   <string name="label_profile_tab_photos">Photos</string>
-  <string name="label_profile_tab_countries">Countries</string>
   <string name="label_profile_tab_interests">Interests</string>
   <string name="label_profile_username">\@%1$s</string>
 
@@ -201,7 +200,7 @@
   <string name="hint_username">Username</string>
   <string name="hint_email">Email</string>
   <string name="hint_password">Password</string>
-  <string name="hint_birthdate">Set Birthday</string>
+  <string name="hint_birthday">Set Birthday</string>
   <string name="hint_country_prompt">Select Country</string>
 
   <string name="idp_name_google">Google</string>
@@ -293,7 +292,7 @@
   <string name="label_earned_bounties">%1$d bounties earned.</string>
 
   <string name="group_subscribe">Subscribe</string>
-  <string name="group_unsubscribe">Unsubscribe</string>
+  <string name="group_unsubscribed">Subscribed</string>
 
   <string name="group_tab_posts">Posts</string>
   <string name="group_tab_tags">Tags</string>
@@ -340,8 +339,8 @@
   <string name="tag_hint">Tag</string>
 
   <string name="label_editor_add_media">Add Media</string>
-  <string name="label_editor_select_group">Select Group</string>
-  <string name="hint_editor_tag">Tag post (up to 7)</string>
+  <string name="label_editor_select_group">Select Group (*)</string>
+  <string name="hint_editor_tag">Add Tag (up to 7) (*)</string>
 
   <string name="label_explore_recent_medias_title">Recent Photos</string>
   <string name="label_explore_recent_medias_more">See All</string>
@@ -352,5 +351,15 @@
   <string name="label_explore_title">Explore</string>
 
   <string name="label_blog_username_info">%1$s &#8226; %2$s</string>
+  <string name="label_subscribed_groups_title">Subscribed Groups</string>
+
+  <string name="label_level">Lv %1$d</string>
+  <string name="label_points_initial">Initial\n%1$d</string>
+  <string name="label_points_next">Next\n%1$d</string>
+  <string name="hint_enter_a_message">Enter a message</string>
+
+  <string name="label_blog_user_info">%1$s &#8226; %2$s</string>
+
+  <string name="label_total_bounty">Total Bounty: %1$d</string>
 
 </resources>

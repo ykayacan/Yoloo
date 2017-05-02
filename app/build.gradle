@@ -7,7 +7,7 @@ apply plugin: 'com.jakewharton.hugo'
 apply plugin: 'com.github.ben-manes.versions'
 apply from: "$project.rootDir/tools/quality.gradle"
 apply from: "$project.rootDir/tools/script-git-version.gradle"
-apply plugin: 'me.tatarka.retrolambda'
+apply plugin: "com.jaredsburrows.license"
 
 android {
   compileSdkVersion compileSdk
@@ -91,13 +91,19 @@ android {
   buildTypes {
     release {
       debuggable false
-      minifyEnabled true
-      shrinkResources true
+      minifyEnabled false
+      shrinkResources false
       proguardFiles getDefaultProguardFile('proguard-android.txt'),
           "$project.rootDir/tools/rules-proguard.pro"
       signingConfig signingConfigs.release
       buildConfigField "String", "SERVER_URL", '"https://yoloo-151719.appspot.com/_ah/api/"'
       buildConfigField "String", "UPLOAD_URL", '"https://yoloo-151719.appspot.com/upload"'
+      buildConfigField "String", "IN_APP_KEY",
+          '"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArMj5GNkpgcKVRL59mf3naz5NN160Mvb604dasg' +
+              'JPcxy0TUiCqVwtMPa5Ydi8D6+Tdt9WOpMhyawjIYJays+jPCjjxq5sveVFh+XUOBISoC5/rSV1BC6tby' +
+              'QiWgkGB/m+f3G8xh9N/M9ILhI4xvn6pVR56WLNq/g3utj6+9f4RwQXzV25RpDmpE9WwAkvkHSp+I8VSQ' +
+              '98IqL2zwaHF4Y1bw17e05O+BmQaMiaYnqPEBAXEs5NSH2jYPMP2unpP2jJ455vBx49xB4nlYjPitn370' +
+              '2mityq6cwyMeAQBy1XlXHTXpfu2wV0MVEL0wQ4htsPTncFdHOzt+GCbn+FSvQV1QIDAQAB"'
     }
 
     debug {
@@ -107,12 +113,12 @@ android {
       signingConfig signingConfigs.debug
       buildConfigField "String", "SERVER_URL", '"https://yoloo-151719.appspot.com/_ah/api/"'
       buildConfigField "String", "UPLOAD_URL", '"https://yoloo-151719.appspot.com/upload"'
-    }
-
-    qa {
-      versionNameSuffix ".qa"
-      buildConfigField "String", "SERVER_URL", '"https://yoloo-151719.appspot.com/_ah/api/"'
-      buildConfigField "String", "UPLOAD_URL", '"https://yoloo-151719.appspot.com/upload"'
+      buildConfigField "String", "IN_APP_KEY",
+          '"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArMj5GNkpgcKVRL59mf3naz5NN160Mvb604dasg' +
+              'JPcxy0TUiCqVwtMPa5Ydi8D6+Tdt9WOpMhyawjIYJays+jPCjjxq5sveVFh+XUOBISoC5/rSV1BC6tby' +
+              'QiWgkGB/m+f3G8xh9N/M9ILhI4xvn6pVR56WLNq/g3utj6+9f4RwQXzV25RpDmpE9WwAkvkHSp+I8VSQ' +
+              '98IqL2zwaHF4Y1bw17e05O+BmQaMiaYnqPEBAXEs5NSH2jYPMP2unpP2jJ455vBx49xB4nlYjPitn370' +
+              '2mityq6cwyMeAQBy1XlXHTXpfu2wV0MVEL0wQ4htsPTncFdHOzt+GCbn+FSvQV1QIDAQAB"'
     }
   }
 
@@ -124,6 +130,18 @@ android {
   compileOptions {
     sourceCompatibility JavaVersion.VERSION_1_8
     targetCompatibility JavaVersion.VERSION_1_8
+  }
+}
+
+configurations.all {
+  resolutionStrategy {
+    eachDependency { DependencyResolveDetails details ->
+      final name = details.requested.name
+
+      if (details.requested.group == 'com.android.support' && !name.contains('multidex')) {
+        details.useVersion "$supportLibs_version"
+      }
+    }
   }
 }
 
@@ -194,23 +212,18 @@ dependencies {
   compile('com.sandrios.android:sandriosCamera:1.0.9', {
     exclude group: 'gun0912.ted'
   })
-  //compile 'com.hootsuite.android:nachos:1.1.1'
   compile 'com.github.chrisbanes:PhotoView:2.0.0'
   compile 'com.yalantis:ucrop:2.2.0'
-  compile('com.github.claudiodegio:MsvSearch:1.2.0', {
-    exclude group: 'com.android.support'
-  })
-  compile 'com.ogaclejapan.arclayout:library:1.1.0@aar'
-  compile 'com.nightonke:boommenu:2.0.9'
+  compile 'com.github.claudiodegio:MsvSearch:1.2.0'
   compile('com.github.igalata:Bubble-Picker:v0.2.1', {
     exclude group: 'io.reactivex'
     exclude group: 'org.slf4j'
   })
   compile 'com.github.k0shk0sh:RetainedDateTimePickers:1.0.2'
-  compile ('com.github.arthurghazaryan:floatingactionmenu:1.0.0', {
-    exclude group: 'com.android.support'
-  })
-  compile 'com.github.eggheadgames:android-about-box:1.1.0'
+  compile 'com.github.arthurghazaryan:floatingactionmenu:1.0.0'
+  compile 'com.github.ekimual:country-picker-x:1.0.0'
+  compile 'com.github.mukeshsolanki:country-picker-android:1.1.9'
+  compile 'com.github.stfalcon:chatkit:0.2.0'
 
   compile 'com.facebook.android:facebook-android-sdk:4.22.0'
 

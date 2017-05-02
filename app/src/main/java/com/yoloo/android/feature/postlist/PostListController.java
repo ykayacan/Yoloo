@@ -3,7 +3,6 @@ package com.yoloo.android.feature.postlist;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,9 +11,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindColor;
@@ -23,12 +19,13 @@ import butterknife.ButterKnife;
 import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
-import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
+import com.yoloo.android.data.feedtypes.FeedItem;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.MediaRealm;
 import com.yoloo.android.data.model.PostRealm;
@@ -38,6 +35,7 @@ import com.yoloo.android.data.sorter.PostSorter;
 import com.yoloo.android.feature.comment.CommentController;
 import com.yoloo.android.feature.editor.editor.PostEditorController;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
+import com.yoloo.android.feature.feed.common.listener.OnBookmarkClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnModelUpdateEvent;
@@ -48,37 +46,37 @@ import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.feature.fullscreenphoto.FullscreenPhotoController;
 import com.yoloo.android.feature.postdetail.PostDetailController;
 import com.yoloo.android.feature.profile.ProfileController;
-import com.yoloo.android.feature.search.SearchController;
 import com.yoloo.android.framework.MvpController;
-import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
 import com.yoloo.android.ui.widget.StateLayout;
 import com.yoloo.android.util.BundleBuilder;
-import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.MenuHelper;
 import com.yoloo.android.util.ShareUtil;
-import com.yoloo.android.util.WeakHandler;
+import com.yoloo.android.util.ViewUtils;
 import java.util.List;
 import timber.log.Timber;
 
 public class PostListController extends MvpController<PostListView, PostListPresenter>
     implements PostListView, SwipeRefreshLayout.OnRefreshListener, OnProfileClickListener,
     OnPostOptionsClickListener, OnItemClickListener<PostRealm>, OnShareClickListener,
-    OnCommentClickListener, OnVoteClickListener, OnContentImageClickListener, OnModelUpdateEvent {
+    OnCommentClickListener, OnVoteClickListener, OnContentImageClickListener, OnModelUpdateEvent,
+    OnBookmarkClickListener {
 
   private static final int VIEW_TYPE_GROUP = 0;
   private static final int VIEW_TYPE_TAGS = 1;
   private static final int VIEW_TYPE_BOUNTY = 2;
   private static final int VIEW_TYPE_BOOKMARKED = 3;
   private static final int VIEW_TYPE_USER = 4;
+  private static final int VIEW_TYPE_SORTER = 5;
 
   private static final String KEY_GROUP_ID = "GROUP_ID";
   private static final String KEY_TAG_NAME = "TAG_NAME";
   private static final String KEY_USER_ID = "USER_ID";
   private static final String KEY_BOUNTY = "BOUNTY";
   private static final String KEY_BOOKMARKED = "BOOKMARKED";
+  private static final String KEY_POST_SORTER = "POST_SORTER";
 
   @BindView(R.id.root_view) StateLayout rootView;
   @BindView(R.id.toolbar) Toolbar toolbar;
@@ -86,10 +84,9 @@ public class PostListController extends MvpController<PostListView, PostListPres
   @BindView(R.id.swipe_feed_global) SwipeRefreshLayout swipeRefreshLayout;
 
   @BindColor(R.color.primary) int primaryColor;
+  @BindColor(R.color.primary_dark) int primaryDarkColor;
 
-  private PostListAdapter adapter;
-
-  private WeakHandler handler;
+  private PostListEpoxyController epoxyController;
 
   private int viewType;
 
@@ -98,10 +95,9 @@ public class PostListController extends MvpController<PostListView, PostListPres
   private String userId;
   private boolean isBounty;
   private boolean isBookmarked;
+  private PostSorter postSorter;
 
   private boolean reEnter;
-
-  private String currentUserId;
 
   private OnModelUpdateEvent modelUpdateEvent;
 
@@ -140,6 +136,12 @@ public class PostListController extends MvpController<PostListView, PostListPres
     return new PostListController(bundle);
   }
 
+  public static PostListController ofPostSorter(PostSorter sorter) {
+    final Bundle bundle = new BundleBuilder().putSerializable(KEY_POST_SORTER, sorter).build();
+
+    return new PostListController(bundle);
+  }
+
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
     return inflater.inflate(R.layout.controller_post_list, container, false);
@@ -148,7 +150,6 @@ public class PostListController extends MvpController<PostListView, PostListPres
   @Override
   protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
-    handler = new WeakHandler();
 
     final Bundle args = getArgs();
 
@@ -157,6 +158,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
     userId = args.getString(KEY_USER_ID);
     isBounty = args.getBoolean(KEY_BOUNTY, false);
     isBookmarked = args.getBoolean(KEY_BOOKMARKED, false);
+    postSorter = (PostSorter) args.getSerializable(KEY_POST_SORTER);
 
     setViewType();
 
@@ -197,33 +199,10 @@ public class PostListController extends MvpController<PostListView, PostListPres
   }
 
   @Override
-  public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-    if (viewType == VIEW_TYPE_GROUP) {
-      inflater.inflate(R.menu.menu_post_list, menu);
-
-      DrawableHelper.create().withColor(getActivity(), android.R.color.white).applyTo(menu);
-    }
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    final int itemId = item.getItemId();
-    switch (itemId) {
-      case R.id.action_feed_search:
-        startTransaction(SearchController.create(), new VerticalChangeHandler());
-        return true;
-      case R.id.action_feed_sort_newest:
-        reloadQuestions(item, PostSorter.NEWEST);
-        return true;
-      case R.id.action_feed_sort_hot:
-        reloadQuestions(item, PostSorter.HOT);
-        return true;
-      case R.id.action_feed_sort_unanswered:
-        reloadQuestions(item, PostSorter.UNANSWERED);
-        return true;
-      default:
-        return super.onOptionsItemSelected(item);
-    }
+  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+      @NonNull ControllerChangeType changeType) {
+    super.onChangeEnded(changeHandler, changeType);
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @Override
@@ -234,9 +213,8 @@ public class PostListController extends MvpController<PostListView, PostListPres
   }
 
   @Override
-  public void onLoaded(List<PostRealm> value) {
-    adapter.showFooter(rvPostFeed, false);
-    adapter.addPosts(value);
+  public void onLoaded(List<FeedItem> value) {
+    epoxyController.setData(value, false);
   }
 
   @Override
@@ -260,15 +238,14 @@ public class PostListController extends MvpController<PostListView, PostListPres
 
   @Override
   public void onRefresh() {
-    adapter.clear();
-    adapter.showFooter(rvPostFeed, true);
-
-    handler.postDelayed(() -> chooseLoadMethod(true), 700);
+    epoxyController.onRefresh();
+    chooseLoadMethod(true);
   }
 
   @Override
   public void onAccountLoaded(AccountRealm account) {
-    currentUserId = account.getId();
+    epoxyController.setUserId(account.getId());
+    //adapter.setUserId(currentUserId);
   }
 
   @NonNull
@@ -281,26 +258,16 @@ public class PostListController extends MvpController<PostListView, PostListPres
   @Override
   public void onPostOptionsClick(View v, EpoxyModel<?> model, PostRealm post) {
     final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
-    final boolean self = currentUserId.equals(post.getOwnerId());
-    menu.getMenu().getItem(0).setVisible(viewType != VIEW_TYPE_BOOKMARKED);
-    menu.getMenu().getItem(1).setVisible(viewType == VIEW_TYPE_BOOKMARKED);
-    menu.getMenu().getItem(2).setVisible(self);
-    menu.getMenu().getItem(3).setVisible(self);
 
     menu.setOnMenuItemClickListener(item -> {
       final int itemId = item.getItemId();
-      switch (itemId) {
-        case R.id.action_feed_popup_unbookmark:
-          unbookmarkPost(model, post);
-          return true;
-        case R.id.action_feed_popup_edit:
-          return true;
-        case R.id.action_feed_popup_delete:
-          deletePost(model, post);
-          return true;
-        default:
-          return false;
+      if (itemId == R.id.action_popup_delete) {
+        deletePost(post);
+        epoxyController.deletePost(post);
+        return true;
       }
+
+      return super.onOptionsItemSelected(item);
     });
   }
 
@@ -318,7 +285,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
   }
 
   @Override
-  public void onProfileClick(View v, EpoxyModel<?> model, String userId) {
+  public void onProfileClick(View v, String userId) {
     startTransaction(ProfileController.create(userId), new VerticalChangeHandler());
   }
 
@@ -342,44 +309,56 @@ public class PostListController extends MvpController<PostListView, PostListPres
 
   @Override
   public void onPostUpdated(PostRealm post) {
-    modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, post);
+    if (modelUpdateEvent != null) {
+      modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, post);
+    }
+  }
+
+  @Override
+  public void onBookmarkClick(@NonNull String postId, boolean bookmark) {
+    if (bookmark) {
+      getPresenter().bookmarkPost(postId);
+    } else {
+      getPresenter().unBookmarkPost(postId);
+    }
   }
 
   @Override
   public void onModelUpdateEvent(@FeedAction int action, @Nullable Object payload) {
     if (payload instanceof PostRealm) {
-      adapter.updatePost(action, (PostRealm) payload);
+      //adapter.updatePost(action, (PostRealm) payload);
     }
   }
 
   private void setupRecyclerView() {
-    adapter = new PostListAdapter(getActivity(), Glide.with(getActivity()));
-    adapter.setOnProfileClickListener(this);
-    adapter.setOnPostClickListener(this);
-    adapter.setOnPostOptionsClickListener(this);
-    adapter.setOnContentImageClickListener(this);
-    adapter.setOnCommentClickListener(this);
-    adapter.setOnShareClickListener(this);
-    adapter.setOnVoteClickListener(this);
+    epoxyController = new PostListEpoxyController(getActivity());
+    epoxyController.setOnProfileClickListener(this);
+    epoxyController.setOnPostClickListener(this);
+    epoxyController.setOnPostOptionsClickListener(this);
+    epoxyController.setOnContentImageClickListener(this);
+    epoxyController.setOnCommentClickListener(this);
+    epoxyController.setOnShareClickListener(this);
+    epoxyController.setOnVoteClickListener(this);
+    epoxyController.setOnBookmarkClickListener(this);
 
     final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
 
     rvPostFeed.setLayoutManager(lm);
-    rvPostFeed.addItemDecoration(new SpaceItemDecoration(12, SpaceItemDecoration.VERTICAL));
+    rvPostFeed.addItemDecoration(new SpaceItemDecoration(8, SpaceItemDecoration.VERTICAL));
 
     final SlideInItemAnimator animator = new SlideInItemAnimator();
     animator.setSupportsChangeAnimations(false);
     rvPostFeed.setItemAnimator(animator);
 
     rvPostFeed.setHasFixedSize(true);
-    rvPostFeed.setAdapter(adapter);
+    rvPostFeed.setAdapter(epoxyController.getAdapter());
 
-    rvPostFeed.addOnScrollListener(new EndlessRecyclerOnScrollListener() {
+    /*rvPostFeed.addOnScrollListener(new EndlessRecyclerOnScrollListener() {
       @Override
       public void onLoadMore() {
         handler.postDelayed(() -> chooseLoadMethod(true), 700);
       }
-    });
+    });*/
   }
 
   private void setupPullToRefresh() {
@@ -394,23 +373,30 @@ public class PostListController extends MvpController<PostListView, PostListPres
     final ActionBar ab = getSupportActionBar();
     ab.setDisplayHomeAsUpEnabled(true);
 
-    if (viewType == VIEW_TYPE_USER) {
-      toolbar.setVisibility(View.GONE);
-    } else if (viewType == VIEW_TYPE_GROUP) {
-      toolbar.setVisibility(View.GONE);
-    } else if (viewType == VIEW_TYPE_TAGS) {
-      ab.setTitle(tagName);
-    } else if (viewType == VIEW_TYPE_BOUNTY) {
-      ab.setTitle(R.string.label_toolbar_bounty_title);
-    } else if (viewType == VIEW_TYPE_BOOKMARKED) {
-      ab.setTitle(R.string.label_toolbar_bookmark_title);
+    switch (viewType) {
+      case VIEW_TYPE_USER:
+        toolbar.setVisibility(View.GONE);
+        break;
+      case VIEW_TYPE_GROUP:
+        toolbar.setVisibility(View.GONE);
+        break;
+      case VIEW_TYPE_TAGS:
+        ab.setTitle(tagName);
+        break;
+      case VIEW_TYPE_BOUNTY:
+        ab.setTitle(R.string.label_toolbar_bounty_title);
+        break;
+      case VIEW_TYPE_BOOKMARKED:
+        ab.setTitle(R.string.label_toolbar_bookmark_title);
+        break;
+      case VIEW_TYPE_SORTER:
+        if (postSorter == PostSorter.HOT) {
+          ab.setTitle("Trending Posts");
+        } else if (postSorter == PostSorter.NEWEST) {
+          ab.setTitle("Newest Posts");
+        }
+        break;
     }
-  }
-
-  private void reloadQuestions(@NonNull MenuItem item, PostSorter sorter) {
-    item.setChecked(true);
-    adapter.clear();
-    getPresenter().loadPostsByGroup(false, groupId, sorter, 20);
   }
 
   private void startTransaction(Controller to, ControllerChangeHandler handler) {
@@ -427,27 +413,29 @@ public class PostListController extends MvpController<PostListView, PostListPres
   }
 
   private void chooseLoadMethod(boolean pullToRefresh) {
-    if (viewType == VIEW_TYPE_USER) {
-      getPresenter().loadPostsByUser(pullToRefresh, userId, 20);
-    } else if (viewType == VIEW_TYPE_TAGS) {
-      getPresenter().loadPostsByTag(pullToRefresh, tagName, PostSorter.NEWEST, 20);
-    } else if (viewType == VIEW_TYPE_GROUP) {
-      getPresenter().loadPostsByGroup(pullToRefresh, groupId, PostSorter.NEWEST, 20);
-    } else if (viewType == VIEW_TYPE_BOUNTY) {
-      getPresenter().loadPostsByBounty(pullToRefresh, 20);
-    } else if (viewType == VIEW_TYPE_BOOKMARKED) {
-      getPresenter().loadPostsByBookmarked(pullToRefresh, 20);
+    switch (viewType) {
+      case VIEW_TYPE_USER:
+        getPresenter().loadPostsByUser(pullToRefresh, userId, 20);
+        break;
+      case VIEW_TYPE_TAGS:
+        getPresenter().loadPostsByTag(pullToRefresh, tagName, PostSorter.NEWEST, 20);
+        break;
+      case VIEW_TYPE_GROUP:
+        getPresenter().loadPostsByGroup(pullToRefresh, groupId, PostSorter.NEWEST, 20);
+        break;
+      case VIEW_TYPE_BOUNTY:
+        getPresenter().loadPostsByBounty(pullToRefresh, 20);
+        break;
+      case VIEW_TYPE_BOOKMARKED:
+        getPresenter().loadPostsByBookmarked(pullToRefresh, 20);
+        break;
+      case VIEW_TYPE_SORTER:
+        getPresenter().loadPostsByPostSorter(pullToRefresh, postSorter, 20);
+        break;
     }
   }
 
   private void setViewType() {
-    final Bundle args = getArgs();
-    groupId = args.getString(KEY_GROUP_ID);
-    tagName = args.getString(KEY_TAG_NAME);
-    userId = args.getString(KEY_USER_ID);
-    isBounty = args.getBoolean(KEY_BOUNTY, false);
-    isBookmarked = args.getBoolean(KEY_BOOKMARKED, false);
-
     if (!TextUtils.isEmpty(groupId)) {
       viewType = VIEW_TYPE_GROUP;
     } else if (!TextUtils.isEmpty(tagName)) {
@@ -458,26 +446,17 @@ public class PostListController extends MvpController<PostListView, PostListPres
       viewType = VIEW_TYPE_BOUNTY;
     } else if (isBookmarked) {
       viewType = VIEW_TYPE_BOOKMARKED;
+    } else if (postSorter != null) {
+      viewType = VIEW_TYPE_SORTER;
     }
   }
 
-  private void deletePost(EpoxyModel<?> model, PostRealm post) {
+  private void deletePost(PostRealm post) {
     getPresenter().deletePost(post.getId());
-    adapter.delete(model);
+    epoxyController.deletePost(post);
     if (modelUpdateEvent != null) {
       modelUpdateEvent.onModelUpdateEvent(FeedAction.DELETE, post);
     }
-  }
-
-  private void unbookmarkPost(EpoxyModel<?> model, PostRealm post) {
-    getPresenter().unBookmarkPost(post.getId());
-    adapter.delete(model);
-    Snackbar.make(getView(), R.string.label_feed_unbookmarked, Snackbar.LENGTH_SHORT).show();
-  }
-
-  private void bookmarkPost(PostRealm post) {
-    getPresenter().bookmarkPost(post.getId());
-    Snackbar.make(getView(), R.string.label_feed_bookmarked, Snackbar.LENGTH_SHORT).show();
   }
 
   public void setModelUpdateEvent(OnModelUpdateEvent modelUpdateEvent) {

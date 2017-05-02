@@ -67,10 +67,10 @@ public class GameServiceTest extends TestBase {
     GameService service = GameService.create();
     GameInfo info = service.getGameInfo(user);
 
-    assertEquals("0", info.getLevel());
-    assertEquals("1", info.getNextLevel());
-    assertEquals(0, info.getPoints());
-    assertEquals(300, info.getRequiredPoints());
+    assertEquals(0, info.getCurrentLvl());
+    assertEquals(1, info.getNextLvl());
+    assertEquals(0, info.getMyPoints());
+    assertEquals(300, info.getNextLvlPoints() - info.getMyPoints());
     assertTrue(info.getHistories().isEmpty());
   }
 
@@ -86,10 +86,10 @@ public class GameServiceTest extends TestBase {
     GameInfo info =
         service.getGameInfo(new User(owner.getEmail().getEmail(), "", owner.getWebsafeId()));
 
-    assertEquals("1", info.getLevel());
-    assertEquals("2", info.getNextLevel());
-    assertEquals(320, info.getPoints());
-    assertEquals(180, info.getRequiredPoints());
+    assertEquals(1, info.getCurrentLvl());
+    assertEquals(2, info.getNextLvl());
+    assertEquals(320, info.getMyPoints());
+    assertEquals(180, info.getNextLvlPoints() - info.getMyPoints());
     assertTrue(info.getHistories().isEmpty());
   }
 
@@ -112,10 +112,10 @@ public class GameServiceTest extends TestBase {
     GameInfo info =
         service.getGameInfo(new User(owner.getEmail().getEmail(), "", owner.getWebsafeId()));
 
-    assertEquals("1", info.getLevel());
-    assertEquals("2", info.getNextLevel());
-    assertEquals(320, info.getPoints());
-    assertEquals(180, info.getRequiredPoints());
+    assertEquals(1, info.getCurrentLvl());
+    assertEquals(2, info.getNextLvl());
+    assertEquals(320, info.getMyPoints());
+    assertEquals(180, info.getNextLvlPoints() - info.getMyPoints());
     assertEquals(1, info.getHistories().size());
     assertEquals(320, info.getHistories().get(0).getPoints());
     assertEquals(10, info.getHistories().get(0).getBounties());

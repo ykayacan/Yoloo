@@ -9,7 +9,6 @@ public class TravelerGroupControllerFactory implements ControllerFactory<Travele
 
   @Override
   public TravelerGroupController create() {
-    return TravelerGroupController.create(TravelerGroupShardService.create(),
-        ImagesServiceFactory.getImagesService());
+    return TravelerGroupController.create(ImagesServiceFactory.getImagesService());
   }
 }

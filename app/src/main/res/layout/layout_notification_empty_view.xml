@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/empty_view"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:layout_gravity="center"
+  android:gravity="center"
+  android:orientation="vertical"
+  android:visibility="gone"
+  tools:visibility="visible">
+
+  <com.airbnb.lottie.LottieAnimationView
+    android:id="@+id/animation_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="48dp"
+    android:layout_marginLeft="48dp"
+    android:layout_marginRight="48dp"
+    android:layout_marginStart="48dp"
+    android:duplicateParentState="true"
+    android:scaleType="centerInside"
+    app:lottie_autoPlay="true"
+    app:lottie_fileName="bell.json"
+    app:lottie_loop="true" />
+
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_empty_title"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:drawablePadding="@dimen/padding_normal"
+    android:gravity="center"
+    android:text="You don't have notification"
+    android:textAppearance="@style/TextAppearance.EmptyTitle" />
+
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_empty_content"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/padding_micro"
+    android:gravity="center"
+    android:text="@string/label_feed_no_data_2"
+    android:visibility="gone"
+    tools:visibility="visible" />
+
+</LinearLayout>

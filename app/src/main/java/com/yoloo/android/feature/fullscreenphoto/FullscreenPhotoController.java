@@ -10,6 +10,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindColor;
 import butterknife.BindView;
+import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bumptech.glide.Glide;
 import com.github.chrisbanes.photoview.PhotoView;
 import com.yoloo.android.R;
@@ -73,15 +75,10 @@ public class FullscreenPhotoController extends BaseController {
   }
 
   @Override
-  protected void onAttach(@NonNull View view) {
-    super.onAttach(view);
+  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+      @NonNull ControllerChangeType changeType) {
+    super.onChangeEnded(changeHandler, changeType);
     ViewUtils.setStatusBarColor(getActivity(), Color.BLACK);
-  }
-
-  @Override
-  protected void onDetach(@NonNull View view) {
-    super.onDetach(view);
-    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
   }
 
   @Override

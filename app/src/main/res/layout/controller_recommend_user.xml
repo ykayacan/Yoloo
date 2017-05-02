@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+
+  <ImageView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scaleType="centerCrop"
+    android:src="@drawable/login_bg" />
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+      fontPath="fonts/OpenSans-Bold.ttf"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="48dp"
+      android:gravity="center"
+      android:text="Wondering who to follow?"
+      android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+      android:textColor="@android:color/white"
+      tools:ignore="MissingPrefix" />
+
+    <TextView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_margin="16dp"
+      android:gravity="center"
+      android:text="These travelers will make your feed great"
+      android:textAppearance="@style/TextAppearance.AppCompat.Subhead.Inverse" />
+
+    <TextView
+      android:id="@+id/tv_skip"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="end"
+      android:layout_marginEnd="16dp"
+      android:layout_marginRight="16dp"
+      android:text="Skip"
+      android:textAppearance="@style/TextAppearance.AppCompat.Medium.Inverse"
+      android:textColor="@color/secondary" />
+
+    <android.support.v7.widget.RecyclerView
+      android:id="@+id/recycler_view"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_marginTop="8dp" />
+
+  </LinearLayout>
+
+</android.support.design.widget.CoordinatorLayout>

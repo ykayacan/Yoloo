@@ -5,8 +5,7 @@ import io.realm.annotations.PrimaryKey;
 
 public class FcmRealm extends RealmObject {
 
-  @PrimaryKey
-  private String token;
+  @PrimaryKey private String token;
   private boolean pending;
 
   public FcmRealm() {

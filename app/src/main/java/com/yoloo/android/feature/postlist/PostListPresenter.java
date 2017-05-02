@@ -1,6 +1,11 @@
 package com.yoloo.android.feature.postlist;
 
+import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
+import com.yoloo.android.data.feedtypes.BlogItem;
+import com.yoloo.android.data.feedtypes.FeedItem;
+import com.yoloo.android.data.feedtypes.RichQuestionItem;
+import com.yoloo.android.data.feedtypes.TextQuestionItem;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.post.PostRepository;
@@ -13,6 +18,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import java.util.List;
 import javax.annotation.Nonnull;
+import timber.log.Timber;
 
 class PostListPresenter extends MvpPresenter<PostListView> {
 
@@ -107,6 +113,22 @@ class PostListPresenter extends MvpPresenter<PostListView> {
     getDisposable().add(d);
   }
 
+  void loadPostsByPostSorter(boolean pullToRefresh, PostSorter postSorter, int limit) {
+    getView().onLoading(pullToRefresh);
+
+    shouldResetCursor(pullToRefresh);
+
+    Observable<Response<List<PostRealm>>> postsObservable = postRepository
+        .listByPostSorter(postSorter, cursor, limit)
+        .observeOn(AndroidSchedulers.mainThread(), true);
+
+    Disposable d = Observable
+        .zip(getUserObservable(), postsObservable, Pair::create)
+        .subscribe(this::showData, this::showError);
+
+    getDisposable().add(d);
+  }
+
   void deletePost(@Nonnull String postId) {
     Disposable d =
         postRepository.deletePost(postId).observeOn(AndroidSchedulers.mainThread()).subscribe();
@@ -129,15 +151,21 @@ class PostListPresenter extends MvpPresenter<PostListView> {
   }
 
   void bookmarkPost(@Nonnull String postId) {
-    Disposable d =
-        postRepository.bookmarkPost(postId).observeOn(AndroidSchedulers.mainThread()).subscribe();
+    Disposable d = postRepository
+        .bookmarkPost(postId)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(() -> {
+        }, Timber::e);
 
     getDisposable().add(d);
   }
 
   void unBookmarkPost(@Nonnull String postId) {
-    Disposable d =
-        postRepository.unBookmarkPost(postId).observeOn(AndroidSchedulers.mainThread()).subscribe();
+    Disposable d = postRepository
+        .unBookmarkPost(postId)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(() -> {
+        }, Timber::e);
 
     getDisposable().add(d);
   }
@@ -149,7 +177,7 @@ class PostListPresenter extends MvpPresenter<PostListView> {
       getView().onAccountLoaded(pair.first);
 
       cursor = pair.second.getCursor();
-      getView().onLoaded(pair.second.getData());
+      getView().onLoaded(mapPostsToFeedItems(pair.second.getData()));
       getView().showContent();
     }
   }
@@ -166,5 +194,19 @@ class PostListPresenter extends MvpPresenter<PostListView> {
     if (pullToRefresh) {
       cursor = null;
     }
+  }
+
+  private List<FeedItem> mapPostsToFeedItems(List<PostRealm> data) {
+    return Stream.of(data).map(post -> {
+      if (post.getPostType() == PostRealm.TYPE_TEXT) {
+        return new TextQuestionItem(post);
+      } else if (post.getPostType() == PostRealm.TYPE_RICH) {
+        return new RichQuestionItem(post);
+      } else if (post.getPostType() == PostRealm.TYPE_BLOG) {
+        return new BlogItem(post);
+      }
+
+      return null;
+    }).toList();
   }
 }

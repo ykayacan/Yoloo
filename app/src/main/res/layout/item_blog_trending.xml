@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="328dp"
+  android:layout_height="wrap_content"
+  android:foreground="?attr/selectableItemBackground"
+  android:minHeight="188dp"
+  app:cardBackgroundColor="@android:color/white"
+  app:cardUseCompatPadding="true"
+  app:contentPaddingBottom="@dimen/padding_normal"
+  app:contentPaddingTop="@dimen/padding_normal">
+
+  <android.support.constraint.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include layout="@layout/merge_item_feed_header" />
+
+    <TextView
+      android:id="@+id/tv_item_blog_title"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginEnd="@dimen/padding_normal"
+      android:layout_marginLeft="@dimen/padding_normal"
+      android:layout_marginRight="@dimen/padding_normal"
+      android:layout_marginStart="@dimen/padding_normal"
+      android:layout_marginTop="@dimen/padding_normal"
+      android:ellipsize="end"
+      android:maxLines="2"
+      android:textAppearance="@style/TextAppearance.TrendingBlogTitle"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toLeftOf="@+id/iv_item_blog_cover"
+      app:layout_constraintTop_toBottomOf="@+id/iv_item_feed_user_avatar"
+      tools:text="@string/lorem_ipsum" />
+
+    <TextView
+      android:id="@+id/tv_item_blog_content"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginEnd="@dimen/padding_normal"
+      android:layout_marginTop="8dp"
+      android:ellipsize="end"
+      android:maxLines="2"
+      android:paddingBottom="@dimen/padding_micro"
+      android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+      app:layout_constraintEnd_toStartOf="@+id/iv_item_blog_cover"
+      app:layout_constraintLeft_toLeftOf="@+id/tv_item_blog_title"
+      app:layout_constraintTop_toBottomOf="@+id/tv_item_blog_title"
+      tools:text="@string/lorem_ipsum" />
+
+    <ImageView
+      android:id="@+id/iv_item_blog_cover"
+      android:layout_width="80dp"
+      android:layout_height="80dp"
+      android:layout_marginEnd="@dimen/padding_normal"
+      android:layout_marginRight="@dimen/padding_normal"
+      android:scaleType="centerCrop"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toTopOf="@+id/tv_item_blog_title"
+      tools:src="@drawable/login_bg" />
+
+  </android.support.constraint.ConstraintLayout>
+
+</android.support.v7.widget.CardView>

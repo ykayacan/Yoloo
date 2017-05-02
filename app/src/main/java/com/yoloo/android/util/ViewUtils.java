@@ -7,10 +7,12 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Outline;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RippleDrawable;
+import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.annotation.FloatRange;
 import android.support.annotation.NonNull;
@@ -18,11 +20,13 @@ import android.text.TextPaint;
 import android.util.DisplayMetrics;
 import android.util.Property;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Utility methods for working with Views.
@@ -100,11 +104,11 @@ public final class ViewUtils {
   public static void setStatusBarColor(Activity activity, @ColorInt int color) {
     if (VersionUtil.hasL()) {
       // clear FLAG_TRANSLUCENT_STATUS flag:
-      activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+      /*activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
       // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
-      activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+      activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);*/
       // finally change the color
-      activity.getWindow().setStatusBarColor(color);
+      new WeakHandler().post(() -> activity.getWindow().setStatusBarColor(color));
     }
   }
 
@@ -249,5 +253,49 @@ public final class ViewUtils {
   public static void setPaddingBottom(View view, int paddingBottom) {
     view.setPaddingRelative(view.getPaddingStart(), view.getPaddingTop(), view.getPaddingEnd(),
         paddingBottom);
+  }
+
+  public static Point getNavigationBarSize(Context context) {
+    Point appUsableSize = getAppUsableScreenSize(context);
+    Point realScreenSize = getRealScreenSize(context);
+
+    // navigation bar on the right
+    if (appUsableSize.x < realScreenSize.x) {
+      return new Point(realScreenSize.x - appUsableSize.x, appUsableSize.y);
+    }
+
+    // navigation bar at the bottom
+    if (appUsableSize.y < realScreenSize.y) {
+      return new Point(appUsableSize.x, realScreenSize.y - appUsableSize.y);
+    }
+
+    // navigation bar is not present
+    return new Point();
+  }
+
+  public static Point getAppUsableScreenSize(Context context) {
+    WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    Display display = windowManager.getDefaultDisplay();
+    Point size = new Point();
+    display.getSize(size);
+    return size;
+  }
+
+  public static Point getRealScreenSize(Context context) {
+    WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    Display display = windowManager.getDefaultDisplay();
+    Point size = new Point();
+
+    if (Build.VERSION.SDK_INT >= 17) {
+      display.getRealSize(size);
+    } else {
+      try {
+        size.x = (Integer) Display.class.getMethod("getRawWidth").invoke(display);
+        size.y = (Integer) Display.class.getMethod("getRawHeight").invoke(display);
+      } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException ignored) {
+      }
+    }
+
+    return size;
   }
 }

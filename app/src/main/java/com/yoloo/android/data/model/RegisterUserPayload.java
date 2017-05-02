@@ -7,8 +7,8 @@ public final class RegisterUserPayload {
   private String realname;
   private String email;
   private long birthdate;
-  private String country;
-  private String locale;
+  private String countryCode;
+  private String langCode;
   private String profileImageUrl;
   private List<String> travelerTypeIds;
 
@@ -17,8 +17,8 @@ public final class RegisterUserPayload {
     this.username = account.getUsername();
     this.email = account.getEmail();
     this.birthdate = account.getBirthdate().getTime();
-    this.country = account.getCountry();
-    this.locale = account.getLocale();
+    this.countryCode = account.getCountry().getCode();
+    this.langCode = account.getLangCode();
     this.profileImageUrl = account.getAvatarUrl();
     this.travelerTypeIds = account.getTravelerTypeIds();
   }
@@ -39,12 +39,12 @@ public final class RegisterUserPayload {
     return birthdate;
   }
 
-  public String getCountry() {
-    return country;
+  public String getCountryCode() {
+    return countryCode;
   }
 
-  public String getLocale() {
-    return locale;
+  public String getLangCode() {
+    return langCode;
   }
 
   public String getProfileImageUrl() {

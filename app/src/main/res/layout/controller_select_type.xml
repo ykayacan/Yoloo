@@ -22,41 +22,26 @@
     app:layout_constraintTop_toTopOf="parent" />
 
   <TextView
-    android:id="@+id/subtitleTextView"
-    android:layout_width="wrap_content"
+    android:id="@+id/hintTextView"
+    android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
-    android:layout_marginTop="-7dp"
-    android:text="Travel is the only thing you buy that makes you richer."
-    android:textColor="@color/accent"
+    android:layout_marginEnd="32dp"
+    android:layout_marginStart="32dp"
+    android:gravity="center"
+    android:lineSpacingMultiplier="1"
+    android:text="Tap on at least 3 traveler types that describes you"
     android:textSize="16sp"
-    android:visibility="gone"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
-
-  <TextView
-    android:id="@+id/hintTextView"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center"
-    android:layout_margin="8dp"
-    android:gravity="center"
-    android:lineSpacingMultiplier="1"
-    android:text="Tap to choose your preferences"
-    android:textColor="#9b9b9b"
-    android:textSize="14sp"
-    app:layout_constraintLeft_toLeftOf="parent"
-    app:layout_constraintRight_toRightOf="parent"
-    app:layout_constraintTop_toBottomOf="@+id/subtitleTextView" />
 
   <com.igalata.bubblepicker.rendering.BubblePicker
     android:id="@+id/bubblepicker"
     android:layout_width="0dp"
     android:layout_height="0dp"
-    android:layout_marginBottom="96dp"
-    android:visibility="gone"
-    app:layout_constraintBottom_toBottomOf="parent"
+    android:visibility="invisible"
+    app:layout_constraintBottom_toTopOf="@+id/btn_sign_up_init_get_started"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toBottomOf="@+id/hintTextView"
@@ -67,18 +52,26 @@
     fontPath="fonts/OpenSans-Bold.ttf"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="48dp"
     android:background="@color/primary"
     android:gravity="center"
     android:padding="16dp"
     android:text="Get Started"
     android:textAllCaps="true"
     android:textColor="@android:color/white"
-    android:visibility="gone"
-    app:layout_constraintBottom_toBottomOf="parent"
+    android:visibility="invisible"
+    app:layout_constraintBottom_toTopOf="@+id/space_workaround"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
     tools:ignore="MissingPrefix"
     tools:visibility="visible" />
+
+  <View
+    android:id="@+id/space_workaround"
+    android:layout_width="0dp"
+    android:layout_height="48dp"
+    android:visibility="invisible"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

@@ -7,6 +7,7 @@ import com.googlecode.objectify.impl.translate.opt.joda.JodaTimeTranslators;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.account.AccountShard;
 import com.yoloo.backend.bookmark.Bookmark;
+import com.yoloo.backend.country.Country;
 import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentShard;
@@ -61,6 +62,8 @@ public final class OfyService {
 
     factory().register(Notification.class);
     factory().register(MediaEntity.class);
+
+    factory().register(Country.class);
   }
 
   public static Objectify ofy() {

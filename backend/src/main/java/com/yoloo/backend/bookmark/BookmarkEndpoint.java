@@ -15,7 +15,7 @@ import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
 import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
-import com.yoloo.backend.post.dto.Post;
+import com.yoloo.backend.post.PostEntity;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
@@ -24,7 +24,7 @@ import javax.inject.Named;
     namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
 @ApiClass(resource = "posts", clientIds = {
     Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
-}, audiences = { Constants.AUDIENCE_ID }, authenticators = { FirebaseAuthenticator.class })
+}, audiences = {Constants.AUDIENCE_ID}, authenticators = {FirebaseAuthenticator.class})
 public class BookmarkEndpoint {
 
   private final BookmarkController bookmarkController = BookmarkControllerFactory.of().create();
@@ -38,10 +38,11 @@ public class BookmarkEndpoint {
    */
   @ApiMethod(name = "posts.bookmark",
       path = "posts/{postId}/bookmarks",
-      httpMethod = ApiMethod.HttpMethod.POST) public void insert(@Named("postId") String postId,
-      User user) throws ServiceException {
+      httpMethod = ApiMethod.HttpMethod.POST)
+  public void insert(@Named("postId") String postId, User user) throws ServiceException {
 
-    EndpointsValidator.create()
+    EndpointsValidator
+        .create()
         .on(BadRequestValidator.create(postId, "postId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(postId, "Invalid postId."));
@@ -58,10 +59,11 @@ public class BookmarkEndpoint {
    */
   @ApiMethod(name = "posts.unbookmark",
       path = "posts/{postId}/bookmarks",
-      httpMethod = ApiMethod.HttpMethod.DELETE) public void delete(@Named("postId") String postId,
-      User user) throws ServiceException {
+      httpMethod = ApiMethod.HttpMethod.DELETE)
+  public void delete(@Named("postId") String postId, User user) throws ServiceException {
 
-    EndpointsValidator.create()
+    EndpointsValidator
+        .create()
         .on(BadRequestValidator.create(postId, "postId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(postId, "Invalid postId."))
@@ -79,9 +81,9 @@ public class BookmarkEndpoint {
    */
   @ApiMethod(name = "posts.bookmarkPost.list",
       path = "posts/bookmarks",
-      httpMethod = ApiMethod.HttpMethod.GET) public CollectionResponse<Post> list(
-      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
-      throws ServiceException {
+      httpMethod = ApiMethod.HttpMethod.GET)
+  public CollectionResponse<PostEntity> list(@Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 

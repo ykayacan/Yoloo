@@ -29,153 +29,177 @@
 
   </android.support.design.widget.AppBarLayout>
 
-  <android.support.constraint.ConstraintLayout
-    style="@style/Widget.Yoloo.InputContainer"
-    android:layout_width="@dimen/_272asdp"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center|top"
-    android:layout_marginTop="@dimen/_24asdp"
-
-    android:paddingTop="16dp"
+  <ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginBottom="24dp"
+    android:layout_marginTop="@dimen/_16asdp"
+    android:fillViewport="true"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <ImageView
-      android:id="@+id/iv_sign_up_avatar"
-      android:layout_width="56dp"
-      android:layout_height="56dp"
-      android:layout_marginBottom="16dp"
-      android:scaleType="centerCrop"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toTopOf="parent"
-      tools:src="@drawable/login_bg" />
-
-    <EditText
-      android:id="@+id/et_login_fullname"
-      android:layout_width="0dp"
+    <android.support.constraint.ConstraintLayout
+      style="@style/Widget.Yoloo.InputContainer"
+      android:layout_width="@dimen/_272asdp"
       android:layout_height="wrap_content"
-      android:layout_marginEnd="16dp"
-      android:layout_marginLeft="16dp"
-      android:layout_marginRight="16dp"
-      android:layout_marginStart="16dp"
-      android:layout_marginTop="24dp"
-      android:hint="@string/hint_full_name"
-      android:inputType="textCapSentences"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@id/iv_sign_up_avatar" />
+      android:layout_gravity="center|top"
+      android:padding="16dp">
 
-    <EditText
-      android:id="@+id/et_sign_up_username"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginEnd="16dp"
-      android:layout_marginLeft="16dp"
-      android:layout_marginRight="16dp"
-      android:layout_marginStart="16dp"
-      android:hint="@string/hint_username"
-      android:inputType="text"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/et_login_fullname" />
+      <ImageView
+        android:id="@+id/iv_auth_avatar"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_marginBottom="16dp"
+        android:scaleType="centerCrop"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:src="@drawable/login_bg" />
 
-    <EditText
-      android:id="@+id/et_login_email"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginEnd="16dp"
-      android:layout_marginLeft="16dp"
-      android:layout_marginRight="16dp"
-      android:layout_marginStart="16dp"
-      android:hint="@string/hint_email"
-      android:imeOptions="actionNext"
-      android:inputType="textEmailAddress"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/et_sign_up_username" />
+      <android.support.design.widget.TextInputLayout
+        android:id="@+id/layout_auth_fullname"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iv_auth_avatar">
 
-    <EditText
-      android:id="@+id/et_login_password"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginEnd="16dp"
-      android:layout_marginLeft="16dp"
-      android:layout_marginRight="16dp"
-      android:layout_marginStart="16dp"
-      android:hint="@string/hint_password"
-      android:imeActionId="@+id/sign_up"
-      android:imeActionLabel="@string/action_sing_up_short"
-      android:inputType="textPassword"
-      android:maxLines="1"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/et_login_email" />
+        <android.support.design.widget.TextInputEditText
+          android:id="@+id/et_auth_fullname"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:drawableLeft="@drawable/ic_person_black_24dp"
+          android:drawablePadding="8dp"
+          android:drawableStart="@drawable/ic_person_black_24dp"
+          android:hint="@string/hint_full_name"
+          android:inputType="textCapSentences"
+          android:maxLines="1" />
 
-    <com.yoloo.android.ui.widget.CompatTextView
-      android:id="@+id/tv_login_birthdate"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginEnd="16dp"
-      android:layout_marginLeft="16dp"
-      android:layout_marginRight="16dp"
-      android:layout_marginStart="16dp"
-      android:drawablePadding="16dp"
-      android:gravity="center_vertical"
-      android:padding="10dp"
-      android:text="@string/hint_birthdate"
-      android:textSize="16sp"
-      app:drawableStart="@drawable/ic_date_range_black_24dp"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/et_login_password" />
+      </android.support.design.widget.TextInputLayout>
 
-    <ImageButton
-      android:id="@+id/ib_sign_up_country_icon"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginEnd="16dp"
-      android:layout_marginLeft="26dp"
-      android:layout_marginRight="16dp"
-      android:layout_marginStart="26dp"
-      android:background="@android:color/transparent"
-      app:layout_constraintBottom_toBottomOf="@+id/spinner_country"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintTop_toTopOf="@+id/spinner_country"
-      app:srcCompat="@drawable/ic_place_black_24dp" />
+      <android.support.design.widget.TextInputLayout
+        android:id="@+id/layout_auth_username"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layout_auth_fullname">
 
-    <Spinner
-      android:id="@+id/spinner_country"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginLeft="4dp"
-      android:layout_marginStart="4dp"
-      android:layout_marginTop="4dp"
-      android:drawSelectorOnTop="true"
-      android:entries="@array/countries_array"
-      android:padding="6dp"
-      android:prompt="@string/hint_country_prompt"
-      android:spinnerMode="dialog"
-      app:layout_constraintLeft_toRightOf="@id/ib_sign_up_country_icon"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/tv_login_birthdate" />
+        <android.support.design.widget.TextInputEditText
+          android:id="@+id/et_auth_username"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:drawableLeft="@drawable/ic_person_black_24dp"
+          android:drawablePadding="8dp"
+          android:drawableStart="@drawable/ic_person_black_24dp"
+          android:hint="@string/hint_username"
+          android:inputType="text"
+          android:maxLines="1" />
 
-    <TextView
-      android:id="@+id/btn_login_ready"
-      fontPath="fonts/OpenSans-Bold.ttf"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="24dp"
-      android:background="@color/primary"
-      android:gravity="center"
-      android:padding="16dp"
-      android:text="@string/action_login_ready"
-      android:textAllCaps="true"
-      android:textColor="@android:color/white"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/spinner_country"
-      tools:ignore="MissingPrefix" />
+      </android.support.design.widget.TextInputLayout>
 
-  </android.support.constraint.ConstraintLayout>
+      <android.support.design.widget.TextInputLayout
+        android:id="@+id/layout_auth_email"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layout_auth_username">
+
+        <android.support.design.widget.TextInputEditText
+          android:id="@+id/et_auth_email"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:drawableLeft="@drawable/ic_email_black_24dp"
+          android:drawablePadding="8dp"
+          android:drawableStart="@drawable/ic_email_black_24dp"
+          android:hint="@string/hint_email"
+          android:imeOptions="actionNext"
+          android:inputType="textEmailAddress"
+          android:maxLines="1" />
+
+      </android.support.design.widget.TextInputLayout>
+
+      <android.support.design.widget.TextInputLayout
+        android:id="@+id/layout_auth_password"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layout_auth_email">
+
+        <android.support.design.widget.TextInputEditText
+          android:id="@+id/et_auth_password"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:drawableLeft="@drawable/ic_lock_black_24dp"
+          android:drawablePadding="8dp"
+          android:drawableStart="@drawable/ic_lock_black_24dp"
+          android:hint="@string/hint_password"
+          android:inputType="textPassword"
+          android:maxLines="1" />
+
+      </android.support.design.widget.TextInputLayout>
+
+      <android.support.design.widget.TextInputLayout
+        android:id="@+id/layout_auth_birthday"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layout_auth_password">
+
+        <android.support.design.widget.TextInputEditText
+          android:id="@+id/et_auth_birthday"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:clickable="true"
+          android:drawableLeft="@drawable/ic_date_range_black_24dp"
+          android:drawablePadding="8dp"
+          android:drawableStart="@drawable/ic_date_range_black_24dp"
+          android:focusable="false"
+          android:focusableInTouchMode="false"
+          android:hint="@string/hint_birthday"
+          android:inputType="none" />
+
+      </android.support.design.widget.TextInputLayout>
+
+      <android.support.design.widget.TextInputLayout
+        android:id="@+id/layout_auth_select_country"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layout_auth_birthday">
+
+        <android.support.design.widget.TextInputEditText
+          android:id="@+id/et_auth_select_country"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:clickable="true"
+          android:drawableLeft="@drawable/ic_place_black_24dp"
+          android:drawablePadding="8dp"
+          android:drawableStart="@drawable/ic_place_black_24dp"
+          android:focusable="false"
+          android:focusableInTouchMode="false"
+          android:hint="@string/hint_country_prompt"
+          android:inputType="none" />
+
+      </android.support.design.widget.TextInputLayout>
+
+      <Button
+        android:id="@+id/btn_auth_sign_up"
+        style="@style/Yoloo.Button.Colored"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/action_login_ready"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/layout_auth_select_country" />
+
+    </android.support.constraint.ConstraintLayout>
+
+  </ScrollView>
 
 </android.support.design.widget.CoordinatorLayout>

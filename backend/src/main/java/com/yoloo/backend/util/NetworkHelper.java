@@ -9,7 +9,7 @@ public enum NetworkHelper {
 
   private static HTTPRequest request;
 
-  public HTTPRequest getRequest(URL url, HTTPMethod method) {
+  public static HTTPRequest getRequest(URL url, HTTPMethod method) {
     if (request == null) {
       request = new HTTPRequest(url, method);
     }

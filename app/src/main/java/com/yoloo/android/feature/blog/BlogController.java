@@ -13,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindView;
-import com.airbnb.epoxy.EpoxyModel;
 import com.annimon.stream.Stream;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
@@ -48,7 +47,7 @@ public class BlogController extends MvpController<BlogView, BlogPresenter>
   @BindView(R.id.toolbar) Toolbar toolbar;
   @BindView(R.id.layout_compose) CommentAutocomplete composeLayout;
 
-  private BlogAdapter adapter;
+  private BlogEpoxyController epoxyController;
   private PostRealm post;
 
   public BlogController() {
@@ -82,7 +81,7 @@ public class BlogController extends MvpController<BlogView, BlogPresenter>
     composeLayout.setPostId(post.getId());
     composeLayout.setNewCommentListener(this);
 
-    adapter.addBlog(post);
+    epoxyController.addBlog(post);
   }
 
   @Override
@@ -99,42 +98,42 @@ public class BlogController extends MvpController<BlogView, BlogPresenter>
   }
 
   @Override
-  public void onCommentLongClick(EpoxyModel<?> model, CommentRealm comment) {
+  public void onCommentLongClick(CommentRealm comment) {
     new AlertDialog.Builder(getActivity())
         .setItems(R.array.action_comment_dialog, (dialog, which) -> {
           if (which == 0) {
             getPresenter().deleteComment(comment);
-            adapter.deleteComment(model);
+            epoxyController.removeComment(comment);
           }
         })
         .show();
   }
 
   @Override
-  public void onCommentProfileClick(EpoxyModel<?> model, String userId) {
+  public void onCommentProfileClick(String userId) {
     KeyboardUtil.hideKeyboard(getView());
     startTransaction(ProfileController.create(userId), new VerticalChangeHandler());
   }
 
   @Override
-  public void onCommentVoteClick(EpoxyModel<?> model, String commentId, int direction) {
+  public void onCommentVoteClick(String commentId, int direction) {
     getPresenter().voteComment(commentId, direction);
   }
 
   @Override
-  public void onCommentMentionClick(EpoxyModel<?> model, String username) {
+  public void onCommentMentionClick(String username) {
     Snackbar.make(getView(), username, Snackbar.LENGTH_SHORT).show();
   }
 
   @Override
-  public void onMarkAsAccepted(EpoxyModel<?> model, CommentRealm comment) {
+  public void onMarkAsAccepted(CommentRealm comment) {
     getPresenter().acceptComment(comment);
   }
 
   @Override
   public void onNewComment(CommentRealm comment) {
-    adapter.addComment(comment);
-    rvBlog.smoothScrollToPosition(adapter.getItemCount() - 1);
+    epoxyController.addComment(comment);
+    rvBlog.smoothScrollToPosition(epoxyController.getAdapter().getItemCount() - 1);
   }
 
   @Override
@@ -150,7 +149,7 @@ public class BlogController extends MvpController<BlogView, BlogPresenter>
 
   @Override
   public void onLoaded(List<CommentRealm> value) {
-    adapter.addComments(value);
+    epoxyController.addComments(value);
   }
 
   @Override
@@ -179,13 +178,13 @@ public class BlogController extends MvpController<BlogView, BlogPresenter>
   }
 
   private void setupRecyclerview() {
-    adapter = new BlogAdapter(getActivity(), Glide.with(getActivity()));
-    adapter.setOnCommentClickListener(this);
+    epoxyController = new BlogEpoxyController(getActivity(), Glide.with(getActivity()));
+    epoxyController.setOnCommentClickListener(this);
 
     rvBlog.setItemAnimator(new DefaultItemAnimator());
     rvBlog.setLayoutManager(new LinearLayoutManager(getActivity()));
     rvBlog.setHasFixedSize(true);
-    rvBlog.setAdapter(adapter);
+    rvBlog.setAdapter(epoxyController.getAdapter());
   }
 
   private void startTransaction(Controller to, ControllerChangeHandler handler) {

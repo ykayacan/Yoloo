@@ -54,32 +54,28 @@ public class SliderView extends FrameLayout {
     adapter = new SliderPagerAdapter(getContext());
     viewPager.setAdapter(adapter);
     indicator.setViewPager(viewPager);
+    adapter.registerDataSetObserver(indicator.getDataSetObserver());
   }
 
   public void setImageUrls(List<String> imageUrls) {
     Stream.of(imageUrls).forEach(s -> adapter.addUrl(s));
 
-    if (imageUrls.size() == 1) {
-      indicator.setVisibility(GONE);
-    } else {
-      indicator.setVisibility(VISIBLE);
-      WeakHandler handler = new WeakHandler();
+    WeakHandler handler = new WeakHandler();
 
-      Runnable runnable = () -> {
-        if (currentPage == imageUrls.size()) {
-          currentPage = 0;
-        }
-        viewPager.setCurrentItem(currentPage++, true);
-      };
+    Runnable runnable = () -> {
+      if (currentPage == adapter.getCount()) {
+        currentPage = 0;
+      }
+      viewPager.setCurrentItem(currentPage++, true);
+    };
 
-      Timer timer = new Timer();
-      timer.schedule(new TimerTask() {
-        @Override
-        public void run() {
-          handler.post(runnable);
-        }
-      }, 2500, 2500);
-    }
+    Timer timer = new Timer();
+    timer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        handler.post(runnable);
+      }
+    }, 5500, 5500);
   }
 
   public void addImageUrl(String url) {

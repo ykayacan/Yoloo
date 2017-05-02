@@ -11,13 +11,14 @@ import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import org.parceler.Parcel;
 import org.parceler.ParcelPropertyConverter;
 
 @Parcel(implementations = {PostRealmRealmProxy.class},
     value = Parcel.Serialization.FIELD,
     analyze = {PostRealm.class})
-public class PostRealm extends RealmObject {
+public class PostRealm extends RealmObject implements FeedItem {
 
   public static final int TYPE_TEXT = 0;
   public static final int TYPE_RICH = 1;
@@ -73,6 +74,7 @@ public class PostRealm extends RealmObject {
     rank = dto.getRank();
     groupId = dto.getGroup();
     postType = dto.getPostType();
+    bookmarked = dto.getBookmarked();
   }
 
   public String getId() {
@@ -314,6 +316,42 @@ public class PostRealm extends RealmObject {
 
   public boolean isPhotoPost() {
     return postType == TYPE_PHOTO;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof PostRealm)) return false;
+    PostRealm postRealm = (PostRealm) o;
+    return getBounty() == postRealm.getBounty()
+        && getVoteDir() == postRealm.getVoteDir()
+        && getVoteCount() == postRealm.getVoteCount()
+        && getCommentCount() == postRealm.getCommentCount()
+        && getReportCount() == postRealm.getReportCount()
+        && Double.compare(postRealm.getRank(), getRank()) == 0
+        && isFeedItem() == postRealm.isFeedItem()
+        && isPending() == postRealm.isPending()
+        && isBookmarked() == postRealm.isBookmarked()
+        && getPostType() == postRealm.getPostType()
+        && Objects.equals(getId(), postRealm.getId())
+        && Objects.equals(getOwnerId(), postRealm.getOwnerId())
+        && Objects.equals(getAvatarUrl(), postRealm.getAvatarUrl())
+        && Objects.equals(getUsername(), postRealm.getUsername())
+        && Objects.equals(getContent(), postRealm.getContent())
+        && Objects.equals(getMedias(), postRealm.getMedias())
+        && Objects.equals(getTags(), postRealm.getTags())
+        && Objects.equals(getGroupId(), postRealm.getGroupId())
+        && Objects.equals(getAcceptedCommentId(), postRealm.getAcceptedCommentId())
+        && Objects.equals(getCreated(), postRealm.getCreated())
+        && Objects.equals(getTitle(), postRealm.getTitle());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getId(), getOwnerId(), getAvatarUrl(), getUsername(), getContent(),
+        getBounty(), getMedias(), getTags(), getGroupId(), getAcceptedCommentId(), getCreated(),
+        getVoteDir(), getVoteCount(), getCommentCount(), getReportCount(), getTitle(), getRank(),
+        isFeedItem(), isPending(), isBookmarked(), getPostType());
   }
 
   @Override

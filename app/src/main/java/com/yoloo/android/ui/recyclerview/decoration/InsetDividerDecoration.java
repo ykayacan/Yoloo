@@ -34,9 +34,7 @@ public class InsetDividerDecoration extends RecyclerView.ItemDecoration {
   private final int inset;
   private final int height;
 
-  public InsetDividerDecoration(@LayoutRes int dividedLayoutRes,
-      int dividerHeight,
-      int leftInset,
+  public InsetDividerDecoration(@LayoutRes int dividedLayoutRes, int dividerHeight, int leftInset,
       @ColorInt int dividerColor) {
     layoutRes = dividedLayoutRes;
     inset = leftInset;
@@ -65,8 +63,7 @@ public class InsetDividerDecoration extends RecyclerView.ItemDecoration {
 
       if (viewType == layoutRes) {
         // skip if this *or next* view is activated
-        if (child.isActivated()
-            || (i + 1 < childCount && parent.getChildAt(i + 1).isActivated())) {
+        if (child.isActivated() || (i + 1 < childCount && parent.getChildAt(i + 1).isActivated())) {
           continue;
         }
         lines[i * 4] = inset + lm.getDecoratedLeft(child);

@@ -34,6 +34,8 @@ import butterknife.OnClick;
 import com.airbnb.epoxy.EpoxyModel;
 import com.annimon.stream.Stream;
 import com.bluelinelabs.conductor.Controller;
+import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
@@ -49,6 +51,7 @@ import com.sandrios.sandriosCamera.internal.utils.CameraHelper;
 import com.yalantis.ucrop.UCrop;
 import com.yoloo.android.R;
 import com.yoloo.android.YolooApp;
+import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.GroupRealm;
 import com.yoloo.android.data.model.MediaRealm;
 import com.yoloo.android.data.model.PostRealm;
@@ -67,6 +70,7 @@ import com.yoloo.android.util.ControllerUtil;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.MediaUtil;
+import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.WeakHandler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import java.io.File;
@@ -75,9 +79,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import timber.log.Timber;
 
-public class PostEditorController
-    extends MvpController<EditorView, EditorPresenter>
-    implements EditorView, ChipAdapter.OnItemSelectListener<TagRealm> {
+public class PostEditorController extends MvpController<EditorView, EditorPresenter>
+    implements EditorView, ChipAdapter.OnItemSelectListener<TagRealm>,
+    SelectGroupController.Groupable {
 
   private static final int REQUEST_SELECT_MEDIA = 1;
   private static final int REQUEST_CAPTURE_MEDIA = 2;
@@ -92,7 +96,6 @@ public class PostEditorController
   @BindView(R.id.tv_editor_post_select_group) TextView tvEditorSelectGroup;
   @BindView(R.id.et_editor_post_tags) NachoTextView etEditorTags;
   @BindView(R.id.recycler_view) RecyclerView rvEditorTrendingTags;
-  @BindView(R.id.editor_post_add_bounty_wrapper) ViewGroup editorAddBountyWrapper;
   @BindView(R.id.tv_editor_post_add_bounty) TextView tvEditorAddBounty;
 
   @BindColor(R.color.primary) int primaryColor;
@@ -136,7 +139,6 @@ public class PostEditorController
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-
     tagAutoCompleteAdapter
         .getQuery()
         .filter(s -> !s.isEmpty())
@@ -144,6 +146,13 @@ public class PostEditorController
         .debounce(400, TimeUnit.MILLISECONDS)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(s -> getPresenter().searchTag(s));
+  }
+
+  @Override
+  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+      @NonNull ControllerChangeType changeType) {
+    super.onChangeEnded(changeHandler, changeType);
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @Override
@@ -192,6 +201,11 @@ public class PostEditorController
   public EditorPresenter createPresenter() {
     return new EditorPresenter(TagRepositoryProvider.getRepository(),
         PostRepositoryProvider.getRepository(), UserRepositoryProvider.getRepository());
+  }
+
+  @Override
+  public void onMeLoaded(AccountRealm me) {
+
   }
 
   @Override
@@ -251,7 +265,7 @@ public class PostEditorController
         .popChangeHandler(new VerticalChangeHandler()));
   }
 
-  @OnClick(R.id.editor_post_add_bounty_wrapper)
+  @OnClick(R.id.tv_editor_post_add_bounty)
   void openAddBountyScreen() {
     if (Connectivity.isConnected(getApplicationContext())) {
       KeyboardUtil.hideKeyboard(getView());
@@ -268,8 +282,6 @@ public class PostEditorController
   private void setTempDraft() {
     // Set current content.
     draft.setContent(etEditorContent.getText().toString());
-
-    Timber.d("All Chips: %s", etEditorTags.getAllChips());
 
     // Set all tags.
     Stream
@@ -426,11 +438,16 @@ public class PostEditorController
       return;
     }
 
-    if (etEditorTags.isAlreadyAdded(item.getName())) {
-      tagAdapter.toggleSelection(model);
+    if (selected) {
+      if (etEditorTags.isAlreadyAdded(item.getName())) {
+        tagAdapter.toggleSelection(model);
+      } else {
+        etEditorTags.insertChip(item.getName());
+        selectedTags.add(item);
+      }
     } else {
-      etEditorTags.insertChip(item.getName());
-      selectedTags.add(item);
+      etEditorTags.removeChip(item.getName());
+      selectedTags.remove(item);
     }
   }
 
@@ -458,7 +475,8 @@ public class PostEditorController
     etEditorTags.setNachoValidator(new ChipifyingNachoValidator());
     etEditorTags.enableEditChipOnTouch(true, true);
     etEditorTags.setOnChipClickListener((chip, motionEvent) -> {
-
+      Timber.d("setOnChipClickListener(): %s", motionEvent);
+      Timber.d("setOnChipClickListener(): %s", chip.getText());
     });
   }
 

@@ -8,6 +8,7 @@ import com.squareup.moshi.Moshi;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.UploadManager;
 import com.yoloo.android.data.model.AccountRealm;
+import com.yoloo.android.data.model.CountryRealm;
 import com.yoloo.android.data.model.GameInfoRealm;
 import com.yoloo.android.data.model.upload.UploadResponse;
 import com.yoloo.android.util.StringUtil;
@@ -100,7 +101,7 @@ class UserRemoteDataStore {
                   return jsonAdapter.fromJson(json);
                 })
                 .doOnSuccess(response -> account.setAvatarUrl(response.getItems().get(0).getId()))
-                .flatMap(uploadResponse -> Single.fromCallable(() -> updateUser(account, idToken)))
+                .flatMap(ignored -> Single.fromCallable(() -> updateUser(account, idToken)))
                 .subscribeOn(Schedulers.io());
           }
 
@@ -113,10 +114,9 @@ class UserRemoteDataStore {
         .map(__ -> __.setSubscribedGroupIds(account.getSubscribedGroupIds()));
   }
 
-  Observable<Response<List<AccountRealm>>> list(@Nonnull String name, @Nullable String cursor,
+  Observable<Response<List<AccountRealm>>> searchUser(@Nonnull String name, @Nullable String cursor,
       int limit) {
     return getIdToken()
-        .doOnSuccess(idToken -> Timber.d("Token: %s", idToken))
         .flatMapObservable(idToken -> Observable
             .fromCallable(() -> INSTANCE
                 .getApi()
@@ -133,7 +133,6 @@ class UserRemoteDataStore {
   Observable<Response<List<AccountRealm>>> listFollowers(@Nonnull String userId,
       @Nullable String cursor, int limit) {
     return getIdToken()
-        .doOnSuccess(idToken -> Timber.d("Token: %s", idToken))
         .flatMapObservable(idToken -> Observable
             .fromCallable(() -> INSTANCE
                 .getApi()
@@ -150,7 +149,6 @@ class UserRemoteDataStore {
   Observable<Response<List<AccountRealm>>> listFollowings(@Nonnull String userId,
       @Nullable String cursor, int limit) {
     return getIdToken()
-        .doOnSuccess(idToken -> Timber.d("Token: %s", idToken))
         .flatMapObservable(idToken -> Observable
             .fromCallable(() -> INSTANCE
                 .getApi()
@@ -164,9 +162,38 @@ class UserRemoteDataStore {
         .compose(UserResponseTransformer.create());
   }
 
+  Observable<Response<List<AccountRealm>>> listRecommendedUsers(@Nonnull String cursor, int limit) {
+    return getIdToken()
+        .flatMapObservable(idToken -> Observable
+            .fromCallable(() -> INSTANCE
+                .getApi()
+                .users()
+                .listRecommendedUsers()
+                .setCursor(cursor)
+                .setLimit(limit)
+                .setRequestHeaders(setIdTokenHeader(idToken))
+                .execute())
+            .subscribeOn(Schedulers.io()))
+        .compose(UserResponseTransformer.create());
+  }
+
+  Observable<Response<List<AccountRealm>>> listNewUsers(@Nonnull String cursor, int limit) {
+    return getIdToken()
+        .flatMapObservable(idToken -> Observable
+            .fromCallable(() -> INSTANCE
+                .getApi()
+                .users()
+                .listNewUsers()
+                .setCursor(cursor)
+                .setLimit(limit)
+                .setRequestHeaders(setIdTokenHeader(idToken))
+                .execute())
+            .subscribeOn(Schedulers.io()))
+        .compose(UserResponseTransformer.create());
+  }
+
   Completable relationship(@Nonnull String userId, @Nonnull String action) {
     return getIdToken()
-        .doOnSuccess(idToken -> Timber.d("Token: %s", idToken))
         .flatMap(idToken -> Single
             .fromCallable(() -> INSTANCE
                 .getApi()
@@ -210,6 +237,11 @@ class UserRemoteDataStore {
     String mediaId = account.getAvatarUrl();
     if (!StringUtil.isNullOrEmpty(mediaId)) {
       update.setMediaId(mediaId);
+    }
+
+    List<CountryRealm> visitedCountries = account.getVisitedCountries();
+    if (!visitedCountries.isEmpty()) {
+      update.setCountryCode(visitedCountries.get(0).getCode());
     }
 
     String realName = account.getRealname();

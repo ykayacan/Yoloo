@@ -1,5 +1,6 @@
 package com.yoloo.android.feature.follow;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
@@ -14,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindColor;
 import butterknife.BindView;
-import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
@@ -29,6 +29,7 @@ import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
 import com.yoloo.android.util.BundleBuilder;
+import com.yoloo.android.util.ViewUtils;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
@@ -49,6 +50,7 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   @BindView(R.id.toolbar) Toolbar toolbar;
 
   @BindColor(R.color.primary) int colorPrimary;
+  @BindColor(R.color.primary_dark) int colorPrimaryDark;
 
   private FollowAdapter adapter;
 
@@ -72,15 +74,18 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
     return inflater.inflate(R.layout.controller_follow, container, false);
   }
 
-  @Override protected void onViewBound(@NonNull View view) {
+  @Override
+  protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
     setupToolbar();
     setupPullToRefresh();
     setupRecyclerView();
   }
 
-  @Override protected void onAttach(@NonNull View view) {
+  @Override
+  protected void onAttach(@NonNull View view) {
     super.onAttach(view);
+    ViewUtils.setStatusBarColor(getActivity(), colorPrimaryDark);
 
     final Bundle args = getArgs();
 
@@ -96,44 +101,55 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
     rvFollow.addOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
-  @Override protected void onDetach(@NonNull View view) {
+  @Override
+  protected void onDetach(@NonNull View view) {
     super.onDetach(view);
+    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
     rvFollow.removeOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
-  @Override public void onLoading(boolean pullToRefresh) {
+  @Override
+  public void onLoading(boolean pullToRefresh) {
     swipeRefreshLayout.setRefreshing(pullToRefresh);
   }
 
-  @Override public void onLoaded(Response<List<AccountRealm>> value) {
+  @Override
+  public void onLoaded(Response<List<AccountRealm>> value) {
     swipeRefreshLayout.setRefreshing(false);
 
     cursor = value.getCursor();
     adapter.addUsers(value.getData());
   }
 
-  @Override public void onError(Throwable e) {
+  @Override
+  public void onError(Throwable e) {
     swipeRefreshLayout.setRefreshing(false);
   }
 
-  @Override public void onEmpty() {
+  @Override
+  public void onEmpty() {
 
   }
 
-  @Override public void onRefresh() {
+  @Override
+  public void onRefresh() {
     endlessRecyclerViewScrollListener.resetState();
     adapter.clear();
   }
 
-  @Override public void onLoadMore() {
+  @Override
+  public void onLoadMore() {
     Timber.d("onLoadMore");
   }
 
-  @NonNull @Override public FollowPresenter createPresenter() {
+  @NonNull
+  @Override
+  public FollowPresenter createPresenter() {
     return new FollowPresenter(UserRepositoryProvider.getRepository());
   }
 
-  @Override public void onProfileClick(View v, EpoxyModel<?> model, String userId) {
+  @Override
+  public void onProfileClick(View v, String userId) {
     getRouter().pushController(RouterTransaction
         .with(ProfileController.create(userId))
         .pushChangeHandler(new VerticalChangeHandler())
@@ -141,7 +157,7 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   }
 
   @Override
-  public void onFollowClick(View v, EpoxyModel<?> model, AccountRealm account, int direction) {
+  public void onFollowClick(View v, AccountRealm account, int direction) {
     getPresenter().follow(account.getId(), direction);
   }
 

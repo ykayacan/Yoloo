@@ -3,6 +3,8 @@ package com.yoloo.android.data.model;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.yoloo.backend.yolooApi.model.AccountDTO;
+import com.yoloo.backend.yolooApi.model.CountryDTO;
+import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.Ignore;
 import io.realm.annotations.Index;
@@ -21,11 +23,12 @@ public class AccountRealm extends RealmObject {
   private String email;
   private String avatarUrl;
   private String bio;
-  private String locale;
   private String gender;
   private String websiteUrl;
   private Date birthdate;
-  private String country;
+  private String langCode;
+  private CountryRealm country;
+  private RealmList<CountryRealm> visitedCountries;
   private boolean following;
 
   private long followingCount;
@@ -33,6 +36,7 @@ public class AccountRealm extends RealmObject {
   private long postCount;
 
   private int achievementCount;
+  private String levelTitle;
   private int level;
   private int pointCount;
   private int bountyCount;
@@ -47,10 +51,11 @@ public class AccountRealm extends RealmObject {
   @Ignore private List<String> travelerTypeIds;
 
   public AccountRealm() {
-    // Empty constructor.
+    visitedCountries = new RealmList<>();
   }
 
   public AccountRealm(AccountDTO dto) {
+    this();
     id = dto.getId();
     username = dto.getUsername();
     realname = dto.getRealname();
@@ -59,11 +64,44 @@ public class AccountRealm extends RealmObject {
     gender = dto.getGender();
     websiteUrl = dto.getWebsiteUrl();
     avatarUrl = dto.getAvatarUrl();
-    locale = dto.getLocale();
+    langCode = dto.getLangCode();
+    country = new CountryRealm(dto.getCountry());
+
+    if (dto.getVisitedCountries() != null) {
+      Stream
+          .of(dto.getVisitedCountries())
+          .map(CountryRealm::new)
+          .forEach(country -> visitedCountries.add(country));
+    } else {
+      CountryDTO dto1 = new CountryDTO()
+          .setCountryCode("AF")
+          .setCountryName("Mauritus")
+          .setFlagUrl("https://storage.googleapis.com/yoloo-151719.appspot.com/flags/icons"
+              + "/001-mauritius.png");
+
+      CountryDTO dto2 = new CountryDTO()
+          .setCountryCode("AU")
+          .setCountryName("Austria")
+          .setFlagUrl("https://storage.googleapis.com/yoloo-151719.appspot.com/flags/icons"
+              + "/003-austria.png");
+
+      CountryDTO dto3 = new CountryDTO()
+          .setCountryCode("SL")
+          .setCountryName("Slovenia")
+          .setFlagUrl("https://storage.googleapis.com/yoloo-151719.appspot.com/flags/icons"
+              + "/003-austria.png");
+
+      visitedCountries.add(new CountryRealm(dto1));
+      visitedCountries.add(new CountryRealm(dto2));
+      visitedCountries.add(new CountryRealm(dto3));
+    }
+
     following = dto.getFollowing();
     followingCount = dto.getFollowingCount();
     followerCount = dto.getFollowerCount();
     postCount = dto.getPostCount();
+
+    levelTitle = dto.getLevelTitle();
     level = dto.getLevel();
     pointCount = dto.getPointCount();
     bountyCount = dto.getBountyCount();
@@ -125,12 +163,12 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
-  public String getLocale() {
-    return locale;
+  public String getLangCode() {
+    return langCode;
   }
 
-  public AccountRealm setLocale(String locale) {
-    this.locale = locale;
+  public AccountRealm setLangCode(String langCode) {
+    this.langCode = langCode;
     return this;
   }
 
@@ -279,12 +317,21 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
-  public String getCountry() {
+  public CountryRealm getCountry() {
     return country;
   }
 
-  public AccountRealm setCountry(String country) {
+  public AccountRealm setCountry(CountryRealm country) {
     this.country = country;
+    return this;
+  }
+
+  public List<CountryRealm> getVisitedCountries() {
+    return visitedCountries;
+  }
+
+  public AccountRealm addVisitedCountry(CountryRealm country) {
+    this.visitedCountries.add(country);
     return this;
   }
 
@@ -306,6 +353,14 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
+  public String getLevelTitle() {
+    return levelTitle;
+  }
+
+  public void setLevelTitle(String levelTitle) {
+    this.levelTitle = levelTitle;
+  }
+
   public String toMention() {
     return "@" + username;
   }
@@ -317,42 +372,47 @@ public class AccountRealm extends RealmObject {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
+    if (this == o) return true;
+    if (!(o instanceof AccountRealm)) return false;
     AccountRealm that = (AccountRealm) o;
-    return me == that.me
-        && following == that.following
-        && followingCount == that.followingCount
-        && followerCount == that.followerCount
-        && postCount == that.postCount
-        && achievementCount == that.achievementCount
-        && level == that.level
-        && pointCount == that.pointCount
-        && bountyCount == that.bountyCount
-        && pending == that.pending
-        && Objects.equals(id, that.id)
-        && Objects.equals(username, that.username)
-        && Objects.equals(realname, that.realname)
-        && Objects.equals(email, that.email)
-        && Objects.equals(avatarUrl, that.avatarUrl)
-        && Objects.equals(bio, that.bio)
-        && Objects.equals(locale, that.locale)
-        && Objects.equals(gender, that.gender)
-        && Objects.equals(websiteUrl, that.websiteUrl)
-        && Objects.equals(localSaveDate, that.localSaveDate)
-        && Objects.equals(idToken, that.idToken)
-        && Objects.equals(subscribedGroupIds, that.subscribedGroupIds);
+    return isMe() == that.isMe()
+        && isFollowing() == that.isFollowing()
+        && getFollowingCount() == that.getFollowingCount()
+        && getFollowerCount() == that.getFollowerCount()
+        && getPostCount() == that.getPostCount()
+        && getAchievementCount() == that.getAchievementCount()
+        && getLevel() == that.getLevel()
+        && getPointCount() == that.getPointCount()
+        && getBountyCount() == that.getBountyCount()
+        && isPending() == that.isPending()
+        && Objects.equals(getId(), that.getId())
+        && Objects.equals(getUsername(), that.getUsername())
+        && Objects.equals(getRealname(), that.getRealname())
+        && Objects.equals(getEmail(), that.getEmail())
+        && Objects.equals(getAvatarUrl(), that.getAvatarUrl())
+        && Objects.equals(getBio(), that.getBio())
+        && Objects.equals(getGender(), that.getGender())
+        && Objects.equals(getWebsiteUrl(), that.getWebsiteUrl())
+        && Objects.equals(getBirthdate(), that.getBirthdate())
+        && Objects.equals(getLangCode(), that.getLangCode())
+        && Objects.equals(getCountry(), that.getCountry())
+        && Objects.equals(getVisitedCountries(), that.getVisitedCountries())
+        && Objects.equals(getLevelTitle(), that.getLevelTitle())
+        && Objects.equals(getLocalSaveDate(), that.getLocalSaveDate())
+        && Objects.equals(getIdToken(), that.getIdToken())
+        && Objects.equals(getSubscribedGroupIds(), that.getSubscribedGroupIds())
+        && Objects.equals(getPassword(), that.getPassword())
+        && Objects.equals(getTravelerTypeIds(), that.getTravelerTypeIds());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, me, username, realname, email, avatarUrl, bio, locale, gender,
-        websiteUrl, following, followingCount, followerCount, postCount, achievementCount, level,
-        pointCount, bountyCount, pending, localSaveDate, idToken, subscribedGroupIds);
+    return Objects.hash(getId(), isMe(), getUsername(), getRealname(), getEmail(), getAvatarUrl(),
+        getBio(), getGender(), getWebsiteUrl(), getBirthdate(), getLangCode(), getCountry(),
+        getVisitedCountries(), isFollowing(), getFollowingCount(), getFollowerCount(),
+        getPostCount(), getAchievementCount(), getLevelTitle(), getLevel(), getPointCount(),
+        getBountyCount(), isPending(), getLocalSaveDate(), getIdToken(), getSubscribedGroupIds(),
+        getPassword(), getTravelerTypeIds());
   }
 
   @Override
@@ -378,15 +438,21 @@ public class AccountRealm extends RealmObject {
         + ", bio='"
         + bio
         + '\''
-        + ", locale='"
-        + locale
-        + '\''
         + ", gender='"
         + gender
         + '\''
         + ", websiteUrl='"
         + websiteUrl
         + '\''
+        + ", birthdate="
+        + birthdate
+        + ", langCode='"
+        + langCode
+        + '\''
+        + ", country="
+        + country
+        + ", visitedCountries="
+        + visitedCountries
         + ", following="
         + following
         + ", followingCount="
@@ -397,6 +463,9 @@ public class AccountRealm extends RealmObject {
         + postCount
         + ", achievementCount="
         + achievementCount
+        + ", levelTitle='"
+        + levelTitle
+        + '\''
         + ", level="
         + level
         + ", pointCount="
@@ -416,6 +485,8 @@ public class AccountRealm extends RealmObject {
         + ", password='"
         + password
         + '\''
+        + ", travelerTypeIds="
+        + travelerTypeIds
         + '}';
   }
 }

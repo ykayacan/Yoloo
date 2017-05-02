@@ -1,19 +1,29 @@
 package com.yoloo.android.feature.feed.component.bountybutton;
 
 import android.view.View;
-import android.widget.Button;
 import com.airbnb.epoxy.EpoxyAttribute;
-import com.airbnb.epoxy.EpoxyModel;
-import com.airbnb.epoxy.EpoxyModelClass;
+import com.airbnb.epoxy.SimpleEpoxyModel;
 import com.yoloo.android.R;
 
-@EpoxyModelClass(layout = R.layout.item_feed_bounty_button)
-public abstract class BountyButtonModel extends EpoxyModel<Button> {
+import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;
 
-  @EpoxyAttribute(hash = false) View.OnClickListener onClickListener;
+public class BountyButtonModel extends SimpleEpoxyModel {
 
-  @Override public void bind(Button view) {
-    view.setText(R.string.action_feed_bounty_questions);
-    view.setOnClickListener(v -> onClickListener.onClick(v));
+  @EpoxyAttribute(DoNotHash) View.OnClickListener onClickListener;
+
+  public BountyButtonModel() {
+    super(R.layout.item_feed_bounty_button);
+  }
+
+  @Override
+  public void bind(View view) {
+    super.bind(view);
+    view.setOnClickListener(onClickListener);
+  }
+
+  @Override
+  public void unbind(View view) {
+    super.unbind(view);
+    view.setOnClickListener(null);
   }
 }

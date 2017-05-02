@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="88dp"
+  android:layout_height="88dp"
+  android:foreground="?attr/selectableItemBackground">
+
+  <ImageView
+    android:id="@+id/iv_group_bg"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:scaleType="centerCrop"
+    tools:src="@drawable/login_bg" />
+
+  <TextView
+    android:id="@+id/tv_group_text"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:layout_marginEnd="4dp"
+    android:layout_marginLeft="4dp"
+    android:layout_marginRight="4dp"
+    android:layout_marginStart="4dp"
+    android:layout_marginTop="24dp"
+    android:gravity="center"
+    android:maxLines="2"
+    android:textAppearance="@style/TextAppearance.GroupText.Small"
+    tools:text="Food &amp; Drink" />
+
+</FrameLayout>

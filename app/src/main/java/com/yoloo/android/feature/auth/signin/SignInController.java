@@ -28,7 +28,7 @@ import com.yoloo.android.feature.auth.IdpResponse;
 import com.yoloo.android.feature.auth.provider.FacebookProvider;
 import com.yoloo.android.feature.auth.provider.GoogleProvider;
 import com.yoloo.android.feature.auth.provider.IdpProvider;
-import com.yoloo.android.feature.feed.FeedHomeController;
+import com.yoloo.android.feature.feed.FeedController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.FormUtil;
 import com.yoloo.android.util.KeyboardUtil;
@@ -174,7 +174,7 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
 
   @Override
   public void onSignedIn() {
-    getRouter().setRoot(RouterTransaction.with(FeedHomeController.create()));
+    getRouter().setRoot(RouterTransaction.with(FeedController.create()));
   }
 
   @Override

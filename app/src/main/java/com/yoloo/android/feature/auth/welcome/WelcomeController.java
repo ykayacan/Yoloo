@@ -1,5 +1,6 @@
 package com.yoloo.android.feature.auth.welcome;
 
+import android.graphics.Color;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
@@ -12,6 +13,7 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 import com.yoloo.android.R;
@@ -20,6 +22,7 @@ import com.yoloo.android.feature.auth.signin.SignInController;
 import com.yoloo.android.feature.base.BaseController;
 import com.yoloo.android.ui.changehandler.CircularRevealChangeHandlerCompat;
 import com.yoloo.android.util.HtmlUtil;
+import com.yoloo.android.util.ViewUtils;
 
 public class WelcomeController extends BaseController {
 
@@ -56,6 +59,13 @@ public class WelcomeController extends BaseController {
     });
 
     tvActionLogin.setText(HtmlUtil.fromHtml(alreadyHaveAccountString));
+  }
+
+  @Override
+  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+      @NonNull ControllerChangeType changeType) {
+    super.onChangeEnded(changeHandler, changeType);
+    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
   }
 
   @Override

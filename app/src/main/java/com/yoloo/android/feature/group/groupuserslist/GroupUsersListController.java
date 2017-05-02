@@ -13,7 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindString;
 import butterknife.BindView;
-import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
@@ -43,11 +42,6 @@ public class GroupUsersListController
 
   private GroupUsersListAdapter adapter;
 
-  private String groupId;
-
-  public GroupUsersListController() {
-  }
-
   public GroupUsersListController(@Nullable Bundle args) {
     super(args);
   }
@@ -72,7 +66,7 @@ public class GroupUsersListController
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-    groupId = getArgs().getString(KEY_GROUP_ID);
+    final String groupId = getArgs().getString(KEY_GROUP_ID);
 
     getPresenter().loadUsers(groupId);
   }
@@ -107,7 +101,7 @@ public class GroupUsersListController
   }
 
   @Override
-  public void onProfileClick(View v, EpoxyModel<?> model, String userId) {
+  public void onProfileClick(View v, String userId) {
     RouterTransaction transaction = RouterTransaction
         .with(ProfileController.create(userId))
         .pushChangeHandler(new VerticalChangeHandler())
@@ -117,7 +111,7 @@ public class GroupUsersListController
   }
 
   @Override
-  public void onFollowClick(View v, EpoxyModel<?> model, AccountRealm account, int direction) {
+  public void onFollowClick(View v, AccountRealm account, int direction) {
     if (direction == 1) {
       getPresenter().follow(account.getId());
     } else if (direction == -1) {

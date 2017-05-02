@@ -32,9 +32,6 @@ public class TagListController extends BaseController implements OnItemClickList
 
   private Disposable disposable;
 
-  public TagListController() {
-  }
-
   public TagListController(Bundle args) {
     super(args);
   }

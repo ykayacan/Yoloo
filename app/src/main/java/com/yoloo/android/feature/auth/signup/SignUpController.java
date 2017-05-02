@@ -14,8 +14,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Spinner;
-import android.widget.TextView;
+import android.widget.Toast;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -24,13 +23,16 @@ import butterknife.OnTextChanged;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bumptech.glide.Glide;
 import com.fastaccess.datetimepicker.DatePickerFragmentDialog;
+import com.fastaccess.datetimepicker.DateTimeBuilder;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.mikelau.countrypickerx.CountryPickerDialog;
 import com.yoloo.android.R;
 import com.yoloo.android.data.repository.notification.NotificationRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.auth.AuthUI;
 import com.yoloo.android.feature.auth.IdpResponse;
 import com.yoloo.android.feature.base.BaseActivity;
-import com.yoloo.android.feature.feed.FeedHomeController;
+import com.yoloo.android.feature.feed.FeedController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.FormUtil;
@@ -48,7 +50,7 @@ import java.util.concurrent.TimeUnit;
 import timber.log.Timber;
 
 public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
-    implements SignUpView, BaseActivity.OnDatePickListener {
+    implements SignUpView {
 
   private static final String KEY_TRAVELER_TYPE_IDS = "TRAVELER_TYPE_IDS";
   private static final String KEY_IDP_RESPONSE = "IDP_RESPONSE";
@@ -59,13 +61,13 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
 
   private final PublishSubject<String> usernameSubject = PublishSubject.create();
 
-  @BindView(R.id.iv_sign_up_avatar) ImageView ivAvatar;
-  @BindView(R.id.et_login_fullname) EditText etFullName;
-  @BindView(R.id.et_sign_up_username) EditText etUsername;
-  @BindView(R.id.et_login_email) EditText etEmail;
-  @BindView(R.id.et_login_password) EditText etPassword;
-  @BindView(R.id.tv_login_birthdate) TextView tvBirthDate;
-  @BindView(R.id.spinner_country) Spinner spinner;
+  @BindView(R.id.iv_auth_avatar) ImageView ivAvatar;
+  @BindView(R.id.et_auth_fullname) EditText etFullName;
+  @BindView(R.id.et_auth_username) EditText etUsername;
+  @BindView(R.id.et_auth_email) EditText etEmail;
+  @BindView(R.id.et_auth_password) EditText etPassword;
+  @BindView(R.id.et_auth_birthday) EditText etBirthDate;
+  @BindView(R.id.et_auth_select_country) EditText etSelectCountry;
   @BindView(R.id.toolbar) Toolbar toolbar;
 
   @BindString(R.string.label_loading) String loadingString;
@@ -76,7 +78,7 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
   @BindString(R.string.error_server_down) String errorServerDownString;
   @BindString(R.string.error_already_registered) String errorAlreadyRegisteredString;
   @BindString(R.string.error_field_username_unavailable) String errorUsernameAlreadyTaken;
-  @BindString(R.string.hint_birthdate) String birthdateString;
+  @BindString(R.string.hint_birthday) String birthdateString;
 
   @BindString(R.string.hint_sign_up_enter_username) String hintEnterUsernameString;
   @BindString(R.string.hint_sign_up_enter_password) String hintEnterPasswordString;
@@ -86,7 +88,10 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
 
   private ProgressDialog progressDialog;
 
-  private long birthDate;
+  private CountryPickerDialog countryPicker;
+
+  private long birthDate = 0L;
+  private String countryCode;
 
   public SignUpController() {
   }
@@ -136,6 +141,9 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
   protected void onDetach(@NonNull View view) {
     super.onDetach(view);
     ViewUtils.clearHideStatusBar(view);
+    if (countryPicker.isShowing()) {
+      countryPicker.dismiss();
+    }
   }
 
   private void handleIdpResponse() {
@@ -206,14 +214,30 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
     etEmail.setText(idpResponse.getEmail());
   }
 
-  @OnClick(R.id.tv_login_birthdate)
-  void setBirthDate() {
-    ((BaseActivity) getActivity()).setOnDatePickListener(this);
+  @OnClick(R.id.et_auth_birthday)
+  void setBirthDate(EditText editText) {
+    ((BaseActivity) getActivity()).setOnDatePickListener(date -> {
+      birthDate = date;
+
+      Date birthDate = new Date(date);
+      SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH);
+      String formattedDate = sdf.format(birthDate);
+      editText.setText(formattedDate);
+    });
 
     DatePickerFragmentDialog
-        .newInstance()
+        .newInstance(DateTimeBuilder.newInstance().withMaxDate(new Date().getTime()))
         .show(((FragmentActivity) getActivity()).getSupportFragmentManager(),
             "DatePickerFragmentDialog");
+  }
+
+  @OnClick(R.id.et_auth_select_country)
+  void selectCountry(EditText editText) {
+    countryPicker = new CountryPickerDialog(getActivity(), (country, flagResId) -> {
+      countryCode = country.getIsoCode();
+      editText.setText(country.getCountryName(getActivity()));
+    }, false, 0);
+    countryPicker.show();
   }
 
   @Override
@@ -229,7 +253,7 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
         NotificationRepositoryProvider.getRepository());
   }
 
-  @OnClick(R.id.btn_login_ready)
+  @OnClick(R.id.btn_auth_sign_up)
   void signUp() {
     etFullName.setError(null);
     etEmail.setError(null);
@@ -239,7 +263,6 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
     String username = etUsername.getText().toString();
     String email = etEmail.getText().toString();
     String password = etPassword.getText().toString();
-    String country = spinner.getSelectedItem().toString();
 
     boolean cancel = false;
     View focusView = null;
@@ -282,15 +305,15 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
       }
     }
 
-    if (tvBirthDate.getText().equals(birthdateString)) {
-      Snackbar.make(getView(), "Select birthdate", Snackbar.LENGTH_SHORT).show();
-      focusView = tvBirthDate;
+    if (birthDate == 0L) {
+      etBirthDate.setError("Select birthday");
+      focusView = etBirthDate;
       cancel = true;
     }
 
-    if (country.equals("Select Country")) {
-      Snackbar.make(getView(), "Select your country", Snackbar.LENGTH_SHORT).show();
-      focusView = spinner;
+    if (TextUtils.isEmpty(countryCode)) {
+      etSelectCountry.setError("Select your country");
+      focusView = etSelectCountry;
       cancel = true;
     }
 
@@ -308,12 +331,19 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
             idpResponse.getIdpToken(), idpResponse.getName(), idpResponse.getPictureUrl());
       }
 
-      getPresenter().signUp(idpResponse, username, password, new Date(birthDate), country,
-          travelerTypeIds, locale);
+      if (idpResponse.getProviderType().equals(AuthUI.FACEBOOK_PROVIDER) || idpResponse
+          .getProviderType()
+          .equals(AuthUI.GOOGLE_PROVIDER)) {
+        getPresenter().signUpWithProvider(idpResponse, username, new Date(birthDate), countryCode,
+            locale, travelerTypeIds);
+      } else if (idpResponse.getProviderType().equals(AuthUI.EMAIL_PROVIDER)) {
+        getPresenter().signUpWithPassword(idpResponse, username, password, new Date(birthDate),
+            countryCode, locale, travelerTypeIds);
+      }
     }
   }
 
-  @OnEditorAction(R.id.et_login_password)
+  @OnEditorAction(R.id.et_auth_password)
   boolean onEditorAction(int actionId) {
     if (actionId == R.id.sign_up || actionId == EditorInfo.IME_NULL) {
       signUp();
@@ -322,7 +352,7 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
     return false;
   }
 
-  @OnTextChanged(R.id.et_sign_up_username)
+  @OnTextChanged(R.id.et_auth_username)
   void checkUsername(CharSequence text) {
     usernameSubject.onNext(text.toString());
   }
@@ -335,7 +365,7 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
 
   @Override
   public void onSignedUp() {
-    getRouter().setRoot(RouterTransaction.with(FeedHomeController.create()));
+    getRouter().setRoot(RouterTransaction.with(FeedController.create()));
   }
 
   @Override
@@ -347,12 +377,12 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
       Snackbar.make(getView(), errorServerDownString, Snackbar.LENGTH_LONG).show();
     }
 
-    if (t.getMessage().contains("400")) {
+    if (t.getMessage().contains("400") || t instanceof FirebaseAuthUserCollisionException) {
       Snackbar.make(getView(), errorEmailAlreadyTakenString, Snackbar.LENGTH_LONG).show();
     }
 
     if (t.getMessage().contains("409")) {
-      Snackbar.make(getView(), errorAlreadyRegisteredString, Snackbar.LENGTH_LONG).show();
+      Toast.makeText(getActivity(), errorAlreadyRegisteredString, Toast.LENGTH_SHORT).show();
     }
 
     // Backend didn't processed, sign out account.
@@ -383,15 +413,5 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
     final ActionBar ab = getSupportActionBar();
     ab.setDisplayShowTitleEnabled(false);
     ab.setDisplayHomeAsUpEnabled(true);
-  }
-
-  @Override
-  public void onDatePick(long date) {
-    birthDate = date;
-
-    Date birthDate = new Date(date);
-    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH);
-    String formattedDate = sdf.format(birthDate);
-    tvBirthDate.setText(formattedDate);
   }
 }

@@ -9,13 +9,14 @@ import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
+import com.yoloo.android.feature.feed.common.listener.OnBookmarkClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
-import com.yoloo.android.feature.feed.component.loading.LoadingModel;
+import com.yoloo.android.feature.models.loader.LoaderModel;
 import com.yoloo.android.feature.feed.component.post.BlogModel;
 import com.yoloo.android.feature.feed.component.post.BlogModel_;
 import com.yoloo.android.feature.feed.component.post.RichQuestionModel;
@@ -34,6 +35,8 @@ public class PostListAdapter extends EpoxyAdapter {
 
   private final RequestManager glide;
 
+  private String userId;
+
   private OnProfileClickListener onProfileClickListener;
   private OnPostOptionsClickListener onPostOptionsClickListener;
   private OnItemClickListener<PostRealm> onPostClickListener;
@@ -41,16 +44,21 @@ public class PostListAdapter extends EpoxyAdapter {
   private OnCommentClickListener onCommentClickListener;
   private OnVoteClickListener onVoteClickListener;
   private OnContentImageClickListener onContentImageClickListener;
-  private LoadingModel loadingModel;
+  private OnBookmarkClickListener onBookmarkClickListener;
+  private LoaderModel loaderModel;
 
   public PostListAdapter(Context context, RequestManager glide) {
     enableDiffing();
     set = new ConstraintSet();
 
-    loadingModel = new LoadingModel();
+    loaderModel = new LoaderModel();
 
     circleTransformation = new CropCircleTransformation(context);
     this.glide = glide;
+  }
+
+  public void setUserId(String userId) {
+    this.userId = userId;
   }
 
   public void setOnProfileClickListener(OnProfileClickListener onProfileClickListener) {
@@ -82,6 +90,10 @@ public class PostListAdapter extends EpoxyAdapter {
     this.onContentImageClickListener = onContentImageClickListener;
   }
 
+  public void setOnBookmarkClickListener(OnBookmarkClickListener onBookmarkClickListener) {
+    this.onBookmarkClickListener = onBookmarkClickListener;
+  }
+
   public void addPosts(List<PostRealm> posts) {
     for (PostRealm post : posts) {
       if (post.isTextQuestionPost()) {
@@ -107,10 +119,10 @@ public class PostListAdapter extends EpoxyAdapter {
   public void showFooter(RecyclerView recyclerView, boolean show) {
     /*if (show) {
       Timber.d("showFooter(%s)", true);
-      recyclerView.post(() -> addModel(loadingModel));
+      recyclerView.post(() -> addModel(loaderModel));
     } else {
       Timber.d("showFooter(%s)", false);
-      recyclerView.post(() -> removeModel(loadingModel));
+      recyclerView.post(() -> removeModel(loaderModel));
     }*/
   }
 
@@ -146,43 +158,52 @@ public class PostListAdapter extends EpoxyAdapter {
   }
 
   private RichQuestionModel createRichQuestion(PostRealm post) {
-    return new RichQuestionModel_().onProfileClickListener(onProfileClickListener)
+    return new RichQuestionModel_()
+        .onProfileClickListener(onProfileClickListener)
         .onPostOptionsClickListener(onPostOptionsClickListener)
         .onItemClickListener(onPostClickListener)
         .onShareClickListener(onShareClickListener)
         .onCommentClickListener(onCommentClickListener)
         .onVoteClickListener(onVoteClickListener)
         .onContentImageClickListener(onContentImageClickListener)
+        .onBookmarkClickListener(onBookmarkClickListener)
         .layout(R.layout.item_feed_question_rich)
-        .circleTransformation(circleTransformation)
+        .bitmapTransformation(circleTransformation)
         .glide(glide)
         .set(set)
-        .post(post);
+        .post(post)
+        .userId(userId);
   }
 
   private TextQuestionModel createTextQuestion(PostRealm post) {
-    return new TextQuestionModel_().onProfileClickListener(onProfileClickListener)
+    return new TextQuestionModel_()
+        .onProfileClickListener(onProfileClickListener)
         .onPostOptionsClickListener(onPostOptionsClickListener)
         .onItemClickListener(onPostClickListener)
         .onShareClickListener(onShareClickListener)
         .onCommentClickListener(onCommentClickListener)
         .onVoteClickListener(onVoteClickListener)
+        .onBookmarkClickListener(onBookmarkClickListener)
         .layout(R.layout.item_feed_question_text)
-        .circleTransformation(circleTransformation)
+        .bitmapTransformation(circleTransformation)
         .glide(glide)
-        .post(post);
+        .post(post)
+        .userId(userId);
   }
 
   private BlogModel createBlog(PostRealm post) {
-    return new BlogModel_().onProfileClickListener(onProfileClickListener)
+    return new BlogModel_()
+        .onProfileClickListener(onProfileClickListener)
         .onPostOptionsClickListener(onPostOptionsClickListener)
         .onItemClickListener(onPostClickListener)
         .onShareClickListener(onShareClickListener)
         .onCommentClickListener(onCommentClickListener)
         .onVoteClickListener(onVoteClickListener)
+        .onBookmarkClickListener(onBookmarkClickListener)
         .layout(R.layout.item_feed_blog)
-        .circleTransformation(circleTransformation)
+        .bitmapTransformation(circleTransformation)
         .glide(glide)
-        .post(post);
+        .post(post)
+        .userId(userId);
   }
 }

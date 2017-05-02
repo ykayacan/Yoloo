@@ -8,7 +8,8 @@ import lombok.Value;
 public class TravelerGroup {
   private String id;
   private String name;
-  private String imageUrl;
+  private String imageWithIconUrl;
+  private String imageWithoutIconUrl;
   private long subscriberCount;
   private long postCount;
   private double rank;

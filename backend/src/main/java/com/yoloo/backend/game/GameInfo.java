@@ -8,10 +8,15 @@ import lombok.Value;
 @Value
 @Builder
 public class GameInfo {
-  private int points;
-  private int requiredPoints;
-  private String level;
-  private String nextLevel;
+  private int currentLvlPoints;
+  private int currentLvl;
+
+  private int myPoints;
+  private String title;
+
+  private int nextLvlPoints;
+  private int nextLvl;
+
   @Singular private List<GameHistory> histories;
 
   @Value

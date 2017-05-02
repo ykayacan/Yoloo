@@ -81,7 +81,7 @@ public abstract class RichQuestionModel
 
     glide
         .load(post.getAvatarUrl())
-        .bitmapTransform(circleTransformation)
+        .bitmapTransform(bitmapTransformation)
         .placeholder(R.drawable.ic_player_72dp)
         .into(holder.ivUserAvatar);
 
@@ -113,7 +113,10 @@ public abstract class RichQuestionModel
             }
           });
     } else {
-      glide.load(post.getMedias()).override(w, h).into(holder.ivContentImage);
+      glide
+          .load(post.getMedias().get(0).getMediumSizeUrl())
+          .override(w, h)
+          .into(holder.ivContentImage);
     }
 
     holder.tvComment.setText(CountUtil.formatCount(post.getCommentCount()));
@@ -148,6 +151,13 @@ public abstract class RichQuestionModel
         isSelf() ? R.drawable.ic_more_vert_black_24dp : R.drawable.ic_bookmark_black_24dp;
     holder.ibOptions.setImageDrawable(AppCompatResources.getDrawable(context, drawableIconRes));
 
+    if (!isSelf()) {
+      final int colorRes =
+          post.isBookmarked() ? R.color.primary : android.R.color.secondary_text_dark;
+      holder.ibOptions.setColorFilter(ContextCompat.getColor(context, colorRes),
+          PorterDuff.Mode.SRC_IN);
+    }
+
     if (holder.tagContainer != null) {
       Stream.of(post.getTagNames()).forEach(tagName -> {
         final TextView tag = new TextView(YolooApp.getAppContext());
@@ -165,10 +175,10 @@ public abstract class RichQuestionModel
 
     // listeners
     holder.ivUserAvatar.setOnClickListener(
-        v -> onProfileClickListener.onProfileClick(v, this, post.getOwnerId()));
+        v -> onProfileClickListener.onProfileClick(v, post.getOwnerId()));
 
     holder.tvUsername.setOnClickListener(
-        v -> onProfileClickListener.onProfileClick(v, this, post.getOwnerId()));
+        v -> onProfileClickListener.onProfileClick(v, post.getOwnerId()));
 
     if (onItemClickListener != null && post.shouldShowReadMore()) {
       holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(v, this, post));
@@ -183,13 +193,12 @@ public abstract class RichQuestionModel
       if (isSelf()) {
         onPostOptionsClickListener.onPostOptionsClick(v, this, post);
       } else {
-        final boolean isBookmarked = holder.ibOptions.getTag() == Boolean.TRUE;
-        final int colorRes = isBookmarked ? android.R.color.secondary_text_dark : R.color.primary;
-
-        holder.ibOptions.setTag(!isBookmarked);
-        holder.ibOptions.setColorFilter(ContextCompat.getColor(context, colorRes),
+        final int reversedColorRes =
+            post.isBookmarked() ? android.R.color.secondary_text_dark : R.color.primary;
+        holder.ibOptions.setColorFilter(ContextCompat.getColor(context, reversedColorRes),
             PorterDuff.Mode.SRC_IN);
-        onBookmarkClickListener.onBookmarkClick(post.getId(), isBookmarked);
+        post.setBookmarked(!post.isBookmarked());
+        onBookmarkClickListener.onBookmarkClick(post.getId(), post.isBookmarked());
       }
     });
 

@@ -16,7 +16,7 @@ public abstract class BlogModel extends EpoxyModel<BlogView> {
   public void bind(BlogView view) {
     super.bind(view);
     view.setBlogTitle(post.getTitle());
-    view.setBlogUserInfo(post.getUsername(), post.getUsername());
+    view.setBlogUserInfo(post.getUsername(), "Explorer");
     view.setBlogContent(post.getContent());
   }
 }

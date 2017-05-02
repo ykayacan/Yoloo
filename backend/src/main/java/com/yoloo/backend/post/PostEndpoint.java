@@ -96,6 +96,18 @@ public class PostEndpoint {
         Optional.fromNullable(cursor), Optional.absent(), user);
   }
 
+  @ApiMethod(name = "posts.listMediaPosts",
+      path = "posts/mediaPosts",
+      httpMethod = ApiMethod.HttpMethod.GET)
+  public CollectionResponse<PostEntity> listMediaPosts(@Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
+
+    EndpointsValidator.create().on(AuthValidator.create(user));
+
+    return postController.listMediaPosts(Optional.fromNullable(limit),
+        Optional.fromNullable(cursor), user);
+  }
+
   /**
    * Report.
    *

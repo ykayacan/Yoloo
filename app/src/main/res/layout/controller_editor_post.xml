@@ -4,8 +4,7 @@
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="@android:color/white"
-  android:fitsSystemWindows="true">
+  android:background="@android:color/white">
 
   <include layout="@layout/merge_appbar" />
 
@@ -22,6 +21,8 @@
       android:id="@+id/iv_editor_post_image"
       android:layout_width="50dp"
       android:layout_height="50dp"
+      android:layout_marginLeft="16dp"
+      android:layout_marginStart="16dp"
       android:scaleType="centerCrop"
       android:visibility="gone"
       app:layout_constraintBottom_toBottomOf="@+id/et_editor_post_content"
@@ -50,9 +51,9 @@
       android:background="@android:color/transparent"
       android:hint="@string/hint_editor_question_content"
       android:inputType="textMultiLine|textCapSentences"
-      android:minHeight="66dp"
+      android:minHeight="80dp"
       android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-      android:textSize="16sp"
+      android:textSize="15sp"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toEndOf="@+id/iv_editor_post_image"
       app:layout_constraintTop_toTopOf="parent" />
@@ -144,12 +145,14 @@
       android:id="@+id/tv_editor_post_trending_tag_title"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
+      android:layout_marginLeft="16dp"
+      android:layout_marginStart="16dp"
       android:layout_marginTop="8dp"
       android:paddingBottom="8dp"
       android:paddingTop="8dp"
       android:text="Trending Tags"
       android:textAppearance="@style/TextAppearance.GroupTitle"
-      android:textColor="@android:color/black"
+      android:textColor="@color/lucky_point"
       android:textSize="12sp"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toBottomOf="@+id/et_editor_post_tags" />
@@ -158,6 +161,10 @@
       android:id="@+id/recycler_view"
       android:layout_width="0dp"
       android:layout_height="32dp"
+      android:paddingEnd="16dp"
+      android:paddingLeft="16dp"
+      android:paddingRight="16dp"
+      android:paddingStart="16dp"
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintRight_toRightOf="parent"
       app:layout_constraintTop_toBottomOf="@+id/tv_editor_post_trending_tag_title" />
@@ -172,29 +179,40 @@
       app:layout_constraintRight_toRightOf="parent"
       app:layout_constraintTop_toBottomOf="@+id/recycler_view" />
 
-    <FrameLayout
-      android:id="@+id/editor_post_add_bounty_wrapper"
+    <TextView
+      android:id="@+id/tv_bounty_hint"
+      fontPath="fonts/OpenSans-Semibold.ttf"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:layout_marginTop="16dp"
-      android:background="?attr/selectableItemBackground"
+      android:gravity="center"
       android:padding="8dp"
+      android:text="Adding bounty makes your post more visible"
+      android:textColor="@color/lucky_point"
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/divider4">
+      app:layout_constraintTop_toBottomOf="@+id/divider4"
+      tools:ignore="MissingPrefix" />
 
-      <com.yoloo.android.ui.widget.CompatTextView
-        android:id="@+id/tv_editor_post_add_bounty"
-        style="@style/TextAppearance.BountyText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:drawablePadding="8dp"
-        android:gravity="center"
-        android:text="@string/action_editor_add_bounty"
-        app:drawableStart="@drawable/ic_bounty_coin_24dp" />
-
-    </FrameLayout>
+    <com.yoloo.android.ui.widget.CompatTextView
+      android:id="@+id/tv_editor_post_add_bounty"
+      style="@style/TextAppearance.BountyText"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:background="?attr/selectableItemBackground"
+      android:drawablePadding="8dp"
+      android:gravity="center"
+      android:paddingBottom="16dp"
+      android:paddingEnd="64dp"
+      android:paddingLeft="64dp"
+      android:paddingRight="64dp"
+      android:paddingStart="64dp"
+      android:paddingTop="16dp"
+      android:text="@string/action_editor_add_bounty"
+      app:drawableStart="@drawable/ic_bounty_coin_24dp"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/tv_bounty_hint" />
 
   </android.support.constraint.ConstraintLayout>
 

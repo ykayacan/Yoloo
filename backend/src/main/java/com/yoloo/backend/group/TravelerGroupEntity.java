@@ -48,7 +48,9 @@ public class TravelerGroupEntity {
 
   @Wither @Index private String name;
 
-  @Wither private Link imageUrl;
+  @Wither private Link imageWithIconUrl;
+
+  @Wither private Link imageWithoutIconUrl;
 
   @Index @Wither private double rank;
 

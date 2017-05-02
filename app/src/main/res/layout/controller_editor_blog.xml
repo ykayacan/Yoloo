@@ -2,6 +2,7 @@
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/root_view"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:background="@android:color/white"
@@ -35,15 +36,14 @@
           android:foreground="@drawable/shape_bottom_scrim"
           app:layout_collapseMode="parallax" />
 
-        <TextView
-          android:id="@+id/tv_blog_add_image"
-          android:layout_width="match_parent"
+        <ImageView
+          android:id="@+id/iv_add_image"
+          android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_gravity="bottom"
-          android:gravity="center"
+          android:layout_gravity="bottom|end"
           android:padding="16dp"
-          android:text="Click to add image"
-          android:textAppearance="@style/TextAppearance.AppCompat.Subhead" />
+          android:tint="@android:color/white"
+          app:srcCompat="@drawable/ic_add_a_photo_black_24dp" />
 
       </FrameLayout>
 
@@ -63,6 +63,7 @@
     android:layout_height="match_parent"
     android:layout_marginBottom="48dp"
     android:fillViewport="true"
+    android:fitsSystemWindows="true"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <LinearLayout
@@ -100,33 +101,34 @@
         android:layout_marginRight="16dp"
         android:layout_marginStart="16dp"
         android:textColor="@color/primary"
-        tools:text="Duygu Keskek &#8226; Traveler Expert" />
+        tools:text="@string/label_blog_user_info" />
 
       <View
         android:layout_width="72dp"
         android:layout_height="1dp"
-        android:layout_marginBottom="24dp"
         android:layout_marginEnd="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
-        android:background="@color/blog_divider" />
+        android:background="@color/primary" />
 
       <EditText
         android:id="@+id/et_blog_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="32dp"
         android:layout_marginEnd="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
         android:background="@android:color/transparent"
         android:hint="@string/hint_editor_blog_content"
         android:inputType="textMultiLine|textCapSentences"
         android:lineSpacingMultiplier="1.1"
-        android:textColor="@color/lucky_point" />
+        android:textColor="@color/lucky_point"
+        android:textIsSelectable="true" />
 
       <View
         android:id="@+id/divider2"
@@ -191,10 +193,10 @@
         android:id="@+id/tv_editor_post_trending_tag_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginStart="16dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginLeft="32dp"
+        android:layout_marginRight="32dp"
+        android:layout_marginStart="32dp"
         android:layout_marginTop="8dp"
         android:paddingBottom="8dp"
         android:paddingTop="8dp"
@@ -207,10 +209,10 @@
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="32dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginStart="16dp" />
+        android:paddingEnd="32dp"
+        android:paddingLeft="32dp"
+        android:paddingRight="32dp"
+        android:paddingStart="32dp" />
 
       <View
         android:id="@+id/divider4"
@@ -223,29 +225,34 @@
         android:layout_marginTop="16dp"
         android:background="@color/divider" />
 
-      <FrameLayout
-        android:id="@+id/editor_post_add_bounty_wrapper"
+      <TextView
+        android:id="@+id/tv_bounty_hint"
+        fontPath="fonts/OpenSans-Semibold.ttf"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:background="?attr/selectableItemBackground"
+        android:gravity="center"
         android:padding="8dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/divider4">
+        android:text="Adding bounty makes your post more visible"
+        android:textColor="@color/lucky_point"
+        tools:ignore="MissingPrefix" />
 
-        <com.yoloo.android.ui.widget.CompatTextView
-          android:id="@+id/tv_editor_post_add_bounty"
-          style="@style/TextAppearance.BountyText"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_gravity="center"
-          android:drawablePadding="8dp"
-          android:gravity="center"
-          android:text="@string/action_editor_add_bounty"
-          app:drawableStart="@drawable/ic_bounty_coin_24dp" />
-
-      </FrameLayout>
+      <com.yoloo.android.ui.widget.CompatTextView
+        android:id="@+id/tv_editor_post_add_bounty"
+        style="@style/TextAppearance.BountyText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="?attr/selectableItemBackground"
+        android:drawablePadding="8dp"
+        android:gravity="center"
+        android:paddingBottom="16dp"
+        android:paddingEnd="64dp"
+        android:paddingLeft="64dp"
+        android:paddingRight="64dp"
+        android:paddingStart="64dp"
+        android:paddingTop="16dp"
+        android:text="@string/action_editor_add_bounty"
+        app:drawableStart="@drawable/ic_bounty_coin_24dp" />
 
     </LinearLayout>
 

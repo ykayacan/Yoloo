@@ -28,10 +28,13 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.OnTextChanged;
+import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bumptech.glide.Glide;
 import com.github.jksiezni.permissive.Permissive;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.mikelau.countrypickerx.CountryPickerDialog;
 import com.sandrios.sandriosCamera.internal.configuration.CameraConfiguration;
 import com.sandrios.sandriosCamera.internal.ui.camera.Camera1Activity;
 import com.sandrios.sandriosCamera.internal.ui.camera2.Camera2Activity;
@@ -40,6 +43,7 @@ import com.yalantis.ucrop.UCrop;
 import com.yoloo.android.R;
 import com.yoloo.android.YolooApp;
 import com.yoloo.android.data.model.AccountRealm;
+import com.yoloo.android.data.model.CountryRealm;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.auth.AuthUI;
 import com.yoloo.android.framework.MvpController;
@@ -49,6 +53,7 @@ import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.MediaUtil;
 import com.yoloo.android.util.TextViewUtil;
 import com.yoloo.android.util.VersionUtil;
+import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -71,6 +76,7 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   @BindView(R.id.til_profile_edit_username) TextInputLayout tilUsername;
   @BindView(R.id.til_profile_edit_email) TextInputLayout tilEmail;
   @BindView(R.id.til_profile_edit_password) TextInputLayout tilPassword;
+  @BindView(R.id.til_profile_edit_country) TextInputLayout tilCountry;
   @BindView(R.id.spinner_profile_edit_gender) Spinner spinnerGender;
   @BindView(R.id.til_profile_edit_website) TextInputLayout tilWebsite;
   @BindView(R.id.til_profile_edit_bio) TextInputLayout tilBio;
@@ -99,6 +105,8 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   private AccountRealm original;
 
   private Disposable disposable;
+
+  private CountryPickerDialog countryPicker;
 
   public ProfileEditController() {
     setHasOptionsMenu(true);
@@ -148,6 +156,22 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
           ivSaveIcon.setImageAlpha(enabled ? 255 : 138);
           ivSaveIcon.setEnabled(enabled);
         });
+  }
+
+  @Override
+  protected void onDetach(@NonNull View view) {
+    super.onDetach(view);
+    KeyboardUtil.hideKeyboard(view);
+    if (countryPicker != null && countryPicker.isShowing()) {
+      countryPicker.dismiss();
+    }
+  }
+
+  @Override
+  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+      @NonNull ControllerChangeType changeType) {
+    super.onChangeEnded(changeHandler, changeType);
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @Override
@@ -274,6 +298,17 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     websiteErrorSubject.onNext(!FormUtil.isWebUrl(text));
   }
 
+  @OnClick(R.id.til_profile_edit_country)
+  void changeCountry() {
+    countryPicker = new CountryPickerDialog(getActivity(), (country, flagResId) -> {
+      tilCountry.getEditText().setText(country.getCountryName(getActivity()));
+      if (!draft.getCountry().getCode().equals(country.getIsoCode())) {
+        draft.setCountry(new CountryRealm(country.getIsoCode()));
+      }
+    }, false, 0);
+    countryPicker.show();
+  }
+
   @OnClick({
       R.id.iv_profile_edit_avatar, R.id.tv_profile_edit_change_photo
   })
@@ -281,7 +316,7 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     new AlertDialog.Builder(getActivity())
         .setTitle(R.string.label_editor_select_media_source_title)
         .setItems(R.array.action_editor_list_media_source, (dialog, which) -> {
-          KeyboardUtil.hideKeyboard(getActivity().getCurrentFocus());
+          KeyboardUtil.hideKeyboard(getView());
 
           if (which == 0) {
             checkGalleryPermissions();
@@ -294,6 +329,10 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
 
   @OnClick(R.id.iv_profile_edit_save)
   void saveProfile() {
+    if (!isValid()) {
+      return;
+    }
+
     String realName = tilRealName.getEditText().getText().toString();
     if (!realName.equals(original.getRealname())) {
       draft.setRealname(realName);
@@ -337,6 +376,30 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     Timber.d("Changes will be saved: %s", draft.toString());
   }
 
+  private boolean isValid() {
+    if (TextUtils.isEmpty(tilRealName.getEditText().getText())) {
+      showMessage(realNameEmptyErrorString);
+      return false;
+    }
+
+    if (TextUtils.isEmpty(tilUsername.getEditText().getText())) {
+      showMessage(usernameEmptyErrorString);
+      return false;
+    }
+
+    if (TextUtils.isEmpty(tilEmail.getEditText().getText())) {
+      showMessage(emailEmptyErrorString);
+      return false;
+    }
+
+    if (FormUtil.isEmailAddress(tilWebsite.getEditText().getText())) {
+      showMessage(invalidWebsiteString);
+      return false;
+    }
+
+    return true;
+  }
+
   private void setProfile(AccountRealm account) {
     Glide
         .with(getActivity())
@@ -357,6 +420,8 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
       tilPassword.setEnabled(user.getProviderId().equals(AuthUI.EMAIL_PROVIDER));
       tilEmail.setEnabled(user.getProviderId().equals(AuthUI.EMAIL_PROVIDER));
     }
+
+    tilCountry.getEditText().setText(account.getCountry().getName());
 
     ArrayAdapter adapter = (ArrayAdapter) spinnerGender.getAdapter();
     final String gender = account.getGender();
@@ -484,5 +549,9 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     options.setStatusBarColor(primaryDarkColor);
     options.setToolbarTitle(getResources().getString(R.string.label_editor_crop_image_title));
     return options;
+  }
+
+  private void showMessage(String message) {
+    Snackbar.make(getView(), message, Snackbar.LENGTH_LONG).show();
   }
 }

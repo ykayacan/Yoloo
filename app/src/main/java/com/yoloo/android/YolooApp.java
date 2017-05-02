@@ -6,10 +6,8 @@ import android.support.multidex.MultiDexApplication;
 import android.support.v7.app.AppCompatDelegate;
 import android.util.Log;
 import com.evernote.android.job.JobManager;
-import com.facebook.stetho.Stetho;
 import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.database.FirebaseDatabase;
-import com.uphyca.stetho_realm.RealmInspectorModulesProvider;
 import com.yoloo.android.data.faker.AccountFaker;
 import com.yoloo.android.data.faker.PostFaker;
 import io.realm.Realm;
@@ -23,6 +21,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 public class YolooApp extends MultiDexApplication {
 
   private static Context appContext;
+  private static YolooApp instance;
 
   static {
     AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
@@ -32,9 +31,13 @@ public class YolooApp extends MultiDexApplication {
     @Nonnull
     @Override
     public String getPublicKey() {
-      return "dfdfdgdfgdfgfdg";
+      return BuildConfig.IN_APP_KEY;
     }
   });
+
+  public YolooApp() {
+    instance = this;
+  }
 
   public static File getCacheDirectory() {
     return appContext.getCacheDir();
@@ -42,6 +45,10 @@ public class YolooApp extends MultiDexApplication {
 
   public static Context getAppContext() {
     return appContext;
+  }
+
+  public static YolooApp getInstance() {
+    return instance;
   }
 
   public Billing getBilling() {
@@ -55,8 +62,8 @@ public class YolooApp extends MultiDexApplication {
 
     initTimber();
     initRealm();
-    initStetho();
-    FirebaseDatabase.getInstance().setPersistenceEnabled(false);
+    //initStetho();
+    FirebaseDatabase.getInstance().setPersistenceEnabled(true);
     initCalligraphy();
     JobManager.create(this).addJobCreator(new YolooJobCreator());
 
@@ -64,7 +71,6 @@ public class YolooApp extends MultiDexApplication {
     PostFaker.fakePosts();
 
     //enabledStrictMode();
-    //TinyDancer.create().show(this);
   }
 
   private void initCalligraphy() {
@@ -74,13 +80,13 @@ public class YolooApp extends MultiDexApplication {
         .build());
   }
 
-  private void initStetho() {
+  /*private void initStetho() {
     Stetho.initialize(Stetho
         .newInitializerBuilder(this)
         .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
         .enableWebKitInspector(RealmInspectorModulesProvider.builder(this).build())
         .build());
-  }
+  }*/
 
   private void initRealm() {
     Realm.init(this);

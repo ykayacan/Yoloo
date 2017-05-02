@@ -63,7 +63,6 @@ class NotificationRemoteDataSource {
                 .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + idToken))
                 .execute())
             .subscribeOn(Schedulers.io()))
-        .filter(response -> !response.getItems().isEmpty())
         .compose(NotificationResponseTransformer.create());
   }
 }

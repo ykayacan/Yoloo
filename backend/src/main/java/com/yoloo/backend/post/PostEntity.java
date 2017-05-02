@@ -17,6 +17,7 @@ import com.googlecode.objectify.condition.IfFalse;
 import com.googlecode.objectify.condition.IfNotDefault;
 import com.googlecode.objectify.condition.IfNotZero;
 import com.googlecode.objectify.condition.IfNull;
+import com.googlecode.objectify.condition.IfTrue;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.group.TravelerGroupEntity;
@@ -57,6 +58,7 @@ public class PostEntity implements Votable {
   public static final String FIELD_RANK = "rank";
   public static final String FIELD_BOUNTY = "bounty";
   public static final String FIELD_POST_TYPE = "postType";
+  public static final String FIELD_HAS_MEDIA = "hasMedia";
 
   @Id private long id;
 
@@ -81,7 +83,9 @@ public class PostEntity implements Votable {
    */
   @Index(IfNotZero.class) @Wither private int bounty;
 
-  @Wither @IgnoreSave(IfNull.class) private List<MediaEntity> medias;
+  @Index(IfTrue.class) @Wither private boolean hasMedia;
+
+  @Wither @IgnoreSave(IfNull.class) private List<PostMedia> medias;
 
   @Index @Wither private Set<String> tags;
 
@@ -106,6 +110,8 @@ public class PostEntity implements Votable {
   @Wither @Ignore private long commentCount;
 
   @Wither @Ignore private int reportCount;
+
+  @Wither @Ignore private boolean bookmarked;
 
   // Don't use this
   @Wither @Ignore private Map<Ref<PostShard>, PostShard> shardMap;
@@ -163,6 +169,7 @@ public class PostEntity implements Votable {
         .voteCount(voteCount)
         .reportCount(reportCount)
         .commented(commented)
+        .bookmarked(bookmarked)
         .postType(postType)
         .created(created)
         .build();
@@ -191,5 +198,18 @@ public class PostEntity implements Votable {
 
   @NoArgsConstructor
   public static class ShardGroup {
+  }
+
+  @Value
+  @AllArgsConstructor(access = AccessLevel.PRIVATE)
+  @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+  @FieldDefaults(makeFinal = false)
+  public static class PostMedia {
+    private String mediaId;
+    private String url;
+
+    public static PostMedia from(MediaEntity media) {
+      return new PostMedia(media.getWebsafeId(), media.getUrl());
+    }
   }
 }

@@ -17,7 +17,8 @@ public class AccountShardService implements Shardable<AccountShard, Account> {
 
   @Override
   public Map<Ref<AccountShard>, AccountShard> createShardMapWithRef(Iterable<Key<Account>> keys) {
-    return Observable.fromIterable(keys)
+    return Observable
+        .fromIterable(keys)
         .flatMap(this::createShardsFromPostKey)
         .toMap(Ref::create)
         .blockingGet();
@@ -25,22 +26,21 @@ public class AccountShardService implements Shardable<AccountShard, Account> {
 
   @Override
   public Map<Key<AccountShard>, AccountShard> createShardMapWithKey(Iterable<Key<Account>> keys) {
-    return Observable.fromIterable(keys)
+    return Observable
+        .fromIterable(keys)
         .flatMap(this::createShardsFromPostKey)
         .toMap(Key::create)
         .blockingGet();
   }
 
-  @Override public Map<Ref<AccountShard>, AccountShard> createShardMapWithRef(Key<Account> key) {
-    return createShardsFromPostKey(key)
-        .toMap(Ref::create)
-        .blockingGet();
+  @Override
+  public Map<Ref<AccountShard>, AccountShard> createShardMapWithRef(Key<Account> key) {
+    return createShardsFromPostKey(key).toMap(Ref::create).blockingGet();
   }
 
-  @Override public Map<Key<AccountShard>, AccountShard> createShardMapWithKey(Key<Account> key) {
-    return createShardsFromPostKey(key)
-        .toMap(Key::create)
-        .blockingGet();
+  @Override
+  public Map<Key<AccountShard>, AccountShard> createShardMapWithKey(Key<Account> key) {
+    return createShardsFromPostKey(key).toMap(Key::create).blockingGet();
   }
 
   @Override
@@ -49,15 +49,19 @@ public class AccountShardService implements Shardable<AccountShard, Account> {
     return AccountShard.createKey(entityKey, shardNum);
   }
 
-  @Override public Observable<List<Account>> mergeShards(Collection<? extends Account> entities) {
-    return Observable.fromIterable(entities)
+  @Override
+  public Observable<List<Account>> mergeShards(Collection<? extends Account> entities) {
+    return Observable
+        .fromIterable(entities)
         .flatMap(this::mergeShards)
         .toList(entities.size() == 0 ? 1 : entities.size())
         .toObservable();
   }
 
-  @Override public Observable<Account> mergeShards(Account entity) {
-    return Observable.fromIterable(entity.getShards())
+  @Override
+  public Observable<Account> mergeShards(Account entity) {
+    return Observable
+        .fromIterable(entity.getShards())
         .cast(AccountShard.class)
         .reduce(this::reduceCounters)
         .map(s -> entity.withCounts(buildCounter(s)))
@@ -89,13 +93,12 @@ public class AccountShardService implements Shardable<AccountShard, Account> {
   }
 
   public Observable<AccountShard> merge(Account account) {
-    return Observable.fromIterable(account.getShards())
-        .reduce(this::reduceCounters)
-        .toObservable();
+    return Observable.fromIterable(account.getShards()).reduce(this::reduceCounters).toObservable();
   }
 
   private AccountShard reduceCounters(AccountShard s1, AccountShard s2) {
-    return AccountShard.builder()
+    return AccountShard
+        .builder()
         .followerCount(s1.getFollowerCount() + s2.getFollowerCount())
         .followingCount(s1.getFollowingCount() + s2.getFollowingCount())
         .postCount(s1.getPostCount() + s2.getPostCount())
@@ -103,7 +106,8 @@ public class AccountShardService implements Shardable<AccountShard, Account> {
   }
 
   private Account.Counts buildCounter(AccountShard shard) {
-    return Account.Counts.builder()
+    return Account.Counts
+        .builder()
         .followers(shard.getFollowerCount())
         .followings(shard.getFollowingCount())
         .questions(shard.getPostCount())
@@ -117,7 +121,8 @@ public class AccountShardService implements Shardable<AccountShard, Account> {
   }
 
   private AccountShard createShard(Key<Account> accountKey, Integer shardNum) {
-    return AccountShard.builder()
+    return AccountShard
+        .builder()
         .id(ShardUtil.generateShardId(accountKey, shardNum))
         .followerCount(0L)
         .followingCount(0L)
@@ -126,11 +131,6 @@ public class AccountShardService implements Shardable<AccountShard, Account> {
   }
 
   public enum Update {
-    FOLLOWING_UP,
-    FOLLOWING_DOWN,
-    FOLLOWER_UP,
-    FOLLOWER_DOWN,
-    POST_UP,
-    POST_DOWN
+    FOLLOWING_UP, FOLLOWING_DOWN, FOLLOWER_UP, FOLLOWER_DOWN, POST_UP, POST_DOWN
   }
 }

@@ -14,6 +14,7 @@ import com.yoloo.backend.media.MediaEntity;
 import com.yoloo.backend.util.StringUtil;
 import com.yoloo.backend.vote.Vote;
 import io.reactivex.Observable;
+import ix.Ix;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
@@ -29,7 +30,7 @@ public class PostService {
 
   public PostEntity createPost(Account account, Optional<String> content, String tags,
       TravelerGroupEntity group, Optional<String> title, Optional<Integer> bounty,
-      List<MediaEntity> mediaEntities, Tracker tracker, PostEntity.Type type) {
+      List<MediaEntity> medias, Tracker tracker, PostEntity.Type type) {
 
     final Key<PostEntity> postKey = factory().allocateId(account.getKey(), PostEntity.class);
 
@@ -49,7 +50,8 @@ public class PostService {
         .dir(Vote.Direction.DEFAULT)
         .bounty(checkBounty(bounty, tracker))
         .acceptedCommentKey(null)
-        .medias(mediaEntities)
+        .medias(Ix.from(medias).map(PostEntity.PostMedia::from).toList())
+        .hasMedia(!medias.isEmpty())
         .commentCount(0L)
         .voteCount(0L)
         .reportCount(0)

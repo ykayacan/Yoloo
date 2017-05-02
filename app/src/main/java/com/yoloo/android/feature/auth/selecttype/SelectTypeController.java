@@ -2,6 +2,7 @@ package com.yoloo.android.feature.auth.selecttype;
 
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
@@ -22,6 +23,7 @@ import com.igalata.bubblepicker.rendering.BubblePicker;
 import com.yoloo.android.R;
 import com.yoloo.android.feature.auth.signupinit.SignUpInitController;
 import com.yoloo.android.feature.base.BaseController;
+import com.yoloo.android.util.ViewUtils;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -29,6 +31,7 @@ public class SelectTypeController extends BaseController {
 
   @BindView(R.id.bubblepicker) BubblePicker picker;
   @BindView(R.id.btn_sign_up_init_get_started) TextView tvGetStarted;
+  @BindView(R.id.space_workaround) View space;
 
   @BindArray(R.array.colors) int[] colors;
   @BindArray(R.array.traveler_types_images) TypedArray travelerTypeDrawables;
@@ -51,6 +54,12 @@ public class SelectTypeController extends BaseController {
   @Override
   protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
+
+    Point point = ViewUtils.getNavigationBarSize(getActivity());
+
+    if (space != null) {
+      space.setVisibility(point.y > 0 ? View.VISIBLE : View.GONE);
+    }
 
     for (int i = 0; i < travelerTypeTitles.length; i++) {
       types.put(travelerTypeTitles[i], travelerTypeIds[i]);
@@ -77,10 +86,10 @@ public class SelectTypeController extends BaseController {
     travelerTypeDrawables.recycle();
 
     picker.setItems(items);
-    picker.setBubbleSize(40);
+    picker.setBubbleSize(45);
     picker.setListener(new BubblePickerListener() {
       @Override
-      public void onBubbleSelected(PickerItem pickerItem) {
+      public void onBubbleSelected(@NonNull PickerItem pickerItem) {
         if (types.containsKey(pickerItem.getTitle())) {
           selectedTypeIds.add(types.get(pickerItem.getTitle()));
 
@@ -91,12 +100,12 @@ public class SelectTypeController extends BaseController {
       }
 
       @Override
-      public void onBubbleDeselected(PickerItem pickerItem) {
+      public void onBubbleDeselected(@NonNull PickerItem pickerItem) {
         if (types.containsKey(pickerItem.getTitle())) {
           selectedTypeIds.remove(types.get(pickerItem.getTitle()));
 
           if (selectedTypeIds.size() < 3) {
-            tvGetStarted.setVisibility(View.GONE);
+            tvGetStarted.setVisibility(View.INVISIBLE);
           }
         }
       }

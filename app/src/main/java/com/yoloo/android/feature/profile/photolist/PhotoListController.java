@@ -31,7 +31,7 @@ public class PhotoListController extends MvpController<PhotoListView, PhotoListP
 
   private static final String KEY_USER_ID = "USER_ID";
 
-  @BindView(R.id.rv_photos) RecyclerView rvPhotos;
+  @BindView(R.id.recycler_view) RecyclerView rvPhotos;
 
   private PhotosAdapter adapter;
 

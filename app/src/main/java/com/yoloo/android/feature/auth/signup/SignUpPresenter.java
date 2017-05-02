@@ -4,6 +4,7 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.yoloo.android.data.model.AccountRealm;
+import com.yoloo.android.data.model.CountryRealm;
 import com.yoloo.android.data.model.FcmRealm;
 import com.yoloo.android.data.repository.notification.NotificationRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
@@ -51,22 +52,22 @@ class SignUpPresenter extends MvpPresenter<SignUpView> {
     getDisposable().add(d);
   }
 
-  void signUp(@Nonnull IdpResponse response, @Nonnull String username, @Nullable String password,
-      @Nonnull Date birthdate, @Nonnull String country, @Nonnull List<String> travelerTypeIds,
-      @Nonnull String locale) {
-    if (response.getProviderType().equals(AuthUI.EMAIL_PROVIDER)) {
-      signUpWithPassword(response, username, password, birthdate, country, travelerTypeIds, locale);
-    } else {
-      signUpWithProvider(response, username, birthdate, country, travelerTypeIds, locale);
-    }
-  }
+  /**
+   * Sign up with provider.
+   *
+   * @param response the response
+   * @param username the username
+   * @param birthday the birthday
+   * @param countryCode the country code
+   * @param langCode the lang code
+   * @param travelerTypeIds the traveler type ids
+   */
+  void signUpWithProvider(@Nonnull IdpResponse response, @Nonnull String username,
+      @Nonnull Date birthday, @Nonnull String countryCode, @Nonnull String langCode,
+      @Nonnull List<String> travelerTypeIds) {
+    getView().onShowLoading();
 
-  private void signUpWithProvider(@Nonnull IdpResponse response, @Nonnull String username,
-      @Nonnull Date birthdate, @Nonnull String country, @Nonnull List<String> travelerTypeIds,
-      @Nonnull String locale) {
-    final String providerType = response.getProviderType();
-
-    AuthCredential credential = getAuthCredential(response, providerType);
+    AuthCredential credential = getAuthCredential(response, response.getProviderType());
 
     FirebaseAuth.getInstance().signInWithCredential(credential).addOnCompleteListener(task -> {
       Timber.d("signInWithCredential:onComplete: %s", task.isSuccessful());
@@ -75,7 +76,18 @@ class SignUpPresenter extends MvpPresenter<SignUpView> {
       // the auth state listener will be notified and logic to handle the
       // signed in user can be handled in the listener.
       if (task.isSuccessful()) {
-        registerUser(response, username, birthdate, country, travelerTypeIds, locale, null);
+        AccountRealm newAccount = new AccountRealm()
+            .setMe(true)
+            .setRealname(response.getName())
+            .setUsername(username)
+            .setAvatarUrl(response.getPictureUrl())
+            .setEmail(response.getEmail())
+            .setBirthdate(birthday)
+            .setCountry(new CountryRealm(countryCode))
+            .setLangCode(langCode)
+            .setTravelerTypeIds(travelerTypeIds);
+
+        registerUserOnServer(newAccount);
       } else {
         getView().onHideLoading();
         getView().onError(task.getException());
@@ -83,9 +95,20 @@ class SignUpPresenter extends MvpPresenter<SignUpView> {
     });
   }
 
-  private void signUpWithPassword(@Nonnull IdpResponse response, @Nonnull String username,
-      @Nonnull String password, @Nonnull Date birthdate, @Nonnull String country,
-      @Nonnull List<String> travelerTypeIds, @Nonnull String locale) {
+  /**
+   * Sign up with password.
+   *
+   * @param response the response
+   * @param username the username
+   * @param password the password
+   * @param birthday the birthday
+   * @param countryCode the country code
+   * @param langCode the lang code
+   * @param travelerTypeIds the traveler type ids
+   */
+  void signUpWithPassword(@Nonnull IdpResponse response, @Nonnull String username,
+      @Nonnull String password, @Nonnull Date birthday, @Nonnull String countryCode,
+      @Nonnull String langCode, @Nonnull List<String> travelerTypeIds) {
     getView().onShowLoading();
 
     FirebaseAuth
@@ -98,7 +121,19 @@ class SignUpPresenter extends MvpPresenter<SignUpView> {
           // the auth state listener will be notified and logic to handle the
           // signed in user can be handled in the listener.
           if (task.isSuccessful()) {
-            registerUser(response, username, birthdate, country, travelerTypeIds, locale, password);
+            AccountRealm newAccount = new AccountRealm()
+                .setMe(true)
+                .setRealname(response.getName())
+                .setUsername(username)
+                .setPassword(password)
+                .setAvatarUrl(response.getPictureUrl())
+                .setEmail(response.getEmail())
+                .setBirthdate(birthday)
+                .setCountry(new CountryRealm(countryCode))
+                .setLangCode(langCode)
+                .setTravelerTypeIds(travelerTypeIds);
+
+            registerUserOnServer(newAccount);
           } else {
             getView().onHideLoading();
             getView().onError(task.getException());
@@ -106,20 +141,7 @@ class SignUpPresenter extends MvpPresenter<SignUpView> {
         });
   }
 
-  private void registerUser(IdpResponse response, String username, Date birthdate, String country,
-      List<String> travelerTypeIds, String locale, String password) {
-    AccountRealm newAccount = new AccountRealm()
-        .setMe(true)
-        .setRealname(response.getName())
-        .setUsername(username)
-        .setAvatarUrl(response.getPictureUrl())
-        .setEmail(response.getEmail())
-        .setBirthdate(birthdate)
-        .setCountry(country)
-        .setLocale(locale)
-        .setTravelerTypeIds(travelerTypeIds)
-        .setPassword(password);
-
+  private void registerUserOnServer(AccountRealm newAccount) {
     Disposable d = userRepository
         .registerUser(newAccount)
         .flatMapCompletable(account -> registerFcmToken())
@@ -128,6 +150,12 @@ class SignUpPresenter extends MvpPresenter<SignUpView> {
           getView().onHideLoading();
           getView().onSignedUp();
         }, throwable -> {
+          FirebaseAuth.getInstance().getCurrentUser().delete().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+              Timber.d("User account deleted.");
+            }
+          });
+
           getView().onHideLoading();
           getView().onError(throwable);
         });

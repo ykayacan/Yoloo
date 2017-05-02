@@ -38,6 +38,7 @@ import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
 import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.util.BundleBuilder;
+import com.yoloo.android.util.KeyboardUtil;
 import java.util.List;
 import org.parceler.Parcels;
 import timber.log.Timber;
@@ -54,7 +55,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
   @BindView(R.id.layout_compose) CommentAutocomplete composeLayout;
   @BindView(R.id.toolbar) Toolbar toolbar;
 
-  private CommentAdapter adapter;
+  private CommentEpoxyController epoxyController;
 
   private PostRealm post;
 
@@ -109,19 +110,17 @@ public class CommentController extends MvpController<CommentView, CommentPresent
 
   @Override
   public void onLoading(boolean pullToRefresh) {
-    if (!pullToRefresh) {
-      //LceAnimator.showLoading(loadingView, swipeRefreshLayout, errorView);
-    }
+
   }
 
   @Override
   public void onLoaded(List<CommentRealm> comments) {
-    adapter.addComments(Stream
+    epoxyController.setData(Stream
         .of(comments)
         .map(comment -> comment
             .setPostAccepted(!TextUtils.isEmpty(post.getAcceptedCommentId()))
             .setPostOwner(post.getOwnerId().equals(comment.getOwnerId())))
-        .toList());
+        .toList(), false);
   }
 
   @Override
@@ -143,12 +142,12 @@ public class CommentController extends MvpController<CommentView, CommentPresent
 
   @Override
   public void onNewComment(CommentRealm comment) {
-    adapter.addComment(comment
+    epoxyController.addComment(comment
         .setOwner(true)
         .setPostAccepted(!TextUtils.isEmpty(post.getAcceptedCommentId()))
         .setPostOwner(post.getOwnerId().equals(comment.getOwnerId())));
 
-    adapter.scrollToEnd(rvComment);
+    epoxyController.scrollToEnd(rvComment);
 
     modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, post);
   }
@@ -171,8 +170,8 @@ public class CommentController extends MvpController<CommentView, CommentPresent
   }
 
   @Override
-  public void onProfileClick(View v, EpoxyModel<?> model, String userId) {
-    composeLayout.hideKeyboard();
+  public void onProfileClick(View v, String userId) {
+    KeyboardUtil.hideKeyboard(getView());
     startTransaction(ProfileController.create(userId), new VerticalChangeHandler());
   }
 
@@ -193,7 +192,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
         .setItems(R.array.action_comment_dialog, (dialog, which) -> {
           if (which == 0) {
             getPresenter().deleteComment(item);
-            adapter.delete(model);
+            epoxyController.delete(item);
           }
         })
         .show();
@@ -209,12 +208,13 @@ public class CommentController extends MvpController<CommentView, CommentPresent
   }
 
   private void setupRecyclerView() {
-    adapter = new CommentAdapter(getActivity(), post.getPostType(), Glide.with(getActivity()));
-    adapter.setOnCommentLongClickListener(this);
-    adapter.setOnMarkAsAcceptedClickListener(this);
-    adapter.setOnMentionClickListener(this);
-    adapter.setOnProfileClickListener(this);
-    adapter.setOnVoteClickListener(this);
+    epoxyController =
+        new CommentEpoxyController(getActivity(), post.getPostType(), Glide.with(getActivity()));
+    epoxyController.setOnCommentLongClickListener(this);
+    epoxyController.setOnMarkAsAcceptedClickListener(this);
+    epoxyController.setOnMentionClickListener(this);
+    epoxyController.setOnProfileClickListener(this);
+    epoxyController.setOnVoteClickListener(this);
 
     final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
     rvComment.setLayoutManager(lm);
@@ -224,7 +224,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
     rvComment.setItemAnimator(animator);
 
     rvComment.setHasFixedSize(true);
-    rvComment.setAdapter(adapter);
+    rvComment.setAdapter(epoxyController.getAdapter());
   }
 
   private void startTransaction(Controller to, ControllerChangeHandler handler) {

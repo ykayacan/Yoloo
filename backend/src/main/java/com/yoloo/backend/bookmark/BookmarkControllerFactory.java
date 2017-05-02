@@ -2,7 +2,6 @@ package com.yoloo.backend.bookmark;
 
 import com.yoloo.backend.base.ControllerFactory;
 import com.yoloo.backend.post.PostShardService;
-import com.yoloo.backend.post.transformer.PostTransformer;
 import com.yoloo.backend.vote.VoteService;
 import lombok.NoArgsConstructor;
 
@@ -11,9 +10,6 @@ public class BookmarkControllerFactory implements ControllerFactory<BookmarkCont
 
   @Override
   public BookmarkController create() {
-    return BookmarkController.create(
-        new PostTransformer(),
-        PostShardService.create(),
-        VoteService.create());
+    return BookmarkController.create(PostShardService.create(), VoteService.create());
   }
 }

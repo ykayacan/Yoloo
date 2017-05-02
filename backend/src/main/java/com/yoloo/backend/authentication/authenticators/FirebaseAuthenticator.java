@@ -12,15 +12,12 @@ import com.googlecode.objectify.Key;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.authentication.oauth2.OAuth2;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
 import static com.yoloo.backend.OfyService.ofy;
 
 @Singleton
 public class FirebaseAuthenticator implements Authenticator {
-
-  private static final Logger LOG = Logger.getLogger(FirebaseAuthenticator.class.getName());
 
   @Override
   public User authenticate(final HttpServletRequest request) {

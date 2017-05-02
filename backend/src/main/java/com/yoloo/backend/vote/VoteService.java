@@ -84,7 +84,7 @@ public class VoteService {
       Key<Account> accountKey) {
     return Observable
         .fromIterable(votables)
-        .map(post -> Vote.createKey(post.getVotableKey(), accountKey))
+        .map(votable -> Vote.createKey(votable.getVotableKey(), accountKey))
         .toList()
         .flatMapObservable(keys -> Observable.just(ofy().load().keys(keys)));
   }

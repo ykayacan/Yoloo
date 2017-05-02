@@ -8,6 +8,7 @@ import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.condition.IfNotZero;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.game.badge.Badge;
+import com.yoloo.backend.game.level.Level;
 import java.util.Set;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -28,7 +29,7 @@ public class Tracker {
   private static final int DAILY_CAP = 200;
 
   /**
-   * AccountId:tracker
+   * tracker:accountId
    */
   @Id private String id;
 
@@ -37,6 +38,8 @@ public class Tracker {
   @Index(IfNotZero.class) private int bounties;
 
   @Index private int level;
+
+  private String title;
 
   private int dailyPoints;
 
@@ -49,7 +52,7 @@ public class Tracker {
   @Singular private Set<Badge> badges;
 
   public static Key<Tracker> createKey(Key<Account> accountKey) {
-    return Key.create(Tracker.class, accountKey.toWebSafeString() + ":tracker");
+    return Key.create(Tracker.class, "tracker:" + accountKey.toWebSafeString());
   }
 
   public Key<Tracker> getKey() {
@@ -86,5 +89,18 @@ public class Tracker {
 
   public boolean hasEnoughBounty(int toConsume) {
     return bounties >= toConsume;
+  }
+
+  public boolean checkLevelUp() {
+    if (isLevelUp(points)) {
+      level++;
+      return true;
+    }
+
+    return false;
+  }
+
+  private boolean isLevelUp(int points) {
+    return Level.findLevelForPoint(points) > level;
   }
 }

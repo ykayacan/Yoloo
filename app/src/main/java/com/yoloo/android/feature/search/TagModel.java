@@ -1,6 +1,7 @@
 package com.yoloo.android.feature.search;
 
 import android.content.res.Resources;
+import android.view.View;
 import android.widget.TextView;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyAttribute;
@@ -9,13 +10,14 @@ import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.TagRealm;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
-import com.yoloo.android.ui.recyclerview.OnItemClickListener;
+
+import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;
 
 @EpoxyModelClass(layout = R.layout.item_search_tag)
 public abstract class TagModel extends EpoxyModelWithHolder<TagModel.TagViewHolder> {
 
   @EpoxyAttribute TagRealm tag;
-  @EpoxyAttribute(hash = false) OnItemClickListener<TagRealm> onTagClickListener;
+  @EpoxyAttribute(DoNotHash) View.OnClickListener onClickListener;
 
   @Override public void bind(TagViewHolder holder) {
     final Resources res = holder.itemView.getResources();
@@ -23,7 +25,7 @@ public abstract class TagModel extends EpoxyModelWithHolder<TagModel.TagViewHold
     holder.tvTag.setText(tag.getName());
     holder.tvTagCount.setText(res.getString(R.string.label_search_post_count, tag.getPostCount()));
 
-    holder.itemView.setOnClickListener(v -> onTagClickListener.onItemClick(v, this, tag));
+    holder.itemView.setOnClickListener(onClickListener);
   }
 
   @Override public void unbind(TagViewHolder holder) {
