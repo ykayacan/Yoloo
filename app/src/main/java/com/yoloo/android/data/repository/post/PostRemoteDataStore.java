@@ -91,28 +91,16 @@ class PostRemoteDataStore {
               .subscribeOn(Schedulers.io());
         }
       } else if (post.isBlogPost()) {
-        if (post.getMedias().isEmpty()) {
-          return Single
-              .fromCallable(() -> INSTANCE
-                  .getApi()
-                  .blogs()
-                  .insert(post.getContent(), post.getTagNamesAsString(), post.getGroupId(),
-                      post.getTitle())
-                  .setRequestHeaders(setIdTokenHeader(idToken))
-                  .execute())
-              .subscribeOn(Schedulers.io());
-        } else {
-          return uploadMedia(post)
-              .flatMapSingle(mediaId -> Single.fromCallable(() -> INSTANCE
-                  .getApi()
-                  .blogs()
-                  .insert(post.getContent(), post.getTagNamesAsString(), post.getGroupId(),
-                      post.getTitle())
-                  .setMediaIds(mediaId)
-                  .setRequestHeaders(setIdTokenHeader(idToken))
-                  .execute()))
-              .subscribeOn(Schedulers.io());
-        }
+        return uploadMedia(post)
+            .flatMapSingle(mediaId -> Single.fromCallable(() -> INSTANCE
+                .getApi()
+                .blogs()
+                .insert(post.getTagNamesAsString(), post.getTitle(), post.getContent(),
+                    post.getGroupId())
+                .setMediaIds(mediaId)
+                .setRequestHeaders(setIdTokenHeader(idToken))
+                .execute()))
+            .subscribeOn(Schedulers.io());
       }
 
       throw new IllegalArgumentException("postType is not valid.");
@@ -160,19 +148,18 @@ class PostRemoteDataStore {
    */
   Observable<Response<List<PostRealm>>> listByFeed(@Nullable String cursor, int limit) {
     Timber.d("cursor: %s", cursor);
-    return getIdToken()
-        .flatMapObservable(idToken -> Observable
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .users()
-                .me()
-                .feed()
-                .setCursor(cursor)
-                .setLimit(limit)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .compose(PostResponseTransformer.create());
+    return getIdToken().flatMapObservable(idToken -> Observable
+        .fromCallable(() -> INSTANCE
+            .getApi()
+            .users()
+            .me()
+            .feed()
+            .setCursor(cursor)
+            .setLimit(limit)
+            .setRequestHeaders(setIdTokenHeader(idToken))
+            .execute())
+        .subscribeOn(Schedulers.io())
+        .compose(PostResponseTransformer.create()));
   }
 
   /**
@@ -275,6 +262,31 @@ class PostRemoteDataStore {
   }
 
   /**
+   * List by post sorter observable.
+   *
+   * @param sorter the sorter
+   * @param cursor the cursor
+   * @param limit the limit
+   * @return the observable
+   */
+  Observable<Response<List<PostRealm>>> listByPostSorter(@Nonnull PostSorter sorter,
+      @Nullable String cursor, int limit) {
+    return getIdToken()
+        .flatMapObservable(idToken -> Observable
+            .fromCallable(() -> INSTANCE
+                .getApi()
+                .posts()
+                .list()
+                .setSort(sorter.getName().toUpperCase())
+                .setCursor(cursor)
+                .setLimit(limit)
+                .setRequestHeaders(setIdTokenHeader(idToken))
+                .execute())
+            .subscribeOn(Schedulers.io()))
+        .compose(PostResponseTransformer.create());
+  }
+
+  /**
    * List by user observable.
    *
    * @param userId the user id
@@ -291,6 +303,28 @@ class PostRemoteDataStore {
                 .posts()
                 .list()
                 .setUserId(userId)
+                .setCursor(cursor)
+                .setLimit(limit)
+                .setRequestHeaders(setIdTokenHeader(idToken))
+                .execute())
+            .subscribeOn(Schedulers.io()))
+        .compose(PostResponseTransformer.create());
+  }
+
+  /**
+   * List by media posts observable.
+   *
+   * @param cursor the cursor
+   * @param limit the limit
+   * @return the observable
+   */
+  Observable<Response<List<PostRealm>>> listByMediaPosts(@Nullable String cursor, int limit) {
+    return getIdToken()
+        .flatMapObservable(idToken -> Observable
+            .fromCallable(() -> INSTANCE
+                .getApi()
+                .posts()
+                .listMediaPosts()
                 .setCursor(cursor)
                 .setLimit(limit)
                 .setRequestHeaders(setIdTokenHeader(idToken))

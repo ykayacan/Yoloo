@@ -1,5 +1,6 @@
 package com.yoloo.android.feature.group;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,9 +10,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -22,9 +20,9 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.Router;
 import com.bluelinelabs.conductor.RouterTransaction;
-import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bluelinelabs.conductor.support.RouterPagerAdapter;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
@@ -35,12 +33,12 @@ import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.group.groupuserslist.GroupUsersListController;
 import com.yoloo.android.feature.group.taglist.TagListController;
 import com.yoloo.android.feature.postlist.PostListController;
-import com.yoloo.android.feature.search.SearchController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.Pair;
 import com.yoloo.android.util.UpdateCallback;
+import com.yoloo.android.util.ViewUtils;
 import java.util.ArrayList;
 import java.util.List;
 import timber.log.Timber;
@@ -122,20 +120,10 @@ public class GroupController extends MvpController<GroupView, GroupPresenter> im
   }
 
   @Override
-  public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    final int itemId = item.getItemId();
-    switch (itemId) {
-      case R.id.action_feed_search:
-        startTransaction(SearchController.create(), new VerticalChangeHandler());
-        return true;
-      default:
-        return super.onOptionsItemSelected(item);
-    }
+  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+      @NonNull ControllerChangeType changeType) {
+    super.onChangeEnded(changeHandler, changeType);
+    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
   }
 
   @Override
@@ -148,7 +136,7 @@ public class GroupController extends MvpController<GroupView, GroupPresenter> im
     group = value;
 
     collapsingToolbarLayout.setTitle(value.getName());
-    Glide.with(getActivity()).load(value.getBackgroundUrl()).into(ivBackgroundCover);
+    Glide.with(getActivity()).load(value.getImageWithoutIconUrl()).into(ivBackgroundCover);
     tvSubscriberCount.setText(CountUtil.formatCount(value.getSubscriberCount()));
 
     btnSubscribe.setVisibility(View.VISIBLE);
@@ -183,8 +171,10 @@ public class GroupController extends MvpController<GroupView, GroupPresenter> im
 
     if (group.isSubscribed()) {
       getPresenter().unsubscribe(groupId);
+      tvSubscriberCount.setText(CountUtil.formatCount(group.getSubscriberCount() - 1));
     } else {
       getPresenter().subscribe(groupId);
+      tvSubscriberCount.setText(CountUtil.formatCount(group.getSubscriberCount() + 1));
     }
 
     group.setSubscribed(!group.isSubscribed());

@@ -5,14 +5,21 @@ import com.yoloo.backend.yolooApi.model.GameInfo;
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
+import java.util.List;
+import java.util.Objects;
 
 public class GameInfoRealm extends RealmObject {
 
   @PrimaryKey private String id;
-  private int points;
-  private int requiredPoints;
-  private String level;
-  private String nextLevel;
+  private int currentLvlPoints;
+  private int currentLvl;
+
+  private int myPoints;
+  private String title;
+
+  private int nextLvlPoints;
+  private int nextLvl;
+
   private RealmList<GameHistoryRealm> histories;
 
   public GameInfoRealm() {
@@ -22,10 +29,13 @@ public class GameInfoRealm extends RealmObject {
 
   public GameInfoRealm(GameInfo info) {
     this();
-    this.points = info.getPoints();
-    this.requiredPoints = info.getRequiredPoints();
-    this.level = info.getLevel();
-    this.nextLevel = info.getNextLevel();
+    this.currentLvl = info.getCurrentLvl();
+    this.currentLvlPoints = info.getCurrentLvlPoints();
+    this.myPoints = info.getMyPoints();
+    this.title = info.getTitle();
+    this.nextLvl = info.getNextLvl();
+    this.nextLvlPoints = info.getNextLvlPoints();
+
     if (info.getHistories() != null) {
       Stream
           .of(info.getHistories())
@@ -34,24 +44,57 @@ public class GameInfoRealm extends RealmObject {
     }
   }
 
-  public int getPoints() {
-    return points;
+  public String getId() {
+    return id;
   }
 
-  public int getRequiredPoints() {
-    return requiredPoints;
+  public int getCurrentLvlPoints() {
+    return currentLvlPoints;
   }
 
-  public String getLevel() {
-    return level;
+  public int getCurrentLvl() {
+    return currentLvl;
   }
 
-  public String getNextLevel() {
-    return nextLevel;
+  public int getMyPoints() {
+    return myPoints;
   }
 
-  public RealmList<GameHistoryRealm> getHistories() {
+  public String getTitle() {
+    return title;
+  }
+
+  public int getNextLvlPoints() {
+    return nextLvlPoints;
+  }
+
+  public int getNextLvl() {
+    return nextLvl;
+  }
+
+  public List<GameHistoryRealm> getHistories() {
     return histories;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof GameInfoRealm)) return false;
+    GameInfoRealm that = (GameInfoRealm) o;
+    return getCurrentLvlPoints() == that.getCurrentLvlPoints()
+        && getCurrentLvl() == that.getCurrentLvl()
+        && getMyPoints() == that.getMyPoints()
+        && getNextLvlPoints() == that.getNextLvlPoints()
+        && getNextLvl() == that.getNextLvl()
+        && Objects.equals(getId(), that.getId())
+        && Objects.equals(getTitle(), that.getTitle())
+        && Objects.equals(getHistories(), that.getHistories());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getId(), getCurrentLvlPoints(), getCurrentLvl(), getMyPoints(), getTitle(),
+        getNextLvlPoints(), getNextLvl(), getHistories());
   }
 
   @Override
@@ -60,16 +103,19 @@ public class GameInfoRealm extends RealmObject {
         + "id='"
         + id
         + '\''
-        + ", points="
-        + points
-        + ", requiredPoints="
-        + requiredPoints
-        + ", level='"
-        + level
+        + ", currentLvlPoints="
+        + currentLvlPoints
+        + ", currentLvl="
+        + currentLvl
+        + ", myPoints="
+        + myPoints
+        + ", title='"
+        + title
         + '\''
-        + ", nextLevel='"
-        + nextLevel
-        + '\''
+        + ", nextLvlPoints="
+        + nextLvlPoints
+        + ", nextLvl="
+        + nextLvl
         + ", histories="
         + histories
         + '}';

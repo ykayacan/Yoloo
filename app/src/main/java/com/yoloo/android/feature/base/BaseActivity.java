@@ -21,15 +21,21 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.RemoteMessage;
 import com.yoloo.android.R;
+import com.yoloo.android.data.model.FcmRealm;
+import com.yoloo.android.data.repository.notification.NotificationRepositoryProvider;
 import com.yoloo.android.fcm.FCMListener;
 import com.yoloo.android.fcm.FCMManager;
 import com.yoloo.android.feature.auth.welcome.WelcomeController;
-import com.yoloo.android.feature.feed.FeedHomeController;
-import com.yoloo.android.notificationhandler.NotificationHandler;
+import com.yoloo.android.feature.chat.NewChatListenerService;
+import com.yoloo.android.feature.feed.FeedController;
 import com.yoloo.android.notificationhandler.NotificationConstants;
+import com.yoloo.android.notificationhandler.NotificationHandler;
 import com.yoloo.android.util.Preconditions;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import timber.log.Timber;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class BaseActivity extends AppCompatActivity
@@ -61,12 +67,13 @@ public class BaseActivity extends AppCompatActivity
     if (!router.hasRootController()) {
       FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-      Controller controller =
-          user == null ? WelcomeController.create() : FeedHomeController.create();
+      Controller controller = user == null ? WelcomeController.create() : FeedController.create();
       router.setRoot(RouterTransaction.with(controller));
     }
 
     setOptionsMenuVisibility();
+
+    startService(new Intent(this, NewChatListenerService.class));
   }
 
   @Override
@@ -118,11 +125,6 @@ public class BaseActivity extends AppCompatActivity
     }
   }
 
-  private void startTransaction(Controller to, ControllerChangeHandler handler) {
-    router.pushController(
-        RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
-  }
-
   private void setOptionsMenuVisibility() {
     router.addChangeListener(new ControllerChangeHandler.ControllerChangeListener() {
       @Override
@@ -145,18 +147,28 @@ public class BaseActivity extends AppCompatActivity
 
   @Override
   public void onDeviceRegistered(String deviceToken) {
-
+    NotificationRepositoryProvider
+        .getRepository()
+        .registerFcmToken(new FcmRealm(deviceToken))
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(() -> {
+        }, Timber::e);
   }
 
   @Override
   public void onMessage(RemoteMessage remoteMessage) {
+    Timber.d("onMessage(): %s", remoteMessage.getData().toString());
     Map<String, String> data = remoteMessage.getData();
 
     Intent intent = new Intent(this, BaseActivity.class);
     intent.putExtra(BaseActivity.KEY_ACTION, data.get(NotificationConstants.KEY_ACTION));
     intent.putExtra(BaseActivity.KEY_DATA, new HashMap<>(data));
 
-    NotificationHandler.getInstance(remoteMessage).handle(this, intent);
+    try {
+      NotificationHandler.getInstance().handle(remoteMessage,this, intent);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   @Override

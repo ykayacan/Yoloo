@@ -48,5 +48,8 @@
 
   <color name="lucky_point">#313446</color>
   <color name="blog_divider">#CFD0D1</color>
+  <color name="color_primary_dark_blue">#0298F1</color>
+
+  <color name="shadow">#66000000</color>
 
 </resources>

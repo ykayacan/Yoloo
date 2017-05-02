@@ -16,19 +16,27 @@ import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
+import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 import com.bluelinelabs.conductor.changehandler.SimpleSwapChangeHandler;
+import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.GroupRealm;
+import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.group.GroupRepositoryProvider;
-import com.yoloo.android.data.repository.media.MediaRepositoryProvider;
+import com.yoloo.android.data.repository.post.PostRepositoryProvider;
+import com.yoloo.android.data.sorter.PostSorter;
+import com.yoloo.android.feature.explore.data.ExploreItem;
+import com.yoloo.android.feature.explore.data.GroupItem;
 import com.yoloo.android.feature.group.GroupController;
+import com.yoloo.android.feature.models.recentmedias.RecentMediaListModelGroup;
+import com.yoloo.android.feature.postdetail.PostDetailController;
+import com.yoloo.android.feature.postlist.PostListController;
 import com.yoloo.android.feature.search.SearchController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.UpdateCallback;
 import java.util.List;
-import timber.log.Timber;
 
 public class ExploreController extends MvpController<ExploreView, ExplorePresenter>
     implements ExploreView, UpdateCallback<GroupRealm> {
@@ -36,7 +44,7 @@ public class ExploreController extends MvpController<ExploreView, ExplorePresent
   @BindView(R.id.recycler_view) RecyclerView rvExplore;
   @BindView(R.id.toolbar) Toolbar toolbar;
 
-  private ExploreAdapter adapter;
+  private ExploreEpoxyController epoxyController;
 
   public static ExploreController create() {
     return new ExploreController();
@@ -45,7 +53,7 @@ public class ExploreController extends MvpController<ExploreView, ExplorePresent
   @NonNull
   @Override
   public ExplorePresenter createPresenter() {
-    return new ExplorePresenter(MediaRepositoryProvider.getRepository(),
+    return new ExplorePresenter(PostRepositoryProvider.getRepository(),
         GroupRepositoryProvider.getRepository());
   }
 
@@ -84,13 +92,12 @@ public class ExploreController extends MvpController<ExploreView, ExplorePresent
 
   @Override
   public void onDataLoaded(List<ExploreItem<?>> items) {
-    adapter.addItems(items);
+    epoxyController.setData(items, null);
   }
 
   @Override
   public void onModelUpdated(GroupRealm item) {
-    Timber.d("onModelUpdated(): %s", item);
-    adapter.updateItem(new GroupItem(item));
+    epoxyController.updateItem(new GroupItem(item));
   }
 
   private void setupToolbar() {
@@ -100,25 +107,34 @@ public class ExploreController extends MvpController<ExploreView, ExplorePresent
   }
 
   private void setupRecyclerview() {
-    adapter = new ExploreAdapter(getActivity(), Glide.with(getActivity()));
-    adapter.setOnRecentMediaHeaderClickListener(v -> {
+    epoxyController = new ExploreEpoxyController(Glide.with(getActivity()));
 
-    });
-    adapter.setOnMediaClickListener((v, model, item) -> {
-      Timber.d("onMediaClick(): %s", item.getLargeSizeUrl());
-    });
-    adapter.setOnNewClickListener(v -> {
+    epoxyController.setRecentPhotosModelGroupCallbacks(
+        new RecentMediaListModelGroup.RecentPhotosModelGroupCallbacks() {
+          @Override
+          public void onRecentPhotosHeaderClicked() {
 
-    });
-    adapter.setOnTrendingClickListener(v -> {
+          }
 
-    });
-    adapter.setOnGroupClickListener((v, model, item) -> {
+          @Override
+          public void onRecentPhotosClicked(PostRealm post) {
+            startTransaction(PostDetailController.create(post.getId(), post.getAcceptedCommentId()),
+                new VerticalChangeHandler());
+          }
+        });
+
+    epoxyController.setOnNewClickListener(
+        v -> startTransaction(PostListController.ofPostSorter(PostSorter.NEWEST),
+            new HorizontalChangeHandler()));
+    epoxyController.setOnTrendingClickListener(
+        v -> startTransaction(PostListController.ofPostSorter(PostSorter.HOT),
+            new HorizontalChangeHandler()));
+    epoxyController.setOnGroupClickListener((v, model, item) -> {
       Controller controller = GroupController.create(item.getId());
       controller.setTargetController(this);
       startTransaction(controller, new FadeChangeHandler());
     });
-    adapter.setOnSubscribeClickListener((groupId, subscribed) -> {
+    epoxyController.setOnSubscribeClickListener((groupId, subscribed) -> {
       if (subscribed) {
         getPresenter().unsubscribe(groupId);
       } else {
@@ -129,7 +145,7 @@ public class ExploreController extends MvpController<ExploreView, ExplorePresent
     rvExplore.setItemAnimator(new DefaultItemAnimator());
     rvExplore.setLayoutManager(new LinearLayoutManager(getActivity()));
     rvExplore.setHasFixedSize(true);
-    rvExplore.setAdapter(adapter);
+    rvExplore.setAdapter(epoxyController.getAdapter());
   }
 
   private void startTransaction(Controller to, ControllerChangeHandler handler) {

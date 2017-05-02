@@ -151,7 +151,7 @@ class PostDetailAdapter extends EpoxyAdapter {
         .onVoteClickListener(onVoteClickListener)
         .onContentImageClickListener(onContentImageClickListener)
         .layout(R.layout.item_feed_question_rich_detail)
-        .circleTransformation(cropCircleTransformation)
+        .bitmapTransformation(cropCircleTransformation)
         .post(post);
   }
 
@@ -163,7 +163,7 @@ class PostDetailAdapter extends EpoxyAdapter {
         .onCommentClickListener(onCommentClickListener)
         .onVoteClickListener(onVoteClickListener)
         .layout(R.layout.item_feed_question_text_detail)
-        .circleTransformation(cropCircleTransformation)
+        .bitmapTransformation(cropCircleTransformation)
         .post(post);
   }
 
@@ -174,7 +174,7 @@ class PostDetailAdapter extends EpoxyAdapter {
         .onCommentClickListener(onCommentClickListener)
         .onVoteClickListener(onVoteClickListener)
         .layout(R.layout.item_feed_blog_detail)
-        .circleTransformation(cropCircleTransformation)
+        .bitmapTransformation(cropCircleTransformation)
         .post(post);
   }
 

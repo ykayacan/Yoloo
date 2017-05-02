@@ -18,16 +18,30 @@ public class AccountDTO {
   private String avatarUrl;
   private String bio;
   private String websiteUrl;
-  private String country;
-  private Set<Country> visitedCountries;
+  private String langCode;
+  private CountryDTO country;
+  private Set<CountryDTO> visitedCountries;
   private Set<String> subscribedGroupIds;
   private Date created;
-  private String locale;
   private boolean isFollowing;
   private long followingCount;
   private long followerCount;
   private long postCount;
+  private String levelTitle;
   private int level;
   private int pointCount;
   private int bountyCount;
+
+  @Value
+  public static class CountryDTO {
+    private String countryCode;
+    private String countryName;
+    private String flagUrl;
+
+    public CountryDTO(Country country) {
+      this.countryCode = country.getId();
+      this.countryName = country.getName();
+      this.flagUrl = country.getFlagUrl().getValue();
+    }
+  }
 }

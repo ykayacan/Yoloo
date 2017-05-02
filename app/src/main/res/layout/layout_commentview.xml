@@ -12,7 +12,8 @@
   android:paddingEnd="@dimen/padding_normal"
   android:paddingRight="@dimen/padding_normal"
   android:paddingTop="@dimen/padding_normal"
-  tools:background="@android:color/white">
+  tools:background="@android:color/white"
+  tools:parentTag="android.support.constraint.ConstraintLayout">
 
   <ImageView
     android:id="@+id/iv_comment_user_avatar"
@@ -88,6 +89,7 @@
     android:layout_marginEnd="@dimen/spacing_large"
     android:layout_marginRight="@dimen/spacing_large"
     android:text="@string/action_comment_accept"
+    android:textColor="@color/primary"
     app:drawableStart="@drawable/ic_check_white_18dp"
     app:layout_constraintBaseline_toBaselineOf="@+id/tv_comment_vote"
     app:layout_constraintRight_toLeftOf="@+id/tv_comment_vote" />
@@ -97,8 +99,8 @@
     style="@style/Widget.Yoloo.FeedAction"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    app:drawableEnd="@drawable/ic_vote_down_18dp"
-    app:drawableStart="@drawable/ic_vote_up_18dp"
+    app:drawableEnd="@drawable/ic_thumb_down_black_18dp"
+    app:drawableStart="@drawable/ic_thumb_up_black_18dp"
     app:layout_constraintRight_toRightOf="@+id/tv_comment_content"
     app:layout_constraintTop_toBottomOf="@+id/tv_comment_content"
     tools:text="500" />

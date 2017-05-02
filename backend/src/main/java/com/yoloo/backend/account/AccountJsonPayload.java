@@ -17,8 +17,8 @@ public class AccountJsonPayload {
   private String realname;
   private String email;
   private long birthdate;
-  private String country;
-  private String locale;
+  private String countryCode;
+  private String langCode;
   private String profileImageUrl;
   private List<String> travelerTypeIds;
 

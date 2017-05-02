@@ -37,7 +37,8 @@
         com.yoloo.backend.feed.FeedEndpoint,
         com.yoloo.backend.recommendation.RecommendationEndpoint,
         com.yoloo.backend.notification.NotificationEndpoint,
-        com.yoloo.backend.game.GameEndpoint
+        com.yoloo.backend.game.GameEndpoint,
+        com.yoloo.backend.country.CountryEndpoint
       </param-value>
     </init-param>
     <init-param>

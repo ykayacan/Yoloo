@@ -2,8 +2,8 @@ package com.yoloo.backend.post.transformer;
 
 import com.google.api.server.spi.config.Transformer;
 import com.google.common.collect.ImmutableList;
+import com.google.common.net.MediaType;
 import com.yoloo.backend.group.TravelerGroupEntity;
-import com.yoloo.backend.media.MediaEntity;
 import com.yoloo.backend.media.dto.Media;
 import com.yoloo.backend.media.size.LargeSize;
 import com.yoloo.backend.media.size.LowSize;
@@ -48,11 +48,11 @@ public class PostTransformer implements Transformer<PostEntity, Post> {
     return null;
   }
 
-  private Media getMedia(MediaEntity in) {
+  private Media getMedia(PostEntity.PostMedia in) {
     return Media
         .builder()
-        .id(in.getId())
-        .mime(in.getMime())
+        .id(in.getMediaId())
+        .mime(MediaType.WEBP.subtype())
         .sizes(ImmutableList.of(ThumbSize.of(in.getUrl()), LowSize.of(in.getUrl()),
             MediumSize.of(in.getUrl()), LargeSize.of(in.getUrl())))
         .build();

@@ -34,7 +34,7 @@ public class BlogListController extends MvpController<BlogListView, BlogListPres
   @BindView(R.id.toolbar_bloglist) Toolbar toolbar;
   @BindView(R.id.iv_bloglist_cover) ImageView ivCover;
 
-  private BlogListAdapter adapter;
+  private BlogListEpoxyController epoxyController;
 
   public static BlogListController create() {
     return new BlogListController();
@@ -47,6 +47,7 @@ public class BlogListController extends MvpController<BlogListView, BlogListPres
 
   @Override
   protected void onViewBound(@NonNull View view) {
+    super.onViewBound(view);
     setupRecyclerView();
     setupToolbar();
 
@@ -62,7 +63,7 @@ public class BlogListController extends MvpController<BlogListView, BlogListPres
 
   @Override
   public void onMeLoaded(AccountRealm me) {
-    adapter.setUserId(me.getId());
+    epoxyController.setUserId(me.getId());
   }
 
   @Override
@@ -74,7 +75,7 @@ public class BlogListController extends MvpController<BlogListView, BlogListPres
 
   @Override
   public void onLoaded(List<PostRealm> value) {
-    adapter.addBlogs(value);
+    epoxyController.setData(value, false);
 
     stateLayout.setState(StateLayout.VIEW_STATE_CONTENT);
   }
@@ -99,7 +100,7 @@ public class BlogListController extends MvpController<BlogListView, BlogListPres
   }
 
   private void setupRecyclerView() {
-    adapter = new BlogListAdapter(getActivity(), Glide.with(getActivity()));
+    epoxyController = new BlogListEpoxyController(getActivity(), Glide.with(getActivity()));
 
     final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
 
@@ -111,7 +112,7 @@ public class BlogListController extends MvpController<BlogListView, BlogListPres
     rvBlogList.setItemAnimator(animator);
 
     rvBlogList.setHasFixedSize(true);
-    rvBlogList.setAdapter(adapter);
+    rvBlogList.setAdapter(epoxyController.getAdapter());
 
     rvBlogList.addOnScrollListener(new EndlessRecyclerOnScrollListener(5) {
       @Override

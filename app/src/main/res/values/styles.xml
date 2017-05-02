@@ -5,14 +5,11 @@
     <item name="colorPrimaryDark">@color/primary_dark</item>
     <item name="colorAccent">@color/accent</item>
 
-    <item name="android:windowBackground">@color/background_grey_100</item>
+    <!--<item name="android:windowBackground">@color/background_grey_100</item>-->
     <!--<item name="colorControlHighlight">@color/ripple_light</item>-->
   </style>
 
-  <style name="Yoloo" parent="Yoloo.Base"> <!-- pre-Lollipop -->
-    <item name="android:windowTranslucentStatus">true</item>
-    <item name="android:windowTranslucentNavigation">true</item>
-  </style>
+  <style name="Yoloo" parent="Yoloo.Base" /> <!-- pre-Lollipop -->
 
   <style name="Yoloo.Splash" parent="Yoloo">
     <item name="android:windowBackground">@drawable/layer_splash</item>
@@ -198,13 +195,26 @@
     <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
   </style>
 
-  <style name="TextAppearance.FeedNews" parent="android:TextAppearance">
-    <item name="android:textColor">@android:color/white</item>
-    <item name="fontPath">fonts/OpenSans-Bold.ttf</item>
+  <style name="TextAppearance.FeedText" parent="@style/TextAppearance.AppCompat.Body1">
+    <item name="android:textSize">15sp</item>
   </style>
 
   <style name="TextAppearance.BlogTitle" parent="@style/TextAppearance.AppCompat.Title">
     <item name="fontPath">fonts/OpenSans-Bold.ttf</item>
+  </style>
+
+  <style name="TextAppearance.GroupText" parent="android:TextAppearance">
+    <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
+    <item name="android:textColor">@android:color/white</item>
+    <item name="android:textSize">13sp</item>
+  </style>
+
+  <style name="TextAppearance.GroupText.Small">
+    <item name="android:textSize">13sp</item>
+  </style>
+
+  <style name="TextAppearance.GroupText.Big">
+    <item name="android:textSize">17sp</item>
   </style>
 
   <style name="TextAppearance.CategoryTitle" parent="android:TextAppearance">
@@ -216,7 +226,7 @@
   <style name="TextAppearance.CatalogCategoryTitle" parent="android:TextAppearance">
     <item name="android:textSize">17sp</item>
     <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
-    <item name="android:textColor">@color/catalog_category_text</item>
+    <item name="android:textColor">@android:color/white</item>
   </style>
 
   <style name="TextAppearance.EmptyTitle" parent="@style/TextAppearance.AppCompat.Subhead">
@@ -249,9 +259,15 @@
   </style>
 
   <style name="TextAppearance.EditorItemText" parent="android:TextAppearance">
-    <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
+    <item name="fontPath">fonts/OpenSans-Bold.ttf</item>
     <item name="android:textSize">14sp</item>
-    <item name="android:textColor">?android:attr/textColorSecondary</item>
+    <item name="android:textColor">@color/lucky_point</item>
+  </style>
+
+  <style name="Widget.Yoloo.SettingsSubText">
+    <item name="android:textAppearance">@style/TextAppearance.AppCompat.Body1</item>
+    <item name="android:paddingBottom">16dp</item>
+    <item name="android:paddingTop">16dp</item>
   </style>
 
 </resources>

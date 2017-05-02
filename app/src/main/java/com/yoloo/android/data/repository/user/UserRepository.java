@@ -1,14 +1,12 @@
 package com.yoloo.android.data.repository.user;
 
 import com.annimon.stream.Optional;
-import com.annimon.stream.Stream;
 import com.google.api.client.util.Base64;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.faker.AccountFaker;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.GameInfoRealm;
 import com.yoloo.android.data.model.RegisterUserPayload;
@@ -117,7 +115,7 @@ public class UserRepository {
 
   public Observable<Response<List<AccountRealm>>> searchUser(@Nonnull String query,
       @Nullable String cursor, int limit) {
-    return remoteDataStore.list(query, cursor, limit).subscribeOn(Schedulers.io());
+    return remoteDataStore.searchUser(query, cursor, limit).subscribeOn(Schedulers.io());
   }
 
   public Single<Boolean> checkUsername(@Nonnull String username) {
@@ -125,8 +123,12 @@ public class UserRepository {
   }
 
   public Observable<Response<List<AccountRealm>>> listNewUsers(@Nullable String cursor, int limit) {
-    return Observable.just(
-        Response.create(Stream.range(0, 6).map(__ -> AccountFaker.generateOne()).toList(), null));
+    return remoteDataStore.listNewUsers(cursor, limit);
+  }
+
+  public Observable<Response<List<AccountRealm>>> listRecommendedUsers(@Nullable String cursor,
+      int limit) {
+    return remoteDataStore.listRecommendedUsers(cursor, limit);
   }
 
   public Observable<List<AccountRealm>> listRecentSearchedUsers() {
@@ -149,5 +151,9 @@ public class UserRepository {
 
   public Completable relationship(@Nonnull String userId, int direction) {
     return remoteDataStore.relationship(userId, direction == 1 ? "FOLLOW" : "UNFOLLOW");
+  }
+
+  public Completable writeToPurchaseHistory(@Nonnull AccountRealm account, int bountyType) {
+    return Completable.complete();
   }
 }

@@ -18,10 +18,12 @@
   <application
     android:name=".YolooApp"
     android:allowBackup="true"
+    android:hardwareAccelerated="true"
     android:icon="@mipmap/ic_launcher"
     android:label="@string/app_name"
     android:supportsRtl="true"
-    android:theme="@style/Yoloo">
+    android:theme="@style/Yoloo"
+    tools:replace="android:theme">
     <meta-data
       android:name="com.facebook.sdk.ApplicationId"
       android:value="@string/facebook_app_id" />
@@ -42,6 +44,10 @@
     </service>
     <service
       android:name=".fcm.SaveFCMIdService"
+      android:exported="false" />
+
+    <service
+      android:name=".feature.chat.NewChatListenerService"
       android:exported="false" />
 
     <activity
@@ -104,9 +110,6 @@
           android:scheme="https" />
       </intent-filter>
     </activity>
-    <activity
-      android:name=".feature.settings.SettingsActivity"
-      android:theme="@style/Yoloo" />
   </application>
 
 </manifest>

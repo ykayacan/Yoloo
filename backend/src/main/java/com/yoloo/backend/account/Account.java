@@ -47,6 +47,7 @@ public class Account {
   public static final String FIELD_EMAIL = "email";
   public static final String FIELD_USERNAME = "username";
   public static final String FIELD_SUBSCRIBED_GROUP_KEYS = "subscribedGroupKeys";
+  public static final String FIELD_CREATED = "created";
 
   @Id private long id;
 
@@ -66,17 +67,20 @@ public class Account {
 
   @Index private DateTime created;
 
-  private String locale;
+  // ISO 639-1 language code.
+  private String langCode;
 
-  private String country;
+  @Wither private Country country;
 
   @Wither private Gender gender;
 
   private DateTime birthDate;
 
-  @Index(IfNotNull.class) private Set<Country> visitedCountries;
+  @Index(IfNotNull.class) @Singular @Wither private Set<Country> visitedCountries;
 
   @Index @Singular @Wither private List<Key<TravelerGroupEntity>> subscribedGroupKeys;
+
+  @Wither private String levelTitle;
 
   // Extra fields
 
@@ -107,16 +111,7 @@ public class Account {
   }
 
   public enum Gender {
-    /**
-     * Male gender.
-     */
-    MALE, /**
-     * Female gender.
-     */
-    FEMALE, /**
-     * Unspecified gender.
-     */
-    UNSPECIFIED
+    MALE, FEMALE, UNSPECIFIED
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)

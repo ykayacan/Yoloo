@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -16,6 +17,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -33,6 +35,8 @@ import butterknife.OnClick;
 import com.airbnb.epoxy.EpoxyModel;
 import com.annimon.stream.Stream;
 import com.bluelinelabs.conductor.Controller;
+import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.github.jksiezni.permissive.Permissive;
@@ -47,6 +51,7 @@ import com.sandrios.sandriosCamera.internal.utils.CameraHelper;
 import com.yalantis.ucrop.UCrop;
 import com.yoloo.android.R;
 import com.yoloo.android.YolooApp;
+import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.GroupRealm;
 import com.yoloo.android.data.model.MediaRealm;
 import com.yoloo.android.data.model.PostRealm;
@@ -66,6 +71,7 @@ import com.yoloo.android.util.ControllerUtil;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.MediaUtil;
+import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.WeakHandler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import java.io.File;
@@ -74,22 +80,24 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import timber.log.Timber;
 
-public class BlogEditorController
-    extends MvpController<EditorView, EditorPresenter>
-    implements EditorView, ChipAdapter.OnItemSelectListener<TagRealm> {
+public class BlogEditorController extends MvpController<EditorView, EditorPresenter>
+    implements EditorView, ChipAdapter.OnItemSelectListener<TagRealm>,
+    SelectGroupController.Groupable {
 
   private static final int REQUEST_SELECT_MEDIA = 1;
   private static final int REQUEST_CAPTURE_MEDIA = 2;
 
   private final WeakHandler handler = new WeakHandler();
 
+  @BindView(R.id.root_view) ViewGroup rootView;
   @BindView(R.id.toolbar) Toolbar toolbar;
   @BindView(R.id.slider) SliderView sliderView;
   @BindView(R.id.et_blog_content) EditText etEditorContent;
+  @BindView(R.id.et_blog_title) EditText etTitle;
+  @BindView(R.id.tv_blog_user_info) TextView tvUserInfo;
   @BindView(R.id.tv_editor_post_select_group) TextView tvEditorSelectGroup;
   @BindView(R.id.et_editor_post_tags) NachoTextView etEditorTags;
   @BindView(R.id.recycler_view) RecyclerView rvEditorTrendingTags;
-  @BindView(R.id.editor_post_add_bounty_wrapper) ViewGroup editorAddBountyWrapper;
   @BindView(R.id.tv_editor_post_add_bounty) TextView tvEditorAddBounty;
 
   @BindColor(R.color.primary) int primaryColor;
@@ -144,6 +152,13 @@ public class BlogEditorController
   }
 
   @Override
+  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+      @NonNull ControllerChangeType changeType) {
+    super.onChangeEnded(changeHandler, changeType);
+    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
+  }
+
+  @Override
   public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
     super.onCreateOptionsMenu(menu, inflater);
     inflater.inflate(R.menu.menu_editor, menu);
@@ -192,6 +207,12 @@ public class BlogEditorController
   }
 
   @Override
+  public void onMeLoaded(AccountRealm me) {
+    tvUserInfo.setText(getResources().getString(R.string.label_blog_user_info, me.getUsername(),
+        me.getLevelTitle()));
+  }
+
+  @Override
   public void onDraftCreated(PostRealm draft) {
     this.draft = draft;
   }
@@ -221,7 +242,7 @@ public class BlogEditorController
     handler.post(etEditorTags::showDropDown);
   }
 
-  @OnClick(R.id.tv_blog_add_image)
+  @OnClick(R.id.iv_add_image)
   void openAddMediaDialog() {
     new AlertDialog.Builder(getActivity())
         .setTitle(R.string.label_editor_select_media_source_title)
@@ -248,7 +269,7 @@ public class BlogEditorController
         .popChangeHandler(new VerticalChangeHandler()));
   }
 
-  @OnClick(R.id.editor_post_add_bounty_wrapper)
+  @OnClick(R.id.tv_editor_post_add_bounty)
   void openAddBountyScreen() {
     if (Connectivity.isConnected(getApplicationContext())) {
       KeyboardUtil.hideKeyboard(getView());
@@ -263,6 +284,8 @@ public class BlogEditorController
   }
 
   private void setTempDraft() {
+    draft.setTitle(etTitle.getText().toString());
+
     // Set current content.
     draft.setContent(etEditorContent.getText().toString());
 
@@ -418,11 +441,16 @@ public class BlogEditorController
       return;
     }
 
-    if (etEditorTags.isAlreadyAdded(item.getName())) {
-      tagAdapter.toggleSelection(model);
+    if (selected) {
+      if (etEditorTags.isAlreadyAdded(item.getName())) {
+        tagAdapter.toggleSelection(model);
+      } else {
+        etEditorTags.insertChip(item.getName());
+        selectedTags.add(item);
+      }
     } else {
-      etEditorTags.insertChip(item.getName());
-      selectedTags.add(item);
+      etEditorTags.removeChip(item.getName());
+      selectedTags.remove(item);
     }
   }
 
@@ -460,36 +488,34 @@ public class BlogEditorController
   }
 
   private void showMessage(String message) {
-    Snackbar.make(getView(), message, Snackbar.LENGTH_SHORT).show();
+    Snackbar.make(rootView, message, Snackbar.LENGTH_LONG).show();
   }
 
   private boolean isValidToSend() {
-    /*if (ivEditorImage.getDrawable() == null) {
-      if (etEditorContent.getText().toString().isEmpty()) {
-        showMessage("You must add text or image to post!");
-        return false;
-      }
+    if (selectedImageUris.isEmpty()) {
+      showMessage("You must add at least one cover image to blog!");
+      return false;
+    }
 
-      if (tvEditorSelectGroup.getText().equals(selectGroupString)) {
-        showMessage("Select a group!");
-        return false;
-      }
+    if (TextUtils.isEmpty(etTitle.getText().toString())) {
+      showMessage("You must write a blog title!");
+      return false;
+    }
 
-      if (etEditorTags.getChipValues().isEmpty()) {
-        showMessage("Tags are empty!");
-        return false;
-      }
-    } else {
-      if (tvEditorSelectGroup.getText().equals(selectGroupString)) {
-        showMessage("Select a group!");
-        return false;
-      }
+    if (etEditorContent.getText().toString().isEmpty()) {
+      showMessage("You must add content to blog!");
+      return false;
+    }
 
-      if (etEditorTags.getChipValues().isEmpty()) {
-        showMessage("Tags are empty!");
-        return false;
-      }
-    }*/
+    if (tvEditorSelectGroup.getText().equals(selectGroupString)) {
+      showMessage("Select a group!");
+      return false;
+    }
+
+    if (etEditorTags.getChipValues().isEmpty()) {
+      showMessage("Tags are empty!");
+      return false;
+    }
 
     return true;
   }

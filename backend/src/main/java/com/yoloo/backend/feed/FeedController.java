@@ -61,15 +61,19 @@ public class FeedController extends Controller {
       postKeys.add(postKey);
     }
 
-    return Observable
-        .just(postKeys)
-        .filter(keys -> !keys.isEmpty())
-        .flatMap(keys -> Observable.fromCallable(
-            () -> ofy().load().group(PostEntity.ShardGroup.class).keys(postKeys).values()))
-        .flatMap(posts -> postShardService.mergeShards(posts))
-        .flatMap(posts -> voteService.checkPostVote(posts, accountKey))
-        .compose(CollectionTransformer.create(qi.getCursor().toWebSafeString()))
-        .blockingSingle();
+    if (postKeys.isEmpty()) {
+      return CollectionResponse.<PostEntity>builder().build();
+    } else {
+      return Observable
+          .just(postKeys)
+          .filter(keys -> !keys.isEmpty())
+          .flatMap(keys -> Observable.fromCallable(
+              () -> ofy().load().group(PostEntity.ShardGroup.class).keys(postKeys).values()))
+          .flatMap(posts -> postShardService.mergeShards(posts))
+          .flatMap(posts -> voteService.checkPostVote(posts, accountKey))
+          .compose(CollectionTransformer.create(qi.getCursor().toWebSafeString()))
+          .blockingSingle();
+    }
   }
 
   private Query<Feed> getFeedQuery(Optional<Integer> limit, Optional<String> cursor,

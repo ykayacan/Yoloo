@@ -11,6 +11,7 @@ import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -136,13 +137,7 @@ public class PostRepository {
     Observable<Response<List<PostRealm>>> diskObservable =
         diskDataStore.listByFeed().subscribeOn(Schedulers.io());
 
-    return diskObservable.flatMap(response -> {
-      if (response.getData().isEmpty()) {
-        return remoteObservable;
-      }
-
-      return Observable.just(response);
-    });
+    return Observable.merge(remoteObservable, diskObservable);
   }
 
   /**
@@ -168,7 +163,10 @@ public class PostRepository {
    */
   public Observable<Response<List<PostRealm>>> listByGroup(@Nonnull String groupId,
       @Nonnull PostSorter sorter, @Nullable String cursor, int limit) {
-    return remoteDataStore.listByGroup(groupId, sorter, cursor, limit).subscribeOn(Schedulers.io());
+    return remoteDataStore
+        .listByGroup(groupId, sorter, cursor, limit)
+        .subscribeOn(Schedulers.io())
+        .retry(throwable -> throwable instanceof SocketTimeoutException);
   }
 
   /**
@@ -214,6 +212,19 @@ public class PostRepository {
             .subscribeOn(Schedulers.io()));
   }
 
+  /**
+   * List by post sorter observable.
+   *
+   * @param sorter the sorter
+   * @param cursor the cursor
+   * @param limit the limit
+   * @return the observable
+   */
+  public Observable<Response<List<PostRealm>>> listByPostSorter(@Nonnull PostSorter sorter,
+      @Nullable String cursor, int limit) {
+    return remoteDataStore.listByPostSorter(sorter, cursor, limit).subscribeOn(Schedulers.io());
+  }
+
   public Observable<Response<List<PostRealm>>> listByTrendingBlogPosts(@Nullable String cursor,
       int limit) {
     /*Observable<Response<List<PostRealm>>> diskObservable =
@@ -252,12 +263,24 @@ public class PostRepository {
 
     PostRealm p1 = new PostRealm()
         .setId(UUID.randomUUID().toString())
-        .setUsername("krialix")
+        .setUsername("elenagarrett")
         .setOwnerId(UUID.randomUUID().toString())
-        .setAvatarUrl(
-            "https://lh3.googleusercontent.com/Yd1ER2rR_nOU__3NctmXtHCPtPnhMydcvr8jykZSAhB_lSGdJsjTLw8f0sOTPfMqH-51ndZ_-f3MiWsx8lmn_we5=s150-c")
-        .setTitle("Your Collage Degree is Worthless")
-        .setContent("This is not a judgement, it is just a fact that I faced.")
+        .setAvatarUrl("https://randomuser.me/api/portraits/women/68.jpg")
+        .setTitle("Don't Be Afraid to Travel")
+        .setContent("If you had asked me five years ago if I would ever travel alone, "
+            + "I would have immediately said, “No way. That can’t be safe, it must be lonely, "
+            + "and I’d get so bored.” Before I started traveling, I was scared of even the idea "
+            + "of eating dinner alone!\n"
+            + "\n"
+            + "Then I started to realize that solo travel is not something people do just because "
+            + "they can’t find a friend to go with, it’s because they got tired of waiting for the "
+            + "perfect companion and just went. Then, as they find out there are many personal "
+            + "benefits to it, it typically becomes the preferred mode of travel.\n"
+            + "\n"
+            + "However, before that happens, the biggest hurdle is getting over the fear: fear"
+            + "of being alone, unsafe, bored, and scared. I’ve experienced all those fears and "
+            + "talked to many potential travelers who have, too. Fear can hold a lot of "
+            + "people back.")
         .addMedia(media)
         .setCreated(new Date());
 
@@ -265,8 +288,7 @@ public class PostRepository {
         .setId(UUID.randomUUID().toString())
         .setUsername("krialix")
         .setOwnerId(UUID.randomUUID().toString())
-        .setAvatarUrl(
-            "https://lh3.googleusercontent.com/Yd1ER2rR_nOU__3NctmXtHCPtPnhMydcvr8jykZSAhB_lSGdJsjTLw8f0sOTPfMqH-51ndZ_-f3MiWsx8lmn_we5=s150-c")
+        .setAvatarUrl("https://randomuser.me/api/portraits/men/6.jpg")
         .setTitle("An Alternative history of 'Third Eye Blind'")
         .setContent("This is not a judgement, it is just a fact that I faced.")
         .addMedia(media)
@@ -291,6 +313,11 @@ public class PostRepository {
     return Observable.just(Response.create(posts, null));
 
     //return Observable.mergeDelayError(diskObservable, remoteObservable);
+  }
+
+  public Observable<Response<List<PostRealm>>> listByMediaPosts(@Nullable String cursor,
+      int limit) {
+    return remoteDataStore.listByMediaPosts(cursor, limit).subscribeOn(Schedulers.io());
   }
 
   /**

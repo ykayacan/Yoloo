@@ -1,6 +1,7 @@
 package com.yoloo.android.feature.profile;
 
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -23,27 +24,34 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.Router;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bluelinelabs.conductor.support.RouterPagerAdapter;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.AccountRealm;
+import com.yoloo.android.data.model.CountryRealm;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
-import com.yoloo.android.feature.groupgridoverview.GroupGridOverviewController;
 import com.yoloo.android.feature.follow.FollowController;
+import com.yoloo.android.feature.groupgridoverview.GroupGridOverviewController;
 import com.yoloo.android.feature.postlist.PostListController;
 import com.yoloo.android.feature.profile.photolist.PhotoListController;
 import com.yoloo.android.feature.profile.pointsoverview.PointsOverviewController;
 import com.yoloo.android.feature.profile.profileedit.ProfileEditController;
+import com.yoloo.android.feature.profile.visitedcountrylist.VisitedCountryListController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.Pair;
 import com.yoloo.android.util.TextViewUtil;
 import com.yoloo.android.util.VersionUtil;
+import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +73,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   @BindView(R.id.tv_profile_realname) TextView tvRealname;
   @BindView(R.id.tv_profile_username) TextView tvUsername;
   @BindView(R.id.tv_profile_level) TextView tvLevel;
+  @BindView(R.id.tv_profile_country) TextView tvCountry;
   @BindView(R.id.tv_profile_bio) TextView tvBio;
   @BindView(R.id.tv_profile_website) TextView tvWebsiteUrl;
   @BindView(R.id.tv_profile_followers_counter) TextView tvFollowerCounter;
@@ -120,7 +129,8 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     List<Pair<String, Controller>> pairs = new ArrayList<>(4);
     pairs.add(Pair.create(profilePostsTabString, PostListController.ofUser(userId)));
     pairs.add(Pair.create(profilePhotosTabString, PhotoListController.create(userId)));
-    pairs.add(Pair.create(profileInterestsTabString, GroupGridOverviewController.create(userId, 3)));
+    pairs.add(
+        Pair.create(profileInterestsTabString, GroupGridOverviewController.create(userId, 3)));
 
     final RouterPagerAdapter pagerAdapter = new ProfilePagerAdapter(this, pairs);
 
@@ -147,6 +157,13 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   protected void onDestroyView(@NonNull View view) {
     viewPager.setAdapter(null);
     super.onDestroyView(view);
+  }
+
+  @Override
+  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+      @NonNull ControllerChangeType changeType) {
+    super.onChangeEnded(changeHandler, changeType);
+    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
   }
 
   @NonNull
@@ -189,7 +206,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
   @OnClick(R.id.card_profile_country_count)
   void openVisitedCountiesScreen() {
-
+    startTransaction(VisitedCountryListController.create(), new VerticalChangeHandler());
   }
 
   @OnClick(R.id.tv_profile_followers_counter_text)
@@ -254,6 +271,20 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
       ivProfileAvatar.setTransitionName(getResources().getString(R.string.transition_avatar));
     }
 
+    CountryRealm country = account.getCountry();
+    tvCountry.setText(country.getName());
+    Glide
+        .with(getActivity())
+        .load(country.getFlagUrl())
+        .override(24, 24)
+        .into(new SimpleTarget<GlideDrawable>() {
+          @Override
+          public void onResourceReady(GlideDrawable resource,
+              GlideAnimation<? super GlideDrawable> glideAnimation) {
+            tvCountry.setCompoundDrawablesWithIntrinsicBounds(resource, null, null, null);
+          }
+        });
+
     tvBio.setVisibility(TextUtils.isEmpty(account.getBio()) ? View.GONE : View.VISIBLE);
     tvBio.setText(account.getBio());
 
@@ -265,7 +296,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     }
 
     tvRealname.setText(account.getRealname());
-    tvLevel.setText(res.getString(R.string.label_profile_level, account.getLevel()));
+    //tvLevel.setText(res.getString(R.string.label_profile_level, account.getLevel()));
 
     tvFollowerCounter.setText(CountUtil.formatCount(account.getFollowerCount()));
     tvFollowingCounter.setText(CountUtil.formatCount(account.getFollowingCount()));

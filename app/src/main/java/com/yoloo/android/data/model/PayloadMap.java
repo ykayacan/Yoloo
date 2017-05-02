@@ -2,6 +2,7 @@ package com.yoloo.android.data.model;
 
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
+import java.util.Objects;
 
 public class PayloadMap extends RealmObject {
   @PrimaryKey private String key;
@@ -29,6 +30,19 @@ public class PayloadMap extends RealmObject {
 
   public void setValue(String value) {
     this.value = value;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof PayloadMap)) return false;
+    PayloadMap map = (PayloadMap) o;
+    return Objects.equals(getKey(), map.getKey()) && Objects.equals(getValue(), map.getValue());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getKey(), getValue());
   }
 
   @Override

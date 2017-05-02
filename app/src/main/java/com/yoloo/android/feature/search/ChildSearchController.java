@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import com.airbnb.epoxy.EpoxyControllerAdapter;
 import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
@@ -60,7 +61,9 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
   };
 
   @BindView(R.id.rv_child_search) RecyclerView rvChildSearch;
-  private SearchAdapter adapter;
+
+  private SearchUserEpoxyController userEpoxyController;
+  private SearchTagEpoxyController tagEpoxyController;
 
   private int searchType;
 
@@ -97,8 +100,6 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
     searchType = getArgs().getInt(KEY_SEARCH_TYPE);
 
     etSearch = ButterKnife.findById(getParentController().getView(), R.id.et_search);
-
-    setupRecyclerView();
   }
 
   @Override
@@ -110,8 +111,12 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
     viewPager.addOnPageChangeListener(onPageChangeListener);
 
     if (searchType == SearchType.TAG) {
+      tagEpoxyController = new SearchTagEpoxyController(this);
+      setupRecyclerView(tagEpoxyController.getAdapter());
       getPresenter().loadRecentTags();
     } else if (searchType == SearchType.USER) {
+      userEpoxyController = new SearchUserEpoxyController(getActivity(), this, this);
+      setupRecyclerView(userEpoxyController.getAdapter());
       getPresenter().loadRecentUsers();
     }
 
@@ -139,22 +144,22 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
 
   @Override
   public void onRecentTagsLoaded(List<TagRealm> tags) {
-    adapter.replaceTags(tags);
+    tagEpoxyController.setData(tags);
   }
 
   @Override
   public void onTagsLoaded(List<TagRealm> tags) {
-    adapter.replaceTags(tags);
+    tagEpoxyController.setData(tags);
   }
 
   @Override
   public void onRecentUsersLoaded(List<AccountRealm> accounts) {
-    adapter.replaceUsers(accounts);
+    userEpoxyController.setData(accounts);
   }
 
   @Override
   public void onUsersLoaded(List<AccountRealm> accounts) {
-    adapter.replaceUsers(accounts);
+    userEpoxyController.setData(accounts);
   }
 
   @Override
@@ -170,7 +175,7 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
   }
 
   @Override
-  public void onProfileClick(View v, EpoxyModel<?> model, String userId) {
+  public void onProfileClick(View v, String userId) {
     KeyboardUtil.hideKeyboard(etSearch);
 
     getParentController()
@@ -182,13 +187,11 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
   }
 
   @Override
-  public void onFollowClick(View v, EpoxyModel<?> model, AccountRealm account, int direction) {
+  public void onFollowClick(View v, AccountRealm account, int direction) {
     getPresenter().follow(account.getId(), direction);
   }
 
-  private void setupRecyclerView() {
-    adapter = new SearchAdapter(getActivity(), this, this, this);
-
+  private void setupRecyclerView(EpoxyControllerAdapter adapter) {
     rvChildSearch.setLayoutManager(new LinearLayoutManager(getActivity()));
     rvChildSearch.setItemAnimator(new DefaultItemAnimator());
     rvChildSearch.setHasFixedSize(true);

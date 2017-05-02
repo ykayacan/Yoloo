@@ -16,9 +16,6 @@ import timber.log.Timber;
 
 class EditorPresenter extends MvpPresenter<EditorView> {
 
-  static final int NAV_SELECT_GROUP = 0;
-  static final int NAV_BOUNTY = 1;
-  static final int NAV_POST = 2;
   static final int NAV_SEND = 3;
 
   private final TagRepository tagRepository;
@@ -37,10 +34,21 @@ class EditorPresenter extends MvpPresenter<EditorView> {
     super.onAttachView(view);
     createDraft();
     loadRecommendedTags();
+    loadMe();
+  }
+
+  private void loadMe() {
+    Disposable d = userRepository
+        .getLocalMe()
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(me -> getView().onMeLoaded(me), Timber::e);
+
+    getDisposable().add(d);
   }
 
   private void createDraft() {
-    Disposable d = userRepository.getLocalMe()
+    Disposable d = userRepository
+        .getLocalMe()
         .map(this::createNewDraft)
         .flatMapCompletable(postRepository::addDraft)
         .andThen(postRepository.getDraft())
@@ -51,19 +59,9 @@ class EditorPresenter extends MvpPresenter<EditorView> {
     getDisposable().add(d);
   }
 
-  /*void loadDraft() {
-    Disposable d = postRepository
-        .getDraft()
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(draft -> getView().onDraftLoaded(draft));
-
-    getDisposable().add(d);
-  }*/
-
   void deleteDraft() {
-    Disposable d = postRepository.deleteDraft()
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe();
+    Disposable d =
+        postRepository.deleteDraft().observeOn(AndroidSchedulers.mainThread()).subscribe();
 
     getDisposable().add(d);
   }

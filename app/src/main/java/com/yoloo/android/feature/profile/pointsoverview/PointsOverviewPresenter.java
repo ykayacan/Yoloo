@@ -23,13 +23,8 @@ class PointsOverviewPresenter extends MvpPresenter<PointsOverviewView> {
     Disposable d = userRepository
         .getGameInfo()
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(gameInfo -> {
-          if (gameInfo.getHistories().isEmpty()) {
-            getView().onEmpty();
-          } else {
-            getView().onLoaded(gameInfo);
-          }
-        }, throwable -> getView().onError(throwable));
+        .subscribe(gameInfo -> getView().onLoaded(gameInfo),
+            throwable -> getView().onError(throwable));
 
     getDisposable().add(d);
   }

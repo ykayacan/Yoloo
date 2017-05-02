@@ -18,7 +18,7 @@
       android:layout_height="match_parent"
       android:fitsSystemWindows="true"
       app:contentScrim="?attr/colorPrimary"
-      app:expandedTitleMarginBottom="64dp"
+      app:expandedTitleMarginBottom="72dp"
       app:layout_scrollFlags="scroll|exitUntilCollapsed"
       app:toolbarId="@+id/toolbar">
 
@@ -27,7 +27,6 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/app_bar_height"
         android:fitsSystemWindows="true"
-        android:foreground="@drawable/shape_bottom_scrim"
         android:scaleType="centerCrop"
         app:layout_collapseMode="parallax"
         tools:background="@drawable/blog_header_small" />

@@ -45,13 +45,7 @@ public class GroupRepository {
         .list(sorter, cursor, limit)
         .doOnNext(response -> diskDataStore.addAll(response.getData()));
 
-    return diskObservable.flatMap(response -> {
-      if (response.getData().isEmpty()) {
-        return remoteObservable;
-      } else {
-        return Observable.just(response);
-      }
-    });
+    return remoteObservable;
   }
 
   public Observable<List<GroupRealm>> listSubscribedGroups(@Nonnull String userId) {

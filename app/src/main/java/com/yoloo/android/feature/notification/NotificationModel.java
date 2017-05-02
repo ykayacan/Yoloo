@@ -103,11 +103,11 @@ abstract class NotificationModel
 
   private void setupClickListeners(NotificationHolder holder) {
     holder.ivUserAvatar.setOnClickListener(
-        v -> onProfileClickListener.onProfileClick(v, this, notification.getSenderId()));
+        v -> onProfileClickListener.onProfileClick(v, notification.getSenderId()));
 
     holder.tvContent.setOnLinkClickListener((type, value) -> {
       if (type == LinkableTextView.Link.MENTION) {
-        onProfileClickListener.onProfileClick(null, this, notification.getSenderId());
+        onProfileClickListener.onProfileClick(null, notification.getSenderId());
       }
     });
 

@@ -2,6 +2,7 @@ package com.yoloo.android.feature.search;
 
 import android.content.Context;
 import android.support.design.widget.Snackbar;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -16,13 +17,16 @@ import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 
+import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;
+
 @EpoxyModelClass(layout = R.layout.item_search_user)
 public abstract class UserModel extends EpoxyModelWithHolder<UserModel.UserHolder> {
 
   @EpoxyAttribute AccountRealm account;
-  @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
-  @EpoxyAttribute(hash = false) OnFollowClickListener onFollowClickListener;
-  @EpoxyAttribute(hash = false) CropCircleTransformation cropCircleTransformation;
+  @EpoxyAttribute(DoNotHash) OnProfileClickListener onProfileClickListener;
+  @EpoxyAttribute(DoNotHash) OnUserClickListener onUserClickListener;
+  @EpoxyAttribute(DoNotHash) OnFollowClickListener onFollowClickListener;
+  @EpoxyAttribute(DoNotHash) CropCircleTransformation cropCircleTransformation;
 
   @Override
   public void bind(UserHolder holder) {
@@ -37,6 +41,8 @@ public abstract class UserModel extends EpoxyModelWithHolder<UserModel.UserHolde
 
     holder.tvUsername.setText(account.getUsername());
 
+    holder.btnFollow.setVisibility(onFollowClickListener == null ? View.GONE : View.VISIBLE);
+
     holder.btnFollow.setOnClickListener(v -> {
       v.setTag(v.getTag() == null);
       account.setFollowing(v.getTag() != null);
@@ -47,10 +53,17 @@ public abstract class UserModel extends EpoxyModelWithHolder<UserModel.UserHolde
       Snackbar
           .make(v, context.getString(textResId, account.getUsername()), Snackbar.LENGTH_SHORT)
           .show();
-      onFollowClickListener.onFollowClick(v, this, account, 1);
+      onFollowClickListener.onFollowClick(v, account, 1);
     });
-    holder.itemView.setOnClickListener(
-        v -> onProfileClickListener.onProfileClick(v, this, account.getId()));
+
+    if (onProfileClickListener != null) {
+      holder.itemView.setOnClickListener(
+          v -> onProfileClickListener.onProfileClick(v, account.getId()));
+    }
+
+    if (onUserClickListener != null) {
+      holder.itemView.setOnClickListener(v -> onUserClickListener.onUserClicked(account));
+    }
   }
 
   @Override
@@ -60,6 +73,10 @@ public abstract class UserModel extends EpoxyModelWithHolder<UserModel.UserHolde
 
     holder.itemView.setOnClickListener(null);
     holder.btnFollow.setOnClickListener(null);
+  }
+
+  public interface OnUserClickListener {
+    void onUserClicked(AccountRealm account);
   }
 
   static class UserHolder extends BaseEpoxyHolder {

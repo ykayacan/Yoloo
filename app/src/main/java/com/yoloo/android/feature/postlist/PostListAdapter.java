@@ -16,7 +16,7 @@ import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
-import com.yoloo.android.feature.feed.component.loading.LoadingModel;
+import com.yoloo.android.feature.models.loader.LoaderModel;
 import com.yoloo.android.feature.feed.component.post.BlogModel;
 import com.yoloo.android.feature.feed.component.post.BlogModel_;
 import com.yoloo.android.feature.feed.component.post.RichQuestionModel;
@@ -45,13 +45,13 @@ public class PostListAdapter extends EpoxyAdapter {
   private OnVoteClickListener onVoteClickListener;
   private OnContentImageClickListener onContentImageClickListener;
   private OnBookmarkClickListener onBookmarkClickListener;
-  private LoadingModel loadingModel;
+  private LoaderModel loaderModel;
 
   public PostListAdapter(Context context, RequestManager glide) {
     enableDiffing();
     set = new ConstraintSet();
 
-    loadingModel = new LoadingModel();
+    loaderModel = new LoaderModel();
 
     circleTransformation = new CropCircleTransformation(context);
     this.glide = glide;
@@ -119,10 +119,10 @@ public class PostListAdapter extends EpoxyAdapter {
   public void showFooter(RecyclerView recyclerView, boolean show) {
     /*if (show) {
       Timber.d("showFooter(%s)", true);
-      recyclerView.post(() -> addModel(loadingModel));
+      recyclerView.post(() -> addModel(loaderModel));
     } else {
       Timber.d("showFooter(%s)", false);
-      recyclerView.post(() -> removeModel(loadingModel));
+      recyclerView.post(() -> removeModel(loaderModel));
     }*/
   }
 
@@ -168,7 +168,7 @@ public class PostListAdapter extends EpoxyAdapter {
         .onContentImageClickListener(onContentImageClickListener)
         .onBookmarkClickListener(onBookmarkClickListener)
         .layout(R.layout.item_feed_question_rich)
-        .circleTransformation(circleTransformation)
+        .bitmapTransformation(circleTransformation)
         .glide(glide)
         .set(set)
         .post(post)
@@ -185,7 +185,7 @@ public class PostListAdapter extends EpoxyAdapter {
         .onVoteClickListener(onVoteClickListener)
         .onBookmarkClickListener(onBookmarkClickListener)
         .layout(R.layout.item_feed_question_text)
-        .circleTransformation(circleTransformation)
+        .bitmapTransformation(circleTransformation)
         .glide(glide)
         .post(post)
         .userId(userId);
@@ -201,7 +201,7 @@ public class PostListAdapter extends EpoxyAdapter {
         .onVoteClickListener(onVoteClickListener)
         .onBookmarkClickListener(onBookmarkClickListener)
         .layout(R.layout.item_feed_blog)
-        .circleTransformation(circleTransformation)
+        .bitmapTransformation(circleTransformation)
         .glide(glide)
         .post(post)
         .userId(userId);

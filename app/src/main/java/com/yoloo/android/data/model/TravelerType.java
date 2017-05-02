@@ -1,5 +1,6 @@
 package com.yoloo.android.data.model;
 
+import java.util.Objects;
 import org.parceler.Parcel;
 
 @Parcel
@@ -28,6 +29,21 @@ public class TravelerType {
 
   public String getImageUrl() {
     return imageUrl;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof TravelerType)) return false;
+    TravelerType type = (TravelerType) o;
+    return Objects.equals(getId(), type.getId())
+        && Objects.equals(getName(), type.getName())
+        && Objects.equals(getImageUrl(), type.getImageUrl());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getId(), getName(), getImageUrl());
   }
 
   @Override

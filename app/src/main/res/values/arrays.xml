@@ -54,6 +54,12 @@
     <item>60 mins</item>
   </string-array>
 
+  <string-array name="points_hint_text">
+    <item>Tip: You can earn more points by asking questions.</item>
+    <item>Tip: You can earn more points by commenting questions.</item>
+    <item>Tip: Adding bounties to your post makes it more visible.</item>
+  </string-array>
+
   <string-array name="countries_array">
     <item>Select Country</item>
     <item>Afghanistan</item>

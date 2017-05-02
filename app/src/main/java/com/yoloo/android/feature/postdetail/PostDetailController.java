@@ -19,7 +19,9 @@ import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
+import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
@@ -44,7 +46,6 @@ import com.yoloo.android.feature.fullscreenphoto.FullscreenPhotoController;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.writecommentbox.CommentAutocomplete;
 import com.yoloo.android.framework.MvpController;
-import com.yoloo.android.ui.changehandler.ArcFadeMoveChangeHandlerCompat;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
 import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
@@ -53,6 +54,7 @@ import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.MenuHelper;
 import com.yoloo.android.util.ShareUtil;
+import com.yoloo.android.util.ViewUtils;
 import java.util.List;
 import timber.log.Timber;
 
@@ -72,6 +74,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   @BindView(R.id.layout_compose) CommentAutocomplete composeLayout;
 
   @BindColor(R.color.primary) int primaryColor;
+  @BindColor(R.color.primary_dark) int primaryDarkColor;
   @BindColor(R.color.divider) int dividerColor;
 
   private PostDetailAdapter adapter;
@@ -132,8 +135,15 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   }
 
   @Override
+  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+      @NonNull ControllerChangeType changeType) {
+    super.onChangeEnded(changeHandler, changeType);
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
+  }
+
+  @Override
   public boolean handleBack() {
-    KeyboardUtil.hideKeyboard(composeLayout);
+    KeyboardUtil.hideKeyboard(getView());
     return super.handleBack();
   }
 
@@ -166,7 +176,9 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   @Override
   public void onPostUpdated(PostRealm post) {
-    modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, post);
+    if (modelUpdateEvent != null) {
+      modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, post);
+    }
   }
 
   @Override
@@ -228,18 +240,20 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   private void processPostDelete(PostRealm post) {
     getPresenter().deletePost(post.getId());
-    modelUpdateEvent.onModelUpdateEvent(FeedAction.DELETE, post);
+    if (modelUpdateEvent != null) {
+      modelUpdateEvent.onModelUpdateEvent(FeedAction.DELETE, post);
+    }
     getRouter().handleBack();
   }
 
   @Override
   public void onContentImageClick(View v, MediaRealm media) {
     startTransaction(FullscreenPhotoController.create(media.getLargeSizeUrl(), media.getId()),
-        new ArcFadeMoveChangeHandlerCompat());
+        new FadeChangeHandler());
   }
 
   @Override
-  public void onProfileClick(View v, EpoxyModel<?> model, String userId) {
+  public void onProfileClick(View v, String userId) {
     startTransaction(ProfileController.create(userId), new VerticalChangeHandler());
   }
 
@@ -264,7 +278,9 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
     post.increaseCommentCount();
 
-    modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, post);
+    if (modelUpdateEvent != null) {
+      modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, post);
+    }
   }
 
   @Override
@@ -306,8 +322,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
     adapter.setOnMarkAsAcceptedClickListener(this);
 
-    final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
-    rvFeed.setLayoutManager(lm);
+    rvFeed.setLayoutManager(new LinearLayoutManager(getActivity()));
 
     final SlideInItemAnimator animator = new SlideInItemAnimator();
     animator.setSupportsChangeAnimations(false);

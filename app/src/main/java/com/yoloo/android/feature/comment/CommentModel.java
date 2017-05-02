@@ -89,9 +89,9 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
       });
     }
     holder.ivUserAvatar.setOnClickListener(
-        v -> onProfileClickListener.onProfileClick(v, this, comment.getOwnerId()));
+        v -> onProfileClickListener.onProfileClick(v, comment.getOwnerId()));
     holder.tvUsername.setOnClickListener(
-        v -> onProfileClickListener.onProfileClick(v, this, comment.getOwnerId()));
+        v -> onProfileClickListener.onProfileClick(v, comment.getOwnerId()));
     holder.tvContent.setOnLinkClickListener((type, value) -> {
       if (type == LinkableTextView.Link.MENTION) {
         onMentionClickListener.onMentionClick(value);

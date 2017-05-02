@@ -85,6 +85,16 @@ public class UserEndpoint {
     return accountController.checkUsername(username);
   }
 
+  @ApiMethod(name = "users.checkEmail",
+      path = "users/checkEmail",
+      httpMethod = ApiMethod.HttpMethod.GET)
+  public WrappedBoolean checkEmail(@Named("email") String email) throws ServiceException {
+
+    EndpointsValidator.create().on(BadRequestValidator.create(email, "email is required."));
+
+    return accountController.checkEmail(email);
+  }
+
   /**
    * Search collection response.
    *
@@ -109,6 +119,28 @@ public class UserEndpoint {
         Optional.fromNullable(limit));
   }
 
+  @ApiMethod(name = "users.listRecommendedUsers",
+      path = "users/recommended",
+      httpMethod = ApiMethod.HttpMethod.GET)
+  public CollectionResponse<Account> listRecommendedUsers(@Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
+
+    EndpointsValidator.create().on(AuthValidator.create(user));
+
+    return accountController.listRecommendedUsers(Optional.fromNullable(cursor),
+        Optional.fromNullable(limit), user);
+  }
+
+  @ApiMethod(name = "users.listNewUsers", path = "users/new", httpMethod = ApiMethod.HttpMethod.GET)
+  public CollectionResponse<Account> listNewUsers(@Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
+
+    EndpointsValidator.create().on(AuthValidator.create(user));
+
+    return accountController.listNewUsers(Optional.fromNullable(cursor),
+        Optional.fromNullable(limit), user);
+  }
+
   /**
    * Returns the authenticated {@link Account}.
    *
@@ -129,10 +161,13 @@ public class UserEndpoint {
    *
    * @param mediaId the media id
    * @param realName the real name
+   * @param email the email
    * @param username the username
    * @param websiteUrl the website url
    * @param bio the bio
    * @param gender the gender
+   * @param visitedCountryCode the visited country code
+   * @param countryCode the country code
    * @param user the user
    * @return the updated version of the entity
    * @throws ServiceException the service exception
@@ -142,14 +177,17 @@ public class UserEndpoint {
       @Nullable @Named("name") String realName, @Nullable @Named("email") String email,
       @Nullable @Named("username") String username,
       @Nullable @Named("websiteUrl") String websiteUrl, @Nullable @Named("bio") String bio,
-      @Nullable @Named("gender") Account.Gender gender, User user) throws ServiceException {
+      @Nullable @Named("gender") Account.Gender gender,
+      @Nullable @Named("visitedCountryCode") String visitedCountryCode,
+      @Nullable @Named("countryCode") String countryCode, User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
     return accountController.updateAccount(user.getUserId(), Optional.fromNullable(mediaId),
         Optional.fromNullable(username), Optional.fromNullable(realName),
         Optional.fromNullable(email), Optional.fromNullable(websiteUrl), Optional.fromNullable(bio),
-        Optional.fromNullable(gender));
+        Optional.fromNullable(gender), Optional.fromNullable(visitedCountryCode),
+        Optional.fromNullable(countryCode));
   }
 
   /**

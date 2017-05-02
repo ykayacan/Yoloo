@@ -9,9 +9,7 @@ import com.google.appengine.api.images.ServingUrlOptions;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.Ref;
 import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
@@ -36,8 +34,6 @@ import static com.yoloo.backend.OfyService.ofy;
 public class TravelerGroupController extends Controller {
 
   private static final int DEFAULT_LIST_LIMIT = 7;
-
-  private TravelerGroupShardService travelerGroupShardService;
 
   private ImagesService imagesService;
 
@@ -76,33 +72,34 @@ public class TravelerGroupController extends Controller {
   public TravelerGroupEntity insertGroup(String displayName, String imageName) {
     final Key<TravelerGroupEntity> groupKey = TravelerGroupEntity.createKey(displayName);
 
-    Map<Ref<TravelerGroupShard>, TravelerGroupShard> shardMap =
-        travelerGroupShardService.createShardMapWithRef(groupKey);
-
-    final String imageServingUrl;
+    final String withIconUrl;
+    final String withoutIconUrl;
 
     if (imageName.equals("dev")) {
-      imageServingUrl = Strings.nullToEmpty(imageName);
+      withIconUrl = Strings.nullToEmpty(imageName);
+      withoutIconUrl = Strings.nullToEmpty(imageName);
     } else {
-      ServingUrlOptions options = ServingUrlOptions.Builder.withGoogleStorageFileName(
-          MediaConfig.SERVE_GROUP_BUCKET + "/" + imageName.toLowerCase() + "@2x.webp");
+      ServingUrlOptions withIconOptions = ServingUrlOptions.Builder.withGoogleStorageFileName(
+          MediaConfig.SERVE_GROUP_BUCKET_WITH_ICON + "/" + imageName.toLowerCase() + ".webp");
 
-      imageServingUrl = imagesService.getServingUrl(options);
+      withIconUrl = imagesService.getServingUrl(withIconOptions);
+
+      ServingUrlOptions withoutIconOptions = ServingUrlOptions.Builder.withGoogleStorageFileName(
+          MediaConfig.SERVE_GROUP_BUCKET_WITHOUT_ICON + "/" + imageName.toLowerCase() + ".webp");
+
+      withoutIconUrl = imagesService.getServingUrl(withoutIconOptions);
     }
 
     TravelerGroupEntity entity = TravelerGroupEntity
         .builder()
         .id(groupKey.getName())
         .name(displayName)
-        .imageUrl(new Link(imageServingUrl))
+        .imageWithIconUrl(new Link(withIconUrl))
+        .imageWithoutIconUrl(new Link(withoutIconUrl))
         .rank(0.0D)
         .subscriberCount(0L)
         .postCount(0L)
-        //.shardRefs(Lists.newArrayList(shardMap.keySet()))
         .build();
-
-    ImmutableSet<Object> saveList =
-        ImmutableSet.builder().add(entity).addAll(shardMap.values()).build();
 
     return ofy().transact(() -> {
       ofy().save().entity(entity).now();
@@ -251,7 +248,10 @@ public class TravelerGroupController extends Controller {
 
     Account account = ofy().load().key(accountKey).now();
 
-    return ofy().load().keys(account.getSubscribedGroupKeys()).values();
+    return Ix
+        .from(ofy().load().keys(account.getSubscribedGroupKeys()).values())
+        .map(entity -> entity.withSubscribed(true))
+        .toList();
   }
 
   /**

@@ -2,6 +2,7 @@ package com.yoloo.android.feature.auth.selecttype;
 
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
@@ -22,6 +23,7 @@ import com.igalata.bubblepicker.rendering.BubblePicker;
 import com.yoloo.android.R;
 import com.yoloo.android.feature.auth.signupinit.SignUpInitController;
 import com.yoloo.android.feature.base.BaseController;
+import com.yoloo.android.util.ViewUtils;
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -53,21 +55,11 @@ public class SelectTypeController extends BaseController {
   protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
 
-    View decorView = getActivity().getWindow().getDecorView();
-    decorView.setOnSystemUiVisibilityChangeListener(visibility -> {
-      if ((visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
-        // workaround: navigation bar is visible
-        // adjustments to your UI, such as showing the action bar or
-        // other navigational controls.
-        if (space != null) {
-          space.setVisibility(View.VISIBLE);
-        }
-      } else {
-        if (space != null) {
-          space.setVisibility(View.GONE);
-        }
-      }
-    });
+    Point point = ViewUtils.getNavigationBarSize(getActivity());
+
+    if (space != null) {
+      space.setVisibility(point.y > 0 ? View.VISIBLE : View.GONE);
+    }
 
     for (int i = 0; i < travelerTypeTitles.length; i++) {
       types.put(travelerTypeTitles[i], travelerTypeIds[i]);
@@ -94,7 +86,7 @@ public class SelectTypeController extends BaseController {
     travelerTypeDrawables.recycle();
 
     picker.setItems(items);
-    picker.setBubbleSize(40);
+    picker.setBubbleSize(45);
     picker.setListener(new BubblePickerListener() {
       @Override
       public void onBubbleSelected(@NonNull PickerItem pickerItem) {

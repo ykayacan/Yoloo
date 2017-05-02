@@ -64,9 +64,15 @@ class SignInPresenter extends MvpPresenter<SignInView> {
         .getMe()
         .observeOn(AndroidSchedulers.mainThread(), true)
         .subscribe(account -> {
+          Timber.d("Account: %s", account);
           getView().onHideLoading();
           getView().onSignedIn();
         }, throwable -> {
+          FirebaseAuth.getInstance().getCurrentUser().delete().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+              Timber.d("User account deleted.");
+            }
+          });
           getView().onHideLoading();
           getView().onError(throwable);
         });

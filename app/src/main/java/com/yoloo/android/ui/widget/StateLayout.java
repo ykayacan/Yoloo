@@ -357,6 +357,22 @@ public class StateLayout extends CoordinatorLayout {
 
   }
 
+  public View getContentView() {
+    return contentView;
+  }
+
+  public View getLoadingView() {
+    return loadingView;
+  }
+
+  public View getErrorView() {
+    return errorView;
+  }
+
+  public View getEmptyView() {
+    return emptyView;
+  }
+
   public interface OnStateChangedListener {
 
     /**

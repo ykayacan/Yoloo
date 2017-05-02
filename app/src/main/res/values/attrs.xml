@@ -53,9 +53,21 @@
     <attr name="animateStateChanges" format="boolean" />
   </declare-styleable>
 
-  <declare-styleable name="FabGroupView">
-    <attr name="fabText" format="string"/>
-    <attr name="fabIcon" format="reference"/>
+  <declare-styleable name="MaterialBadgeTextView">
+    <attr name="android:background" />
+    <attr name="mbtv_border_width" format="dimension" />
+    <attr name="mbtv_border_color" format="color" />
+    <attr name="mbtv_border_alpha" format="float" />
+    <attr name="mbtv_type" format="enum">
+      <enum name="shadow_gradual" value="1"/>
+      <enum name="shadow_alpha" value="2"/>
+    </attr>
+  </declare-styleable>
+
+  <declare-styleable name="BountyView">
+    <attr name="bountyDrawable" format="reference" />
+    <attr name="bountyTitle" format="string" />
+    <attr name="bountyPrice" format="string" />
   </declare-styleable>
 
 </resources>

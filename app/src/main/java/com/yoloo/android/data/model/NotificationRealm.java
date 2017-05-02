@@ -8,6 +8,7 @@ import io.realm.annotations.PrimaryKey;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class NotificationRealm extends RealmObject {
 
@@ -125,5 +126,58 @@ public class NotificationRealm extends RealmObject {
   public NotificationRealm setPayload(RealmList<PayloadMap> payload) {
     this.payload = payload;
     return this;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof NotificationRealm)) return false;
+    NotificationRealm that = (NotificationRealm) o;
+    return Objects.equals(getId(), that.getId())
+        && Objects.equals(getSenderId(), that.getSenderId())
+        && Objects.equals(getSenderUsername(), that.getSenderUsername())
+        && Objects.equals(getSenderAvatarUrl(), that.getSenderAvatarUrl())
+        && Objects.equals(getAction(), that.getAction())
+        && Objects.equals(getMessage(), that.getMessage())
+        && Objects.equals(getPostId(), that.getPostId())
+        && Objects.equals(getPayload(), that.getPayload())
+        && Objects.equals(getCreated(), that.getCreated());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getId(), getSenderId(), getSenderUsername(), getSenderAvatarUrl(),
+        getAction(), getMessage(), getPostId(), getPayload(), getCreated());
+  }
+
+  @Override
+  public String toString() {
+    return "NotificationRealm{"
+        + "id='"
+        + id
+        + '\''
+        + ", senderId='"
+        + senderId
+        + '\''
+        + ", senderUsername='"
+        + senderUsername
+        + '\''
+        + ", senderAvatarUrl='"
+        + senderAvatarUrl
+        + '\''
+        + ", action='"
+        + action
+        + '\''
+        + ", message='"
+        + message
+        + '\''
+        + ", postId='"
+        + postId
+        + '\''
+        + ", payload="
+        + payload
+        + ", created="
+        + created
+        + '}';
   }
 }

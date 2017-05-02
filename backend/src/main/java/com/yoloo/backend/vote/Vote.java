@@ -11,8 +11,9 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Value;
-import lombok.experimental.NonFinal;
+import lombok.experimental.FieldDefaults;
 import lombok.experimental.Wither;
 
 @Entity
@@ -20,18 +21,17 @@ import lombok.experimental.Wither;
 @Value
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+@FieldDefaults(makeFinal = false)
 public class Vote {
 
   public static final String FIELD_VOTABLE_KEY = "votableKey";
 
   // Websafe voteable id.
   @Id private String id;
-
-  @Parent @NonFinal private Key<Account> parent;
-
-  @Wither @NonFinal private int dir;
-
-  @NonFinal @Index private Key<Votable> votableKey;
+  @Index private Key<Votable> votableKey;
+  @Parent private Key<Account> parent;
+  @Wither private int dir;
 
   public static Vote.Direction parse(int dir) {
     switch (dir) {

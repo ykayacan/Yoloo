@@ -1,13 +1,18 @@
 package com.yoloo.android.feature.explore;
 
 import com.yoloo.android.data.repository.group.GroupRepository;
-import com.yoloo.android.data.repository.media.MediaRepository;
+import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.sorter.GroupSorter;
+import com.yoloo.android.feature.explore.data.ButtonItem;
+import com.yoloo.android.feature.explore.data.ExploreItem;
+import com.yoloo.android.feature.explore.data.GroupItem;
+import com.yoloo.android.feature.explore.data.RecentMediaListItem;
 import com.yoloo.android.framework.MvpPresenter;
 import com.yoloo.android.util.Group;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -15,11 +20,11 @@ import timber.log.Timber;
 
 class ExplorePresenter extends MvpPresenter<ExploreView> {
 
-  private final MediaRepository mediaRepository;
+  private final PostRepository postRepository;
   private final GroupRepository groupRepository;
 
-  ExplorePresenter(MediaRepository mediaRepository, GroupRepository groupRepository) {
-    this.mediaRepository = mediaRepository;
+  ExplorePresenter(PostRepository postRepository, GroupRepository groupRepository) {
+    this.postRepository = postRepository;
     this.groupRepository = groupRepository;
   }
 
@@ -30,8 +35,9 @@ class ExplorePresenter extends MvpPresenter<ExploreView> {
   }
 
   private void loadExploreScreen() {
-    Observable.zip(getRecentMediasObservable(), getButtonObservable(), getGroupsObservable(),
+    Observable.zip(getRecentMediaPostsObservable(), getButtonObservable(), getGroupsObservable(),
         Group.Of3::create)
+        .retry(2, throwable -> throwable instanceof SocketTimeoutException)
         .subscribe(group -> {
           List<ExploreItem<?>> items = new ArrayList<>();
 
@@ -63,11 +69,11 @@ class ExplorePresenter extends MvpPresenter<ExploreView> {
     getDisposable().add(d);
   }
 
-  private Observable<RecentMediaItem> getRecentMediasObservable() {
-    return mediaRepository
-        .listRecentMedias(null, 8)
+  private Observable<RecentMediaListItem> getRecentMediaPostsObservable() {
+    return postRepository
+        .listByMediaPosts(null, 8)
         .observeOn(AndroidSchedulers.mainThread())
-        .map(response -> new RecentMediaItem(response.getData()));
+        .map(response -> new RecentMediaListItem(response.getData()));
   }
 
   private Observable<ButtonItem> getButtonObservable() {

@@ -12,7 +12,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.OnLongClick;
-import com.airbnb.epoxy.EpoxyModel;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.Transformation;
 import com.yoloo.android.R;
@@ -33,7 +32,6 @@ public class CommentView extends ConstraintLayout {
   @BindView(R.id.tv_comment_vote) VoteView voteView;
 
   private OnCommentClickListener onCommentClickListener;
-  private EpoxyModel<?> model;
   private CommentRealm comment;
 
   public CommentView(Context context, AttributeSet attrs) {
@@ -54,21 +52,22 @@ public class CommentView extends ConstraintLayout {
         .tint();
   }
 
-  public void setOnCommentClickListener(OnCommentClickListener onCommentClickListener,
-      EpoxyModel<?> model, CommentRealm comment) {
-    this.onCommentClickListener = onCommentClickListener;
-    this.model = model;
+  public void setComment(CommentRealm comment) {
     this.comment = comment;
+  }
+
+  public void setOnCommentClickListener(OnCommentClickListener onCommentClickListener) {
+    this.onCommentClickListener = onCommentClickListener;
 
     tvContent.setOnLinkClickListener((type, value) -> {
       if (type == LinkableTextView.Link.MENTION) {
-        onCommentClickListener.onCommentMentionClick(model, value);
+        onCommentClickListener.onCommentMentionClick(value);
       }
     });
 
     voteView.setOnVoteEventListener(direction -> {
       comment.setVoteDir(direction);
-      onCommentClickListener.onCommentVoteClick(model, comment.getId(), direction);
+      onCommentClickListener.onCommentVoteClick(comment.getId(), direction);
     });
 
     tvMarkAsAccepted.setOnClickListener(v -> {
@@ -81,12 +80,13 @@ public class CommentView extends ConstraintLayout {
           .withColor(v.getContext(), R.color.accepted)
           .tint();
 
-      onCommentClickListener.onMarkAsAccepted(model, comment);
+      onCommentClickListener.onMarkAsAccepted(comment);
     });
   }
 
   public void setUserAvatar(@NonNull RequestManager glide,
       @NonNull Transformation<Bitmap> transformation, @NonNull String avatarUrl) {
+    //noinspection unchecked
     glide
         .load(avatarUrl)
         .bitmapTransform(transformation)
@@ -125,25 +125,25 @@ public class CommentView extends ConstraintLayout {
   @OnLongClick(R.id.root_view)
   boolean onLongClick() {
     if (comment.isOwner()) {
-      onCommentClickListener.onCommentLongClick(model, comment);
+      onCommentClickListener.onCommentLongClick(comment);
     }
     return true;
   }
 
   @OnClick({R.id.tv_comment_username, R.id.iv_comment_user_avatar})
   void onProfileClick() {
-    onCommentClickListener.onCommentProfileClick(model, comment.getOwnerId());
+    onCommentClickListener.onCommentProfileClick(comment.getOwnerId());
   }
 
   public interface OnCommentClickListener {
-    void onCommentLongClick(EpoxyModel<?> model, CommentRealm comment);
+    void onCommentLongClick(CommentRealm comment);
 
-    void onCommentProfileClick(EpoxyModel<?> model, String userId);
+    void onCommentProfileClick(String userId);
 
-    void onCommentVoteClick(EpoxyModel<?> model, String commentId, int direction);
+    void onCommentVoteClick(String commentId, int direction);
 
-    void onCommentMentionClick(EpoxyModel<?> model, String username);
+    void onCommentMentionClick(String username);
 
-    void onMarkAsAccepted(EpoxyModel<?> model, CommentRealm comment);
+    void onMarkAsAccepted(CommentRealm comment);
   }
 }

@@ -54,6 +54,11 @@
     <property name="created" direction="desc" />
   </datastore-index>
 
+  <datastore-index ancestor="false" kind="PostEntity" source="manual">
+    <property name="hasMedia" direction="asc" />
+    <property name="created" direction="desc" />
+  </datastore-index>
+
   <datastore-index ancestor="false" kind="Comment" source="manual">
     <property name="created" direction="desc" />
     <property name="postKey" direction="asc" />

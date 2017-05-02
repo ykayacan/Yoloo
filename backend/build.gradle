@@ -6,7 +6,7 @@ buildscript {
   dependencies {
     classpath 'com.google.cloud.tools:appengine-gradle-plugin:1.3.0'
     classpath 'com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0-beta7'
-    classpath 'me.tatarka:gradle-retrolambda:3.6.0'
+    classpath 'me.tatarka:gradle-retrolambda:3.6.1'
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.14.0'
   }
 }
@@ -30,16 +30,16 @@ sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
 final APP_ENGINE_VERSION = '1.9.51'
-final JACKSON_VERSION = '2.9.0.pr2'
-final DAGGER2_VERSION = '2.10'
+final JACKSON_VERSION = '2.9.0.pr3'
+final DAGGER2_VERSION = '2.11-rc1'
 
 dependencies {
   // App Engine
-  compile 'com.google.appengine:appengine:1.9.51'
+  compile "com.google.appengine:appengine:$APP_ENGINE_VERSION"
   //compile "com.google.appengine:appengine-api-1.0-sdk:$APP_ENGINE_VERSION"
-  //compile "com.google.appengine:appengine-api-labs:$APP_ENGINE_VERSION"
+  compile "com.google.appengine:appengine-api-labs:$APP_ENGINE_VERSION"
  
-  compile 'com.google.cloud:google-cloud:0.13.0-alpha'
+  compile 'com.google.cloud:google-cloud:0.16.0-alpha'
 
   // Endpoints
   compile 'com.google.endpoints:endpoints-framework:2.0.7'

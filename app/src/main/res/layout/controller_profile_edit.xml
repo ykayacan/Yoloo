@@ -178,6 +178,34 @@
           android:maxLines="1" />
       </android.support.design.widget.TextInputLayout>
 
+      <android.support.design.widget.TextInputLayout
+        android:id="@+id/til_profile_edit_country"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/padding_normal"
+        android:layout_marginLeft="@dimen/padding_normal"
+        android:layout_marginRight="@dimen/padding_normal"
+        android:layout_marginStart="@dimen/padding_normal"
+        android:layout_marginTop="@dimen/padding_micro"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/til_profile_edit_password">
+
+        <android.support.design.widget.TextInputEditText
+          android:id="@+id/et_profile_edit_select_country"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:clickable="true"
+          android:drawableLeft="@drawable/ic_place_black_24dp"
+          android:drawablePadding="16dp"
+          android:drawableStart="@drawable/ic_place_black_24dp"
+          android:focusable="false"
+          android:focusableInTouchMode="false"
+          android:hint="@string/hint_country_prompt"
+          android:inputType="none" />
+
+      </android.support.design.widget.TextInputLayout>
+
       <ImageView
         android:id="@+id/iv_profile_edit_gender_icon"
         android:layout_width="wrap_content"
@@ -186,7 +214,7 @@
         android:layout_marginStart="20dp"
         android:layout_marginTop="@dimen/padding_normal"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/til_profile_edit_password"
+        app:layout_constraintTop_toBottomOf="@+id/til_profile_edit_country"
         app:srcCompat="@drawable/ic_wc_black_24dp" />
 
       <Spinner
@@ -201,7 +229,7 @@
         android:entries="@array/spinner_profile_edit_gender"
         app:layout_constraintLeft_toRightOf="@+id/iv_profile_edit_gender_icon"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/til_profile_edit_password" />
+        app:layout_constraintTop_toBottomOf="@+id/til_profile_edit_country" />
 
       <com.yoloo.android.ui.widget.BaselineGridTextView
         android:id="@+id/tv_profile_edit_extra_info_header"
@@ -252,7 +280,6 @@
         android:layout_marginLeft="@dimen/padding_normal"
         android:layout_marginRight="@dimen/padding_normal"
         android:layout_marginStart="@dimen/padding_normal"
-        android:layout_marginTop="@dimen/padding_micro"
         app:counterMaxLength="156"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

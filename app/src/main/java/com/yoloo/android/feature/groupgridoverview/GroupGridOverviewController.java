@@ -4,13 +4,17 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import butterknife.BindColor;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.Controller;
+import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
@@ -23,8 +27,8 @@ import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.GridInsetItemDecoration;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.DisplayUtil;
+import com.yoloo.android.util.ViewUtils;
 import java.util.List;
-import javax.annotation.Nonnull;
 import timber.log.Timber;
 
 public class GroupGridOverviewController
@@ -33,29 +37,45 @@ public class GroupGridOverviewController
 
   private static final String KEY_SPAN_COUNT = "SPAN_COUNT";
   private static final String KEY_USER_ID = "USER_ID";
+  private static final String KEY_ENABLE_TOOLBAR = "ENABLE_TOOLBAR";
+  private static final String KEY_INCLUDE_EDGE = "INCLUDE_EDGE";
 
-  @BindView(R.id.rv_catalog) RecyclerView rvCatalog;
+  @BindView(R.id.recycler_view) RecyclerView rvGroupGrid;
+  @BindView(R.id.toolbar) Toolbar toolbar;
+
+  @BindColor(R.color.primary_dark) int primaryDarkColor;
 
   private int spanCount;
 
-  private GroupGridAdapter adapter;
+  private GroupGridEpoxyController epoxyController;
 
   public GroupGridOverviewController() {
   }
 
   public GroupGridOverviewController(Bundle args) {
     super(args);
-    spanCount = getArgs().getInt(KEY_SPAN_COUNT, 3);
   }
 
   public static GroupGridOverviewController create() {
     return new GroupGridOverviewController();
   }
 
-  public static GroupGridOverviewController create(@Nonnull String userId, int spanCount) {
+  public static GroupGridOverviewController create(int spanCount, boolean enableToolbar,
+      boolean includeEdge) {
+    return create(null, spanCount, enableToolbar, includeEdge);
+  }
+
+  public static GroupGridOverviewController create(String userId, int spanCount) {
+    return create(userId, spanCount, false, true);
+  }
+
+  public static GroupGridOverviewController create(String userId, int spanCount,
+      boolean enableToolbar, boolean includeEdge) {
     final Bundle bundle = new BundleBuilder()
         .putString(KEY_USER_ID, userId)
         .putInt(KEY_SPAN_COUNT, spanCount)
+        .putBoolean(KEY_ENABLE_TOOLBAR, enableToolbar)
+        .putBoolean(KEY_INCLUDE_EDGE, includeEdge)
         .build();
 
     return new GroupGridOverviewController(bundle);
@@ -63,12 +83,20 @@ public class GroupGridOverviewController
 
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
-    return inflater.inflate(R.layout.controller_child_catalog, container, false);
+    return inflater.inflate(R.layout.controller_group_grid_overview, container, false);
   }
 
   @Override
   protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
+    spanCount = getArgs().getInt(KEY_SPAN_COUNT, 3);
+
+    final boolean enableToolbar = getArgs().getBoolean(KEY_ENABLE_TOOLBAR, false);
+    toolbar.setVisibility(enableToolbar ? View.VISIBLE : View.GONE);
+    if (enableToolbar) {
+      setupToolbar();
+    }
+
     setupRecyclerView();
   }
 
@@ -85,8 +113,17 @@ public class GroupGridOverviewController
   }
 
   @Override
-  public void onGroupsLoaded(List<GroupRealm> categories) {
-    adapter.addCategories(categories);
+  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+      @NonNull ControllerChangeType changeType) {
+    super.onChangeEnded(changeHandler, changeType);
+    if (getParentController() == null) {
+      ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
+    }
+  }
+
+  @Override
+  public void onGroupsLoaded(List<GroupRealm> groups) {
+    epoxyController.setData(groups);
   }
 
   @Override
@@ -119,15 +156,25 @@ public class GroupGridOverviewController
   }
 
   private void setupRecyclerView() {
-    adapter = new GroupGridAdapter(this);
+    epoxyController = new GroupGridEpoxyController(this);
 
-    rvCatalog.setLayoutManager(new GridLayoutManager(getActivity(), spanCount));
-    rvCatalog.addItemDecoration(
-        new GridInsetItemDecoration(spanCount, DisplayUtil.dpToPx(2), true));
+    boolean includeEdge = getArgs().getBoolean(KEY_INCLUDE_EDGE, true);
+
+    rvGroupGrid.setLayoutManager(new GridLayoutManager(getActivity(), spanCount));
+    rvGroupGrid.addItemDecoration(
+        new GridInsetItemDecoration(spanCount, includeEdge ? DisplayUtil.dpToPx(2) : 0,
+            includeEdge));
     SlideInItemAnimator animator = new SlideInItemAnimator();
     animator.setSupportsChangeAnimations(false);
-    rvCatalog.setItemAnimator(animator);
-    rvCatalog.setHasFixedSize(true);
-    rvCatalog.setAdapter(adapter);
+    rvGroupGrid.setItemAnimator(animator);
+    rvGroupGrid.setHasFixedSize(true);
+    rvGroupGrid.setAdapter(epoxyController.getAdapter());
+  }
+
+  private void setupToolbar() {
+    setSupportActionBar(toolbar);
+
+    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    getSupportActionBar().setTitle("All Groups");
   }
 }

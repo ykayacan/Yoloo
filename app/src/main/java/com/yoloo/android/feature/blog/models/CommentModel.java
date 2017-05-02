@@ -28,6 +28,6 @@ public abstract class CommentModel extends EpoxyModel<CommentView> {
     view.setVoteDirection(comment.getVoteDir());
     view.setAcceptedMarkIndicatorVisibility(comment.isAccepted());
     view.showAccept(acceptable && !comment.isAccepted() && comment.isPostOwner());
-    view.setOnCommentClickListener(onCommentClickListener, this, comment);
+    view.setOnCommentClickListener(onCommentClickListener);
   }
 }

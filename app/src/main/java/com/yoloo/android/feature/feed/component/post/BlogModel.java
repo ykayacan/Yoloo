@@ -61,7 +61,7 @@ public abstract class BlogModel extends BasePostModel<BlogModel.BlogHolder> {
 
     glide
         .load(post.getAvatarUrl())
-        .bitmapTransform(circleTransformation)
+        .bitmapTransform(bitmapTransformation)
         .placeholder(R.drawable.ic_player_72dp)
         .into(holder.ivUserAvatar);
 
@@ -72,11 +72,7 @@ public abstract class BlogModel extends BasePostModel<BlogModel.BlogHolder> {
     holder.tvContent.setText(
         isNormal() ? ReadMoreUtil.addReadMore(context, post.getContent(), 135) : post.getContent());
 
-    glide
-        .load("http://www.adrenalinoutdoor"
-            + ".com/images_buyuk/f62/The-North-Face-Mountain-25-Cadir_16762_2.jpg")
-        .override(320, 180)
-        .into(holder.ivBlogCover);
+    glide.load(post.getMedias().get(0).getMediumSizeUrl()).into(holder.ivBlogCover);
 
     holder.tvComment.setText(CountUtil.formatCount(post.getCommentCount()));
     holder.voteView.setVoteCount(post.getVoteCount());
@@ -109,10 +105,10 @@ public abstract class BlogModel extends BasePostModel<BlogModel.BlogHolder> {
     tintDrawables(holder, context);
 
     holder.ivUserAvatar.setOnClickListener(
-        v -> onProfileClickListener.onProfileClick(v, this, post.getOwnerId()));
+        v -> onProfileClickListener.onProfileClick(v, post.getOwnerId()));
 
     holder.tvUsername.setOnClickListener(
-        v -> onProfileClickListener.onProfileClick(v, this, post.getOwnerId()));
+        v -> onProfileClickListener.onProfileClick(v, post.getOwnerId()));
 
     if (onItemClickListener != null && post.shouldShowReadMore()) {
       holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(v, this, post));

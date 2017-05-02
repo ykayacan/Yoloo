@@ -2,7 +2,6 @@ package com.yoloo.android.data.repository.tag;
 
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.TagRealm;
-import com.yoloo.android.data.sorter.TagSorter;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 import java.util.List;
@@ -29,10 +28,6 @@ public class TagRepository {
     return instance;
   }
 
-  public Observable<List<TagRealm>> listTags(TagSorter sorter) {
-    return diskDataStore.list(sorter).subscribeOn(Schedulers.io());
-  }
-
   public Observable<Response<List<TagRealm>>> listTags(String name, String cursor, int limit) {
     return remoteDataStore
         .searchTag(name, cursor, limit)
@@ -42,13 +37,6 @@ public class TagRepository {
             .toList()
             .toObservable()
             .subscribe(diskDataStore::addAll))
-        .subscribeOn(Schedulers.io());
-  }
-
-  public Observable<Response<List<TagRealm>>> listTags2(String name, String cursor, int limit) {
-    return diskDataStore
-        .list(TagSorter.DEFAULT)
-        .map(tagRealms -> Response.create(tagRealms, cursor))
         .subscribeOn(Schedulers.io());
   }
 

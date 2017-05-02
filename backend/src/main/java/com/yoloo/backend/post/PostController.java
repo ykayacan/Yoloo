@@ -201,10 +201,10 @@ public final class PostController extends Controller {
     //noinspection SuspiciousMethodCalls
     TravelerGroupEntity group = (TravelerGroupEntity) fetched.get(groupKey);
 
-    List<MediaEntity> mediaEntities = Collections.emptyList();
+    List<MediaEntity> medias = Collections.emptyList();
     if (mediaIds.isPresent()) {
       //noinspection SuspiciousMethodCalls
-      mediaEntities = Ix
+      medias = Ix
           .from(StringUtil.splitToIterable(mediaIds.get(), ","))
           .map(Key::<MediaEntity>create)
           .map(fetched::get)
@@ -213,27 +213,32 @@ public final class PostController extends Controller {
     }
 
     // Create a new question from given inputs.
-    PostEntity postEntity =
-        postService.createPost(account, content, tags, group, title, bounty, mediaEntities, tracker,
-            type);
+    PostEntity post =
+        postService.createPost(account, content, tags, group, title, bounty, medias, tracker, type);
 
     // Increase post count.
     accountShardService.updateCounter(accountShard, AccountShardService.Update.POST_UP);
 
-    List<Tag> tagList = tagService.updateTags(postEntity.getTags());
+    List<Tag> tagList = tagService.updateTags(post.getTags());
 
     // Increase post count.
     group = group.withPostCount(group.getPostCount() + 1);
 
     // Start gamification check.
     List<Notifiable> notifiables = new ArrayList<>(5);
+    /*RulesEngine engine = RulesEngineBuilder.aNewRulesEngine().build();
+
+    engine.registerRule(new ShareFirstPostRule(tracker, record, notifiables));
+
+    engine.fireRules();*/
+
     gameService.addShareFirstPostBonus(record, tracker, notifiables::addAll);
     gameService.addSharePostPerDayBonus(record, tracker, notifiables::addAll);
 
     ImmutableSet.Builder<Object> saveBuilder = ImmutableSet
         .builder()
-        .add(postEntity)
-        .addAll(postEntity.getShardMap().values())
+        .add(post)
+        .addAll(post.getShardMap().values())
         .addAll(tagList)
         .add(group)
         .add(accountShard)
@@ -252,10 +257,10 @@ public final class PostController extends Controller {
     });
 
     if (!ServerConfig.isTest()) {
-      UpdateFeedServlet.addToQueue(user.getUserId(), postEntity.getWebsafeId());
+      UpdateFeedServlet.addToQueue(user.getUserId(), post.getWebsafeId());
     }
 
-    return postEntity;
+    return post;
   }
 
   /**
@@ -280,6 +285,7 @@ public final class PostController extends Controller {
     final Key<PostEntity> postKey = Key.create(postId);
     keyBuilder.add(postKey);
 
+    // Add media keys to builder if present
     if (mediaIds.isPresent()) {
       Ix
           .from(StringUtil.splitToIterable(mediaIds.get(), ","))
@@ -287,6 +293,7 @@ public final class PostController extends Controller {
           .foreach(keyBuilder::add);
     }
 
+    // make batch request
     ImmutableList<Key<?>> batchKeys = keyBuilder.build();
     Map<Key<Object>, Object> fetched =
         ofy().load().keys(batchKeys.toArray(new Key[batchKeys.size()]));
@@ -294,10 +301,13 @@ public final class PostController extends Controller {
     //noinspection SuspiciousMethodCalls
     PostEntity original = (PostEntity) fetched.get(postKey);
 
-    List<MediaEntity> mediaEntities = Collections.emptyList();
+    List<MediaEntity> medias = Collections.emptyList();
     if (mediaIds.isPresent()) {
-      List<Key<MediaEntity>> originalMediaKeys =
-          Ix.from(original.getMedias()).map(MediaEntity::getKey).toList();
+      List<Key<MediaEntity>> originalMediaKeys = Ix
+          .from(original.getMedias())
+          .map(postMedia -> Key.<MediaEntity>create(postMedia.getMediaId()))
+          .toList();
+
       mediaService.deleteMedias(originalMediaKeys);
       ofy().delete().keys(originalMediaKeys);
 
@@ -307,7 +317,7 @@ public final class PostController extends Controller {
           .map(Key::<MediaEntity>create)
           .map(fetched::get)
           .cast(MediaEntity.class)
-          .foreach(mediaEntities::add);
+          .foreach(medias::add);
     }
 
     return Single
@@ -317,7 +327,7 @@ public final class PostController extends Controller {
         .map(post -> content.isPresent() ? post.withContent(content.get()) : post)
         .map(post -> tags.isPresent() ? post.withTags(
             ImmutableSet.copyOf(splitToIterable(tags.get(), ","))) : post)
-        .map(post -> post.withMedias(mediaEntities))
+        .map(post -> post.withMedias(Ix.from(medias).map(PostEntity.PostMedia::from).toList()))
         .doOnSuccess(post -> ofy().transact(() -> ofy().save().entity(post).now()))
         .blockingGet();
   }
@@ -343,14 +353,18 @@ public final class PostController extends Controller {
 
     @SuppressWarnings("SuspiciousMethodCalls") PostEntity postEntity =
         (PostEntity) map.get(postKey);
-    List<MediaEntity> mediaEntities = postEntity.getMedias();
+    List<PostEntity.PostMedia> postMedias = postEntity.getMedias();
 
     List<Key<MediaEntity>> mediaKeys = Collections.emptyList();
-    if (mediaEntities != null) {
-      Ix.from(mediaEntities).map(Key::<MediaEntity>create).foreach(mediaKey -> {
-        mediaKeys.add(mediaKey);
-        deleteList.add(mediaKey);
-      });
+    if (postMedias != null) {
+      Ix
+          .from(postMedias)
+          .map(PostEntity.PostMedia::getMediaId)
+          .map(Key::<MediaEntity>create)
+          .foreach(mediaKey -> {
+            mediaKeys.add(mediaKey);
+            deleteList.add(mediaKey);
+          });
     }
 
     List<Key<Comment>> commentKeys = postService.getCommentKeys(postKey);
@@ -378,7 +392,7 @@ public final class PostController extends Controller {
       ofy().defer().save().entity(shard);
       ofy().defer().delete().keys(deleteList.build());
 
-      if (mediaEntities != null) {
+      if (postMedias != null) {
         mediaService.deleteMedias(mediaKeys);
       }
     });
@@ -440,6 +454,37 @@ public final class PostController extends Controller {
 
     return Observable
         .just(postEntities)
+        .flatMap(__ -> postShardService.mergeShards(__, accountKey))
+        .flatMap(__ -> voteService.checkPostVote(__, accountKey))
+        .compose(CollectionTransformer.create(qi.getCursor().toWebSafeString()))
+        .blockingSingle();
+  }
+
+  public CollectionResponse<PostEntity> listMediaPosts(Optional<Integer> limit,
+      Optional<String> cursor, User user) {
+
+    Query<PostEntity> query = ofy()
+        .load()
+        .group(PostEntity.ShardGroup.class)
+        .type(PostEntity.class)
+        .filter(PostEntity.FIELD_HAS_MEDIA + " =", true);
+
+    query = PostSorter.sort(query, PostSorter.NEWEST);
+    query = cursor.isPresent() ? query.startAt(Cursor.fromWebSafeString(cursor.get())) : query;
+    query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
+
+    List<PostEntity> posts = new ArrayList<>(DEFAULT_LIST_LIMIT);
+
+    QueryResultIterator<PostEntity> qi = query.iterator();
+
+    while (qi.hasNext()) {
+      posts.add(qi.next());
+    }
+
+    Key<Account> accountKey = Key.create(user.getUserId());
+
+    return Observable
+        .just(posts)
         .flatMap(__ -> postShardService.mergeShards(__, accountKey))
         .flatMap(__ -> voteService.checkPostVote(__, accountKey))
         .compose(CollectionTransformer.create(qi.getCursor().toWebSafeString()))

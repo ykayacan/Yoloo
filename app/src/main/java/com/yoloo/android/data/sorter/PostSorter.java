@@ -6,13 +6,13 @@ public enum PostSorter {
   UNANSWERED("unanswered"),
   BOUNTY("bounty");
 
-  private String title;
+  private String name;
 
-  PostSorter(String title) {
-    this.title = title;
+  PostSorter(String name) {
+    this.name = name;
   }
 
-  public String getTitle() {
-    return title;
+  public String getName() {
+    return name;
   }
 }

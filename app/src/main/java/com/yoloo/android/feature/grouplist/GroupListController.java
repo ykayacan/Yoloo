@@ -12,6 +12,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import butterknife.BindColor;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.RouterTransaction;
@@ -24,19 +25,22 @@ import com.yoloo.android.feature.group.GroupController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.widget.StateLayout;
+import com.yoloo.android.util.ViewUtils;
 import java.util.List;
 import timber.log.Timber;
 
 public class GroupListController extends MvpController<GroupListView, GroupListPresenter>
     implements GroupListView, SwipeRefreshLayout.OnRefreshListener, OnItemClickListener<GroupRealm>,
-    GroupListAdapter.OnSubscribeListener {
+    GroupListEpoxyController.OnSubscribeListener {
 
   @BindView(R.id.root_view) StateLayout stateLayout;
   @BindView(R.id.recycler_view) RecyclerView rvGroupList;
   @BindView(R.id.swipe_refresh) SwipeRefreshLayout swipeRefreshLayout;
   @BindView(R.id.toolbar) Toolbar toolbar;
 
-  private GroupListAdapter adapter;
+  @BindColor(R.color.primary_dark) int primaryDarkColor;
+
+  private GroupListEpoxyController epoxyController;
 
   public static GroupListController create() {
     return new GroupListController();
@@ -59,6 +63,7 @@ public class GroupListController extends MvpController<GroupListView, GroupListP
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
     getPresenter().loadGroups(false);
   }
 
@@ -71,7 +76,7 @@ public class GroupListController extends MvpController<GroupListView, GroupListP
 
   @Override
   public void onLoaded(List<GroupRealm> value) {
-    adapter.addGroups(value);
+    epoxyController.setData(value);
     stateLayout.setState(StateLayout.VIEW_STATE_CONTENT);
     swipeRefreshLayout.setRefreshing(false);
   }
@@ -97,13 +102,13 @@ public class GroupListController extends MvpController<GroupListView, GroupListP
 
   @Override
   public void onRefresh() {
-    adapter.clear();
     getPresenter().loadGroups(true);
   }
 
   @Override
   public void onItemClick(View v, EpoxyModel<?> model, GroupRealm item) {
-    RouterTransaction transaction = RouterTransaction.with(GroupController.create(item.getId()))
+    RouterTransaction transaction = RouterTransaction
+        .with(GroupController.create(item.getId()))
         .pushChangeHandler(new HorizontalChangeHandler())
         .popChangeHandler(new HorizontalChangeHandler());
 
@@ -120,16 +125,16 @@ public class GroupListController extends MvpController<GroupListView, GroupListP
   }
 
   private void setupRecyclerview() {
-    adapter = new GroupListAdapter(Glide.with(getActivity()));
-    adapter.setOnItemClickListener(this);
-    adapter.setOnSubscribeClickListener(this);
+    epoxyController = new GroupListEpoxyController(Glide.with(getActivity()));
+    epoxyController.setOnItemClickListener(this);
+    epoxyController.setOnSubscribeClickListener(this);
 
     rvGroupList.setHasFixedSize(true);
     rvGroupList.setLayoutManager(new LinearLayoutManager(getActivity()));
     rvGroupList.addItemDecoration(
         new DividerItemDecoration(getActivity(), OrientationHelper.VERTICAL));
     rvGroupList.setItemAnimator(new DefaultItemAnimator());
-    rvGroupList.setAdapter(adapter);
+    rvGroupList.setAdapter(epoxyController.getAdapter());
   }
 
   private void setupToolbar() {

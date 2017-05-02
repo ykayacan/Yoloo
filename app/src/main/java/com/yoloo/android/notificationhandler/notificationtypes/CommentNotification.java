@@ -6,19 +6,17 @@ import android.content.Context;
 import android.support.v4.app.NotificationCompat;
 import com.yoloo.android.R;
 import com.yoloo.android.feature.notification.NotificationProvider;
-import java.util.Map;
-
-import static com.yoloo.android.notificationhandler.NotificationConstants.KEY_SENDER_USERNAME;
+import com.yoloo.android.notificationhandler.NotificationResponse;
 
 public final class CommentNotification implements NotificationProvider {
 
-  private final Map<String, String> data;
+  private final NotificationResponse response;
   private final Context context;
   private final PendingIntent pendingIntent;
 
-  public CommentNotification(Map<String, String> data, Context context,
+  public CommentNotification(NotificationResponse response, Context context,
       PendingIntent pendingIntent) {
-    this.data = data;
+    this.response = response;
     this.context = context;
     this.pendingIntent = pendingIntent;
   }
@@ -27,7 +25,7 @@ public final class CommentNotification implements NotificationProvider {
   public Notification getNotification() {
     String notificationContent = context
         .getResources()
-        .getString(R.string.label_notification_comment, data.get(KEY_SENDER_USERNAME));
+        .getString(R.string.label_notification_comment, response.getSenderUsername());
 
     NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context)
         .setSmallIcon(R.mipmap.ic_launcher)

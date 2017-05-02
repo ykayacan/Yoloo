@@ -11,23 +11,22 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
-import android.widget.TextView;
 import butterknife.BindColor;
 import butterknife.BindView;
-import com.airbnb.epoxy.EpoxyModel;
+import butterknife.ButterKnife;
+import com.airbnb.lottie.LottieAnimationView;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.NotificationRealm;
 import com.yoloo.android.data.repository.notification.NotificationRepositoryProvider;
-import com.yoloo.android.feature.base.LceAnimator;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
+import com.yoloo.android.ui.widget.StateLayout;
 import java.util.List;
 import timber.log.Timber;
 
@@ -35,15 +34,15 @@ public class NotificationController extends MvpController<NotificationView, Noti
     implements NotificationView, EndlessRecyclerViewScrollListener.OnLoadMoreListener,
     SwipeRefreshLayout.OnRefreshListener, OnProfileClickListener {
 
+  @BindView(R.id.root_view) StateLayout rootView;
   @BindView(R.id.recycler_view) RecyclerView rvNotification;
   @BindView(R.id.swipe_notification) SwipeRefreshLayout swipeRefreshLayout;
   @BindView(R.id.toolbar) Toolbar toolbar;
-  @BindView(R.id.loading_view) ProgressBar loadingView;
-  @BindView(R.id.error_view) TextView errorView;
 
   @BindColor(R.color.primary) int primaryColor;
+  @BindColor(R.color.background_lightish) int bellColor;
 
-  private NotificationAdapter adapter;
+  private NotificationEpoxyController epoxyController;
 
   private EndlessRecyclerViewScrollListener endlessRecyclerViewScrollListener;
 
@@ -56,52 +55,76 @@ public class NotificationController extends MvpController<NotificationView, Noti
     return inflater.inflate(R.layout.controller_notification, container, false);
   }
 
-  @Override protected void onViewBound(@NonNull View view) {
+  @Override
+  protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
     setupPullToRefresh();
     setupRecyclerView();
     setupToolbar();
   }
 
-  @Override public void onLoading(boolean pullToRefresh) {
+  @Override
+  protected void onAttach(@NonNull View view) {
+    super.onAttach(view);
+    LottieAnimationView animationView = (LottieAnimationView) ButterKnife
+        .findById(rootView.getEmptyView(), R.id.empty_view)
+        .findViewById(R.id.animation_view);
+    Timber.d("Scale: %s", animationView.getScale());
+    animationView.setScale(0.2F);
+    animationView.setColorFilter(bellColor);
+
+    Timber.d("Scale: %s", animationView.getScale());
+  }
+
+  @Override
+  public void onLoading(boolean pullToRefresh) {
     if (!pullToRefresh) {
-      LceAnimator.showLoading(loadingView, swipeRefreshLayout, errorView);
+      rootView.setState(StateLayout.VIEW_STATE_LOADING);
     }
   }
 
-  @Override public void onLoaded(List<NotificationRealm> notifications) {
-    adapter.addAll(notifications);
+  @Override
+  public void onLoaded(List<NotificationRealm> notifications) {
+    epoxyController.setData(notifications);
   }
 
-  @Override public void showContent() {
-    LceAnimator.showContent(loadingView, swipeRefreshLayout, errorView);
+  @Override
+  public void showContent() {
+    rootView.setState(StateLayout.VIEW_STATE_CONTENT);
     swipeRefreshLayout.setRefreshing(false);
   }
 
-  @Override public void onError(Throwable e) {
+  @Override
+  public void onError(Throwable e) {
+    rootView.setState(StateLayout.VIEW_STATE_ERROR);
     swipeRefreshLayout.setRefreshing(false);
-    Timber.d(e);
+    Timber.e(e);
   }
 
-  @Override public void onEmpty() {
-
+  @Override
+  public void onEmpty() {
+    rootView.setState(StateLayout.VIEW_STATE_EMPTY);
+    swipeRefreshLayout.setRefreshing(false);
   }
 
-  @NonNull @Override public NotificationPresenter createPresenter() {
+  @NonNull
+  @Override
+  public NotificationPresenter createPresenter() {
     return new NotificationPresenter(NotificationRepositoryProvider.getRepository());
   }
 
-  @Override public void onLoadMore() {
+  @Override
+  public void onLoadMore() {
     Timber.d("onLoadMore");
   }
 
-  @Override public void onRefresh() {
-    adapter.clear();
-
+  @Override
+  public void onRefresh() {
     getPresenter().loadNotifications(true, 20);
   }
 
-  @Override public void onProfileClick(View v, EpoxyModel<?> model, String userId) {
+  @Override
+  public void onProfileClick(View v, String userId) {
     getRouter().pushController(RouterTransaction
         .with(ProfileController.create(userId))
         .pushChangeHandler(new VerticalChangeHandler())
@@ -109,7 +132,7 @@ public class NotificationController extends MvpController<NotificationView, Noti
   }
 
   private void setupRecyclerView() {
-    adapter = new NotificationAdapter(getActivity(), this);
+    epoxyController = new NotificationEpoxyController(getActivity(), this);
 
     final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
 
@@ -121,7 +144,7 @@ public class NotificationController extends MvpController<NotificationView, Noti
     rvNotification.setItemAnimator(animator);
 
     rvNotification.setHasFixedSize(true);
-    rvNotification.setAdapter(adapter);
+    rvNotification.setAdapter(epoxyController.getAdapter());
 
     //endlessRecyclerViewScrollListener = new EndlessRecyclerViewScrollListener(layoutManager, this);
   }
@@ -137,7 +160,7 @@ public class NotificationController extends MvpController<NotificationView, Noti
     final ActionBar ab = getSupportActionBar();
     ab.setTitle(R.string.label_notification_title);
     ab.setDisplayHomeAsUpEnabled(true);
-    ab.setHomeAsUpIndicator(AppCompatResources.getDrawable(getActivity(),
-        R.drawable.ic_close_white_24dp));
+    ab.setHomeAsUpIndicator(
+        AppCompatResources.getDrawable(getActivity(), R.drawable.ic_close_white_24dp));
   }
 }

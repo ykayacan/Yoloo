@@ -64,9 +64,10 @@ public abstract class TextQuestionModel extends BasePostModel<TextQuestionModel.
   public void bind(QuestionHolder holder) {
     final Context context = holder.itemView.getContext();
 
+    //noinspection unchecked
     glide
         .load(post.getAvatarUrl().replace("s96-c", "s64-c-rw"))
-        .bitmapTransform(circleTransformation)
+        .bitmapTransform(bitmapTransformation)
         .placeholder(R.drawable.ic_player_72dp)
         .into(holder.ivUserAvatar);
 
@@ -115,10 +116,10 @@ public abstract class TextQuestionModel extends BasePostModel<TextQuestionModel.
 
     // listeners
     holder.ivUserAvatar.setOnClickListener(
-        v -> onProfileClickListener.onProfileClick(v, this, post.getOwnerId()));
+        v -> onProfileClickListener.onProfileClick(v, post.getOwnerId()));
 
     holder.tvUsername.setOnClickListener(
-        v -> onProfileClickListener.onProfileClick(v, this, post.getOwnerId()));
+        v -> onProfileClickListener.onProfileClick(v, post.getOwnerId()));
 
     if (onItemClickListener != null && post.shouldShowReadMore()) {
       holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(v, this, post));

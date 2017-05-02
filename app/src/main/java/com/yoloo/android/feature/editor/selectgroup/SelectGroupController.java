@@ -1,6 +1,5 @@
 package com.yoloo.android.feature.editor.selectgroup;
 
-import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -14,12 +13,13 @@ import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.OnTextChanged;
 import com.airbnb.epoxy.EpoxyModel;
+import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.GroupRealm;
 import com.yoloo.android.data.repository.group.GroupRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
-import com.yoloo.android.feature.editor.editor.PostEditorController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
@@ -41,7 +41,7 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
 
   @BindColor(R.color.primary_dark) int colorPrimaryDark;
 
-  private SelectGroupAdapter adapter;
+  private SelectGroupEpoxyController epoxyController;
 
   public static SelectGroupController create() {
     return new SelectGroupController();
@@ -64,8 +64,6 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-    ViewUtils.setStatusBarColor(getActivity(), colorPrimaryDark);
-
     getPresenter().loadSubscribedGroups();
 
     querySubject
@@ -76,9 +74,10 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
   }
 
   @Override
-  protected void onDetach(@NonNull View view) {
-    super.onDetach(view);
-    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
+  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+      @NonNull ControllerChangeType changeType) {
+    super.onChangeEnded(changeHandler, changeType);
+    ViewUtils.setStatusBarColor(getActivity(), colorPrimaryDark);
   }
 
   @Override
@@ -93,7 +92,7 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
 
   @Override
   public void onLoaded(List<GroupRealm> value) {
-    adapter.addGroups(value, true);
+    epoxyController.setData(value);
   }
 
   @Override
@@ -114,7 +113,6 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
 
   @OnTextChanged(R.id.et_select_group_search)
   void onSearchQuery(CharSequence query) {
-    Timber.d("Text: %s", query);
     querySubject.onNext(query.toString());
   }
 
@@ -127,20 +125,24 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
 
   @Override
   public void onItemClick(View v, EpoxyModel<?> model, GroupRealm item) {
-    ((PostEditorController) getTargetController()).onGroupSelected(item);
+    ((Groupable) getTargetController()).onGroupSelected(item);
 
     getRouter().handleBack();
   }
 
   private void setupRecyclerview() {
-    adapter = new SelectGroupAdapter(Glide.with(getActivity()));
-    adapter.setOnItemClickListener(this);
+    epoxyController = new SelectGroupEpoxyController(Glide.with(getActivity()));
+    epoxyController.setOnItemClickListener(this);
 
     rvSelectGroup.setLayoutManager(new LinearLayoutManager(getActivity()));
     rvSelectGroup.setItemAnimator(new DefaultItemAnimator());
     rvSelectGroup.setHasFixedSize(true);
     rvSelectGroup.addItemDecoration(
         new SpaceItemDecoration(DisplayUtil.dpToPx(8), SpaceItemDecoration.VERTICAL));
-    rvSelectGroup.setAdapter(adapter);
+    rvSelectGroup.setAdapter(epoxyController.getAdapter());
+  }
+
+  public interface Groupable {
+    void onGroupSelected(GroupRealm group);
   }
 }

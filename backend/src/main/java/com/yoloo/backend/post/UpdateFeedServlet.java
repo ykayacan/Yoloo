@@ -10,6 +10,7 @@ import com.yoloo.backend.feed.Feed;
 import com.yoloo.backend.relationship.Relationship;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -41,7 +42,6 @@ public class UpdateFeedServlet extends HttpServlet {
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {
-
     processRequest(req, resp);
   }
 
@@ -54,13 +54,11 @@ public class UpdateFeedServlet extends HttpServlet {
 
     List<Feed> feeds = Ix.from(findFollowersOfUser(accountKey))
         .map(Key::<Account>getParent)
+        .concatWith(Collections.singletonList(accountKey))
         .map(followerKey -> createFeed(followerKey, postKey))
         .toList();
 
-    // Add to user's own feed.
-    feeds.add(createFeed(accountKey, postKey));
-
-    ofy().save().entities(feeds).now();
+    ofy().save().entities(feeds);
   }
 
   private List<Key<Relationship>> findFollowersOfUser(Key<Account> accountKey) {

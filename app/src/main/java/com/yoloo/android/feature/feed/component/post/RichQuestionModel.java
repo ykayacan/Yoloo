@@ -81,7 +81,7 @@ public abstract class RichQuestionModel
 
     glide
         .load(post.getAvatarUrl())
-        .bitmapTransform(circleTransformation)
+        .bitmapTransform(bitmapTransformation)
         .placeholder(R.drawable.ic_player_72dp)
         .into(holder.ivUserAvatar);
 
@@ -113,7 +113,10 @@ public abstract class RichQuestionModel
             }
           });
     } else {
-      glide.load(post.getMedias()).override(w, h).into(holder.ivContentImage);
+      glide
+          .load(post.getMedias().get(0).getMediumSizeUrl())
+          .override(w, h)
+          .into(holder.ivContentImage);
     }
 
     holder.tvComment.setText(CountUtil.formatCount(post.getCommentCount()));
@@ -172,10 +175,10 @@ public abstract class RichQuestionModel
 
     // listeners
     holder.ivUserAvatar.setOnClickListener(
-        v -> onProfileClickListener.onProfileClick(v, this, post.getOwnerId()));
+        v -> onProfileClickListener.onProfileClick(v, post.getOwnerId()));
 
     holder.tvUsername.setOnClickListener(
-        v -> onProfileClickListener.onProfileClick(v, this, post.getOwnerId()));
+        v -> onProfileClickListener.onProfileClick(v, post.getOwnerId()));
 
     if (onItemClickListener != null && post.shouldShowReadMore()) {
       holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(v, this, post));

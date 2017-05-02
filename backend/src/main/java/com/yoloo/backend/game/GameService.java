@@ -36,7 +36,7 @@ public class GameService {
   public Tracker createTracker(Key<Account> accountKey) {
     return Tracker
         .builder()
-        .id(accountKey.toWebSafeString() + ":tracker")
+        .id(Tracker.createKey(accountKey).getName())
         .level(0)
         .bounties(0)
         .points(0)
@@ -69,17 +69,22 @@ public class GameService {
       return GameInfo.GameHistory.builder().points((int) points).bounties((int) bounties).build();
     }).toList();
 
-    final int level = tracker.getLevel();
-    final int nextLevel = level + 1;
-    final int points = tracker.getPoints();
-    final int requiredPoints = Level.findPointsForLevel(nextLevel) - points;
+    final int currentLvl = tracker.getLevel();
+    final int currentLvlPoints = Level.findPointsForLevel(currentLvl);
+
+    final int myPoints = tracker.getPoints();
+
+    final int nextLvl = currentLvl + 1;
+    final int nextLvlPoints = Level.findPointsForLevel(nextLvl);
 
     return GameInfo
         .builder()
-        .points(points)
-        .requiredPoints(requiredPoints)
-        .level(String.valueOf(level))
-        .nextLevel(String.valueOf(level + 1))
+        .currentLvl(currentLvl)
+        .currentLvlPoints(currentLvlPoints)
+        .myPoints(myPoints)
+        .title(tracker.getTitle())
+        .nextLvl(nextLvl)
+        .nextLvlPoints(nextLvlPoints)
         .histories(histories)
         .build();
   }
@@ -221,8 +226,8 @@ public class GameService {
    * @param postEntity the post
    * @param listener the listener
    */
-  public void addAnswerToUnansweredQuestionBonus(DeviceRecord record, Tracker tracker, PostEntity postEntity,
-      NewNotificationListener listener) {
+  public void addAnswerToUnansweredQuestionBonus(DeviceRecord record, Tracker tracker,
+      PostEntity postEntity, NewNotificationListener listener) {
     final boolean isOneHourPassed =
         Hours.hoursBetween(DateTime.now(), postEntity.getCreated()).getHours() == 1;
 

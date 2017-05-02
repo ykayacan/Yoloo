@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.yoloo.android.ui.widget.StateLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:id="@+id/root_view"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:background="@android:color/white"
-  android:fitsSystemWindows="true">
+  android:fitsSystemWindows="true"
+  app:contentViewId="@+id/swipe_notification"
+  app:emptyLayout="@layout/layout_notification_empty_view"
+  app:errorLayout="@layout/layout_error_view"
+  app:initialViewState="loading"
+  app:loadingLayout="@layout/layout_feed_loading_view">
 
   <include layout="@layout/merge_appbar" />
-
-  <include layout="@layout/layout_loading_view" />
-
-  <include layout="@layout/layout_error_view" />
 
   <android.support.v4.widget.SwipeRefreshLayout
     android:id="@+id/swipe_notification"
@@ -25,4 +27,4 @@
 
   </android.support.v4.widget.SwipeRefreshLayout>
 
-</android.support.design.widget.CoordinatorLayout>
+</com.yoloo.android.ui.widget.StateLayout>
