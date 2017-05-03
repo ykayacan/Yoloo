@@ -14,7 +14,7 @@
   <string name="label_feed_bookmarked">Gönderi kaydedildi.</string>
   <string name="label_feed_unbookmarked">Gönderi kaydı silindi.</string>
   <string name="label_feed_read_more_news">Daha Fazla</string>
-  <string name="label_feed_read_more">%1$s... devamı</string>
+  <string name="label_feed_read_more">%1$s… devamı</string>
   <string name="action_feed_popup_bookmark">Kayıt Et</string>
   <string name="action_feed_popup_unbookmark">Kayıdı Sil</string>
   <string name="action_feed_popup_edit">Düzenle</string>
@@ -27,9 +27,9 @@
   <string name="action_feed_menu_message">Mesaj</string>
   <string name="action_feed_menu_notification">Gönderi</string>
   <string name="label_toolbar_bookmark_title">Kayıtlı Gönderiler</string>
-  <string name="hint_editor_write_title">Başlık yazmak için buraya tıkla...</string>
-  <string name="hint_editor_blog_content">Hikayen hakkında bir şeyler yaz...</string>
-  <string name="hint_editor_question_content">Seyahatin hakkında soru sor...</string>
+  <string name="hint_editor_write_title">Başlık yazmak için buraya tıkla…</string>
+  <string name="hint_editor_blog_content">Hikayen hakkında bir şeyler yaz…</string>
+  <string name="hint_editor_question_content">Seyahatin hakkında soru sor…</string>
   <string name="hint_editor_max_tags">7 etikete kadar</string>
   <string name="action_editor_add_bounty">Bonus ekle</string>
   <string name="action_editor_post">GÖNDER</string>
@@ -40,7 +40,7 @@
   <string name="label_editor_select_bounty_value">BONUS EKLE</string>
   <string name="label_editor_trending_tags_title">Popüler Etiketler</string>
   <string name="error_editor_not_enough_bounty">Yeterli bonusa sahip değilsin :(</string>
-  <string name="label_sending_post">Gönderiliyor...</string>
+  <string name="label_sending_post">Gönderiliyor…</string>
   <string name="recenty_joined">Yeni Katılanlar</string>
   <string name="skip">Geç</string>
   <string name="recommend_users_who_to_follow">Kimi takip edeceğini mi merek ediyorsun?</string>
@@ -49,8 +49,8 @@
   <string name="welcome_privacy_policy"><![CDATA[Kayıt olarak ve giriş yaparak, <u>Gizlilik İlkelerini</u> kabul ediyorum.]]></string>
   <string name="label_total_bounty">Toplam Bonus: %1$d</string>
   <string name="hint_enter_a_message">Mesaj yaz</string>
-  <string name="label_points_next">Sonraki seviye[...]</string>
-  <string name="label_points_initial">İlk sevite[...]</string>
+  <string name="label_points_next">Sonraki seviye\n%1$d</string>
+  <string name="label_points_initial">İlk sevite\n%1$d</string>
   <string name="label_level">Seviye %1$d</string>
   <string name="label_subscribed_groups_title">Taki Edilen Gruplar</string>
   <string name="label_explore_title">Keşfet</string>
@@ -67,7 +67,7 @@
   <string name="label_comment_toolbar_title">Yorumlar</string>
   <string name="label_comment_accepted">Kabul Edilmiş</string>
   <string name="label_comment_accepted_confirm">Bir yorumu kabul ettin.</string>
-  <string name="hint_comment_write">Yorum yaz...</string>
+  <string name="hint_comment_write">Yorum yaz…</string>
   <string name="action_comment_accept">Kabul et</string>
   <string name="error_comment_accept_exists">Yorumu kabul edemezsin.</string>
   <string name="label_follow_followers_title">Takipçiler</string>
@@ -81,7 +81,7 @@
   <string name="action_profile_follow">Takip Et</string>
   <string name="action_profile_unfollow">Takibi Bırak</string>
   <string name="action_profile_menu_settings">Profili Düzenle</string>
-  <string name="hint_search">Ara...</string>
+  <string name="hint_search">Ara…</string>
   <string name="label_search_tags">Etiketler</string>
   <string name="label_search_users">İnsanlar</string>
   <string name="label_search_followed">%1$s\'i takip ettin</string>

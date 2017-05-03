@@ -339,7 +339,7 @@
   <string name="tag_hint">Tag</string>
 
   <string name="label_editor_add_media">Add Media</string>
-  <string name="label_editor_select_group">Select Group (*)</string>
+  <string name="label_editor_select_group"><![CDATA[Select Group <font color="red">(*)</font>]]></string>
   <string name="hint_editor_tag">Add Tag (up to 7) (*)</string>
 
   <string name="label_explore_recent_medias_title">Recent Photos</string>

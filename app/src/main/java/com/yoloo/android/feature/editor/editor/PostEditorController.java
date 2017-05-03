@@ -68,6 +68,7 @@ import com.yoloo.android.ui.widget.ChipAdapter;
 import com.yoloo.android.util.Connectivity;
 import com.yoloo.android.util.ControllerUtil;
 import com.yoloo.android.util.DrawableHelper;
+import com.yoloo.android.util.HtmlUtil;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.MediaUtil;
 import com.yoloo.android.util.ViewUtils;
@@ -132,6 +133,9 @@ public class PostEditorController extends MvpController<EditorView, EditorPresen
     setupRecyclerView();
     setupChipTextView();
     tintIcons();
+
+    tvEditorSelectGroup.setText(
+        HtmlUtil.fromHtml(getActivity(), R.string.label_editor_select_group));
 
     ControllerUtil.preventDefaultBackPressAction(view, this::showDiscardDraftDialog);
   }
