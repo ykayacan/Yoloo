@@ -278,8 +278,9 @@ public class PostRealm extends RealmObject implements FeedItem {
     return bookmarked;
   }
 
-  public void setBookmarked(boolean bookmarked) {
+  public PostRealm setBookmarked(boolean bookmarked) {
     this.bookmarked = bookmarked;
+    return this;
   }
 
   public void increaseVoteCount() {

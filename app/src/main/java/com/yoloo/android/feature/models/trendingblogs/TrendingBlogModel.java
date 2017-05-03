@@ -84,17 +84,23 @@ public abstract class TrendingBlogModel
         self ? R.drawable.ic_more_vert_black_24dp : R.drawable.ic_bookmark_black_24dp;
     holder.ibOptions.setImageDrawable(AppCompatResources.getDrawable(context, drawableIconRes));
 
+    if (!self) {
+      final int colorRes =
+          post.isBookmarked() ? R.color.primary : android.R.color.secondary_text_dark;
+      holder.ibOptions.setColorFilter(ContextCompat.getColor(context, colorRes),
+          PorterDuff.Mode.SRC_IN);
+    }
+
     holder.ibOptions.setOnClickListener(v -> {
       if (self) {
-        onPostOptionsClickListener.onPostOptionsClick(v, this, post);
+        onPostOptionsClickListener.onPostOptionsClick(v, post);
       } else {
-        final boolean isBookmarked = holder.ibOptions.getTag() == Boolean.TRUE;
-        final int colorRes = isBookmarked ? android.R.color.secondary_text_dark : R.color.primary;
-
-        holder.ibOptions.setTag(!isBookmarked);
-        holder.ibOptions.setColorFilter(ContextCompat.getColor(context, colorRes),
+        final int reversedColorRes =
+            post.isBookmarked() ? android.R.color.secondary_text_dark : R.color.primary;
+        holder.ibOptions.setColorFilter(ContextCompat.getColor(context, reversedColorRes),
             PorterDuff.Mode.SRC_IN);
-        onBookmarkClickListener.onBookmarkClick(post.getId(), isBookmarked);
+        post.setBookmarked(!post.isBookmarked());
+        onBookmarkClickListener.onBookmarkClick(post.getId(), post.isBookmarked());
       }
     });
 

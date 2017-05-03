@@ -5,5 +5,5 @@ import com.airbnb.epoxy.EpoxyModel;
 import com.yoloo.android.data.model.PostRealm;
 
 public interface OnPostOptionsClickListener {
-  void onPostOptionsClick(View v, EpoxyModel<?> model, PostRealm post);
+  void onPostOptionsClick(View v, PostRealm post);
 }

@@ -16,7 +16,7 @@
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent"
-    app:srcCompat="@drawable/login_bg" />
+    tools:src="@drawable/login_bg" />
 
   <TextView
     android:id="@+id/tv_title"

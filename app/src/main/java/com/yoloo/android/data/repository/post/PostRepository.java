@@ -1,21 +1,16 @@
 package com.yoloo.android.data.repository.post;
 
 import com.annimon.stream.Optional;
+import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.MediaRealm;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.sorter.PostSorter;
-import com.yoloo.backend.yolooApi.model.Media;
-import com.yoloo.backend.yolooApi.model.Size;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import timber.log.Timber;
@@ -131,13 +126,12 @@ public class PostRepository {
     Observable<Response<List<PostRealm>>> remoteObservable = remoteDataStore
         .listByFeed(cursor, limit)
         .doOnNext(response -> diskDataStore.addAll(response.getData()))
-        .subscribeOn(Schedulers.io())
-        .doOnNext(response -> Timber.d("Response: %s", response.getData()));
+        .subscribeOn(Schedulers.io());
 
     Observable<Response<List<PostRealm>>> diskObservable =
         diskDataStore.listByFeed().subscribeOn(Schedulers.io());
 
-    return Observable.merge(remoteObservable, diskObservable);
+    return remoteObservable;
   }
 
   /**
@@ -148,8 +142,7 @@ public class PostRepository {
    * @return the observable
    */
   public Observable<Response<List<PostRealm>>> listByBounty(@Nullable String cursor, int limit) {
-    //return remoteDataStore.listByBounty(cursor, limit).subscribeOn(Schedulers.io());
-    return diskDataStore.listByBounty().subscribeOn(Schedulers.io());
+    return remoteDataStore.listByBounty(cursor, limit).subscribeOn(Schedulers.io());
   }
 
   /**
@@ -205,11 +198,16 @@ public class PostRepository {
    */
   public Observable<Response<List<PostRealm>>> listByBookmarked(@Nullable String cursor,
       int limit) {
-    return Observable.mergeDelayError(
-        diskDataStore.listByBookmarkedPosts().subscribeOn(Schedulers.io()), remoteDataStore
-            .listByBookmarked(cursor, limit)
-            .doOnNext(response -> diskDataStore.addAll(response.getData()))
-            .subscribeOn(Schedulers.io()));
+
+    Observable<Response<List<PostRealm>>> remoteObservable = remoteDataStore
+        .listByBookmarked(cursor, limit)
+        .doOnNext(response -> diskDataStore.addAll(
+            Stream.of(response.getData()).map(postRealm -> postRealm.setBookmarked(true)).toList()))
+        .subscribeOn(Schedulers.io());
+
+    Observable<Response<List<PostRealm>>> diskObservable = diskDataStore.listByBookmarkedPosts();
+
+    return Observable.merge(remoteObservable, diskObservable);
   }
 
   /**
@@ -235,7 +233,7 @@ public class PostRepository {
             .doOnNext(response -> diskDataStore.addTrendingBlogs(response.getData()))
             .subscribeOn(Schedulers.io());*/
 
-    Size thumb = new Size().setUrl(
+    /*Size thumb = new Size().setUrl(
         "https://s3.amazonaws.com/fathom_media/cache/c7/a5/c7a5ece97078e394379c9648067e6ac5.jpg");
 
     Size mini = new Size().setUrl(
@@ -310,9 +308,15 @@ public class PostRepository {
     posts.add(p2);
     posts.add(p3);
 
-    return Observable.just(Response.create(posts, null));
+    return Observable.just(Response.create(posts, null));*/
 
     //return Observable.mergeDelayError(diskObservable, remoteObservable);
+    Observable<Response<List<PostRealm>>> remoteObservable =
+        remoteDataStore.listByTrendingBlogs(cursor, limit)
+            .doOnNext(response -> diskDataStore.addTrendingBlogs(response.getData()))
+            .subscribeOn(Schedulers.io());
+
+    return remoteObservable;
   }
 
   public Observable<Response<List<PostRealm>>> listByMediaPosts(@Nullable String cursor,

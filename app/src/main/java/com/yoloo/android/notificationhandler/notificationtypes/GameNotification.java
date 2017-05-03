@@ -1,7 +1,6 @@
 package com.yoloo.android.notificationhandler.notificationtypes;
 
 import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.res.Resources;
 import android.support.annotation.Nullable;
@@ -17,29 +16,26 @@ public final class GameNotification implements NotificationProvider {
 
   private final NotificationResponse response;
   private final Context context;
-  private final PendingIntent pendingIntent;
 
-  public GameNotification(NotificationResponse data, Context context, PendingIntent pendingIntent) {
+  public GameNotification(NotificationResponse data, Context context) {
     this.response = data;
     this.context = context;
-    this.pendingIntent = pendingIntent;
   }
 
   @Override
   public Notification getNotification() {
     //Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-    String notificationContent = handleGameData(response, context.getResources());
+    String content = handleGameData(response, context.getResources());
 
-    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(context)
+    NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
         .setSmallIcon(R.mipmap.ic_launcher)
         .setContentTitle("Yoloo")
-        .setContentText(notificationContent)
+        .setContentText(content)
         .setAutoCancel(true)
         .setDefaults(Notification.DEFAULT_ALL)
-        .setStyle(new NotificationCompat.BigTextStyle().bigText(notificationContent))
-        .setContentIntent(pendingIntent);
+        .setStyle(new NotificationCompat.BigTextStyle().bigText(content));
 
-    return notificationBuilder.build();
+    return builder.build();
   }
 
   @Nullable

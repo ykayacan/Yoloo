@@ -147,7 +147,6 @@ class PostRemoteDataStore {
    * @return the observable
    */
   Observable<Response<List<PostRealm>>> listByFeed(@Nullable String cursor, int limit) {
-    Timber.d("cursor: %s", cursor);
     return getIdToken().flatMapObservable(idToken -> Observable
         .fromCallable(() -> INSTANCE
             .getApi()
@@ -252,6 +251,7 @@ class PostRemoteDataStore {
             .fromCallable(() -> INSTANCE
                 .getApi()
                 .posts()
+                .bookmarkPost()
                 .list()
                 .setCursor(cursor)
                 .setLimit(limit)
@@ -347,7 +347,7 @@ class PostRemoteDataStore {
                 .getApi()
                 .blogs()
                 .list()
-                .setSort("HOT")
+                .setSort("NEWEST")
                 .setCursor(cursor)
                 .setLimit(limit)
                 .setRequestHeaders(setIdTokenHeader(idToken))

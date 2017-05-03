@@ -8,8 +8,6 @@ import android.util.Log;
 import com.evernote.android.job.JobManager;
 import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.database.FirebaseDatabase;
-import com.yoloo.android.data.faker.AccountFaker;
-import com.yoloo.android.data.faker.PostFaker;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import java.io.File;
@@ -67,8 +65,8 @@ public class YolooApp extends MultiDexApplication {
     initCalligraphy();
     JobManager.create(this).addJobCreator(new YolooJobCreator());
 
-    AccountFaker.generateAll();
-    PostFaker.fakePosts();
+    //AccountFaker.generateAll();
+    //PostFaker.fakePosts();
 
     //enabledStrictMode();
   }

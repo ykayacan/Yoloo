@@ -15,14 +15,14 @@ import java.util.List;
 
 public class TrendingBlogListModelGroup extends EpoxyModelGroup {
 
-  public TrendingBlogListModelGroup(TrendingBlogListItem item,
+  public TrendingBlogListModelGroup(String userId, TrendingBlogListItem item,
       FeedEpoxyController.TrendingBlogListCallbacks callbacks, RequestManager glide,
       Transformation<Bitmap> bitmapTransformation) {
-    super(R.layout.item_trending_blogs, buildModels(item, callbacks, glide, bitmapTransformation));
+    super(R.layout.item_trending_blogs, buildModels(userId, item, callbacks, glide, bitmapTransformation));
     id(item.getId());
   }
 
-  private static List<EpoxyModel<?>> buildModels(TrendingBlogListItem item,
+  private static List<EpoxyModel<?>> buildModels(String userId, TrendingBlogListItem item,
       FeedEpoxyController.TrendingBlogListCallbacks callbacks, RequestManager glide,
       Transformation<Bitmap> bitmapTransformation) {
     List<EpoxyModel<?>> models = new ArrayList<>();
@@ -38,9 +38,10 @@ public class TrendingBlogListModelGroup extends EpoxyModelGroup {
             .id(post.getId())
             .post(post)
             .glide(glide)
+            .self(post.getOwnerId().equals(userId))
             .bitmapTransformation(bitmapTransformation)
             .onPostOptionsClickListener(
-                (v, model, post1) -> callbacks.onTrendingBlogOptionsClicked(v, post))
+                (v, post1) -> callbacks.onTrendingBlogOptionsClicked(v, post))
             .onBookmarkClickListener(callbacks::onTrendingBlogBookmarkClicked)
             .onClickListener(v -> callbacks.onTrendingBlogClicked(post)))
         .toList();

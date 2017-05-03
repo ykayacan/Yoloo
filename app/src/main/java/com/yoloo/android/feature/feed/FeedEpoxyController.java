@@ -90,8 +90,8 @@ public class FeedEpoxyController extends Typed2EpoxyController<List<FeedItem>, B
         new RecommendedGroupListModelGroup((RecommendedGroupListItem) item,
             recommendedGroupListCallbacks, glide).addTo(this);
       } else if (item instanceof TrendingBlogListItem) {
-        new TrendingBlogListModelGroup(((TrendingBlogListItem) item), trendingBlogListCallbacks,
-            glide, bitmapTransformation).addTo(this);
+        new TrendingBlogListModelGroup(userId, ((TrendingBlogListItem) item),
+            trendingBlogListCallbacks, glide, bitmapTransformation).addTo(this);
       } else if (item instanceof BountyButtonItem) {
         bountyButton.onClickListener(onBountyButtonClickListener).addTo(this);
       } else if (item instanceof TextQuestionItem) {
@@ -164,11 +164,11 @@ public class FeedEpoxyController extends Typed2EpoxyController<List<FeedItem>, B
 
   public void addPost(PostRealm post) {
     if (post.isTextQuestionPost()) {
-      feedItems.add(3, new TextQuestionItem(post));
+      feedItems.add(getInsertionIndex(), new TextQuestionItem(post));
     } else if (post.isRichQuestionPost()) {
-      feedItems.add(3, new RichQuestionItem(post));
+      feedItems.add(getInsertionIndex(), new RichQuestionItem(post));
     } else if (post.isBlogPost()) {
-      feedItems.add(3, new BlogItem(post));
+      feedItems.add(getInsertionIndex(), new BlogItem(post));
     }
 
     setData(feedItems, false);
@@ -258,6 +258,10 @@ public class FeedEpoxyController extends Typed2EpoxyController<List<FeedItem>, B
         .glide(glide)
         .post(post)
         .addTo(this);
+  }
+
+  private int getInsertionIndex() {
+    return feedItems.size() > 3 ? 3 : 2;
   }
 
   public interface RecommendedGroupListCallbacks {

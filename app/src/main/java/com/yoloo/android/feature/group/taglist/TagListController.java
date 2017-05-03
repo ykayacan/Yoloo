@@ -3,15 +3,15 @@ package com.yoloo.android.feature.group.taglist;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyModel;
+import com.google.android.flexbox.FlexDirection;
+import com.google.android.flexbox.FlexWrap;
+import com.google.android.flexbox.FlexboxLayoutManager;
 import com.yoloo.android.R;
 import com.yoloo.android.data.repository.group.GroupRepository;
 import com.yoloo.android.data.repository.group.GroupRepositoryProvider;
@@ -28,7 +28,7 @@ public class TagListController extends BaseController implements OnItemClickList
 
   @BindView(R.id.recycler_view) RecyclerView rvTagList;
 
-  private TagListAdapter adapter;
+  private TagListEpoxyController epoxyController;
 
   private Disposable disposable;
 
@@ -63,7 +63,7 @@ public class TagListController extends BaseController implements OnItemClickList
     disposable = repository
         .listGroupTags(groupId, null, 100)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(tagNames -> adapter.addTags(tagNames.getData()), Timber::e);
+        .subscribe(tagNames -> epoxyController.setData(tagNames.getData()), Timber::e);
   }
 
   @Override
@@ -76,18 +76,21 @@ public class TagListController extends BaseController implements OnItemClickList
 
   @Override
   public void onItemClick(View v, EpoxyModel<?> model, String item) {
-
+    // TODO: 2.05.2017 Navigate to tag search on click
   }
 
   private void setupRecyclerview() {
-    adapter = new TagListAdapter();
-    adapter.setOnItemClickListener(this);
+    epoxyController = new TagListEpoxyController();
+    epoxyController.setOnItemClickListener(this);
 
     rvTagList.setHasFixedSize(true);
-    rvTagList.setLayoutManager(new LinearLayoutManager(getActivity()));
-    rvTagList.addItemDecoration(
-        new DividerItemDecoration(getActivity(), OrientationHelper.VERTICAL));
+
+    FlexboxLayoutManager layoutManager = new FlexboxLayoutManager();
+    layoutManager.setFlexWrap(FlexWrap.WRAP);
+    layoutManager.setFlexDirection(FlexDirection.ROW);
+
+    rvTagList.setLayoutManager(layoutManager);
     rvTagList.setItemAnimator(new DefaultItemAnimator());
-    rvTagList.setAdapter(adapter);
+    rvTagList.setAdapter(epoxyController.getAdapter());
   }
 }

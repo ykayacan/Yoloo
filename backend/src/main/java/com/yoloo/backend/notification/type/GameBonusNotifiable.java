@@ -24,8 +24,8 @@ public class GameBonusNotifiable implements Notifiable {
         .builder()
         .receiverKey(record.getParent())
         .action(Action.GAME)
-        .payload("points", points)
-        .payload("bounties", bounties)
+        .payload(PushConstants.POINTS, points)
+        .payload(PushConstants.BOUNTIES, bounties)
         .created(DateTime.now())
         .build();
 
@@ -38,8 +38,8 @@ public class GameBonusNotifiable implements Notifiable {
         .builder()
         .value(PushConstants.ACTION, Action.GAME.getValueString())
         .value(PushConstants.GAME_ACTION, Action.GameAction.BONUS.getValueString())
-        .value("points", String.valueOf(points))
-        .value("bounties", String.valueOf(bounties))
+        .value(PushConstants.POINTS, String.valueOf(points))
+        .value(PushConstants.BOUNTIES, String.valueOf(bounties))
         .build();
 
     return PushMessage.builder().to(record.getRegId()).data(dataBody).build();

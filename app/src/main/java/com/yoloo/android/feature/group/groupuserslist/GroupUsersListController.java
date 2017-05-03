@@ -1,5 +1,6 @@
 package com.yoloo.android.feature.group.groupuserslist;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -25,6 +26,7 @@ import com.yoloo.android.feature.search.OnFollowClickListener;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.widget.StateLayout;
 import com.yoloo.android.util.BundleBuilder;
+import com.yoloo.android.util.ViewUtils;
 import java.util.List;
 import timber.log.Timber;
 
@@ -66,6 +68,9 @@ public class GroupUsersListController
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
+    getDrawerLayout().setFitsSystemWindows(false);
+    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
+
     final String groupId = getArgs().getString(KEY_GROUP_ID);
 
     getPresenter().loadUsers(groupId);

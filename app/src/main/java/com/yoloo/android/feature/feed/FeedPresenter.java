@@ -84,6 +84,22 @@ class FeedPresenter extends MvpPresenter<FeedView> {
     getDisposable().add(d);
   }
 
+  void loadMorePosts() {
+    getView().onLoading(true);
+
+    shouldResetCursor(true);
+
+    Disposable d = getFeedObservable()
+        .retry(2, throwable -> throwable instanceof SocketTimeoutException)
+        .subscribe(response -> {
+          cursor = response.getCursor();
+
+          getView().onLoaded(mapPostsToFeedItems(response.getData()));
+        }, throwable -> getView().onError(throwable));
+
+    getDisposable().add(d);
+  }
+
   void deletePost(String postId) {
     Disposable d = postRepository
         .deletePost(postId)
@@ -142,7 +158,7 @@ class FeedPresenter extends MvpPresenter<FeedView> {
   }
 
   private Observable<Response<List<PostRealm>>> getFeedObservable() {
-    return postRepository.listByFeed(cursor, 20).observeOn(AndroidSchedulers.mainThread(), true);
+    return postRepository.listByFeed(cursor, 80).observeOn(AndroidSchedulers.mainThread(), true);
   }
 
   private Observable<List<GroupRealm>> getRecommendedGroupsObservable() {

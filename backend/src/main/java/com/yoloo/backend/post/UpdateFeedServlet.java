@@ -8,18 +8,15 @@ import com.googlecode.objectify.Ref;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.feed.Feed;
 import com.yoloo.backend.relationship.Relationship;
-
+import ix.Ix;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-
 import javax.annotation.Nonnull;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import ix.Ix;
 
 import static com.yoloo.backend.OfyService.ofy;
 
@@ -33,10 +30,7 @@ public class UpdateFeedServlet extends HttpServlet {
 
   public static void addToQueue(@Nonnull String userId, @Nonnull String postId) {
     Queue queue = QueueFactory.getQueue(UPDATE_FEED_QUEUE);
-    queue.add(TaskOptions.Builder
-        .withUrl(URL)
-        .param(USER_ID, userId)
-        .param(POST_ID, postId));
+    queue.add(TaskOptions.Builder.withUrl(URL).param(USER_ID, userId).param(POST_ID, postId));
   }
 
   @Override
@@ -52,7 +46,8 @@ public class UpdateFeedServlet extends HttpServlet {
     final Key<Account> accountKey = Key.create(accountId);
     final Key<PostEntity> postKey = Key.create(postId);
 
-    List<Feed> feeds = Ix.from(findFollowersOfUser(accountKey))
+    List<Feed> feeds = Ix
+        .from(findFollowersOfUser(accountKey))
         .map(Key::<Account>getParent)
         .concatWith(Collections.singletonList(accountKey))
         .map(followerKey -> createFeed(followerKey, postKey))
@@ -62,13 +57,17 @@ public class UpdateFeedServlet extends HttpServlet {
   }
 
   private List<Key<Relationship>> findFollowersOfUser(Key<Account> accountKey) {
-    return ofy().load().type(Relationship.class)
+    return ofy()
+        .load()
+        .type(Relationship.class)
         .filter(Relationship.FIELD_FOLLOWING_KEY + " =", accountKey)
-        .keys().list();
+        .keys()
+        .list();
   }
 
   private Feed createFeed(Key<Account> followerKey, Key<PostEntity> postKey) {
-    return Feed.builder()
+    return Feed
+        .builder()
         .id(Feed.createId(postKey))
         .parent(followerKey)
         .post(Ref.create(postKey))

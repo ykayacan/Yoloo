@@ -98,7 +98,7 @@ public abstract class TextQuestionModel extends BasePostModel<TextQuestionModel.
         tag.setText(context.getString(R.string.label_tag, tagName));
         tag.setGravity(Gravity.CENTER);
         tag.setPadding(16, 10, 16, 10);
-        //tag.setBackground(ContextCompat.getDrawable(context, R.drawable.dialog_tag_bg));
+        tag.setBackground(ContextCompat.getDrawable(context, R.drawable.chip_tag_bg));
         TextViewUtil.setTextAppearance(tag, context, R.style.TextAppearance_AppCompat);
 
         holder.tagContainer.addView(tag);
@@ -132,7 +132,7 @@ public abstract class TextQuestionModel extends BasePostModel<TextQuestionModel.
 
     holder.ibOptions.setOnClickListener(v -> {
       if (isSelf()) {
-        onPostOptionsClickListener.onPostOptionsClick(v, this, post);
+        onPostOptionsClickListener.onPostOptionsClick(v, post);
       } else {
         final int reversedColorRes =
             post.isBookmarked() ? android.R.color.secondary_text_dark : R.color.primary;

@@ -420,7 +420,7 @@ public final class PostController extends Controller {
         ofy().load().group(PostEntity.ShardGroup.class).type(PostEntity.class);
 
     if (postType.isPresent()) {
-      query = query.filter(PostEntity.FIELD_POST_TYPE + " =", postType.get());
+      query = query.filter(PostEntity.FIELD_POST_TYPE + " =", postType.get().getType());
     }
 
     query = userId.isPresent() ? query.ancestor(Key.<Account>create(userId.get())) : query;

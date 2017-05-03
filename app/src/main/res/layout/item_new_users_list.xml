@@ -26,17 +26,6 @@
     app:layout_constraintTop_toTopOf="parent" />
 
   <ViewStub
-    android:id="@+id/tv_group_more"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_marginEnd="@dimen/padding_normal"
-    android:layout_marginRight="@dimen/padding_normal"
-    android:inflatedId="@+id/tv_group_more"
-    app:layout_constraintBottom_toBottomOf="@+id/top_guideline"
-    app:layout_constraintRight_toRightOf="parent"
-    app:layout_constraintTop_toTopOf="parent" />
-
-  <ViewStub
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:layout_marginEnd="@dimen/padding_normal"

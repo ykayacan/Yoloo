@@ -7,7 +7,6 @@ import com.yoloo.backend.notification.Notification;
 import com.yoloo.backend.notification.PushConstants;
 import com.yoloo.backend.notification.PushMessage;
 import com.yoloo.backend.post.PostEntity;
-import com.yoloo.backend.post.PostEntity;
 import java.util.Collections;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -22,7 +21,8 @@ public class AcceptNotifiable implements Notifiable {
 
   @Override
   public List<Notification> getNotifications() {
-    Notification notification = Notification.builder()
+    Notification notification = Notification
+        .builder()
         .senderKey(sender.getKey())
         .receiverKey(record.getParent())
         .action(Action.ACCEPT)
@@ -35,12 +35,13 @@ public class AcceptNotifiable implements Notifiable {
 
   @Override
   public PushMessage getPushMessage() {
-    PushMessage.DataBody dataBody = PushMessage.DataBody.builder()
+    PushMessage.DataBody dataBody = PushMessage.DataBody
+        .builder()
         .value(PushConstants.ACTION, Action.ACCEPT.getValueString())
         .value(PushConstants.SENDER_USERNAME, sender.getWebsafeId())
         .value(PushConstants.SENDER_AVATAR_URL, sender.getAvatarUrl().getValue())
-        .value(PushConstants.QUESTION_ID, postEntity.getWebsafeId())
-        .value(PushConstants.ACCEPTED_ID, postEntity.getAcceptedCommentId())
+        .value(PushConstants.POST_ID, postEntity.getWebsafeId())
+        .value(PushConstants.ACCEPTED_COMMENT_ID, postEntity.getAcceptedCommentId())
         .build();
 
     return PushMessage.builder().to(record.getRegId()).data(dataBody).build();

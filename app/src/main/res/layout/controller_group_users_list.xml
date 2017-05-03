@@ -5,7 +5,7 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   app:contentViewId="@+id/recycler_view"
-  app:emptyLayout="@layout/layout_empty_view"
+  app:emptyLayout="@layout/layout_group_empty_view"
   app:errorLayout="@layout/layout_error_view"
   app:initialViewState="loading"
   app:loadingLayout="@layout/layout_feed_loading_view">

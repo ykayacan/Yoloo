@@ -31,7 +31,8 @@ public class CreateUserFeedServlet extends HttpServlet {
 
   public static void addToQueue(String accountId, String groupIds) {
     Queue queue = QueueFactory.getQueue(CREATE_FEED_QUEUE);
-    queue.add(TaskOptions.Builder.withUrl(URL)
+    queue.addAsync(TaskOptions.Builder
+        .withUrl(URL)
         .param(USER_ID, accountId)
         .param(TRAVEL_GROUP_IDS, groupIds));
   }
@@ -49,7 +50,8 @@ public class CreateUserFeedServlet extends HttpServlet {
     log.info("userId: " + userId);
     log.info("subscribedIds: " + stringifiedSubscribedIds);
 
-    List<Key<TravelerGroupEntity>> groupKeys = KeyUtil.extractKeysFromIds(stringifiedSubscribedIds, ",");
+    List<Key<TravelerGroupEntity>> groupKeys =
+        KeyUtil.extractKeysFromIds(stringifiedSubscribedIds, ",");
 
     Query<PostEntity> query = ofy().load().type(PostEntity.class);
 
@@ -58,7 +60,7 @@ public class CreateUserFeedServlet extends HttpServlet {
     }
 
     List<Key<PostEntity>> postKeys =
-        query.order("-" + PostEntity.FIELD_CREATED).limit(getRequiredEntitySize(groupKeys)).keys().list();
+        query.order("-" + PostEntity.FIELD_CREATED).limit(100).keys().list();
 
     List<Feed> feeds = Ix.from(postKeys).map(postKey -> getFeed(userId, postKey)).toList();
 
@@ -69,10 +71,5 @@ public class CreateUserFeedServlet extends HttpServlet {
 
   private Feed getFeed(String userId, Key<PostEntity> postKey) {
     return Feed.builder().id(Feed.createId(postKey)).parent(Key.create(userId)).build();
-  }
-
-  private int getRequiredEntitySize(List<Key<TravelerGroupEntity>> keys) {
-    final int size = keys.size();
-    return size > 3 ? 25 : 35;
   }
 }

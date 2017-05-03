@@ -35,6 +35,10 @@ public class RecommendUserController extends BaseController implements OnFollowC
 
   private Disposable disposable;
 
+  public static RecommendUserController create() {
+    return new RecommendUserController();
+  }
+
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
     return inflater.inflate(R.layout.controller_recommend_user, container, false);
@@ -48,7 +52,7 @@ public class RecommendUserController extends BaseController implements OnFollowC
     userRepository = UserRepositoryProvider.getRepository();
 
     disposable = userRepository
-        .listRecommendedUsers(null, 5)
+        .listNewUsers(null, 5)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(response -> epoxyController.setData(response.getData(), null), Timber::e);
   }
@@ -64,8 +68,13 @@ public class RecommendUserController extends BaseController implements OnFollowC
   @Override
   public void onFollowClick(View v, AccountRealm account, int direction) {
     userRepository.relationship(account.getId(), direction);
-
     epoxyController.remove(account);
+
+    if (epoxyController.getAdapter().isEmpty()) {
+      getRouter().setRoot(RouterTransaction
+          .with(FeedController.create())
+          .pushChangeHandler(new HorizontalChangeHandler()));
+    }
   }
 
   @OnClick(R.id.tv_skip)

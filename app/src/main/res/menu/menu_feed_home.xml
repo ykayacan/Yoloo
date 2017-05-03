@@ -15,7 +15,7 @@
     app:showAsAction="ifRoom" />
   <item
     android:id="@+id/action_feed_notification"
-    android:icon="@drawable/ic_notifications_none_black_24dp"
+    android:icon="@drawable/ic_notifications_none_black_48dp"
     android:orderInCategory="300"
     android:title="@string/action_feed_menu_notification"
     app:showAsAction="ifRoom" />

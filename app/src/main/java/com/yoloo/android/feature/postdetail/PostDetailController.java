@@ -222,7 +222,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   }
 
   @Override
-  public void onPostOptionsClick(View v, EpoxyModel<?> model, PostRealm post) {
+  public void onPostOptionsClick(View v, PostRealm post) {
     final PopupMenu optionsMenu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
     final boolean self = false;
     optionsMenu.getMenu().getItem(1).setVisible(self);

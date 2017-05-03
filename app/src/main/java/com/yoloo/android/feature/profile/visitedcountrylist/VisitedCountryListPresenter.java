@@ -35,10 +35,18 @@ class VisitedCountryListPresenter extends MvpPresenter<VisitedCountryListView> {
   }
 
   void addVisitedCountry(@Nonnull String countryCode) {
-    AccountRealm update = new AccountRealm().addVisitedCountry(new CountryRealm(countryCode));
+    Disposable d = userRepository
+        .getMe()
+        .flatMap(account -> {
+          for (CountryRealm country : account.getVisitedCountries()) {
+            if (country.getCode().equals(countryCode)) {
+              return Observable.error(new Throwable("100"));
+            }
+          }
 
-    Disposable d = Observable
-        .just(update)
+          return Observable.just(
+              new AccountRealm().addVisitedCountry(new CountryRealm(countryCode)));
+        })
         .flatMapSingle(userRepository::updateMe)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(me -> getView().onMeUpdated(me), throwable -> getView().onError(throwable));

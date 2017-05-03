@@ -11,6 +11,7 @@ import io.reactivex.schedulers.Schedulers;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import timber.log.Timber;
 
 public class GroupRepository {
 
@@ -59,7 +60,10 @@ public class GroupRepository {
 
   public Observable<Response<List<String>>> listGroupTags(@Nonnull String groupId,
       @Nullable String cursor, int limit) {
-    return remoteDataStore.listGroupTags(groupId, cursor, limit).subscribeOn(Schedulers.io());
+    return remoteDataStore
+        .listGroupTags(groupId, cursor, limit)
+        .subscribeOn(Schedulers.io())
+        .doOnNext(listResponse -> Timber.d("Response: %s", listResponse.getData()));
   }
 
   public Observable<List<GroupRealm>> searchGroups(@Nonnull String query) {

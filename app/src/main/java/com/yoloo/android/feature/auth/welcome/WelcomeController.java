@@ -3,6 +3,7 @@ package com.yoloo.android.feature.auth.welcome;
 import android.graphics.Color;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.customtabs.CustomTabsIntent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +29,7 @@ public class WelcomeController extends BaseController {
 
   @BindView(R.id.tv_login_action_login) TextView tvActionLogin;
   @BindView(R.id.videoview_login_background) VideoView videoView;
+  @BindView(R.id.tv_welcome_privacy_policy) TextView tvPrivacyPolicy;
 
   @BindString(R.string.action_login_already_have_account) String alreadyHaveAccountString;
 
@@ -48,6 +50,8 @@ public class WelcomeController extends BaseController {
   protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
     decorView = getActivity().getWindow().getDecorView();
+
+    tvPrivacyPolicy.setText(HtmlUtil.fromHtml(getActivity(), R.string.welcome_privacy_policy));
 
     final String path =
         "android.resource://" + getActivity().getPackageName() + "/" + R.raw.yoloo_login;
@@ -101,6 +105,14 @@ public class WelcomeController extends BaseController {
   @OnClick(R.id.tv_login_action_login)
   void login() {
     startTransaction(SignInController.create(), new HorizontalChangeHandler());
+  }
+
+  @OnClick(R.id.tv_welcome_privacy_policy)
+  void onPrivacyClick() {
+    String url = "http://yolooapp.com/privacy.html";
+    CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+    CustomTabsIntent customTabsIntent = builder.build();
+    customTabsIntent.launchUrl(getActivity(), Uri.parse(url));
   }
 
   private void startTransaction(Controller controller, ControllerChangeHandler handler) {

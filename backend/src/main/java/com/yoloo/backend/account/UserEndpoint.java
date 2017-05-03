@@ -68,6 +68,10 @@ public class UserEndpoint {
     return accountController.insertAccount(request);
   }
 
+  public Account registerUserTest(@Named("token") String base64Token) throws ServiceException {
+    return accountController.insertAccountTest(base64Token);
+  }
+
   /**
    * Check username wrapped boolean.
    *

@@ -13,6 +13,7 @@ import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
+import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.MediaRealm;
 import com.yoloo.android.data.repository.media.MediaRepositoryProvider;
@@ -33,7 +34,7 @@ public class PhotoListController extends MvpController<PhotoListView, PhotoListP
 
   @BindView(R.id.recycler_view) RecyclerView rvPhotos;
 
-  private PhotosAdapter adapter;
+  private MediaEpoxyController epoxyController;
 
   public PhotoListController(@Nullable Bundle args) {
     super(args);
@@ -69,7 +70,7 @@ public class PhotoListController extends MvpController<PhotoListView, PhotoListP
 
   @Override
   public void onLoaded(List<MediaRealm> value) {
-    adapter.addMedias(value);
+    epoxyController.setData(value, false);
   }
 
   @Override
@@ -100,14 +101,12 @@ public class PhotoListController extends MvpController<PhotoListView, PhotoListP
   }
 
   private void setupRecyclerView() {
-    adapter = new PhotosAdapter(this);
+    epoxyController = new MediaEpoxyController(this, Glide.with(getActivity()));
 
     rvPhotos.setLayoutManager(new GridLayoutManager(getActivity(), 3));
     rvPhotos.addItemDecoration(new GridInsetItemDecoration(3, DisplayUtil.dpToPx(2), false));
-    SlideInItemAnimator animator = new SlideInItemAnimator();
-    animator.setSupportsChangeAnimations(false);
-    rvPhotos.setItemAnimator(animator);
+    rvPhotos.setItemAnimator(new SlideInItemAnimator());
     rvPhotos.setHasFixedSize(true);
-    rvPhotos.setAdapter(adapter);
+    rvPhotos.setAdapter(epoxyController.getAdapter());
   }
 }

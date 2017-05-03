@@ -12,6 +12,7 @@ apply plugin: "com.jaredsburrows.license"
 android {
   compileSdkVersion compileSdk
   buildToolsVersion buildTools
+
   defaultConfig {
     applicationId "com.yoloo.android"
     minSdkVersion minSdk
@@ -43,10 +44,10 @@ android {
     // You must set up an environment var before release signing
     // Run: export APP_KEY={password}
     release {
-      storeFile file('../keystore/release.keystore')
-      keyAlias 'alias'
-      storePassword "$System.env.APP_KEY"
-      keyPassword "$System.env.APP_KEY"
+      storeFile file('../keystore/yoloo.keystore')
+      keyAlias 'yoloo'
+      storePassword "yolooisnewwress"
+      keyPassword "yolooisnewwress"
     }
 
     debug {
@@ -73,9 +74,7 @@ android {
       signingConfig signingConfigs.debug
       versionCode gitVersionCodeTime
       versionName gitVersionName
-      // dev utilizes minSDKVersion = 21 to allow the Android gradle plugin
-      // to pre-dex each module and produce an APK that can be tested on
-      // Android Lollipop without time consuming dex merging processes.
+
       minSdkVersion 21
     }
 
@@ -137,7 +136,7 @@ configurations.all {
   resolutionStrategy {
     eachDependency { DependencyResolveDetails details ->
       final name = details.requested.name
-
+      // force dependencies to use latest version of support libraries
       if (details.requested.group == 'com.android.support' && !name.contains('multidex')) {
         details.useVersion "$supportLibs_version"
       }
@@ -149,7 +148,6 @@ dependencies {
   compile fileTree(include: ['*.jar'], dir: 'libs')
   endpointsServer project(path: ':backend', configuration: 'endpoints')
   compile project(':nachos')
-  //compile project(':chatkit')
   compile('com.google.api-client:google-api-client-android:1.22.0') {
     exclude group: 'org.apache.httpcomponents', module: 'httpclient'
   }
@@ -175,7 +173,7 @@ dependencies {
   // Google Play Services
   compile "com.google.android.gms:play-services-auth:$playServices_version"
 
-  compile 'com.evernote:android-job:1.1.9'
+  compile 'com.evernote:android-job:1.1.10'
   compile 'org.solovyev.android:checkout:1.0.0'
 
   // Conductor

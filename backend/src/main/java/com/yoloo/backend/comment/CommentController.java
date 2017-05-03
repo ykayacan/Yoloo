@@ -22,9 +22,8 @@ import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.notification.NotificationService;
 import com.yoloo.backend.notification.type.AcceptNotifiable;
 import com.yoloo.backend.notification.type.CommentNotifiable;
-import com.yoloo.backend.notification.type.MentionNotification;
+import com.yoloo.backend.notification.type.MentionNotifiable;
 import com.yoloo.backend.notification.type.Notifiable;
-import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.post.PostShard;
 import com.yoloo.backend.post.PostShardService;
@@ -183,10 +182,10 @@ public class CommentController extends Controller {
         Collection<DeviceRecord> records = ofy().load()
             .keys(DeviceUtil.createKeysFromAccount(accountKeys)).values();
 
-        MentionNotification mentionNotification =
-            MentionNotification.create(postEntity, account, records, comment);
+        MentionNotifiable mentionNotifiable =
+            MentionNotifiable.create(postEntity, account, records, comment);
 
-        notificationService.send(mentionNotification);
+        notificationService.send(mentionNotifiable);
 
         sendCommentNotification = false;
       }

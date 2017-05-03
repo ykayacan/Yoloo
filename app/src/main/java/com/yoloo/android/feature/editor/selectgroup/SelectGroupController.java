@@ -66,11 +66,13 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
     super.onAttach(view);
     getPresenter().loadSubscribedGroups();
 
-    querySubject
-        .filter(query -> !query.isEmpty())
-        .filter(query -> query.length() > 3)
-        .debounce(400, TimeUnit.MILLISECONDS)
-        .subscribe(query -> getPresenter().searchGroups(query));
+    querySubject.debounce(400, TimeUnit.MILLISECONDS).subscribe(query -> {
+      if (query.length() > 2) {
+        getPresenter().searchGroups(query);
+      } else {
+        getPresenter().loadSubscribedGroups();
+      }
+    });
   }
 
   @Override

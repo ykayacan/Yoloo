@@ -115,7 +115,7 @@ public class GameService {
         levelUpdated = updateLevel(tracker);
       }
 
-      bundles.add(GameBonusNotifiable.create(record, points, 2));
+      bundles.add(GameBonusNotifiable.create(record, points, 1));
       if (levelUpdated) {
         bundles.add(LevelUpNotifiable.create(record, tracker));
       }

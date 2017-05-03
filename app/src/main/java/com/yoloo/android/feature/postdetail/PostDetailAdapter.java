@@ -175,6 +175,7 @@ class PostDetailAdapter extends EpoxyAdapter {
         .onVoteClickListener(onVoteClickListener)
         .layout(R.layout.item_feed_blog_detail)
         .bitmapTransformation(cropCircleTransformation)
+        .glide(glide)
         .post(post);
   }
 

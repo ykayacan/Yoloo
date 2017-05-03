@@ -21,6 +21,7 @@ import butterknife.OnClick;
 import butterknife.OnEditorAction;
 import butterknife.OnTextChanged;
 import com.bluelinelabs.conductor.RouterTransaction;
+import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 import com.bumptech.glide.Glide;
 import com.fastaccess.datetimepicker.DatePickerFragmentDialog;
 import com.fastaccess.datetimepicker.DateTimeBuilder;
@@ -32,7 +33,7 @@ import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.auth.AuthUI;
 import com.yoloo.android.feature.auth.IdpResponse;
 import com.yoloo.android.feature.base.BaseActivity;
-import com.yoloo.android.feature.feed.FeedController;
+import com.yoloo.android.feature.recommenduser.RecommendUserController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.FormUtil;
@@ -93,9 +94,6 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
   private long birthDate = 0L;
   private String countryCode;
 
-  public SignUpController() {
-  }
-
   public SignUpController(@NonNull Bundle args) {
     super(args);
   }
@@ -141,7 +139,7 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
   protected void onDetach(@NonNull View view) {
     super.onDetach(view);
     ViewUtils.clearHideStatusBar(view);
-    if (countryPicker.isShowing()) {
+    if (countryPicker != null && countryPicker.isShowing()) {
       countryPicker.dismiss();
     }
   }
@@ -331,16 +329,20 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
             idpResponse.getIdpToken(), idpResponse.getName(), idpResponse.getPictureUrl());
       }
 
-      if (idpResponse.getProviderType().equals(AuthUI.FACEBOOK_PROVIDER) || idpResponse
-          .getProviderType()
-          .equals(AuthUI.GOOGLE_PROVIDER)) {
+      if (isEmail()) {
+        getPresenter().signUpWithPassword(fullname, username, email, password, new Date(birthDate),
+            countryCode, locale, travelerTypeIds);
+      } else {
         getPresenter().signUpWithProvider(idpResponse, username, new Date(birthDate), countryCode,
             locale, travelerTypeIds);
-      } else if (idpResponse.getProviderType().equals(AuthUI.EMAIL_PROVIDER)) {
-        getPresenter().signUpWithPassword(idpResponse, username, password, new Date(birthDate),
-            countryCode, locale, travelerTypeIds);
       }
     }
+  }
+
+  private boolean isEmail() {
+    return !(idpResponse.getProviderType().equals(AuthUI.FACEBOOK_PROVIDER) || idpResponse
+        .getProviderType()
+        .equals(AuthUI.GOOGLE_PROVIDER));
   }
 
   @OnEditorAction(R.id.et_auth_password)
@@ -365,7 +367,10 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
 
   @Override
   public void onSignedUp() {
-    getRouter().setRoot(RouterTransaction.with(FeedController.create()));
+    getRouter().pushController(RouterTransaction
+        .with(RecommendUserController.create())
+        .pushChangeHandler(new HorizontalChangeHandler())
+        .popChangeHandler(new HorizontalChangeHandler()));
   }
 
   @Override

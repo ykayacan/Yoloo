@@ -33,7 +33,8 @@ public class FollowNotifiable implements Notifiable {
   @Override public PushMessage getPushMessage() {
     PushMessage.DataBody dataBody = PushMessage.DataBody.builder()
         .value(PushConstants.ACTION, Action.FOLLOW.getValueString())
-        .value(PushConstants.SENDER_USERNAME, sender.getWebsafeId())
+        .value(PushConstants.SENDER_USERNAME, sender.getUsername())
+        .value(PushConstants.USER_ID, sender.getWebsafeId())
         .value(PushConstants.SENDER_AVATAR_URL, sender.getAvatarUrl().getValue())
         .build();
 

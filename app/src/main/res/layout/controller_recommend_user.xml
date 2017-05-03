@@ -21,7 +21,7 @@
       android:layout_height="wrap_content"
       android:layout_marginTop="48dp"
       android:gravity="center"
-      android:text="Wondering who to follow?"
+      android:text="@string/recommend_users_who_to_follow"
       android:textAppearance="@style/TextAppearance.AppCompat.Headline"
       android:textColor="@android:color/white"
       tools:ignore="MissingPrefix" />
@@ -31,7 +31,7 @@
       android:layout_height="wrap_content"
       android:layout_margin="16dp"
       android:gravity="center"
-      android:text="These travelers will make your feed great"
+      android:text="@string/recommend_user_sub"
       android:textAppearance="@style/TextAppearance.AppCompat.Subhead.Inverse" />
 
     <TextView
@@ -41,7 +41,7 @@
       android:layout_gravity="end"
       android:layout_marginEnd="16dp"
       android:layout_marginRight="16dp"
-      android:text="Skip"
+      android:text="@string/skip"
       android:textAppearance="@style/TextAppearance.AppCompat.Medium.Inverse"
       android:textColor="@color/secondary" />
 

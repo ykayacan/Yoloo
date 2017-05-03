@@ -1,6 +1,5 @@
 package com.yoloo.android.feature.follow;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
@@ -15,10 +14,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindColor;
 import butterknife.BindView;
+import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
-import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
@@ -52,9 +52,7 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   @BindColor(R.color.primary) int colorPrimary;
   @BindColor(R.color.primary_dark) int colorPrimaryDark;
 
-  private FollowAdapter adapter;
-
-  private String cursor;
+  private FollowEpoxyController epoxyController;
 
   private EndlessRecyclerViewScrollListener endlessRecyclerViewScrollListener;
 
@@ -77,6 +75,7 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   @Override
   protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
     setupToolbar();
     setupPullToRefresh();
     setupRecyclerView();
@@ -85,26 +84,30 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-    ViewUtils.setStatusBarColor(getActivity(), colorPrimaryDark);
-
     final Bundle args = getArgs();
 
     final String userId = args.getString(KEY_USER_ID);
     final int viewType = args.getInt(KEY_VIEW_TYPE);
 
     if (viewType == TYPE_FOLLOWERS) {
-      getPresenter().loadFollowers(false, userId, cursor, 20);
+      getPresenter().loadFollowers(false, userId);
     } else {
-      getPresenter().loadFollowings(false, userId, cursor, 20);
+      getPresenter().loadFollowings(false, userId);
     }
 
     rvFollow.addOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
   @Override
+  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+      @NonNull ControllerChangeType changeType) {
+    super.onChangeEnded(changeHandler, changeType);
+    ViewUtils.setStatusBarColor(getActivity(), colorPrimaryDark);
+  }
+
+  @Override
   protected void onDetach(@NonNull View view) {
     super.onDetach(view);
-    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
     rvFollow.removeOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
@@ -114,11 +117,9 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   }
 
   @Override
-  public void onLoaded(Response<List<AccountRealm>> value) {
+  public void onLoaded(List<AccountRealm> value) {
     swipeRefreshLayout.setRefreshing(false);
-
-    cursor = value.getCursor();
-    adapter.addUsers(value.getData());
+    epoxyController.setData(value, false);
   }
 
   @Override
@@ -134,7 +135,6 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   @Override
   public void onRefresh() {
     endlessRecyclerViewScrollListener.resetState();
-    adapter.clear();
   }
 
   @Override
@@ -175,7 +175,7 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   }
 
   private void setupRecyclerView() {
-    adapter = new FollowAdapter(getActivity(), this, this);
+    epoxyController = new FollowEpoxyController(getActivity(), this, this);
 
     final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
 
@@ -187,7 +187,7 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
     rvFollow.setItemAnimator(animator);
 
     rvFollow.setHasFixedSize(true);
-    rvFollow.setAdapter(adapter);
+    rvFollow.setAdapter(epoxyController.getAdapter());
 
     endlessRecyclerViewScrollListener = new EndlessRecyclerViewScrollListener(layoutManager, this);
   }

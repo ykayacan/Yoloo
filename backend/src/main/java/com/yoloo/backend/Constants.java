@@ -26,11 +26,6 @@ public final class Constants {
       "/WEB-INF/yoloo-151719-firebase-crashreporting-469q9-dced69ab2a.json";
 
   /**
-   * Google Cloud Messaging API key.
-   */
-  public static final String GCM_API_KEY = "AIzaSyA1ua3lGVu8vkdDwvxbX7sTvFP945tBG9s";
-
-  /**
    * Android client ID from Google Cloud console.
    */
   public static final String ANDROID_CLIENT_ID =
@@ -46,9 +41,6 @@ public final class Constants {
    */
   public static final String WEB_CLIENT_ID =
       "175355244637-cnod9pcii71rsqpjj17mp24v95uul63o.apps.googleusercontent.com";
-
-  public static final String BASE64_CLIENT_ID =
-      "NjM0MjE3NTM4Njc5LXNsZ3YwZ29nYjU0dnZlMTVrM3JpY2NjY2YxNmRzcDA2LmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29t";
 
   /**
    * Audience ID used to limit access to some client to the API.

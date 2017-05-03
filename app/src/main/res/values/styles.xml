@@ -23,7 +23,7 @@
   </style>
 
   <style name="Yoloo.Button.White">
-    <item name="android:colorButtonNormal">@android:color/white</item>
+    <item name="android:background">@android:color/white</item>
     <item name="android:textColor">@color/primary</item>
   </style>
 
@@ -85,9 +85,7 @@
     <item name="android:paddingTop">12dp</item>
     <item name="android:paddingBottom">12dp</item>
     <item name="android:paddingRight">48dp</item>
-    <item name="android:paddingEnd">48dp</item>
     <item name="android:paddingLeft">48dp</item>
-    <item name="android:paddingStart">48dp</item>
     <item name="android:drawableLeft">@drawable/ic_bounty_coin_36dp</item>
     <item name="android:drawableStart">@drawable/ic_bounty_coin_36dp</item>
   </style>
@@ -125,7 +123,7 @@
     <item name="android:textAppearance">@style/TextAppearance.AppCompat.Caption</item>
     <item name="android:textColor">@color/profile_card_text</item>
     <item name="android:padding">4dp</item>
-    <item name="android:textAlignment">center</item>
+    <item name="android:gravity">center</item>
     <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
   </style>
 
@@ -160,10 +158,11 @@
     <item name="android:gravity">center</item>
     <item name="drawableStart">@drawable/ic_bounty_coin_24dp</item>
     <item name="android:drawablePadding">6dp</item>
+    <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
   </style>
 
   <style name="Widget.Yoloo.ProfileCounter" parent="TextAppearance.AppCompat.Small">
-    <item name="android:textAlignment">center</item>
+    <item name="android:gravity">center</item>
     <item name="android:textColor">@android:color/white</item>
   </style>
 

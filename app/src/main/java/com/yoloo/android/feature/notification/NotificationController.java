@@ -13,8 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindColor;
 import butterknife.BindView;
-import butterknife.ButterKnife;
-import com.airbnb.lottie.LottieAnimationView;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
@@ -66,14 +64,14 @@ public class NotificationController extends MvpController<NotificationView, Noti
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-    LottieAnimationView animationView = (LottieAnimationView) ButterKnife
+    /*LottieAnimationView animationView = (LottieAnimationView) ButterKnife
         .findById(rootView.getEmptyView(), R.id.empty_view)
         .findViewById(R.id.animation_view);
     Timber.d("Scale: %s", animationView.getScale());
     animationView.setScale(0.2F);
     animationView.setColorFilter(bellColor);
 
-    Timber.d("Scale: %s", animationView.getScale());
+    Timber.d("Scale: %s", animationView.getScale());*/
   }
 
   @Override

@@ -23,9 +23,7 @@ public class NewUserListModelGroup extends EpoxyModelGroup {
       NewUserListModelGroupCallbacks callbacks, RequestManager glide) {
     List<EpoxyModel<?>> models = new ArrayList<>();
 
-    models.add(new SimpleEpoxyModel(R.layout.item_recommended_group_header_text));
-    models.add(new SimpleEpoxyModel(R.layout.item_recommended_group_more_text).onClick(
-        v -> callbacks.onNewUserListHeaderClicked()));
+    models.add(new SimpleEpoxyModel(R.layout.item_new_user_header_text));
 
     // inner group models
     List<NewUserModel_> newUserModels = Stream

@@ -124,6 +124,41 @@ public final class AccountController extends Controller {
     } else {
       Account account = createAccountFromPayload(payload);
 
+      Tracker tracker = gameService.createTracker(account.getKey());
+
+      List<Key<TravelerGroupEntity>> groupKeys = findGroupKeys(payload.getTravelerTypeIds());
+
+      ImmutableList<Object> saveList = ImmutableList
+          .builder()
+          .add(account)
+          .addAll(account.getShardMap().values())
+          .add(tracker)
+          .build();
+
+      return ofy().transact(() -> {
+        ofy().save().entities(saveList).now();
+
+        final String stringifiedSubscribedIds =
+            Stream.of(groupKeys).map(Key::toWebSafeString).collect(Collectors.joining(","));
+
+        CreateUserFeedServlet.addToQueue(account.getWebsafeId(), stringifiedSubscribedIds);
+
+        return account
+            .withCounts(Account.Counts.builder().build())
+            .withDetail(Account.Detail.builder().build());
+      });
+    }
+  }
+
+  public Account insertAccountTest(String token) throws ConflictException, BadRequestException {
+
+    AccountJsonPayload payload = AccountJsonPayload.from(token);
+
+    if (isUserRegistered(payload.getEmail())) {
+      throw new ConflictException("User is already registered.");
+    } else {
+      Account account = createAccountFromPayload(payload);
+
       Collection<TravelerGroupEntity> groups =
           ofy().load().keys(account.getSubscribedGroupKeys()).values();
 
@@ -165,8 +200,6 @@ public final class AccountController extends Controller {
     Map<Ref<AccountShard>, AccountShard> shardMap =
         accountShardService.createShardMapWithRef(accountKey);
 
-    List<Key<TravelerGroupEntity>> groupKeys = findGroupKeys(payload.getTravelerTypeIds());
-
     Country country = countryService.getCountry(payload.getCountryCode());
 
     return Account
@@ -181,7 +214,6 @@ public final class AccountController extends Controller {
         .birthDate(new DateTime(payload.getBirthdate()))
         .gender(Account.Gender.UNSPECIFIED)
         .shardRefs(Lists.newArrayList(shardMap.keySet()))
-        .subscribedGroupKeys(groupKeys)
         .counts(Account.Counts.builder().build())
         .detail(Account.Detail.builder().build())
         .created(DateTime.now())
@@ -406,11 +438,9 @@ public final class AccountController extends Controller {
 
     Query<Account> query = ofy().load().type(Account.class);
 
-    for (Key<TravelerGroupEntity> key : account.getSubscribedGroupKeys()) {
+    /*for (Key<TravelerGroupEntity> key : account.getSubscribedGroupKeys()) {
       query = query.filter(Account.FIELD_SUBSCRIBED_GROUP_KEYS, key);
-    }
-
-    query = query.reverse();
+    }*/
 
     query = cursor.isPresent() ? query.startAt(Cursor.fromWebSafeString(cursor.get())) : query;
 

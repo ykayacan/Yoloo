@@ -24,6 +24,10 @@ import timber.log.Timber;
 
 class SignUpPresenter extends MvpPresenter<SignUpView> {
 
+  private static final String EMPTY_USER_IMAGE =
+      "https://storage.googleapis.com/yoloo-151719.appspot.com/system-default/"
+          + "empty_user_avatar.webp";
+
   private final UserRepository userRepository;
   private final NotificationRepository notificationRepository;
 
@@ -65,6 +69,7 @@ class SignUpPresenter extends MvpPresenter<SignUpView> {
   void signUpWithProvider(@Nonnull IdpResponse response, @Nonnull String username,
       @Nonnull Date birthday, @Nonnull String countryCode, @Nonnull String langCode,
       @Nonnull List<String> travelerTypeIds) {
+    Timber.d("signUpWithProvider()");
     getView().onShowLoading();
 
     AuthCredential credential = getAuthCredential(response, response.getProviderType());
@@ -98,22 +103,23 @@ class SignUpPresenter extends MvpPresenter<SignUpView> {
   /**
    * Sign up with password.
    *
-   * @param response the response
+   * @param realname the realname
    * @param username the username
+   * @param email the email
    * @param password the password
    * @param birthday the birthday
    * @param countryCode the country code
    * @param langCode the lang code
    * @param travelerTypeIds the traveler type ids
    */
-  void signUpWithPassword(@Nonnull IdpResponse response, @Nonnull String username,
+  void signUpWithPassword(@Nonnull String realname, @Nonnull String username, @Nonnull String email,
       @Nonnull String password, @Nonnull Date birthday, @Nonnull String countryCode,
       @Nonnull String langCode, @Nonnull List<String> travelerTypeIds) {
     getView().onShowLoading();
 
     FirebaseAuth
         .getInstance()
-        .createUserWithEmailAndPassword(response.getEmail(), password)
+        .createUserWithEmailAndPassword(email, password)
         .addOnCompleteListener(task -> {
           Timber.d("signInWithPassword:onComplete: %s", task.isSuccessful());
 
@@ -123,11 +129,11 @@ class SignUpPresenter extends MvpPresenter<SignUpView> {
           if (task.isSuccessful()) {
             AccountRealm newAccount = new AccountRealm()
                 .setMe(true)
-                .setRealname(response.getName())
+                .setRealname(realname)
                 .setUsername(username)
                 .setPassword(password)
-                .setAvatarUrl(response.getPictureUrl())
-                .setEmail(response.getEmail())
+                .setAvatarUrl(EMPTY_USER_IMAGE)
+                .setEmail(email)
                 .setBirthdate(birthday)
                 .setCountry(new CountryRealm(countryCode))
                 .setLangCode(langCode)

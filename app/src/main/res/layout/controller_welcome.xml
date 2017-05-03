@@ -79,4 +79,18 @@
     app:layout_constraintTop_toBottomOf="@+id/btn_login_start_using"
     tools:text="@string/action_login_already_have_account" />
 
+  <TextView
+    android:id="@+id/tv_welcome_privacy_policy"
+    android:layout_width="216dp"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="8dp"
+    android:layout_marginStart="8dp"
+    android:layout_marginTop="24dp"
+    android:gravity="center"
+    android:text="@string/welcome_privacy_policy"
+    android:textColor="@android:color/white"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/tv_login_action_login" />
+
 </android.support.constraint.ConstraintLayout>

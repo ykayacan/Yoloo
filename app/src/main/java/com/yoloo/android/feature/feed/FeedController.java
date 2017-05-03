@@ -46,7 +46,6 @@ import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 import com.bluelinelabs.conductor.changehandler.SimpleSwapChangeHandler;
-import com.bluelinelabs.conductor.changehandler.TransitionChangeHandlerCompat;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
@@ -98,8 +97,6 @@ import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.search.SearchController;
 import com.yoloo.android.feature.settings.SettingsController;
 import com.yoloo.android.framework.MvpController;
-import com.yoloo.android.ui.changehandler.ArcFadeMoveChangeHandler;
-import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
@@ -355,7 +352,7 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
 
   @Override
   public void onLoaded(List<FeedItem> items) {
-    epoxyController.setData(items, true);
+    epoxyController.setData(items, false);
   }
 
   @Override
@@ -453,7 +450,7 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   }
 
   @Override
-  public void onPostOptionsClick(View v, EpoxyModel<?> model, PostRealm post) {
+  public void onPostOptionsClick(View v, PostRealm post) {
     final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
 
     menu.setOnMenuItemClickListener(item -> {
@@ -471,8 +468,7 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
 
   @Override
   public void onProfileClick(View v, String userId) {
-    startTransaction(ProfileController.create(userId),
-        new TransitionChangeHandlerCompat(new ArcFadeMoveChangeHandler(), new FadeChangeHandler()));
+    startTransaction(ProfileController.create(userId), new VerticalChangeHandler());
   }
 
   @Override
@@ -673,13 +669,13 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     rvFeed.setHasFixedSize(true);
     rvFeed.setAdapter(epoxyController.getAdapter());
 
-    rvFeed.addOnScrollListener(new EndlessRecyclerOnScrollListener(5) {
+    /*rvFeed.addOnScrollListener(new EndlessRecyclerOnScrollListener(5) {
       @Override
       public void onLoadMore() {
-        /*handler.postDelayed(
-            () -> getPresenter().loadPosts(true, UUID.randomUUID().toString(), eTag, 20), 700);*/
+        Timber.d("onLoadMore()");
+        getPresenter().loadMorePosts();
       }
-    });
+    });*/
   }
 
   private void setupPullToRefresh() {

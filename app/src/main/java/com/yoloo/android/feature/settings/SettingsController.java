@@ -55,6 +55,7 @@ public class SettingsController extends BaseController {
   protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
       @NonNull ControllerChangeType changeType) {
     super.onChangeEnded(changeHandler, changeType);
+    getDrawerLayout().setFitsSystemWindows(false);
     ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 

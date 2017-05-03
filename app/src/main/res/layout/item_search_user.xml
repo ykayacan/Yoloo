@@ -38,8 +38,7 @@
     android:text="@string/action_profile_follow"
     android:textColor="@android:color/white"
     android:visibility="gone"
-    tools:text="Follow"
-    tools:visibility="visible" />
+    tools:text="Follow" />
 
 </FrameLayout>
 

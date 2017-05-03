@@ -16,19 +16,27 @@ import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
 import com.yoloo.backend.post.sort_strategy.PostSorter;
-import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
 @Api(name = "yolooApi",
     version = "v1",
-    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
-@ApiClass(resource = "posts", clientIds = {
-    Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
-}, audiences = {Constants.AUDIENCE_ID}, authenticators = {FirebaseAuthenticator.class})
+    namespace =
+    @ApiNamespace(
+        ownerDomain = Constants.API_OWNER,
+        ownerName = Constants.API_OWNER
+    ))
+@ApiClass(
+    resource = "posts",
+    clientIds = {
+        Constants.ANDROID_CLIENT_ID,
+        Constants.IOS_CLIENT_ID,
+        Constants.WEB_CLIENT_ID
+    },
+    audiences = {Constants.AUDIENCE_ID},
+    authenticators = {FirebaseAuthenticator.class}
+)
 public class BlogEndpoint {
-
-  private static final Logger LOG = Logger.getLogger(BlogEndpoint.class.getSimpleName());
 
   private final PostController postController = PostControllerFactory.of().create();
 

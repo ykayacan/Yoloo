@@ -17,24 +17,26 @@ import lombok.AllArgsConstructor;
 import org.joda.time.DateTime;
 
 @AllArgsConstructor(staticName = "create")
-public class MentionNotification implements Notifiable {
+public class MentionNotifiable implements Notifiable {
 
   private PostEntity postEntity;
   private Account sender;
   private Collection<DeviceRecord> records;
   private Comment comment;
 
-  @Override public List<Notification> getNotifications() {
+  @Override
+  public List<Notification> getNotifications() {
     List<Notification> notifications = Lists.newArrayListWithCapacity(records.size());
     for (final DeviceRecord record : records) {
-      Notification notification = Notification.builder()
+      Notification notification = Notification
+          .builder()
           .senderKey(sender.getKey())
           .receiverKey(record.getParent())
           .senderUsername(sender.getUsername())
           .senderAvatarUrl(sender.getAvatarUrl())
           .action(Action.MENTION)
-          .payload("comment", CommentUtil.trimContent(comment.getContent(), 50))
-          .payload("postId", comment.getPostKey().toWebSafeString())
+          .payload(PushConstants.COMMENT, CommentUtil.trimContent(comment.getContent(), 50))
+          .payload(PushConstants.POST_ID, comment.getPostKey().toWebSafeString())
           .created(DateTime.now())
           .build();
 
@@ -43,17 +45,20 @@ public class MentionNotification implements Notifiable {
     return notifications;
   }
 
-  @Override public PushMessage getPushMessage() {
-    PushMessage.DataBody dataBody = PushMessage.DataBody.builder()
+  @Override
+  public PushMessage getPushMessage() {
+    PushMessage.DataBody dataBody = PushMessage.DataBody
+        .builder()
         .value(PushConstants.ACTION, Action.MENTION.getValueString())
-        .value(PushConstants.QUESTION_ID, comment.getPostKey().toWebSafeString())
+        .value(PushConstants.POST_ID, comment.getPostKey().toWebSafeString())
         .value(PushConstants.SENDER_USERNAME, sender.getUsername())
         .value(PushConstants.SENDER_AVATAR_URL, sender.getAvatarUrl().getValue())
         .value(PushConstants.COMMENT, CommentUtil.trimContent(comment.getContent(), 50))
-        .value(PushConstants.ACCEPTED_ID, postEntity.getAcceptedCommentId())
+        .value(PushConstants.ACCEPTED_COMMENT_ID, postEntity.getAcceptedCommentId())
         .build();
 
-    return PushMessage.builder()
+    return PushMessage
+        .builder()
         .registrationIds(convertRegistrationIdsToList())
         .data(dataBody)
         .build();

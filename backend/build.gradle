@@ -5,7 +5,7 @@ buildscript {
   }
   dependencies {
     classpath 'com.google.cloud.tools:appengine-gradle-plugin:1.3.0'
-    classpath 'com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0-beta7'
+    classpath 'com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0-beta8'
     classpath 'me.tatarka:gradle-retrolambda:3.6.1'
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.14.0'
   }
@@ -39,7 +39,7 @@ dependencies {
   //compile "com.google.appengine:appengine-api-1.0-sdk:$APP_ENGINE_VERSION"
   compile "com.google.appengine:appengine-api-labs:$APP_ENGINE_VERSION"
  
-  compile 'com.google.cloud:google-cloud:0.16.0-alpha'
+  compile 'com.google.cloud:google-cloud:0.17.1-alpha'
 
   // Endpoints
   compile 'com.google.endpoints:endpoints-framework:2.0.7'
@@ -54,7 +54,7 @@ dependencies {
 
   compileOnly 'org.projectlombok:lombok:1.16.16'
 
-  compile 'io.reactivex.rxjava2:rxjava:2.0.9'
+  compile 'io.reactivex.rxjava2:rxjava:2.1.0'
   compile 'com.github.akarnokd:ixjava:1.0.0-RC5'
   compile 'com.twitter:twitter-text:1.14.3'
   compile 'com.google.guava:guava:20.0'

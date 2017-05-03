@@ -2,7 +2,6 @@ package com.yoloo.android.feature.search;
 
 import android.content.Context;
 import android.support.design.widget.Snackbar;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -41,7 +40,7 @@ public abstract class UserModel extends EpoxyModelWithHolder<UserModel.UserHolde
 
     holder.tvUsername.setText(account.getUsername());
 
-    holder.btnFollow.setVisibility(onFollowClickListener == null ? View.GONE : View.VISIBLE);
+    //holder.btnFollow.setVisibility(onFollowClickListener == null ? View.GONE : View.VISIBLE);
 
     holder.btnFollow.setOnClickListener(v -> {
       v.setTag(v.getTag() == null);

@@ -120,7 +120,7 @@ public abstract class BlogModel extends BasePostModel<BlogModel.BlogHolder> {
 
     holder.ibOptions.setOnClickListener(v -> {
       if (isSelf()) {
-        onPostOptionsClickListener.onPostOptionsClick(v, this, post);
+        onPostOptionsClickListener.onPostOptionsClick(v, post);
       } else {
         final int reversedColorRes =
             post.isBookmarked() ? android.R.color.secondary_text_dark : R.color.primary;

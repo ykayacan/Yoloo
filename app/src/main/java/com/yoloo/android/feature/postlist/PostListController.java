@@ -202,6 +202,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
   protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
       @NonNull ControllerChangeType changeType) {
     super.onChangeEnded(changeHandler, changeType);
+    getDrawerLayout().setFitsSystemWindows(false);
     ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
@@ -256,7 +257,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
   }
 
   @Override
-  public void onPostOptionsClick(View v, EpoxyModel<?> model, PostRealm post) {
+  public void onPostOptionsClick(View v, PostRealm post) {
     final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
 
     menu.setOnMenuItemClickListener(item -> {

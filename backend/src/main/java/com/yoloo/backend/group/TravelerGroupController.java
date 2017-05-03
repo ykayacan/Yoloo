@@ -21,6 +21,7 @@ import io.reactivex.Single;
 import ix.Ix;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -261,15 +262,24 @@ public class TravelerGroupController extends Controller {
    * @return the collection
    */
   public Collection<TravelerGroupEntity> searchGroups(@Nonnull String q) {
-    // TODO: 19.04.2017 Check data is not coming
-    q = q.toLowerCase().trim();
 
-    return ofy()
+    // We need to convert capitalize query word
+    q = q.length() == 0 ? q : q.substring(0, 1).toUpperCase() + q.substring(1);
+    q = q.trim();
+
+    Query<TravelerGroupEntity> query = ofy()
         .load()
         .type(TravelerGroupEntity.class)
         .filter(TravelerGroupEntity.FIELD_NAME + " >=", q)
-        .filter(TravelerGroupEntity.FIELD_NAME + " <", q + "\ufffd")
-        .list();
+        .filter(TravelerGroupEntity.FIELD_NAME + " <", q + "\ufffd");
+
+    query = query.limit(5);
+
+    return Ix.just(query.iterator())
+        .doOnNext(it -> System.out.println("Next? " + it.hasNext()))
+        .filter(Iterator::hasNext)
+        .map(Iterator::next)
+        .toList();
   }
 
   public void setup() {

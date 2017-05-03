@@ -8,6 +8,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.ViewGroup;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -16,6 +17,7 @@ import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.Router;
 import com.bluelinelabs.conductor.RouterTransaction;
+import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.fastaccess.datetimepicker.callback.DatePickerCallback;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -28,22 +30,19 @@ import com.yoloo.android.fcm.FCMManager;
 import com.yoloo.android.feature.auth.welcome.WelcomeController;
 import com.yoloo.android.feature.chat.NewChatListenerService;
 import com.yoloo.android.feature.feed.FeedController;
+import com.yoloo.android.feature.postdetail.PostDetailController;
+import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.notificationhandler.NotificationConstants;
 import com.yoloo.android.notificationhandler.NotificationHandler;
-import com.yoloo.android.util.Preconditions;
+import com.yoloo.android.notificationhandler.NotificationResponse;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import timber.log.Timber;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class BaseActivity extends AppCompatActivity
     implements FCMListener, DrawerLayoutProvider, NavigationViewProvider, ActionBarInterface,
     DatePickerCallback {
-
-  public static final String KEY_ACTION = "action";
-  public static final String KEY_DATA = "data";
 
   @BindView(R.id.controller_container) ViewGroup container;
   @BindView(R.id.drawer_layout) DrawerLayout drawerLayout;
@@ -79,22 +78,47 @@ public class BaseActivity extends AppCompatActivity
   @Override
   protected void onNewIntent(Intent intent) {
     super.onNewIntent(intent);
-    setIntent(intent);
+    handleIntent(intent);
+  }
+
+  private void handleIntent(Intent intent) {
+    final String action = intent.getStringExtra(NotificationResponse.KEY_ACTION);
+
+    if (TextUtils.isEmpty(action)) {
+      return;
+    }
+
+    switch (action) {
+      case NotificationConstants.FOLLOW:
+        startTransaction(
+            ProfileController.create(intent.getStringExtra(NotificationResponse.KEY_USER_ID)),
+            new VerticalChangeHandler());
+        break;
+      case NotificationConstants.COMMENT:
+        startTransaction(
+            PostDetailController.create(intent.getStringExtra(NotificationResponse.KEY_POST_ID),
+                intent.getStringExtra(NotificationResponse.KEY_ACCEPTED_ID)),
+            new VerticalChangeHandler());
+        break;
+      case NotificationConstants.MENTION:
+        startTransaction(
+            PostDetailController.create(intent.getStringExtra(NotificationResponse.KEY_POST_ID),
+                intent.getStringExtra(NotificationResponse.KEY_ACCEPTED_ID)),
+            new VerticalChangeHandler());
+        break;
+      case NotificationConstants.ACCEPT:
+        startTransaction(
+            PostDetailController.create(intent.getStringExtra(NotificationResponse.KEY_POST_ID),
+                intent.getStringExtra(NotificationResponse.KEY_ACCEPTED_ID)),
+            new VerticalChangeHandler());
+        break;
+    }
   }
 
   @Override
   protected void onStart() {
     super.onStart();
     FCMManager.getInstance(this).register(this);
-  }
-
-  @Override
-  protected void onResume() {
-    super.onResume();
-    final Bundle bundle = getIntent().getExtras();
-    if (bundle != null) {
-      routeToController(bundle);
-    }
   }
 
   @Override
@@ -113,16 +137,6 @@ public class BaseActivity extends AppCompatActivity
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     router.onActivityResult(requestCode, resultCode, data);
-  }
-
-  @SuppressWarnings("unchecked")
-  private void routeToController(Bundle bundle) {
-    final String action = bundle.getString(KEY_ACTION);
-    if (action != null) {
-      final HashMap<String, String> data =
-          (HashMap<String, String>) bundle.getSerializable(KEY_DATA);
-      Preconditions.checkNotNull(data, "Data can not be null");
-    }
   }
 
   private void setOptionsMenuVisibility() {
@@ -158,16 +172,11 @@ public class BaseActivity extends AppCompatActivity
   @Override
   public void onMessage(RemoteMessage remoteMessage) {
     Timber.d("onMessage(): %s", remoteMessage.getData().toString());
-    Map<String, String> data = remoteMessage.getData();
-
-    Intent intent = new Intent(this, BaseActivity.class);
-    intent.putExtra(BaseActivity.KEY_ACTION, data.get(NotificationConstants.KEY_ACTION));
-    intent.putExtra(BaseActivity.KEY_DATA, new HashMap<>(data));
 
     try {
-      NotificationHandler.getInstance().handle(remoteMessage,this, intent);
+      NotificationHandler.getInstance().handle(remoteMessage, this);
     } catch (IOException e) {
-      e.printStackTrace();
+      Timber.e(e);
     }
   }
 
@@ -193,6 +202,11 @@ public class BaseActivity extends AppCompatActivity
 
   public void setOnDatePickListener(OnDatePickListener onDatePickListener) {
     this.onDatePickListener = onDatePickListener;
+  }
+
+  private void startTransaction(Controller to, ControllerChangeHandler handler) {
+    router.pushController(
+        RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
   }
 
   public interface OnDatePickListener {

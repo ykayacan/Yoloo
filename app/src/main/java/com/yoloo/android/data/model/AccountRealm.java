@@ -3,7 +3,6 @@ package com.yoloo.android.data.model;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.yoloo.backend.yolooApi.model.AccountDTO;
-import com.yoloo.backend.yolooApi.model.CountryDTO;
 import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.Ignore;
@@ -72,28 +71,6 @@ public class AccountRealm extends RealmObject {
           .of(dto.getVisitedCountries())
           .map(CountryRealm::new)
           .forEach(country -> visitedCountries.add(country));
-    } else {
-      CountryDTO dto1 = new CountryDTO()
-          .setCountryCode("AF")
-          .setCountryName("Mauritus")
-          .setFlagUrl("https://storage.googleapis.com/yoloo-151719.appspot.com/flags/icons"
-              + "/001-mauritius.png");
-
-      CountryDTO dto2 = new CountryDTO()
-          .setCountryCode("AU")
-          .setCountryName("Austria")
-          .setFlagUrl("https://storage.googleapis.com/yoloo-151719.appspot.com/flags/icons"
-              + "/003-austria.png");
-
-      CountryDTO dto3 = new CountryDTO()
-          .setCountryCode("SL")
-          .setCountryName("Slovenia")
-          .setFlagUrl("https://storage.googleapis.com/yoloo-151719.appspot.com/flags/icons"
-              + "/003-austria.png");
-
-      visitedCountries.add(new CountryRealm(dto1));
-      visitedCountries.add(new CountryRealm(dto2));
-      visitedCountries.add(new CountryRealm(dto3));
     }
 
     following = dto.getFollowing();
@@ -105,7 +82,9 @@ public class AccountRealm extends RealmObject {
     level = dto.getLevel();
     pointCount = dto.getPointCount();
     bountyCount = dto.getBountyCount();
-    subscribedGroupIds = Stream.of(dto.getSubscribedGroupIds()).collect(Collectors.joining(","));
+    if (dto.getSubscribedGroupIds() != null) {
+      subscribedGroupIds = Stream.of(dto.getSubscribedGroupIds()).collect(Collectors.joining(","));
+    }
     localSaveDate = new Date();
   }
 

@@ -50,7 +50,6 @@ import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.Pair;
 import com.yoloo.android.util.TextViewUtil;
-import com.yoloo.android.util.VersionUtil;
 import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.ArrayList;
@@ -116,7 +115,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
-    return inflater.inflate(R.layout.controller_profile_new, container, false);
+    return inflater.inflate(R.layout.controller_profile, container, false);
   }
 
   @Override
@@ -163,6 +162,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
       @NonNull ControllerChangeType changeType) {
     super.onChangeEnded(changeHandler, changeType);
+    getDrawerLayout().setFitsSystemWindows(false);
     ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
   }
 
@@ -267,10 +267,6 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
         .bitmapTransform(new CropCircleTransformation(getActivity()))
         .into(ivProfileAvatar);
 
-    if (VersionUtil.hasL()) {
-      ivProfileAvatar.setTransitionName(getResources().getString(R.string.transition_avatar));
-    }
-
     CountryRealm country = account.getCountry();
     tvCountry.setText(country.getName());
     Glide
@@ -296,7 +292,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     }
 
     tvRealname.setText(account.getRealname());
-    //tvLevel.setText(res.getString(R.string.label_profile_level, account.getLevel()));
+    tvLevel.setText(res.getString(R.string.label_profile_level, account.getLevel()));
 
     tvFollowerCounter.setText(CountUtil.formatCount(account.getFollowerCount()));
     tvFollowingCounter.setText(CountUtil.formatCount(account.getFollowingCount()));

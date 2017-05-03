@@ -194,15 +194,14 @@ class UserRemoteDataStore {
 
   Completable relationship(@Nonnull String userId, @Nonnull String action) {
     return getIdToken()
-        .flatMap(idToken -> Single
-            .fromCallable(() -> INSTANCE
+        .flatMapCompletable(idToken -> Completable
+            .fromAction(() -> INSTANCE
                 .getApi()
                 .users()
                 .relationship(userId, action)
                 .setRequestHeaders(setIdTokenHeader(idToken))
                 .execute())
-            .subscribeOn(Schedulers.io()))
-        .toCompletable();
+            .subscribeOn(Schedulers.io()));
   }
 
   Single<Boolean> checkUsername(@Nonnull String username) {
@@ -241,7 +240,7 @@ class UserRemoteDataStore {
 
     List<CountryRealm> visitedCountries = account.getVisitedCountries();
     if (!visitedCountries.isEmpty()) {
-      update.setCountryCode(visitedCountries.get(0).getCode());
+      update.setVisitedCountryCode(visitedCountries.get(0).getCode());
     }
 
     String realName = account.getRealname();
