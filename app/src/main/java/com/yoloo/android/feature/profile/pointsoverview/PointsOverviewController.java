@@ -85,7 +85,7 @@ public class PointsOverviewController
   @Override
   public void onLoaded(GameInfoRealm value) {
     tvLevel.setText(getActivity().getString(R.string.label_level, value.getCurrentLvl()));
-    tvLevelTitle.setText(value.getTitle());
+    tvLevelTitle.setText(value.getTitle() == null ? "Level 0" : value.getTitle());
     tvPointsHeader.setText(String.valueOf(value.getMyPoints()));
 
     tvInitialPoints.setText(

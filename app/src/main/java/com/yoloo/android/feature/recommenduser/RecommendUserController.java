@@ -1,5 +1,6 @@
 package com.yoloo.android.feature.recommenduser;
 
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,6 +12,9 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
+import com.facebook.AccessToken;
+import com.facebook.FacebookRequestError;
+import com.facebook.GraphRequest;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.repository.user.UserRepository;
@@ -22,6 +26,11 @@ import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.InsetDividerDecoration;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.json.JSONException;
+import org.json.JSONObject;
 import timber.log.Timber;
 
 public class RecommendUserController extends BaseController implements OnFollowClickListener {
@@ -34,6 +43,8 @@ public class RecommendUserController extends BaseController implements OnFollowC
   private UserRepository userRepository;
 
   private Disposable disposable;
+
+  private List<AccountRealm> accounts = Collections.emptyList();
 
   public static RecommendUserController create() {
     return new RecommendUserController();
@@ -54,7 +65,50 @@ public class RecommendUserController extends BaseController implements OnFollowC
     disposable = userRepository
         .listNewUsers(null, 5)
         .observeOn(AndroidSchedulers.mainThread())
+        .doOnNext(response -> Timber.d("Response: %s", response.getData()))
         .subscribe(response -> epoxyController.setData(response.getData(), null), Timber::e);
+
+    //setFacebookFriends();
+  }
+
+  private void setFacebookFriends() {
+    GraphRequest request = GraphRequest.newMyFriendsRequest(AccessToken.getCurrentAccessToken(),
+        (jsonArray, response) -> {
+          FacebookRequestError requestError = response.getError();
+          if (requestError != null) {
+            Timber.e("Received Facebook error: %s", requestError.getErrorMessage());
+            return;
+          }
+          if (jsonArray == null) {
+            Timber.w("Received null response from Facebook GraphRequest");
+          } else {
+            final int size = jsonArray.length();
+
+            try {
+              for (int i = 0; i < size; i++) {
+                JSONObject object = jsonArray.getJSONObject(i);
+
+                String id = object.getString("id");
+                String name = object.getString("name");
+                String pictureUrl =
+                    object.getJSONObject("picture").getJSONObject("data").getString("url");
+
+                accounts = new ArrayList<>();
+                accounts.add(
+                    new AccountRealm().setId(id).setUsername(name).setAvatarUrl(pictureUrl));
+              }
+            } catch (JSONException e) {
+              Timber.e(e, "JSON Exception reading from Facebook GraphRequest");
+            }
+
+            epoxyController.setData(accounts, null);
+          }
+        });
+
+    Bundle parameters = new Bundle();
+    parameters.putString("fields", "id,name,email,picture.type(normal)");
+    request.setParameters(parameters);
+    request.executeAsync();
   }
 
   @Override
@@ -90,9 +144,7 @@ public class RecommendUserController extends BaseController implements OnFollowC
 
     rvRecommendedUsers.setHasFixedSize(true);
     rvRecommendedUsers.setLayoutManager(new LinearLayoutManager(getActivity()));
-    final SlideInItemAnimator animator = new SlideInItemAnimator();
-    animator.setSupportsChangeAnimations(false);
-    rvRecommendedUsers.setItemAnimator(animator);
+    rvRecommendedUsers.setItemAnimator(new SlideInItemAnimator());
     rvRecommendedUsers.addItemDecoration(new InsetDividerDecoration(R.layout.item_search_user,
         getResources().getDimensionPixelSize(R.dimen.divider_height),
         getResources().getDimensionPixelSize(R.dimen.keyline_1), dividerColor));

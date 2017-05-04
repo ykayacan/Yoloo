@@ -14,6 +14,7 @@ import butterknife.OnClick;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bumptech.glide.Glide;
+import com.github.florent37.tutoshowcase.TutoShowcase;
 import com.mikelau.countrypickerx.CountryPickerDialog;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.AccountRealm;
@@ -29,12 +30,16 @@ public class VisitedCountryListController
     extends MvpController<VisitedCountryListView, VisitedCountryListPresenter>
     implements VisitedCountryListView {
 
+  private static final String KEY_SHOWCASE_FAB = "SHOWCASE_FAB";
+
   @BindView(R.id.recycler_view) RecyclerView rvVisitedCountryList;
   @BindView(R.id.toolbar) Toolbar toolbar;
 
   private VisitedCountryListEpoxyController epoxyController;
 
   private CountryPickerDialog countryPicker;
+
+  private TutoShowcase fabShowcase;
 
   public static VisitedCountryListController create() {
     return new VisitedCountryListController();
@@ -50,7 +55,12 @@ public class VisitedCountryListController
     super.onViewBound(view);
     setupToolbar();
     setupRecyclerview();
-    getDrawerLayout().setFitsSystemWindows(false);
+  }
+
+  @Override
+  protected void onAttach(@NonNull View view) {
+    super.onAttach(view);
+    showFabTutorial();
   }
 
   @Override
@@ -65,6 +75,7 @@ public class VisitedCountryListController
   protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
       @NonNull ControllerChangeType changeType) {
     super.onChangeEnded(changeHandler, changeType);
+    getDrawerLayout().setFitsSystemWindows(false);
   }
 
   @Override
@@ -105,7 +116,7 @@ public class VisitedCountryListController
 
   private void setupToolbar() {
     setSupportActionBar(toolbar);
-    getSupportActionBar().setTitle("Visited Countries");
+    getSupportActionBar().setDisplayShowTitleEnabled(false);
     getSupportActionBar().setDisplayHomeAsUpEnabled(true);
   }
 
@@ -123,5 +134,18 @@ public class VisitedCountryListController
   @Override
   public void onMeUpdated(AccountRealm me) {
     epoxyController.setData(me.getVisitedCountries());
+  }
+
+  private void showFabTutorial() {
+    fabShowcase = TutoShowcase
+        .from(getActivity())
+        .setContentView(R.layout.showcase_visited_countries_fab)
+        .setFitsSystemWindows(true)
+        .on(R.id.fab)
+        .addCircle()
+        .withBorder()
+        .onClick(v -> fabShowcase.dismiss())
+        .onClickContentView(R.id.tv_showcase_got_it, v -> fabShowcase.dismiss())
+        .showOnce(KEY_SHOWCASE_FAB);
   }
 }

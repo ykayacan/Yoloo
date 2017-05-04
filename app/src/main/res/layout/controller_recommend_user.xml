@@ -4,43 +4,40 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent">
 
-  <ImageView
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:scaleType="centerCrop"
-    android:src="@drawable/login_bg" />
-
   <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <TextView
+    <com.yoloo.android.ui.widget.BaselineGridTextView
       fontPath="fonts/OpenSans-Bold.ttf"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_marginTop="48dp"
       android:gravity="center"
+      android:padding="16dp"
       android:text="@string/recommend_users_who_to_follow"
       android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-      android:textColor="@android:color/white"
+      android:textColor="@color/primary"
       tools:ignore="MissingPrefix" />
 
-    <TextView
+    <com.yoloo.android.ui.widget.BaselineGridTextView
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_margin="16dp"
       android:gravity="center"
+      fontPath="fonts/OpenSans-Semibold.ttf"
       android:text="@string/recommend_user_sub"
-      android:textAppearance="@style/TextAppearance.AppCompat.Subhead.Inverse" />
+      android:textAppearance="@style/TextAppearance.AppCompat.Subhead.Inverse"
+      android:textColor="@color/lucky_point" />
 
-    <TextView
+    <com.yoloo.android.ui.widget.BaselineGridTextView
       android:id="@+id/tv_skip"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_gravity="end"
       android:layout_marginEnd="16dp"
       android:layout_marginRight="16dp"
+      android:layout_marginTop="16dp"
       android:text="@string/skip"
       android:textAppearance="@style/TextAppearance.AppCompat.Medium.Inverse"
       android:textColor="@color/secondary" />
@@ -49,7 +46,7 @@
       android:id="@+id/recycler_view"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:layout_marginTop="8dp" />
+      android:layout_marginTop="16dp" />
 
   </LinearLayout>
 

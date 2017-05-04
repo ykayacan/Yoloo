@@ -36,7 +36,7 @@ public final class MentionNotification implements NotificationProvider {
             response.getComment());
 
     NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-        .setSmallIcon(R.mipmap.ic_launcher)
+        .setSmallIcon(R.drawable.ic_yoloo_notification)
         .setContentTitle("Yoloo")
         .setContentText(content)
         .setAutoCancel(true)

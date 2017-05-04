@@ -10,7 +10,6 @@ import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import javax.annotation.Nullable;
 
 public class AccountRealm extends RealmObject {
@@ -48,6 +47,7 @@ public class AccountRealm extends RealmObject {
 
   @Ignore private String password;
   @Ignore private List<String> travelerTypeIds;
+  @Ignore private String facebookId;
 
   public AccountRealm() {
     visitedCountries = new RealmList<>();
@@ -332,6 +332,15 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
+  public String getFacebookId() {
+    return facebookId;
+  }
+
+  public AccountRealm setFacebookId(String facebookId) {
+    this.facebookId = facebookId;
+    return this;
+  }
+
   public String getLevelTitle() {
     return levelTitle;
   }
@@ -353,45 +362,134 @@ public class AccountRealm extends RealmObject {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof AccountRealm)) return false;
+
     AccountRealm that = (AccountRealm) o;
-    return isMe() == that.isMe()
-        && isFollowing() == that.isFollowing()
-        && getFollowingCount() == that.getFollowingCount()
-        && getFollowerCount() == that.getFollowerCount()
-        && getPostCount() == that.getPostCount()
-        && getAchievementCount() == that.getAchievementCount()
-        && getLevel() == that.getLevel()
-        && getPointCount() == that.getPointCount()
-        && getBountyCount() == that.getBountyCount()
-        && isPending() == that.isPending()
-        && Objects.equals(getId(), that.getId())
-        && Objects.equals(getUsername(), that.getUsername())
-        && Objects.equals(getRealname(), that.getRealname())
-        && Objects.equals(getEmail(), that.getEmail())
-        && Objects.equals(getAvatarUrl(), that.getAvatarUrl())
-        && Objects.equals(getBio(), that.getBio())
-        && Objects.equals(getGender(), that.getGender())
-        && Objects.equals(getWebsiteUrl(), that.getWebsiteUrl())
-        && Objects.equals(getBirthdate(), that.getBirthdate())
-        && Objects.equals(getLangCode(), that.getLangCode())
-        && Objects.equals(getCountry(), that.getCountry())
-        && Objects.equals(getVisitedCountries(), that.getVisitedCountries())
-        && Objects.equals(getLevelTitle(), that.getLevelTitle())
-        && Objects.equals(getLocalSaveDate(), that.getLocalSaveDate())
-        && Objects.equals(getIdToken(), that.getIdToken())
-        && Objects.equals(getSubscribedGroupIds(), that.getSubscribedGroupIds())
-        && Objects.equals(getPassword(), that.getPassword())
-        && Objects.equals(getTravelerTypeIds(), that.getTravelerTypeIds());
+
+    if (isMe() != that.isMe()) return false;
+    if (isFollowing() != that.isFollowing()) return false;
+    if (getFollowingCount() != that.getFollowingCount()) return false;
+    if (getFollowerCount() != that.getFollowerCount()) return false;
+    if (getPostCount() != that.getPostCount()) return false;
+    if (getAchievementCount() != that.getAchievementCount()) return false;
+    if (getLevel() != that.getLevel()) return false;
+    if (getPointCount() != that.getPointCount()) return false;
+    if (getBountyCount() != that.getBountyCount()) return false;
+    if (isPending() != that.isPending()) return false;
+    if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) return false;
+    if (getUsername() != null
+        ? !getUsername().equals(that.getUsername())
+        : that.getUsername() != null) {
+      return false;
+    }
+    if (getRealname() != null
+        ? !getRealname().equals(that.getRealname())
+        : that.getRealname() != null) {
+      return false;
+    }
+    if (getEmail() != null ? !getEmail().equals(that.getEmail()) : that.getEmail() != null) {
+      return false;
+    }
+    if (getAvatarUrl() != null
+        ? !getAvatarUrl().equals(that.getAvatarUrl())
+        : that.getAvatarUrl() != null) {
+      return false;
+    }
+    if (getBio() != null ? !getBio().equals(that.getBio()) : that.getBio() != null) return false;
+    if (getGender() != null ? !getGender().equals(that.getGender()) : that.getGender() != null) {
+      return false;
+    }
+    if (getWebsiteUrl() != null
+        ? !getWebsiteUrl().equals(that.getWebsiteUrl())
+        : that.getWebsiteUrl() != null) {
+      return false;
+    }
+    if (getBirthdate() != null
+        ? !getBirthdate().equals(that.getBirthdate())
+        : that.getBirthdate() != null) {
+      return false;
+    }
+    if (getLangCode() != null
+        ? !getLangCode().equals(that.getLangCode())
+        : that.getLangCode() != null) {
+      return false;
+    }
+    if (getCountry() != null
+        ? !getCountry().equals(that.getCountry())
+        : that.getCountry() != null) {
+      return false;
+    }
+    if (getVisitedCountries() != null
+        ? !getVisitedCountries().equals(that.getVisitedCountries())
+        : that.getVisitedCountries() != null) {
+      return false;
+    }
+    if (getLevelTitle() != null
+        ? !getLevelTitle().equals(that.getLevelTitle())
+        : that.getLevelTitle() != null) {
+      return false;
+    }
+    if (getLocalSaveDate() != null
+        ? !getLocalSaveDate().equals(that.getLocalSaveDate())
+        : that.getLocalSaveDate() != null) {
+      return false;
+    }
+    if (getIdToken() != null
+        ? !getIdToken().equals(that.getIdToken())
+        : that.getIdToken() != null) {
+      return false;
+    }
+    if (getSubscribedGroupIds() != null ? !getSubscribedGroupIds().equals(
+        that.getSubscribedGroupIds()) : that.getSubscribedGroupIds() != null) {
+      return false;
+    }
+    if (getPassword() != null
+        ? !getPassword().equals(that.getPassword())
+        : that.getPassword() != null) {
+      return false;
+    }
+    if (getTravelerTypeIds() != null
+        ? !getTravelerTypeIds().equals(that.getTravelerTypeIds())
+        : that.getTravelerTypeIds() != null) {
+      return false;
+    }
+    return getFacebookId() != null
+        ? getFacebookId().equals(that.getFacebookId())
+        : that.getFacebookId() == null;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getId(), isMe(), getUsername(), getRealname(), getEmail(), getAvatarUrl(),
-        getBio(), getGender(), getWebsiteUrl(), getBirthdate(), getLangCode(), getCountry(),
-        getVisitedCountries(), isFollowing(), getFollowingCount(), getFollowerCount(),
-        getPostCount(), getAchievementCount(), getLevelTitle(), getLevel(), getPointCount(),
-        getBountyCount(), isPending(), getLocalSaveDate(), getIdToken(), getSubscribedGroupIds(),
-        getPassword(), getTravelerTypeIds());
+    int result = getId() != null ? getId().hashCode() : 0;
+    result = 31 * result + (isMe() ? 1 : 0);
+    result = 31 * result + (getUsername() != null ? getUsername().hashCode() : 0);
+    result = 31 * result + (getRealname() != null ? getRealname().hashCode() : 0);
+    result = 31 * result + (getEmail() != null ? getEmail().hashCode() : 0);
+    result = 31 * result + (getAvatarUrl() != null ? getAvatarUrl().hashCode() : 0);
+    result = 31 * result + (getBio() != null ? getBio().hashCode() : 0);
+    result = 31 * result + (getGender() != null ? getGender().hashCode() : 0);
+    result = 31 * result + (getWebsiteUrl() != null ? getWebsiteUrl().hashCode() : 0);
+    result = 31 * result + (getBirthdate() != null ? getBirthdate().hashCode() : 0);
+    result = 31 * result + (getLangCode() != null ? getLangCode().hashCode() : 0);
+    result = 31 * result + (getCountry() != null ? getCountry().hashCode() : 0);
+    result = 31 * result + (getVisitedCountries() != null ? getVisitedCountries().hashCode() : 0);
+    result = 31 * result + (isFollowing() ? 1 : 0);
+    result = 31 * result + (int) (getFollowingCount() ^ (getFollowingCount() >>> 32));
+    result = 31 * result + (int) (getFollowerCount() ^ (getFollowerCount() >>> 32));
+    result = 31 * result + (int) (getPostCount() ^ (getPostCount() >>> 32));
+    result = 31 * result + getAchievementCount();
+    result = 31 * result + (getLevelTitle() != null ? getLevelTitle().hashCode() : 0);
+    result = 31 * result + getLevel();
+    result = 31 * result + getPointCount();
+    result = 31 * result + getBountyCount();
+    result = 31 * result + (isPending() ? 1 : 0);
+    result = 31 * result + (getLocalSaveDate() != null ? getLocalSaveDate().hashCode() : 0);
+    result = 31 * result + (getIdToken() != null ? getIdToken().hashCode() : 0);
+    result =
+        31 * result + (getSubscribedGroupIds() != null ? getSubscribedGroupIds().hashCode() : 0);
+    result = 31 * result + (getPassword() != null ? getPassword().hashCode() : 0);
+    result = 31 * result + (getTravelerTypeIds() != null ? getTravelerTypeIds().hashCode() : 0);
+    result = 31 * result + (getFacebookId() != null ? getFacebookId().hashCode() : 0);
+    return result;
   }
 
   @Override
@@ -466,6 +564,9 @@ public class AccountRealm extends RealmObject {
         + '\''
         + ", travelerTypeIds="
         + travelerTypeIds
+        + ", facebookId='"
+        + facebookId
+        + '\''
         + '}';
   }
 }

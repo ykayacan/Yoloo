@@ -1,8 +1,14 @@
 package com.yoloo.android.feature.auth.selecttype;
 
-import com.yoloo.android.data.model.TravelerType;
-import com.yoloo.android.framework.MvpDataView;
-import java.util.List;
+import com.yoloo.android.framework.MvpView;
 
-public interface SelectTypeView extends MvpDataView<List<TravelerType>> {
+interface SelectTypeView extends MvpView {
+
+  void onError(Throwable t);
+
+  void onShowLoading();
+
+  void onHideLoading();
+
+  void onSignedUp();
 }

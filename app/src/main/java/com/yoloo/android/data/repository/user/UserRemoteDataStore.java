@@ -193,20 +193,26 @@ class UserRemoteDataStore {
   }
 
   Completable relationship(@Nonnull String userId, @Nonnull String action) {
-    return getIdToken()
-        .flatMapCompletable(idToken -> Completable
-            .fromAction(() -> INSTANCE
-                .getApi()
-                .users()
-                .relationship(userId, action)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()));
+    return getIdToken().flatMapCompletable(idToken -> Completable
+        .fromAction(() -> INSTANCE
+            .getApi()
+            .users()
+            .relationship(userId, action)
+            .setRequestHeaders(setIdTokenHeader(idToken))
+            .execute())
+        .subscribeOn(Schedulers.io()));
   }
 
   Single<Boolean> checkUsername(@Nonnull String username) {
     return Single
         .fromCallable(() -> INSTANCE.getApi().users().checkUsername(username).execute())
+        .subscribeOn(Schedulers.io())
+        .map(WrappedBoolean::getAvailable);
+  }
+
+  Single<Boolean> checkEmail(@Nonnull String email) {
+    return Single
+        .fromCallable(() -> INSTANCE.getApi().users().checkEmail(email).execute())
         .subscribeOn(Schedulers.io())
         .map(WrappedBoolean::getAvailable);
   }

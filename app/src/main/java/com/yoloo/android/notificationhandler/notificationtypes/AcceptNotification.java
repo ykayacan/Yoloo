@@ -33,7 +33,7 @@ public final class AcceptNotification implements NotificationProvider {
     String content = context.getResources().getString(R.string.label_notification_accept);
 
     NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-        .setSmallIcon(R.mipmap.ic_launcher)
+        .setSmallIcon(R.drawable.ic_yoloo_notification)
         .setContentTitle("Yoloo")
         .setContentText(content)
         .setAutoCancel(true)

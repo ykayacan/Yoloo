@@ -3,14 +3,15 @@ package com.yoloo.android.data.model;
 import java.util.List;
 
 public final class RegisterUserPayload {
-  private String username;
-  private String realname;
-  private String email;
-  private long birthdate;
-  private String countryCode;
-  private String langCode;
-  private String profileImageUrl;
-  private List<String> travelerTypeIds;
+  private final String username;
+  private final String realname;
+  private final String email;
+  private final long birthdate;
+  private final String countryCode;
+  private final String langCode;
+  private final String profileImageUrl;
+  private final List<String> travelerTypeIds;
+  private final String faceebookId;
 
   public RegisterUserPayload(AccountRealm account) {
     this.realname = account.getRealname();
@@ -21,6 +22,7 @@ public final class RegisterUserPayload {
     this.langCode = account.getLangCode();
     this.profileImageUrl = account.getAvatarUrl();
     this.travelerTypeIds = account.getTravelerTypeIds();
+    this.faceebookId = account.getFacebookId();
   }
 
   public String getUsername() {
@@ -53,5 +55,9 @@ public final class RegisterUserPayload {
 
   public List<String> getTravelerTypeIds() {
     return travelerTypeIds;
+  }
+
+  public String getFaceebookId() {
+    return faceebookId;
   }
 }

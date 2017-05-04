@@ -12,8 +12,6 @@ import android.widget.TextView;
 import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.OnClick;
-import com.bluelinelabs.conductor.ControllerChangeHandler;
-import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.yoloo.android.BuildConfig;
@@ -21,7 +19,6 @@ import com.yoloo.android.R;
 import com.yoloo.android.feature.auth.AuthUI;
 import com.yoloo.android.feature.auth.welcome.WelcomeController;
 import com.yoloo.android.feature.base.BaseController;
-import com.yoloo.android.util.ViewUtils;
 import io.realm.Realm;
 
 public class SettingsController extends BaseController {
@@ -51,14 +48,6 @@ public class SettingsController extends BaseController {
     tvVersion.setText(BuildConfig.VERSION_NAME);
   }
 
-  @Override
-  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
-      @NonNull ControllerChangeType changeType) {
-    super.onChangeEnded(changeHandler, changeType);
-    getDrawerLayout().setFitsSystemWindows(false);
-    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
-  }
-
   @OnClick(R.id.iv_facebook_icon)
   void openFacebook() {
     String url = "https://www.facebook.com/yolooapp";
@@ -66,7 +55,6 @@ public class SettingsController extends BaseController {
     builder.setToolbarColor(primaryColor);
     builder.addDefaultShareMenuItem();
     CustomTabsIntent customTabsIntent = builder.build();
-    // and launch the desired Url with CustomTabsIntent.launchUrl()
     customTabsIntent.launchUrl(getActivity(), Uri.parse(url));
   }
 
@@ -86,6 +74,14 @@ public class SettingsController extends BaseController {
     CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
     builder.setToolbarColor(primaryColor);
     builder.addDefaultShareMenuItem();
+    CustomTabsIntent customTabsIntent = builder.build();
+    customTabsIntent.launchUrl(getActivity(), Uri.parse(url));
+  }
+
+  @OnClick(R.id.tv_privacy_policy)
+  void openPrivacyPolicy() {
+    String url = "http://yolooapp.com/privacy.html";
+    CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
     CustomTabsIntent customTabsIntent = builder.build();
     customTabsIntent.launchUrl(getActivity(), Uri.parse(url));
   }

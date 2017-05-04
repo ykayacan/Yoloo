@@ -32,16 +32,12 @@ import com.yoloo.backend.vote.VoteService;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import lombok.AllArgsConstructor;
 
 import static com.yoloo.backend.OfyService.ofy;
 
 @AllArgsConstructor(staticName = "create")
 public class CommentController extends Controller {
-
-  private static final Logger LOG =
-      Logger.getLogger(CommentController.class.getName());
 
   private static final Extractor EXTRACTOR = new Extractor();
 
@@ -77,8 +73,7 @@ public class CommentController extends Controller {
     final Key<Comment> commentKey = Key.create(commentId);
 
     // Fetch comment.
-    Comment comment = ofy().load()
-        .group(Comment.ShardGroup.class).key(commentKey).now();
+    Comment comment = ofy().load().group(Comment.ShardGroup.class).key(commentKey).now();
 
     Guard.checkNotFound(comment, "Comment does not exists!");
 
@@ -104,11 +99,11 @@ public class CommentController extends Controller {
     keyBuilder.add(accountKey);
 
     // Create post key from websafe id.
-    final Key<PostEntity> questionKey = Key.create(postId);
-    keyBuilder.add(questionKey);
+    final Key<PostEntity> postKey = Key.create(postId);
+    keyBuilder.add(postKey);
 
     // Get a random shard key.
-    final Key<PostShard> questionShardKey = postShardService.getRandomShardKey(questionKey);
+    final Key<PostShard> questionShardKey = postShardService.getRandomShardKey(postKey);
     keyBuilder.add(questionShardKey);
 
     // Create tracker key.
@@ -116,7 +111,7 @@ public class CommentController extends Controller {
     keyBuilder.add(trackerKey);
 
     // Create record key.
-    final Key<DeviceRecord> recordKey = DeviceRecord.createKey(questionKey.getParent());
+    final Key<DeviceRecord> recordKey = DeviceRecord.createKey(postKey.getParent());
     keyBuilder.add(recordKey);
 
     ImmutableSet<Key<?>> batchKeys = keyBuilder.build();
@@ -127,7 +122,7 @@ public class CommentController extends Controller {
     //noinspection SuspiciousMethodCalls
     Account account = (Account) fetched.get(accountKey);
     //noinspection SuspiciousMethodCalls
-    PostEntity postEntity = (PostEntity) fetched.get(questionKey);
+    PostEntity postEntity = (PostEntity) fetched.get(postKey);
     //noinspection SuspiciousMethodCalls
     PostShard qqs = (PostShard) fetched.get(questionShardKey);
     //noinspection SuspiciousMethodCalls
@@ -136,7 +131,7 @@ public class CommentController extends Controller {
     DeviceRecord record = (DeviceRecord) fetched.get(recordKey);
 
     // Create a new comment from given inputs.
-    CommentEntity entity = commentService.createComment(account, questionKey, content);
+    CommentEntity entity = commentService.createComment(account, postKey, content);
 
     Comment comment = entity.getComment();
     Collection<CommentShard> shards = entity.getShards().values();
@@ -153,19 +148,15 @@ public class CommentController extends Controller {
     gameService.addAnswerToUnansweredQuestionBonus(record, tracker, postEntity,
         notifiables::addAll);
 
-    ImmutableSet.Builder<Object> saveBuilder = ImmutableSet.builder()
-        .add(comment)
-        .addAll(shards)
-        .add(qqs)
-        .add(postEntity)
-        .add(tracker);
+    ImmutableSet.Builder<Object> saveBuilder =
+        ImmutableSet.builder().add(comment).addAll(shards).add(qqs).add(postEntity).add(tracker);
 
     for (Notifiable bundle : notifiables) {
       saveBuilder.addAll(bundle.getNotifications());
     }
 
     // Do not send notification to self.
-    if (!questionKey.<Account>getParent().equivalent(accountKey)) {
+    if (!postKey.<Account>getParent().equivalent(accountKey)) {
       boolean sendCommentNotification = true;
 
       List<String> mentions = EXTRACTOR.extractMentionedScreennames(content);
@@ -179,8 +170,8 @@ public class CommentController extends Controller {
 
         List<Key<Account>> accountKeys = query.keys().list();
 
-        Collection<DeviceRecord> records = ofy().load()
-            .keys(DeviceUtil.createKeysFromAccount(accountKeys)).values();
+        Collection<DeviceRecord> records =
+            ofy().load().keys(DeviceUtil.createKeysFromAccount(accountKeys)).values();
 
         MentionNotifiable mentionNotifiable =
             MentionNotifiable.create(postEntity, account, records, comment);
@@ -222,12 +213,8 @@ public class CommentController extends Controller {
    * @param user the user
    * @return the comment
    */
-  public Comment updateComment(
-      String postId,
-      String commentId,
-      Optional<String> content,
-      Optional<Boolean> accepted,
-      User user) {
+  public Comment updateComment(String postId, String commentId, Optional<String> content,
+      Optional<Boolean> accepted, User user) {
 
     ImmutableSet.Builder<Object> saveBuilder = ImmutableSet.builder();
 
@@ -254,9 +241,10 @@ public class CommentController extends Controller {
 
     // Make a batch load.
     //noinspection unchecked
-    Map<Key<Object>, Object> fetched =
-        ofy().load().keys(accountKey, postKey, commentKey, askerRecordKey, answererRecordKey,
-            askerTrackerKey, answererTrackerKey);
+    Map<Key<Object>, Object> fetched = ofy()
+        .load()
+        .keys(accountKey, postKey, commentKey, askerRecordKey, answererRecordKey, askerTrackerKey,
+            answererTrackerKey);
 
     //noinspection SuspiciousMethodCalls
     Account account = (Account) fetched.get(accountKey);
@@ -295,16 +283,18 @@ public class CommentController extends Controller {
 
     saveBuilder.add(postEntity).add(comment);
 
-    return ofy().transact(() -> {
-      Map<Key<Object>, Object> saved = ofy().save().entities(saveBuilder.build()).now();
+    ofy().transact(() -> {
+      ofy().save().entities(saveBuilder.build()).now();
 
       for (Notifiable bundle : notifiables) {
         notificationService.send(bundle);
       }
-
-      //noinspection SuspiciousMethodCalls
-      return (Comment) saved.get(commentKey);
     });
+
+    return commentShardService
+        .mergeShards(ofy().load().group(Comment.ShardGroup.class).key(commentKey).now())
+        .flatMap(__ -> voteService.checkCommentVote(__, accountKey))
+        .blockingSingle();
   }
 
   /**
@@ -320,7 +310,9 @@ public class CommentController extends Controller {
     final Key<PostEntity> postKey = Key.create(postId);
     final Key<PostShard> shardKey = postShardService.getRandomShardKey(postKey);
 
-    final List<Key<Vote>> voteKeys = ofy().load().type(Vote.class)
+    final List<Key<Vote>> voteKeys = ofy()
+        .load()
+        .type(Vote.class)
         .filter(Vote.FIELD_VOTABLE_KEY + " =", commentKey)
         .keys()
         .list();
@@ -344,29 +336,25 @@ public class CommentController extends Controller {
   /**
    * List collection response.
    *
-   * @param questionId the websafe question id
+   * @param postId the websafe question id
    * @param cursor the cursor
    * @param limit the limit
    * @param user the user
    * @return the collection response
    */
-  public CollectionResponse<Comment> listComments(
-      String questionId,
-      Optional<String> cursor,
-      Optional<Integer> limit,
-      User user) {
+  public CollectionResponse<Comment> listComments(String postId, Optional<String> cursor,
+      Optional<Integer> limit, User user) {
     final Key<Account> authKey = Key.create(user.getUserId());
-    final Key<PostEntity> questionKey = Key.create(questionId);
+    final Key<PostEntity> postKey = Key.create(postId);
 
-    Query<Comment> query = ofy().load()
+    Query<Comment> query = ofy()
+        .load()
         .group(Comment.ShardGroup.class)
         .type(Comment.class)
-        .filter(Comment.FIELD_QUESTION_KEY + " =", questionKey)
+        .filter(Comment.FIELD_POST_KEY + " =", postKey)
         .order("-" + Comment.FIELD_CREATED);
 
-    query = cursor.isPresent()
-        ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
-        : query;
+    query = cursor.isPresent() ? query.startAt(Cursor.fromWebSafeString(cursor.get())) : query;
 
     query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
 
@@ -382,7 +370,8 @@ public class CommentController extends Controller {
     }
 
     if (!comments.isEmpty()) {
-      comments = commentShardService.mergeShards(comments)
+      comments = commentShardService
+          .mergeShards(comments)
           .flatMap(comments1 -> voteService.checkCommentVote(comments1, authKey))
           .blockingFirst();
     }

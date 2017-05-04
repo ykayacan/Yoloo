@@ -169,21 +169,25 @@ public class PostListController extends MvpController<PostListView, PostListPres
 
     rootView.setViewStateListener((stateView, viewState) -> {
       if (viewState == StateLayout.VIEW_STATE_EMPTY) {
-        ButterKnife.findById(stateView, R.id.btn_empty_action).setOnClickListener(v -> {
-          Controller parentController = getParentController();
-          if (parentController == null) {
-            startTransaction(PostEditorController.create(), new VerticalChangeHandler());
-          } else {
-            VerticalChangeHandler handler = new VerticalChangeHandler();
+        View emptyActionView = ButterKnife.findById(stateView, R.id.btn_empty_action);
 
-            parentController
-                .getRouter()
-                .pushController(RouterTransaction
-                    .with(PostEditorController.create())
-                    .pushChangeHandler(handler)
-                    .popChangeHandler(handler));
-          }
-        });
+        if (emptyActionView != null) {
+          emptyActionView.setOnClickListener(v -> {
+            Controller parentController = getParentController();
+            if (parentController == null) {
+              startTransaction(PostEditorController.create(), new VerticalChangeHandler());
+            } else {
+              VerticalChangeHandler handler = new VerticalChangeHandler();
+
+              parentController
+                  .getRouter()
+                  .pushController(RouterTransaction
+                      .with(PostEditorController.create())
+                      .pushChangeHandler(handler)
+                      .popChangeHandler(handler));
+            }
+          });
+        }
       }
     });
   }
@@ -233,6 +237,9 @@ public class PostListController extends MvpController<PostListView, PostListPres
 
   @Override
   public void onEmpty() {
+    if (viewType == VIEW_TYPE_BOOKMARKED) {
+      rootView.setEmptyViewRes(R.layout.layout_bookmarks_empty_view);
+    }
     rootView.setState(StateLayout.VIEW_STATE_EMPTY);
     swipeRefreshLayout.setRefreshing(false);
   }

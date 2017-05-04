@@ -12,11 +12,11 @@
     android:orderInCategory="200"
     android:title="@string/action_feed_menu_message"
     app:actionLayout="@layout/menu_action_item_badge"
-    app:showAsAction="ifRoom" />
+    app:showAsAction="always" />
   <item
     android:id="@+id/action_feed_notification"
-    android:icon="@drawable/ic_notifications_none_black_48dp"
+    android:icon="@drawable/ic_notifications_none_black_24dp"
     android:orderInCategory="300"
     android:title="@string/action_feed_menu_notification"
-    app:showAsAction="ifRoom" />
+    app:showAsAction="always" />
 </menu>

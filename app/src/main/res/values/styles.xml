@@ -96,9 +96,13 @@
 
   <style name="Yoloo.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
-  <style name="Yoloo.AppBarOverlay.Light" parent="ThemeOverlay.AppCompat.ActionBar" />
+  <style name="Yoloo.AppBarOverlay.Light" parent="ThemeOverlay.AppCompat.ActionBar">
+    <item name="colorControlNormal">@color/primary</item>
+  </style>
 
   <style name="Yoloo.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+  <style name="Yoloo.PopupOverlay.Light" parent="ThemeOverlay.AppCompat" />
 
   <style name="Widget.Yoloo" parent="@android:style/Widget" />
 
@@ -151,7 +155,7 @@
   </style>
 
   <style name="Widget.Yoloo.Username.Nav">
-    <item name="android:maxEms">8</item>
+    <item name="android:maxEms">16</item>
   </style>
 
   <style name="Widget.Yoloo.Bounty" parent="TextAppearance.AppCompat.Subhead">

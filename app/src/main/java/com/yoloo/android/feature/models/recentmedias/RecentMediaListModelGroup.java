@@ -23,7 +23,7 @@ public class RecentMediaListModelGroup extends EpoxyModelGroup {
       RecentPhotosModelGroupCallbacks callbacks, RequestManager glide) {
     List<EpoxyModel<?>> models = new ArrayList<>();
 
-    models.add(new SimpleEpoxyModel(R.layout.item_recommended_group_header_text));
+    models.add(new SimpleEpoxyModel(R.layout.item_recent_medias_header_text));
     models.add(new SimpleEpoxyModel(R.layout.item_recommended_group_more_text).onClick(
         v -> callbacks.onRecentPhotosHeaderClicked()));
 

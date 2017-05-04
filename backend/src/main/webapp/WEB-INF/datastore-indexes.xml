@@ -31,12 +31,6 @@
   </datastore-index>
 
   <datastore-index ancestor="false" kind="PostEntity" source="manual">
-    <property name="rank" direction="desc" />
-    <property name="postType" direction="asc" />
-    <property name="created" direction="desc" />
-  </datastore-index>
-
-  <datastore-index ancestor="false" kind="PostEntity" source="manual">
     <property name="travelerGroup" direction="asc" />
     <property name="postType" direction="asc" />
     <property name="created" direction="desc" />
@@ -50,18 +44,12 @@
 
   <datastore-index ancestor="false" kind="PostEntity" source="manual">
     <property name="bounty" direction="desc" />
-    <property name="postType" direction="asc" />
     <property name="created" direction="desc" />
   </datastore-index>
 
   <datastore-index ancestor="false" kind="PostEntity" source="manual">
     <property name="hasMedia" direction="asc" />
     <property name="created" direction="desc" />
-  </datastore-index>
-
-  <datastore-index ancestor="false" kind="Comment" source="manual">
-    <property name="created" direction="desc" />
-    <property name="postKey" direction="asc" />
   </datastore-index>
 
   <datastore-index ancestor="true" kind="Notification" source="manual">
@@ -74,6 +62,11 @@
   </datastore-index>
 
   <datastore-index ancestor="true" kind="MediaEntity" source="manual">
+    <property name="created" direction="desc" />
+  </datastore-index>
+
+  <datastore-index ancestor="false" kind="Comment" source="manual">
+    <property name="postKey" direction="asc" />
     <property name="created" direction="desc" />
   </datastore-index>
 </datastore-indexes>

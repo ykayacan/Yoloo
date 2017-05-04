@@ -1,12 +1,14 @@
 package com.yoloo.android.feature.auth.signup;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
+import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -68,7 +70,7 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
   @BindView(R.id.et_auth_email) EditText etEmail;
   @BindView(R.id.et_auth_password) EditText etPassword;
   @BindView(R.id.et_auth_birthday) EditText etBirthDate;
-  @BindView(R.id.et_auth_select_country) EditText etSelectCountry;
+  //@BindView(R.id.et_auth_select_country) EditText etSelectCountry;
   @BindView(R.id.toolbar) Toolbar toolbar;
 
   @BindString(R.string.label_loading) String loadingString;
@@ -229,14 +231,14 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
             "DatePickerFragmentDialog");
   }
 
-  @OnClick(R.id.et_auth_select_country)
+  /*@OnClick(R.id.et_auth_select_country)
   void selectCountry(EditText editText) {
     countryPicker = new CountryPickerDialog(getActivity(), (country, flagResId) -> {
       countryCode = country.getIsoCode();
       editText.setText(country.getCountryName(getActivity()));
     }, false, 0);
     countryPicker.show();
-  }
+  }*/
 
   @Override
   public boolean handleBack() {
@@ -309,11 +311,11 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
       cancel = true;
     }
 
-    if (TextUtils.isEmpty(countryCode)) {
+    /*if (TextUtils.isEmpty(countryCode)) {
       etSelectCountry.setError("Select your country");
       focusView = etSelectCountry;
       cancel = true;
-    }
+    }*/
 
     if (cancel) {
       // There was an error; don't attempt login and focus the first
@@ -323,6 +325,10 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
       KeyboardUtil.hideKeyboard(getView());
 
       String locale = LocaleUtil.getCurrentLocale(getActivity()).getISO3Country();
+
+      TelephonyManager tm =
+          (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
+      String countryCode = tm.getNetworkCountryIso();
 
       if (TextUtils.isEmpty(idpResponse.getEmail())) {
         idpResponse = new IdpResponse(idpResponse.getProviderType(), etEmail.getText().toString(),
@@ -375,7 +381,6 @@ public class SignUpController extends MvpController<SignUpView, SignUpPresenter>
 
   @Override
   public void onError(Throwable t) {
-    // TODO: 18.04.2017 Check error messages
     Timber.d(t);
 
     if (t instanceof SocketTimeoutException) {

@@ -164,7 +164,7 @@
 
       </android.support.design.widget.TextInputLayout>
 
-      <android.support.design.widget.TextInputLayout
+      <!--<android.support.design.widget.TextInputLayout
         android:id="@+id/layout_auth_select_country"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -185,7 +185,7 @@
           android:hint="@string/hint_country_prompt"
           android:inputType="none" />
 
-      </android.support.design.widget.TextInputLayout>
+      </android.support.design.widget.TextInputLayout>-->
 
       <Button
         android:id="@+id/btn_auth_sign_up"
@@ -196,7 +196,7 @@
         android:text="@string/action_login_ready"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layout_auth_select_country" />
+        app:layout_constraintTop_toBottomOf="@+id/layout_auth_birthday" />
 
     </android.support.constraint.ConstraintLayout>
 

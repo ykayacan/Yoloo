@@ -103,19 +103,6 @@ public class GoogleProvider implements IdpProvider, GoogleApiClient.OnConnection
     idpCallback = callback;
   }
 
-  public void connect() {
-    if (googleApiClient != null && !googleApiClient.isConnected()) {
-      googleApiClient.connect();
-    }
-  }
-
-  public void disconnect() {
-    if (googleApiClient != null) {
-      googleApiClient.disconnect();
-      googleApiClient = null;
-    }
-  }
-
   private IdpResponse createIdpResponse(GoogleSignInAccount account) {
     return new IdpResponse(GoogleAuthProvider.PROVIDER_ID, account.getEmail(),
         account.getIdToken(), account.getDisplayName(), account.getPhotoUrl().toString());

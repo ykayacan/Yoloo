@@ -34,6 +34,7 @@ import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.PublishSubject;
 import java.util.HashMap;
@@ -49,7 +50,7 @@ public class CreateChatController extends BaseController
   @BindView(R.id.toolbar) Toolbar toolbar;
   @BindView(R.id.recycler_view) RecyclerView recyclerView;
 
-  private Disposable disposable;
+  private CompositeDisposable disposable;
 
   private CreateChatEpoxyController epoxyController;
 
@@ -69,9 +70,9 @@ public class CreateChatController extends BaseController
   protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
     setHasOptionsMenu(true);
-    setSupportActionBar(toolbar);
-    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    getSupportActionBar().setTitle("Search users");
+    disposable = new CompositeDisposable();
+
+    setupToolbar();
     setupRecyclerview();
 
     chatRepository = ChatRepository.getInstance();
@@ -79,12 +80,35 @@ public class CreateChatController extends BaseController
 
     msv.setOnSearchViewListener(this);
 
-    disposable = searchSubject
+    processShowNewUsers();
+
+    processUserSearch();
+  }
+
+  private void processShowNewUsers() {
+    Disposable d = userRepository
+        .listNewUsers(null, 20)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(response -> epoxyController.setData(response.getData()));
+
+    disposable.add(d);
+  }
+
+  private void processUserSearch() {
+    Disposable d = searchSubject
         .filter(s -> !TextUtils.isEmpty(s))
         .debounce(400, TimeUnit.MILLISECONDS)
         .switchMap(s -> userRepository.searchUser(s, null, 50))
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(response -> epoxyController.setData(response.getData()), Timber::e);
+
+    disposable.add(d);
+  }
+
+  private void setupToolbar() {
+    setSupportActionBar(toolbar);
+    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    getSupportActionBar().setTitle(R.string.create_chat_title);
   }
 
   @Override

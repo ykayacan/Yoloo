@@ -8,6 +8,7 @@ import com.airbnb.epoxy.Typed2EpoxyController;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.RequestManager;
 import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
@@ -17,6 +18,7 @@ import com.yoloo.android.util.Preconditions;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.ArrayList;
 import java.util.List;
+import timber.log.Timber;
 
 class CommentEpoxyController extends Typed2EpoxyController<List<CommentRealm>, Boolean> {
 
@@ -42,28 +44,29 @@ class CommentEpoxyController extends Typed2EpoxyController<List<CommentRealm>, B
     setDebugLoggingEnabled(true);
   }
 
-  public void setOnCommentLongClickListener(OnItemLongClickListener<CommentRealm> listener) {
+  void setOnCommentLongClickListener(OnItemLongClickListener<CommentRealm> listener) {
     this.onCommentLongClickListener = listener;
   }
 
-  public void setOnProfileClickListener(OnProfileClickListener listener) {
+  void setOnProfileClickListener(OnProfileClickListener listener) {
     this.onProfileClickListener = listener;
   }
 
-  public void setOnVoteClickListener(OnVoteClickListener listener) {
+  void setOnVoteClickListener(OnVoteClickListener listener) {
     this.onVoteClickListener = listener;
   }
 
-  public void setOnMentionClickListener(OnMentionClickListener listener) {
+  void setOnMentionClickListener(OnMentionClickListener listener) {
     this.onMentionClickListener = listener;
   }
 
-  public void setOnMarkAsAcceptedClickListener(OnMarkAsAcceptedClickListener listener) {
+  void setOnMarkAsAcceptedClickListener(OnMarkAsAcceptedClickListener listener) {
     this.onMarkAsAcceptedClickListener = listener;
   }
 
   @Override
   public void setData(List<CommentRealm> items, Boolean loadingMore) {
+    Timber.d("Comments: %s", items.get(0));
     this.comments = items;
     super.setData(items, Preconditions.checkNotNull(loadingMore, "loadingMore cannot be null."));
   }
@@ -95,6 +98,7 @@ class CommentEpoxyController extends Typed2EpoxyController<List<CommentRealm>, B
         .comment(comment)
         .glide(glide)
         .postType(postType)
+        .showAcceptButton(shouldShowAcceptButton(comment))
         .backgroundColor(Color.TRANSPARENT)
         .circleTransformation(cropCircleTransformation)
         .onCommentLongClickListener(onCommentLongClickListener)
@@ -103,5 +107,9 @@ class CommentEpoxyController extends Typed2EpoxyController<List<CommentRealm>, B
         .onMarkAsAcceptedClickListener(onMarkAsAcceptedClickListener)
         .onVoteClickListener(onVoteClickListener)
         .addTo(this);
+  }
+
+  private boolean shouldShowAcceptButton(CommentRealm comment) {
+    return !comment.isOwner() && comment.isPostOwner() && !comment.isPostAccepted() && postType != PostRealm.TYPE_BLOG;
   }
 }

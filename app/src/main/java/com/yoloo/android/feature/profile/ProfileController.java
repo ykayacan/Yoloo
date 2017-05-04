@@ -2,6 +2,7 @@ package com.yoloo.android.feature.profile;
 
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,6 +20,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindColor;
+import butterknife.BindDrawable;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
@@ -54,7 +56,7 @@ import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
 import timber.log.Timber;
 
 public class ProfileController extends MvpController<ProfileView, ProfilePresenter>
@@ -66,7 +68,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
   @BindView(R.id.appbar_profile) AppBarLayout appBarLayout;
   @BindView(R.id.toolbar_profile) Toolbar toolbar;
-  @BindView(R.id.iv_profile_edit) ImageView ivEdit;
+  @BindView(R.id.iv_profile_action) ImageView ivProfileAction;
   @BindView(R.id.iv_profile_avatar) ImageView ivProfileAvatar;
   @BindView(R.id.iv_profile_bg) ImageView ivProfileBg;
   @BindView(R.id.tv_profile_realname) TextView tvRealname;
@@ -94,6 +96,9 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   @BindString(R.string.label_profile_tab_posts) String profilePostsTabString;
   @BindString(R.string.label_profile_tab_photos) String profilePhotosTabString;
   @BindString(R.string.label_profile_tab_interests) String profileInterestsTabString;
+
+  @BindDrawable(R.drawable.ic_settings_white_24dp) Drawable settingDrawable;
+  @BindDrawable(R.drawable.ic_email_outline) Drawable messageDrawable;
 
   private String userId;
 
@@ -136,7 +141,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     viewPager.setAdapter(pagerAdapter);
     tabLayout.setupWithViewPager(viewPager);
 
-    int randomNum = ThreadLocalRandom.current().nextInt(1, 7 + 1);
+    int randomNum = new Random().nextInt(8);
 
     final String backgroundUrl =
         "https://storage.googleapis.com/yoloo-151719.appspot.com/profile-bg-images/small/p"
@@ -221,9 +226,13 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
         new VerticalChangeHandler());
   }
 
-  @OnClick(R.id.iv_profile_edit)
-  void openProfileEdit() {
-    startTransaction(ProfileEditController.create(), new HorizontalChangeHandler());
+  @OnClick(R.id.iv_profile_action)
+  void onProfileAction() {
+    if (account.isMe()) {
+      startTransaction(ProfileEditController.create(), new HorizontalChangeHandler());
+    } else {
+      //startTransaction(ChatController.create());
+    }
   }
 
   private void setupToolbar() {
@@ -307,7 +316,12 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     btnFollow.setText(
         account.isFollowing() ? R.string.action_profile_unfollow : R.string.action_profile_follow);
 
-    ivEdit.setVisibility(account.isMe() ? View.VISIBLE : View.GONE);
+    if (account.isMe()) {
+      ivProfileAction.setImageDrawable(settingDrawable);
+    } else {
+      ivProfileAction.setImageDrawable(messageDrawable);
+      ivProfileAction.setColorFilter(Color.WHITE);
+    }
   }
 
   private void startTransaction(Controller to, ControllerChangeHandler handler) {

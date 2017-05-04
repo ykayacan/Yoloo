@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/showcase_root"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:gravity="top"
+  android:orientation="vertical"
+  android:padding="32dp"
+  tools:background="@android:color/black">
+
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_login_welcome_title"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/_102asdp"
+    android:text="@string/label_login_welcome_title"
+    android:textAppearance="@style/TextAppearance.AppCompat.Title.Inverse"
+    android:textSize="30sp"
+    app:fontPath="fonts/OpenSans-Bold.ttf"
+    tools:ignore="MissingPrefix" />
+
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_showcase_learn"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:text="@string/showcase_welcome_sub"
+    android:textColor="@android:color/white"
+    android:textSize="16sp" />
+
+  <Button
+    android:id="@+id/tv_showcase_next"
+    style="@style/Widget.AppCompat.Button.Borderless.Colored"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:text="@string/showcase_welcome_next"
+    android:textSize="20sp"
+    app:fontPath="fonts/OpenSans-Bold.ttf"
+    tools:ignore="MissingPrefix" />
+
+</LinearLayout>

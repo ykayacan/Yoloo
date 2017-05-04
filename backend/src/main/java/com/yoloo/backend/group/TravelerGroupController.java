@@ -54,9 +54,13 @@ public class TravelerGroupController extends Controller {
     Account account = (Account) fetched.get(accountKey);
     TravelerGroupEntity group = (TravelerGroupEntity) fetched.get(groupKey);
 
-    for (Key<TravelerGroupEntity> key : account.getSubscribedGroupKeys()) {
-      if (key.equivalent(groupKey)) {
-        group = group.withSubscribed(true);
+    List<Key<TravelerGroupEntity>> subscribedKeys = account.getSubscribedGroupKeys();
+    if (subscribedKeys != null) {
+      for (Key<TravelerGroupEntity> key : account.getSubscribedGroupKeys()) {
+        if (key.equivalent(groupKey)) {
+          group = group.withSubscribed(true);
+          break;
+        }
       }
     }
 
@@ -151,10 +155,13 @@ public class TravelerGroupController extends Controller {
 
     while (qi.hasNext()) {
       TravelerGroupEntity group = qi.next();
-      for (Key<TravelerGroupEntity> key : account.getSubscribedGroupKeys()) {
-        if (group.getKey().equivalent(key)) {
-          group = group.withSubscribed(true);
-          break;
+      List<Key<TravelerGroupEntity>> subscribedKeys = account.getSubscribedGroupKeys();
+      if (subscribedKeys != null) {
+        for (Key<TravelerGroupEntity> key : subscribedKeys) {
+          if (group.getKey().equivalent(key)) {
+            group = group.withSubscribed(true);
+            break;
+          }
         }
       }
       groups.add(group);

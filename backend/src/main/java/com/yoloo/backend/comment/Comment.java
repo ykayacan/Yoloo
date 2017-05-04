@@ -10,7 +10,6 @@ import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
-import com.googlecode.objectify.annotation.OnLoad;
 import com.googlecode.objectify.annotation.Parent;
 import com.googlecode.objectify.condition.IfNotDefault;
 import com.yoloo.backend.account.Account;
@@ -39,7 +38,7 @@ import org.joda.time.DateTime;
 @ApiTransformer(CommentTransformer.class)
 public class Comment implements Votable {
 
-  public static final String FIELD_QUESTION_KEY = "postKey";
+  public static final String FIELD_POST_KEY = "postKey";
   public static final String FIELD_CREATED = "created";
   public static final String FIELD_ACCEPTED = "accepted";
 
@@ -63,7 +62,7 @@ public class Comment implements Votable {
 
   // Extra fields
 
-  @Ignore @Wither private Vote.Direction dir;
+  @Ignore @Wither private int dir;
 
   @Ignore @Wither private long voteCount;
 
@@ -96,7 +95,7 @@ public class Comment implements Votable {
         .content(content)
         .username(username)
         .avatarUrl(avatarUrl)
-        .dir(dir)
+        .dir(dir.getValue())
         .accepted(accepted)
         .voteCount(voteCount)
         .created(created)
@@ -105,12 +104,6 @@ public class Comment implements Votable {
 
   public List<CommentShard> getShards() {
     return Deref.deref(this.shardRefs);
-  }
-
-  @OnLoad
-  void onLoad() {
-    /*voteCount = 0L;
-    dir = Vote.Direction.DEFAULT;*/
   }
 
   @NoArgsConstructor

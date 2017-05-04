@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:animateLayoutChanges="true"
+  android:background="@color/background_lightish_3"
+  android:fitsSystemWindows="true">
+
+  <include layout="@layout/merge_appbar_transparent" />
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <com.yoloo.android.ui.widget.BaselineGridTextView
+      style="@style/TextAppearance.AppCompat.Headline"
+      fontPath="fonts/OpenSans-Bold.ttf"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/sing_up_username_title"
+      android:textColor="?attr/colorPrimary" />
+
+    <com.rafakob.floatingedittext.FloatingEditText
+      android:id="@+id/fet_sign_up_username"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="32dp"
+      android:hint="@string/sign_up_username"
+      android:imeOptions="actionDone"
+      android:inputType="text"
+      android:maxLength="40"
+      android:maxLines="1"
+      android:textSize="20sp"
+      app:hintEnabled="true" />
+
+  </LinearLayout>
+
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/btn_sign_up_continue"
+    fontPath="fonts/OpenSans-Bold.ttf"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:background="@color/primary"
+    android:gravity="center"
+    android:padding="16dp"
+    android:text="@string/sign_up_continue"
+    android:textAllCaps="true"
+    android:textColor="@android:color/white"
+    android:visibility="gone"
+    tools:visibility="visible" />
+
+</android.support.design.widget.CoordinatorLayout>

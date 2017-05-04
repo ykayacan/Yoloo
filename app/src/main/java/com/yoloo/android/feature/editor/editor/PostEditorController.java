@@ -59,19 +59,16 @@ import com.yoloo.android.data.model.TagRealm;
 import com.yoloo.android.data.repository.post.PostRepositoryProvider;
 import com.yoloo.android.data.repository.tag.TagRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
-import com.yoloo.android.feature.editor.selectbounty.BountySelectController;
 import com.yoloo.android.feature.editor.selectgroup.SelectGroupController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
 import com.yoloo.android.ui.widget.AutoCompleteTagAdapter;
 import com.yoloo.android.ui.widget.ChipAdapter;
-import com.yoloo.android.util.Connectivity;
 import com.yoloo.android.util.ControllerUtil;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.HtmlUtil;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.MediaUtil;
-import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.WeakHandler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import java.io.File;
@@ -156,7 +153,7 @@ public class PostEditorController extends MvpController<EditorView, EditorPresen
   protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
       @NonNull ControllerChangeType changeType) {
     super.onChangeEnded(changeHandler, changeType);
-    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
+    //ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @Override
@@ -271,7 +268,11 @@ public class PostEditorController extends MvpController<EditorView, EditorPresen
 
   @OnClick(R.id.tv_editor_post_add_bounty)
   void openAddBountyScreen() {
-    if (Connectivity.isConnected(getApplicationContext())) {
+    Snackbar
+        .make(getView(), "Adding bounty feature will be available soon", Snackbar.LENGTH_SHORT)
+        .show();
+
+    /*if (Connectivity.isConnected(getApplicationContext())) {
       KeyboardUtil.hideKeyboard(getView());
 
       getRouter().pushController(RouterTransaction
@@ -280,7 +281,7 @@ public class PostEditorController extends MvpController<EditorView, EditorPresen
           .popChangeHandler(new VerticalChangeHandler()));
     } else {
       Snackbar.make(getView(), R.string.error_bounty_network, Snackbar.LENGTH_LONG).show();
-    }
+    }*/
   }
 
   private void setTempDraft() {

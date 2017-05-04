@@ -67,7 +67,7 @@ public class PostService {
     return Observable.fromCallable(() -> ofy()
         .load()
         .type(Comment.class)
-        .filter(Comment.FIELD_QUESTION_KEY + " =", postKey)
+        .filter(Comment.FIELD_POST_KEY + " =", postKey)
         .keys()
         .iterable());
   }
@@ -85,7 +85,7 @@ public class PostService {
     return ofy()
         .load()
         .type(Comment.class)
-        .filter(Comment.FIELD_QUESTION_KEY + " =", postKey)
+        .filter(Comment.FIELD_POST_KEY + " =", postKey)
         .keys()
         .list();
   }

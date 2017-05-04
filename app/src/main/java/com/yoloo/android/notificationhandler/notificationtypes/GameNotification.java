@@ -28,7 +28,7 @@ public final class GameNotification implements NotificationProvider {
     String content = handleGameData(response, context.getResources());
 
     NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-        .setSmallIcon(R.mipmap.ic_launcher)
+        .setSmallIcon(R.drawable.ic_yoloo_notification)
         .setContentTitle("Yoloo")
         .setContentText(content)
         .setAutoCancel(true)

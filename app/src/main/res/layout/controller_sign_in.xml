@@ -3,29 +3,11 @@
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
-  android:layout_height="match_parent">
+  android:layout_height="match_parent"
+  android:background="@color/background_lightish_3"
+  android:fitsSystemWindows="true">
 
-  <ImageView
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:scaleType="centerCrop"
-    android:src="@drawable/login_bg" />
-
-  <android.support.design.widget.AppBarLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="24dp"
-    android:background="@android:color/transparent"
-    android:theme="@style/Yoloo.AppBarOverlay"
-    app:elevation="0dp">
-
-    <android.support.v7.widget.Toolbar
-      android:id="@+id/toolbar"
-      android:layout_width="match_parent"
-      android:layout_height="?attr/actionBarSize"
-      app:popupTheme="@style/Yoloo.PopupOverlay" />
-
-  </android.support.design.widget.AppBarLayout>
+  <include layout="@layout/merge_appbar_transparent" />
 
   <ScrollView
     android:layout_width="match_parent"
@@ -33,77 +15,71 @@
     android:fillViewport="true"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <android.support.constraint.ConstraintLayout
+    <LinearLayout
       android:layout_width="@dimen/_240asdp"
       android:layout_height="wrap_content"
       android:layout_gravity="center|top"
-      android:layout_marginTop="@dimen/_24asdp">
+      android:layout_marginTop="@dimen/_24asdp"
+      android:gravity="center|top"
+      android:orientation="vertical">
 
-      <LinearLayout
+      <android.support.v7.widget.CardView
         android:id="@+id/input_wrapper"
-        style="@style/Widget.Yoloo.InputContainer"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:orientation="vertical"
-        android:paddingBottom="8dp"
-        android:paddingTop="24dp"
+        app:cardUseCompatPadding="true"
+        app:contentPadding="16dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <EditText
-          android:id="@+id/et_login_email"
+        <LinearLayout
+          style="@style/Widget.Yoloo.InputContainer"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginEnd="24dp"
-          android:layout_marginLeft="24dp"
-          android:layout_marginRight="24dp"
-          android:layout_marginStart="24dp"
-          android:hint="@string/hint_email"
-          android:imeOptions="actionNext"
-          android:inputType="textEmailAddress" />
+          android:gravity="center">
 
-        <EditText
-          android:id="@+id/et_login_password"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_marginEnd="24dp"
-          android:layout_marginLeft="24dp"
-          android:layout_marginRight="24dp"
-          android:layout_marginStart="24dp"
-          android:hint="@string/hint_password"
-          android:imeActionId="@+id/sign_up"
-          android:imeActionLabel="@string/action_sing_up_short"
-          android:inputType="textPassword"
-          android:maxLines="1" />
+          <com.rafakob.floatingedittext.FloatingEditText
+            android:id="@+id/fet_login_email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_email"
+            android:imeOptions="actionNext"
+            android:inputType="textEmailAddress" />
 
-        <Button
-          android:id="@+id/btn_login_ready"
-          style="@style/Widget.AppCompat.Button.Borderless.Colored"
-          fontPath="fonts/OpenSans-Bold.ttf"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_marginEnd="24dp"
-          android:layout_marginLeft="24dp"
-          android:layout_marginRight="24dp"
-          android:layout_marginStart="24dp"
-          android:gravity="center"
-          android:text="@string/action_login_sign_in"
-          tools:ignore="MissingPrefix" />
+          <com.rafakob.floatingedittext.FloatingEditText
+            android:id="@+id/fet_login_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="@string/hint_password"
+            android:imeActionId="@+id/sign_up"
+            android:imeActionLabel="@string/action_sing_up_short"
+            android:inputType="textPassword"
+            android:maxLines="1" />
 
-      </LinearLayout>
+          <Button
+            android:id="@+id/btn_login_ready"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            fontPath="fonts/OpenSans-Bold.ttf"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/action_login_sign_in"
+            tools:ignore="MissingPrefix" />
+
+        </LinearLayout>
+
+      </android.support.v7.widget.CardView>
 
       <TextView
         android:id="@+id/tv_login_or"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:text="@string/label_login_or"
-        android:textColor="@android:color/white"
-        app:layout_constraintLeft_toLeftOf="@+id/input_wrapper"
-        app:layout_constraintRight_toRightOf="@+id/input_wrapper"
-        app:layout_constraintTop_toBottomOf="@+id/input_wrapper" />
+        android:text="@string/label_login_or" />
 
       <Button
         android:id="@+id/btn_facebook_sign_in"
@@ -121,12 +97,9 @@
         android:layout_width="@dimen/_240asdp"
         android:layout_height="40dp"
         android:layout_marginTop="8dp"
-        android:text="@string/action_login_google_sign_in"
-        app:layout_constraintLeft_toLeftOf="@+id/btn_facebook_sign_in"
-        app:layout_constraintRight_toRightOf="@+id/btn_facebook_sign_in"
-        app:layout_constraintTop_toBottomOf="@+id/btn_facebook_sign_in" />
+        android:text="@string/action_login_google_sign_in" />
 
-    </android.support.constraint.ConstraintLayout>
+    </LinearLayout>
 
   </ScrollView>
 

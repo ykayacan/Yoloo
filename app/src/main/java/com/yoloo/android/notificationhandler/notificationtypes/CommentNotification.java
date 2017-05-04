@@ -35,7 +35,7 @@ public final class CommentNotification implements NotificationProvider {
         .getString(R.string.label_notification_comment, response.getSenderUsername());
 
     NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-        .setSmallIcon(R.mipmap.ic_launcher)
+        .setSmallIcon(R.drawable.ic_yoloo_notification)
         .setContentTitle("Yoloo")
         .setContentText(content)
         .setAutoCancel(true)

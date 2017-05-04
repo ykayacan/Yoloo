@@ -4,6 +4,6 @@
 
   <item
     android:id="@+id/action_share"
-    android:title="Share"
+    android:title="@string/action_feed_share"
     app:showAsAction="always" />
 </menu>

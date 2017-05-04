@@ -20,30 +20,32 @@ import com.yoloo.backend.endpointsvalidator.validator.FollowConflictValidator;
 import com.yoloo.backend.endpointsvalidator.validator.FollowValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
 import com.yoloo.backend.notification.NotificationService;
-
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
-@Api(
-    name = "yolooApi",
+@Api(name = "yolooApi",
     version = "v1",
-    namespace = @ApiNamespace(
-        ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER)
-)
-@ApiClass(
-    clientIds = {
-        Constants.ANDROID_CLIENT_ID,
-        Constants.IOS_CLIENT_ID,
-        Constants.WEB_CLIENT_ID
-    },
-    audiences = { Constants.AUDIENCE_ID },
-    authenticators = { FirebaseAuthenticator.class }
-)
+    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
+@ApiClass(clientIds = {
+    Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
+}, audiences = {Constants.AUDIENCE_ID}, authenticators = {FirebaseAuthenticator.class})
 public class RelationshipEndpoint {
 
-  private final RelationshipController relationshipController = RelationshipControllerFactory.of()
-      .create();
+  private final RelationshipController relationshipController =
+      RelationshipControllerFactory.of().create();
+
+  /*@ApiMethod(name = "users.relationship.facebook",
+      path = "users/{userId}/relationship/facebook",
+      httpMethod = ApiMethod.HttpMethod.POST)
+  public void relationshipFacebook(@Named("facebookId") String facebookId, User user)
+      throws ServiceException {
+    EndpointsValidator
+        .create()
+        .on(BadRequestValidator.create(facebookId, "facebookId is required."))
+        .on(AuthValidator.create(user));
+
+    relationshipController.followByFacebookId(facebookId, user);
+  }*/
 
   /**
    * Follows a new {@code Account}.
@@ -53,16 +55,14 @@ public class RelationshipEndpoint {
    * @param user the user
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "users.relationship",
+  @ApiMethod(name = "users.relationship",
       path = "users/{userId}/relationship",
       httpMethod = ApiMethod.HttpMethod.POST)
-  public void relationship(
-      @Named("userId") String userId,
-      @Named("action") RelationshipAction action,
-      User user) throws ServiceException {
+  public void relationship(@Named("userId") String userId,
+      @Named("action") RelationshipAction action, User user) throws ServiceException {
 
-    EndpointsValidator validator = EndpointsValidator.create()
+    EndpointsValidator validator = EndpointsValidator
+        .create()
         .on(BadRequestValidator.create(userId, "userId is required."))
         .on(BadRequestValidator.create(action, "action is required."))
         .on(AuthValidator.create(user))
@@ -71,8 +71,8 @@ public class RelationshipEndpoint {
 
     switch (action) {
       case FOLLOW:
-        validator
-            .on(FollowConflictValidator.create(user.getUserId(), userId, "Already following."));
+        validator.on(
+            FollowConflictValidator.create(user.getUserId(), userId, "Already following."));
 
         relationshipController.follow(userId, user);
         break;
@@ -96,25 +96,21 @@ public class RelationshipEndpoint {
    * @return the entity with the corresponding ID
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "users.followedBy",
+  @ApiMethod(name = "users.followedBy",
       path = "users/{userId}/followedBy",
       httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Account> followedBy(
-      @Named("userId") String userId,
-      @Nullable @Named("cursor") String cursor,
-      @Nullable @Named("limit") Integer limit,
-      User user) throws ServiceException {
+  public CollectionResponse<Account> followedBy(@Named("userId") String userId,
+      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
+      throws ServiceException {
 
-    EndpointsValidator.create()
+    EndpointsValidator
+        .create()
         .on(BadRequestValidator.create(userId, "userId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(userId, "Invalid userId."));
 
-    return getRelationshipController().list(
-        userId, RelationshipType.FOLLOWER,
-        Optional.fromNullable(limit),
-        Optional.fromNullable(cursor));
+    return getRelationshipController().list(userId, RelationshipType.FOLLOWER,
+        Optional.fromNullable(limit), Optional.fromNullable(cursor));
   }
 
   /**
@@ -127,31 +123,25 @@ public class RelationshipEndpoint {
    * @return the entity with the corresponding ID
    * @throws ServiceException the service exception
    */
-  @ApiMethod(
-      name = "users.follows",
+  @ApiMethod(name = "users.follows",
       path = "users/{userId}/follows",
       httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Account> follows(
-      @Named("userId") String userId,
-      @Nullable @Named("cursor") String cursor,
-      @Nullable @Named("limit") Integer limit,
-      User user) throws ServiceException {
+  public CollectionResponse<Account> follows(@Named("userId") String userId,
+      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
+      throws ServiceException {
 
-    EndpointsValidator.create()
+    EndpointsValidator
+        .create()
         .on(BadRequestValidator.create(userId, "userId is required."))
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(userId, "Invalid userId."));
 
-    return getRelationshipController().list(
-        userId,
-        RelationshipType.FOLLOWING,
-        Optional.fromNullable(limit),
-        Optional.fromNullable(cursor));
+    return getRelationshipController().list(userId, RelationshipType.FOLLOWING,
+        Optional.fromNullable(limit), Optional.fromNullable(cursor));
   }
 
   private RelationshipController getRelationshipController() {
-    return RelationshipController.create(
-        AccountShardService.create(),
+    return RelationshipController.create(AccountShardService.create(),
         NotificationService.create(URLFetchServiceFactory.getURLFetchService()));
   }
 }

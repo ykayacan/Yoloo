@@ -1,7 +1,6 @@
 package com.yoloo.android.feature.comment;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.annotation.ColorInt;
 import android.view.View;
 import android.widget.ImageView;
@@ -13,7 +12,6 @@ import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CommentRealm;
-import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
@@ -25,27 +23,27 @@ import com.yoloo.android.ui.widget.timeview.TimeTextView;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 
+import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;
+
 @EpoxyModelClass(layout = R.layout.item_comment)
 public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolder> {
-
-  private static final int DEFAULT_BACKGROUND_COLOR = Color.WHITE;
 
   @EpoxyAttribute CommentRealm comment;
   @EpoxyAttribute int postType;
   @EpoxyAttribute @ColorInt int backgroundColor;
-  @EpoxyAttribute(hash = false) RequestManager glide;
-  @EpoxyAttribute(hash = false) OnItemLongClickListener<CommentRealm> onCommentLongClickListener;
-  @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
-  @EpoxyAttribute(hash = false) OnVoteClickListener onVoteClickListener;
-  @EpoxyAttribute(hash = false) OnMentionClickListener onMentionClickListener;
-  @EpoxyAttribute(hash = false) OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener;
-  @EpoxyAttribute(hash = false) CropCircleTransformation circleTransformation;
+  @EpoxyAttribute(DoNotHash) boolean showAcceptButton;
+  @EpoxyAttribute(DoNotHash) RequestManager glide;
+  @EpoxyAttribute(DoNotHash) OnItemLongClickListener<CommentRealm> onCommentLongClickListener;
+  @EpoxyAttribute(DoNotHash) OnProfileClickListener onProfileClickListener;
+  @EpoxyAttribute(DoNotHash) OnVoteClickListener onVoteClickListener;
+  @EpoxyAttribute(DoNotHash) OnMentionClickListener onMentionClickListener;
+  @EpoxyAttribute(DoNotHash) OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener;
+  @EpoxyAttribute(DoNotHash) CropCircleTransformation circleTransformation;
 
   @Override
   public void bind(CommentHolder holder) {
     final Context context = holder.itemView.getContext();
 
-    backgroundColor = backgroundColor == 0 ? DEFAULT_BACKGROUND_COLOR : backgroundColor;
     holder.itemView.setBackgroundColor(backgroundColor);
 
     glide
@@ -61,10 +59,7 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
     holder.voteView.setVoteDirection(comment.getVoteDir());
 
     holder.tvAcceptedMark.setVisibility(comment.isAccepted() ? View.VISIBLE : View.GONE);
-    holder.tvAccept.setVisibility(comment.isPostOwner()
-        /*&& !isCommentOwner*/ && !comment.isPostAccepted() && postType != PostRealm.TYPE_BLOG
-        ? View.VISIBLE
-        : View.GONE);
+    holder.tvAccept.setVisibility(showAcceptButton ? View.VISIBLE : View.GONE);
 
     DrawableHelper
         .create()

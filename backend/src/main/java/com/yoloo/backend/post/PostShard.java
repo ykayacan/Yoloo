@@ -36,7 +36,8 @@ public final class PostShard implements FeedShard, Shardable.Shard {
 
   private int reports;
 
-  @Index(IfNotNull.class) private Set<Key<Bookmark>> bookmarkKeys = new HashSet<>();
+  @Index(IfNotNull.class) @Builder.Default private Set<Key<Bookmark>> bookmarkKeys =
+      new HashSet<>();
 
   public static Key<PostShard> createKey(Key<PostEntity> postKey, int shardNum) {
     return Key.create(PostShard.class, postKey.toWebSafeString() + ":" + shardNum);

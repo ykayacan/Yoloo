@@ -3,16 +3,13 @@ package com.yoloo.android.data.repository.comment;
 import com.annimon.stream.Optional;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.CommentRealm;
-
-import java.util.List;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
+import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class CommentRepository {
 
@@ -38,8 +35,8 @@ public class CommentRepository {
   public Observable<Optional<CommentRealm>> getComment(@Nonnull String postId,
       @Nonnull String commentId) {
     return Observable.mergeDelayError(
-        diskDataStore.get(commentId).subscribeOn(Schedulers.io()).toObservable(),
-        remoteDataStore.get(postId, commentId)
+        diskDataStore.get(commentId).subscribeOn(Schedulers.io()).toObservable(), remoteDataStore
+            .get(postId, commentId)
             .doOnSuccess(diskDataStore::add)
             .map(Optional::of)
             .toObservable()
@@ -47,27 +44,22 @@ public class CommentRepository {
   }
 
   public Single<CommentRealm> addComment(@Nonnull CommentRealm comment) {
-    return remoteDataStore.add(comment)
+    return remoteDataStore
+        .add(comment)
         .doOnSuccess(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }
 
   public Completable deleteComment(@Nonnull CommentRealm comment) {
-    return remoteDataStore.delete(comment)
+    return remoteDataStore
+        .delete(comment)
         .andThen(diskDataStore.delete(comment))
         .subscribeOn(Schedulers.io());
   }
 
   public Observable<Response<List<CommentRealm>>> listComments(@Nonnull String postId,
       @Nullable String cursor, int limit) {
-    // TODO: 18.02.2017 Change structure
-    return diskDataStore.list(postId).subscribeOn(Schedulers.io());
-
-    /*return Observable.mergeDelayError(
-        diskDataStore.listNotifications(postId).subscribeOn(Schedulers.io()),
-        remoteDataStore.listNotifications(postId, cursor, eTag, limit)
-            .doOnNext(response -> diskDataStore.addAll(response.getData()))
-            .subscribeOn(Schedulers.io()));*/
+    return remoteDataStore.list(postId, cursor, limit);
   }
 
   public Completable voteComment(@Nonnull String commentId, int direction) {
@@ -75,7 +67,8 @@ public class CommentRepository {
   }
 
   public Single<CommentRealm> acceptComment(@Nonnull CommentRealm comment) {
-    return remoteDataStore.accept(comment)
+    return remoteDataStore
+        .accept(comment)
         .doOnSuccess(diskDataStore::accept)
         .subscribeOn(Schedulers.io());
   }

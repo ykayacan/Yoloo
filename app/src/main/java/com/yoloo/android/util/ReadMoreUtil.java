@@ -20,7 +20,7 @@ public final class ReadMoreUtil {
   public static Spannable addReadMore(Context context, String text, @IntRange(from = 1) int count) {
     if (text.length() >= count) {
       String textWithReadMore =
-          context.getString(R.string.label_feed_read_more, text.substring(0, count));
+          context.getString(R.string.label_feed_read_moreal, text.substring(0, count));
       Spannable span = Spannable.Factory.getInstance().newSpannable(textWithReadMore);
       span.setSpan(FOREGROUND_COLOR_SPAN, count + 2 /*omit three dot and whitespace */,
           textWithReadMore.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);

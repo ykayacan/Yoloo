@@ -34,7 +34,7 @@ public final class FollowNotification implements NotificationProvider {
         .getString(R.string.label_notification_follow, response.getSenderUsername());
 
     NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-        .setSmallIcon(R.mipmap.ic_launcher)
+        .setSmallIcon(R.drawable.ic_yoloo_notification)
         .setContentTitle("Yoloo")
         .setContentText(content)
         .setAutoCancel(true)

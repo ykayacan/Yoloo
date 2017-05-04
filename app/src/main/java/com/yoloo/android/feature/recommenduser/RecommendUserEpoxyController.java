@@ -1,8 +1,11 @@
 package com.yoloo.android.feature.recommenduser;
 
 import android.content.Context;
+import com.airbnb.epoxy.AutoModel;
+import com.airbnb.epoxy.SimpleEpoxyModel;
 import com.airbnb.epoxy.Typed2EpoxyController;
 import com.annimon.stream.Stream;
+import com.yoloo.android.R;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.feature.search.OnFollowClickListener;
 import com.yoloo.android.feature.search.UserModel_;
@@ -13,6 +16,8 @@ import java.util.List;
 public class RecommendUserEpoxyController extends Typed2EpoxyController<List<AccountRealm>, Void> {
 
   private final CropCircleTransformation cropCircleTransformation;
+
+  @AutoModel FacebookFriendHeaderModel facebookFriendsModel;
 
   private OnFollowClickListener onFollowClickListener;
 
@@ -40,13 +45,23 @@ public class RecommendUserEpoxyController extends Typed2EpoxyController<List<Acc
         .forEach(account -> new UserModel_()
             .id(account.getId())
             .account(account)
+            .showFollowButton(true)
             .onFollowClickListener(onFollowClickListener)
             .cropCircleTransformation(cropCircleTransformation)
             .addTo(this));
+
+    //facebookFriendsModel.layout(R.layout.item_recommend_user_facebook_friends).addTo(this);
   }
 
   public void remove(AccountRealm account) {
     models.remove(account);
     setData(models, null);
+  }
+
+  public static class FacebookFriendHeaderModel extends SimpleEpoxyModel {
+
+    public FacebookFriendHeaderModel() {
+      super(R.layout.item_recommend_user_facebook_friends);
+    }
   }
 }

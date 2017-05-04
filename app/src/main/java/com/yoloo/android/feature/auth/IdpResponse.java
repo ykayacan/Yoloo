@@ -25,9 +25,9 @@ public class IdpResponse implements Parcelable {
   };
 
   private final String providerId;
+  private final String id;
   private final String email;
   private final String token;
-  private final String secret;
   private final String name;
   private final String pictureUrl;
   private final int errorCode;
@@ -36,26 +36,23 @@ public class IdpResponse implements Parcelable {
     this(null, null, null, null, null, null, errorCode);
   }
 
-  public IdpResponse(@NonNull String providerId) {
-    this(providerId, null, null, null, null, null, ResultCodes.OK);
-  }
-
   public IdpResponse(@NonNull String providerId, @NonNull String email, @NonNull String token,
       @NonNull String name, @NonNull String pictureUrl) {
-    this(providerId, email, token, null, name, pictureUrl, ResultCodes.OK);
+    this(providerId, null, email, token, name, pictureUrl, ResultCodes.OK);
   }
 
-  public IdpResponse(@NonNull String providerId, @NonNull String email, @NonNull String token,
-      @NonNull String secret, @NonNull String name, @NonNull String pictureUrl) {
-    this(providerId, email, token, secret, name, pictureUrl, ResultCodes.OK);
+  public IdpResponse(@NonNull String providerId, @NonNull String id /* Facebook only */,
+      @NonNull String email, @NonNull String token, @NonNull String name,
+      @NonNull String pictureUrl) {
+    this(providerId, id, email, token, name, pictureUrl, ResultCodes.OK);
   }
 
-  private IdpResponse(String providerId, String email, String token, String secret, String name,
+  private IdpResponse(String providerId, String id, String email, String token, String name,
       String pictureUrl, int errorCode) {
     this.providerId = providerId;
+    this.id = id;
     this.email = email;
     this.token = token;
-    this.secret = secret;
     this.name = name;
     this.pictureUrl = pictureUrl;
     this.errorCode = errorCode;
@@ -106,20 +103,17 @@ public class IdpResponse implements Parcelable {
     return token;
   }
 
-  /**
-   * Twitter only. Return the token secret received as a result from logging in with Twitter.
-   */
-  @Nullable
-  public String getIdpSecret() {
-    return secret;
-  }
-
   public String getName() {
     return name;
   }
 
   public String getPictureUrl() {
     return pictureUrl;
+  }
+
+  @Nullable
+  public String getId() {
+    return id;
   }
 
   /**
@@ -137,9 +131,9 @@ public class IdpResponse implements Parcelable {
   @Override
   public void writeToParcel(Parcel dest, int flags) {
     dest.writeString(providerId);
+    dest.writeString(id);
     dest.writeString(email);
     dest.writeString(token);
-    dest.writeString(secret);
     dest.writeString(name);
     dest.writeString(pictureUrl);
     dest.writeInt(errorCode);
@@ -151,14 +145,14 @@ public class IdpResponse implements Parcelable {
         + "providerId='"
         + providerId
         + '\''
+        + ", id='"
+        + id
+        + '\''
         + ", email='"
         + email
         + '\''
         + ", token='"
         + token
-        + '\''
-        + ", secret='"
-        + secret
         + '\''
         + ", name='"
         + name

@@ -15,7 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyModel;
-import com.annimon.stream.Stream;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.RouterTransaction;
@@ -97,7 +96,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
     if (!reEnter) {
-      getPresenter().loadData(post.getId(), post.getAcceptedCommentId());
+      getPresenter().loadData(post.getId(), post.getOwnerId(), post.getAcceptedCommentId());
       reEnter = true;
     }
   }
@@ -115,12 +114,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
 
   @Override
   public void onLoaded(List<CommentRealm> comments) {
-    epoxyController.setData(Stream
-        .of(comments)
-        .map(comment -> comment
-            .setPostAccepted(!TextUtils.isEmpty(post.getAcceptedCommentId()))
-            .setPostOwner(post.getOwnerId().equals(comment.getOwnerId())))
-        .toList(), false);
+    epoxyController.setData(comments, false);
   }
 
   @Override

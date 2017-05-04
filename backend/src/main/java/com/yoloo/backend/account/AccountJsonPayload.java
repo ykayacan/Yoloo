@@ -21,6 +21,7 @@ public class AccountJsonPayload {
   private String langCode;
   private String profileImageUrl;
   private List<String> travelerTypeIds;
+  private String facebookId;
 
   @SneakyThrows({UnsupportedEncodingException.class, IOException.class})
   public static AccountJsonPayload from(@Nonnull String base64Payload) {

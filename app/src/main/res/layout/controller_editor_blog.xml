@@ -200,7 +200,7 @@
         android:layout_marginTop="8dp"
         android:paddingBottom="8dp"
         android:paddingTop="8dp"
-        android:text="Trending Tags"
+        android:text="@string/trending_tags"
         android:textAppearance="@style/TextAppearance.GroupTitle"
         android:textColor="@android:color/black"
         android:textSize="12sp" />
@@ -232,7 +232,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:padding="8dp"
-        android:text="Adding bounty makes your post more visible"
+        android:text="@string/editor_bounty_tip"
         android:textColor="@color/lucky_point"
         tools:ignore="MissingPrefix" />
 

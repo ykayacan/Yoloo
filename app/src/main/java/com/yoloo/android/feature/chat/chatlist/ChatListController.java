@@ -66,7 +66,7 @@ public class ChatListController extends BaseController
     userId = getArgs().getString(KEY_USER_ID);
 
     setSupportActionBar(toolbar);
-    getSupportActionBar().setTitle("Chats");
+    getSupportActionBar().setTitle(R.string.chat_list_title);
     getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
     dialogsListAdapter = new DialogsListAdapter<>(

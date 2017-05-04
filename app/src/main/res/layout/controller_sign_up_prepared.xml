@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:animateLayoutChanges="true"
+  android:background="@color/background_lightish_3"
+  android:fitsSystemWindows="true">
+
+  <include layout="@layout/merge_appbar_transparent" />
+
+  <ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginBottom="52dp"
+    android:fillViewport="true"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="24dp">
+
+      <com.yoloo.android.ui.widget.BaselineGridTextView
+        style="@style/TextAppearance.AppCompat.Headline"
+        fontPath="fonts/OpenSans-Bold.ttf"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sign_up_prepared_title"
+        android:textColor="?attr/colorPrimary" />
+
+      <com.yoloo.android.ui.widget.BaselineGridTextView
+        fontPath="fonts/OpenSans-Semibold.ttf"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/sign_up_prepared_info" />
+
+      <com.rafakob.floatingedittext.FloatingEditText
+        android:id="@+id/fet_sign_up_fullname"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="@string/sign_up_name"
+        android:imeOptions="actionNext"
+        android:inputType="textCapWords"
+        android:maxLength="40"
+        android:maxLines="1"
+        android:textSize="20sp"
+        app:hintEnabled="true" />
+
+      <com.rafakob.floatingedittext.FloatingEditText
+        android:id="@+id/fet_sign_up_email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="@string/sign_up_email"
+        android:imeOptions="actionNext"
+        android:inputType="textCapWords|textEmailAddress"
+        android:maxLength="40"
+        android:maxLines="1"
+        android:textSize="20sp"
+        app:hintEnabled="true" />
+
+      <com.rafakob.floatingedittext.FloatingEditText
+        android:id="@+id/fet_sign_up_username"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="@string/sign_up_username"
+        android:imeOptions="actionNext"
+        android:inputType="text"
+        android:maxLength="40"
+        android:maxLines="1"
+        android:textSize="20sp"
+        app:hintEnabled="true" />
+
+      <com.rafakob.floatingedittext.FloatingEditText
+        android:id="@+id/fet_sign_up_birthday"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:hint="@string/sign_up_birthday"
+        android:imeOptions="actionDone"
+        android:inputType="none"
+        android:maxLength="40"
+        android:maxLines="1"
+        android:textSize="20sp"
+        app:hintEnabled="true" />
+
+    </LinearLayout>
+
+  </ScrollView>
+
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_sign_up_continue"
+    fontPath="fonts/OpenSans-Bold.ttf"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:background="@color/primary"
+    android:gravity="center"
+    android:padding="16dp"
+    android:text="@string/sign_up_continue"
+    android:textAllCaps="true"
+    android:textColor="@android:color/white"
+    android:visibility="gone"
+    tools:visibility="visible" />
+
+</android.support.design.widget.CoordinatorLayout>

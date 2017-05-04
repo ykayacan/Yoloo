@@ -48,6 +48,7 @@ public class Account {
   public static final String FIELD_USERNAME = "username";
   public static final String FIELD_SUBSCRIBED_GROUP_KEYS = "subscribedGroupKeys";
   public static final String FIELD_CREATED = "created";
+  public static final String FIELD_FACEBOOK_ID = "facebookId";
 
   @Id private long id;
 

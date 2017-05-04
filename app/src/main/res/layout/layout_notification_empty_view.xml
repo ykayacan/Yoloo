@@ -20,7 +20,7 @@
     android:layout_marginRight="48dp"
     android:layout_marginStart="48dp"
     android:scaleType="centerInside"
-    app:srcCompat="@drawable/ic_notifications_none_black_48dp" />
+    app:srcCompat="@drawable/ic_notifications_none_black_56dp" />
 
   <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_empty_title"

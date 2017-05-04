@@ -17,10 +17,14 @@
       android:id="@+id/messagesList"
       android:layout_width="0dp"
       android:layout_height="0dp"
+      app:incomingBubbleDrawable="@drawable/shape_incoming_message"
+      app:incomingDefaultBubbleColor="@android:color/white"
       app:layout_constraintBottom_toBottomOf="@+id/divider"
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toTopOf="parent" />
+      app:layout_constraintTop_toTopOf="parent"
+      app:outcomingBubbleDrawable="@drawable/shape_outcoming_message"
+      app:outcomingDefaultBubbleColor="@color/primary" />
 
     <View
       android:id="@+id/divider"

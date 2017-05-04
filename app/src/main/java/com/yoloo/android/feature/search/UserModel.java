@@ -2,6 +2,7 @@ package com.yoloo.android.feature.search;
 
 import android.content.Context;
 import android.support.design.widget.Snackbar;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -22,6 +23,7 @@ import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;
 public abstract class UserModel extends EpoxyModelWithHolder<UserModel.UserHolder> {
 
   @EpoxyAttribute AccountRealm account;
+  @EpoxyAttribute boolean showFollowButton;
   @EpoxyAttribute(DoNotHash) OnProfileClickListener onProfileClickListener;
   @EpoxyAttribute(DoNotHash) OnUserClickListener onUserClickListener;
   @EpoxyAttribute(DoNotHash) OnFollowClickListener onFollowClickListener;
@@ -40,7 +42,7 @@ public abstract class UserModel extends EpoxyModelWithHolder<UserModel.UserHolde
 
     holder.tvUsername.setText(account.getUsername());
 
-    //holder.btnFollow.setVisibility(onFollowClickListener == null ? View.GONE : View.VISIBLE);
+    holder.btnFollow.setVisibility(showFollowButton ? View.VISIBLE : View.GONE);
 
     holder.btnFollow.setOnClickListener(v -> {
       v.setTag(v.getTag() == null);

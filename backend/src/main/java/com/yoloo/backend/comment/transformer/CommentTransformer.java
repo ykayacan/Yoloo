@@ -14,7 +14,7 @@ public class CommentTransformer implements Transformer<Comment, CommentDTO> {
         .avatarUrl(in.getAvatarUrl().getValue())
         .content(in.getContent())
         .accepted(in.isAccepted())
-        .direction(in.getDir().getValue())
+        .direction(in.getDir())
         .voteCount(in.getVoteCount())
         .created(in.getCreated().toDate())
         .build();

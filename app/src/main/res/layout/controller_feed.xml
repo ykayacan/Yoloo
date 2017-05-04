@@ -48,7 +48,9 @@
     <android.support.v7.widget.RecyclerView
       android:id="@+id/rv_feed"
       android:layout_width="match_parent"
-      android:layout_height="match_parent" />
+      android:layout_height="match_parent"
+      android:clipToPadding="false"
+      android:paddingBottom="72dp" />
 
   </android.support.v4.widget.SwipeRefreshLayout>
 
@@ -61,5 +63,13 @@
     app:options_color="@color/primary"
     app:options_menu="@menu/menu_fab"
     app:src="@drawable/ic_add_white_24dp" />
+
+  <View
+    android:id="@+id/hacky_view"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:layout_gravity="bottom|end"
+    android:layout_margin="24dp"
+    android:visibility="visible" />
 
 </com.yoloo.android.ui.widget.StateLayout>

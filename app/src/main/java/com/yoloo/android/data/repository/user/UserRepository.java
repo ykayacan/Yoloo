@@ -122,6 +122,10 @@ public class UserRepository {
     return remoteDataStore.checkUsername(username);
   }
 
+  public Single<Boolean> checkEmail(@Nonnull String email) {
+    return remoteDataStore.checkEmail(email);
+  }
+
   public Observable<Response<List<AccountRealm>>> listNewUsers(@Nullable String cursor, int limit) {
     return remoteDataStore.listNewUsers(cursor, limit);
   }

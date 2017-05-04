@@ -125,11 +125,12 @@ public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResu
             onFailure(new Bundle());
           } else {
             try {
+              String id = object.getString("id");
               String name = object.getString("name");
               String pictureUrl =
                   object.getJSONObject("picture").getJSONObject("data").getString("url");
               String email = object.getString("email");
-              onSuccess(email, name, pictureUrl, loginResult);
+              onSuccess(id, email, name, pictureUrl, loginResult);
             } catch (JSONException e) {
               Timber.e(e, "JSON Exception reading from Facebook GraphRequest");
               onFailure(new Bundle());
@@ -159,15 +160,16 @@ public class FacebookProvider implements IdpProvider, FacebookCallback<LoginResu
     onFailure(extra);
   }
 
-  private IdpResponse createIdpResponse(String email, String name, String pictureUrl,
+  private void onSuccess(String id, String email, String name, String pictureUrl,
       LoginResult loginResult) {
-    return new IdpResponse(FacebookAuthProvider.PROVIDER_ID, email,
-        loginResult.getAccessToken().getToken(), name, pictureUrl);
+    gcCallbackManager();
+    callbackObject.onSuccess(createIdpResponse(id, email, name, pictureUrl, loginResult));
   }
 
-  private void onSuccess(String email, String name, String pictureUrl, LoginResult loginResult) {
-    gcCallbackManager();
-    callbackObject.onSuccess(createIdpResponse(email, name, pictureUrl, loginResult));
+  private IdpResponse createIdpResponse(String id, String email, String name, String pictureUrl,
+      LoginResult loginResult) {
+    return new IdpResponse(FacebookAuthProvider.PROVIDER_ID, id, email,
+        loginResult.getAccessToken().getToken(), name, pictureUrl);
   }
 
   private void onFailure(Bundle bundle) {

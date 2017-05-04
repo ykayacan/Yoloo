@@ -452,6 +452,10 @@ public final class PostController extends Controller {
 
     Key<Account> accountKey = Key.create(user.getUserId());
 
+    if (postEntities.isEmpty()) {
+      return CollectionResponse.<PostEntity>builder().build();
+    }
+
     return Observable
         .just(postEntities)
         .flatMap(__ -> postShardService.mergeShards(__, accountKey))

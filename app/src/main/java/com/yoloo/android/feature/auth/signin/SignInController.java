@@ -14,13 +14,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
-import butterknife.OnEditorAction;
 import com.bluelinelabs.conductor.RouterTransaction;
+import com.rafakob.floatingedittext.FloatingEditText;
 import com.yoloo.android.R;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.auth.AuthUI;
@@ -32,15 +30,14 @@ import com.yoloo.android.feature.feed.FeedController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.FormUtil;
 import com.yoloo.android.util.KeyboardUtil;
-import com.yoloo.android.util.ViewUtils;
 import java.net.SocketTimeoutException;
 import timber.log.Timber;
 
 public class SignInController extends MvpController<SignInView, SignInPresenter>
     implements SignInView, IdpProvider.IdpCallback {
 
-  @BindView(R.id.et_login_email) EditText etEmail;
-  @BindView(R.id.et_login_password) EditText etPassword;
+  @BindView(R.id.fet_login_email) FloatingEditText fetEmail;
+  @BindView(R.id.fet_login_password) FloatingEditText fetPassword;
   @BindView(R.id.toolbar) Toolbar toolbar;
 
   @BindString(R.string.error_google_play_services) String errorGooglePlayServicesString;
@@ -70,18 +67,6 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
     setupToolbar();
 
     getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-  }
-
-  @Override
-  protected void onAttach(@NonNull View view) {
-    super.onAttach(view);
-    ViewUtils.hideStatusBar(view);
-  }
-
-  @Override
-  protected void onDetach(@NonNull View view) {
-    super.onDetach(view);
-    ViewUtils.clearHideStatusBar(view);
   }
 
   @Override
@@ -121,34 +106,34 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
 
   @OnClick(R.id.btn_login_ready)
   void signInWithEmail() {
-    etEmail.setError(null);
-    etPassword.setError(null);
+    fetEmail.setError(null);
+    fetPassword.setError(null);
 
-    final String email = etEmail.getText().toString();
-    final String password = etPassword.getText().toString();
+    final String email = fetEmail.getText();
+    final String password = fetPassword.getText();
 
     boolean cancel = false;
     View focusView = null;
 
     // Check for a valid email address.
     if (TextUtils.isEmpty(email)) {
-      etEmail.setError(errorFieldRequiredString);
-      focusView = etEmail;
+      fetEmail.setError(errorFieldRequiredString);
+      focusView = fetEmail;
       cancel = true;
     } else if (!FormUtil.isEmailAddress(email)) {
-      etEmail.setError(errorInvalidEmail);
-      focusView = etEmail;
+      fetEmail.setError(errorInvalidEmail);
+      focusView = fetEmail;
       cancel = true;
     }
 
     // Check for a valid password, if the user entered one.
     if (TextUtils.isEmpty(password)) {
-      etPassword.setError(errorFieldRequiredString);
-      focusView = etPassword;
+      fetPassword.setError(errorFieldRequiredString);
+      focusView = fetPassword;
       cancel = true;
     } else if (!FormUtil.isPasswordValid(password)) {
-      etPassword.setError(errorInvalidPassword);
-      focusView = etPassword;
+      fetPassword.setError(errorInvalidPassword);
+      focusView = fetPassword;
       cancel = true;
     }
 
@@ -161,15 +146,6 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
 
       getPresenter().signIn(email, password);
     }
-  }
-
-  @OnEditorAction(R.id.et_login_password)
-  boolean onEditorAction(int actionId) {
-    if (actionId == R.id.sign_up || actionId == EditorInfo.IME_NULL) {
-      signInWithEmail();
-      return true;
-    }
-    return false;
   }
 
   @Override
@@ -225,6 +201,7 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
       case AuthUI.GOOGLE_PROVIDER:
         return new GoogleProvider(this, config);
       case AuthUI.FACEBOOK_PROVIDER:
+        config.addScope("user_friends");
         return new FacebookProvider(config);
       default:
         throw new UnsupportedOperationException("Given providerId is not valid!");

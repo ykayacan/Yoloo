@@ -1,193 +1,177 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:background="@android:color/white"
-  android:orientation="vertical">
+  android:fitsSystemWindows="true">
 
   <include layout="@layout/merge_appbar" />
 
-  <ScrollView
+  <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:paddingBottom="16dp">
+    android:orientation="vertical"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <android.support.constraint.ConstraintLayout
+    <ScrollView
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:padding="16dp">
+      android:layout_height="match_parent"
+      android:fillViewport="true">
 
-      <!-- Like us -->
-      <TextView
-        android:id="@+id/tv_like_us_title"
-        fontPath="fonts/OpenSans-Bold.ttf"
-        android:layout_width="wrap_content"
+      <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Like Us"
-        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="MissingPrefix" />
+        android:padding="16dp">
 
-      <ImageView
-        android:id="@+id/iv_facebook_icon"
-        android:layout_width="96dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/iv_instagram_icon"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_like_us_title"
-        app:srcCompat="@drawable/ic_facebook_48dp"
-        tools:layout_editor_absoluteX="10dp" />
+        <!-- Like us -->
+        <TextView
+          android:id="@+id/tv_like_us_title"
+          fontPath="fonts/OpenSans-Bold.ttf"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="16dp"
+          android:text="@string/settings_like_us"
+          android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toTopOf="parent"
+          tools:ignore="MissingPrefix" />
 
-      <ImageView
-        android:id="@+id/iv_instagram_icon"
-        android:layout_width="96dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="0dp"
-        android:layout_marginTop="0dp"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintLeft_toRightOf="@+id/iv_facebook_icon"
-        app:layout_constraintRight_toLeftOf="@+id/iv_twitter_icon"
-        app:layout_constraintStart_toEndOf="@+id/iv_facebook_icon"
-        app:layout_constraintTop_toTopOf="@+id/iv_facebook_icon"
-        app:srcCompat="@drawable/ic_instagram_48dp" />
+        <ImageView
+          android:id="@+id/iv_facebook_icon"
+          android:layout_width="96dp"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="16dp"
+          app:layout_constraintHorizontal_bias="0.5"
+          app:layout_constraintLeft_toLeftOf="parent"
+          app:layout_constraintRight_toLeftOf="@+id/iv_instagram_icon"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@+id/tv_like_us_title"
+          app:srcCompat="@drawable/ic_facebook"
+          tools:layout_editor_absoluteX="10dp" />
 
-      <ImageView
-        android:id="@+id/iv_twitter_icon"
-        android:layout_width="96dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintLeft_toRightOf="@+id/iv_instagram_icon"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/iv_instagram_icon"
-        app:srcCompat="@drawable/ic_twitter_48dp" />
+        <ImageView
+          android:id="@+id/iv_instagram_icon"
+          android:layout_width="48dp"
+          android:layout_height="48dp"
+          android:layout_marginTop="0dp"
+          app:layout_constraintHorizontal_bias="0.5"
+          app:layout_constraintLeft_toRightOf="@+id/iv_facebook_icon"
+          app:layout_constraintRight_toLeftOf="@+id/iv_twitter_icon"
+          app:layout_constraintStart_toEndOf="@+id/iv_facebook_icon"
+          app:layout_constraintTop_toTopOf="@+id/iv_facebook_icon"
+          app:srcCompat="@drawable/instagram" />
 
-      <!-- Members -->
-      <TextView
-        android:id="@+id/tv_honorary_members_title"
-        fontPath="fonts/OpenSans-Bold.ttf"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Honorary Members"
-        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/iv_facebook_icon"
-        tools:ignore="MissingPrefix" />
+        <ImageView
+          android:id="@+id/iv_twitter_icon"
+          android:layout_width="96dp"
+          android:layout_height="wrap_content"
+          app:layout_constraintHorizontal_bias="0.5"
+          app:layout_constraintLeft_toRightOf="@+id/iv_instagram_icon"
+          app:layout_constraintRight_toRightOf="parent"
+          app:layout_constraintTop_toTopOf="@+id/iv_instagram_icon"
+          app:srcCompat="@drawable/ic_twitter" />
 
-      <TextView
-        android:id="@+id/tv_honorary_members"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:gravity="center"
-        android:padding="16dp"
-        android:text="Click to see all honorary members"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_honorary_members_title" />
+        <!-- Members -->
+        <TextView
+          android:id="@+id/tv_honorary_members_title"
+          fontPath="fonts/OpenSans-Bold.ttf"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="16dp"
+          android:text="Honorary Members"
+          android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@+id/iv_facebook_icon"
+          tools:ignore="MissingPrefix" />
 
-      <!-- About -->
-      <TextView
-        android:id="@+id/tv_about_title"
-        fontPath="fonts/OpenSans-Bold.ttf"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="About"
-        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_honorary_members"
-        tools:ignore="MissingPrefix" />
+        <TextView
+          android:id="@+id/tv_honorary_members"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="16dp"
+          android:gravity="center"
+          android:padding="16dp"
+          android:text="Click to see all honorary members"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@+id/tv_honorary_members_title" />
 
-      <TextView
-        android:id="@+id/tv_terms_of_service"
-        style="@style/Widget.Yoloo.SettingsSubText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
-        android:text="Terms of Service"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_about_title" />
+        <!-- About -->
+        <TextView
+          android:id="@+id/tv_about_title"
+          fontPath="fonts/OpenSans-Bold.ttf"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="16dp"
+          android:text="@string/settings_about"
+          android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@+id/tv_honorary_members"
+          tools:ignore="MissingPrefix" />
 
-      <TextView
-        android:id="@+id/tv_privacy_policy"
-        style="@style/Widget.Yoloo.SettingsSubText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
-        android:text="Privacy Policy"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_terms_of_service" />
+        <TextView
+          android:id="@+id/tv_terms_of_service"
+          style="@style/Widget.Yoloo.SettingsSubText"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:background="?attr/selectableItemBackground"
+          android:text="@string/settings_terms_of_service"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@+id/tv_about_title" />
 
-      <TextView
-        android:id="@+id/tv_help"
-        style="@style/Widget.Yoloo.SettingsSubText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
-        android:text="Help Us to Improve"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_privacy_policy" />
+        <TextView
+          android:id="@+id/tv_privacy_policy"
+          style="@style/Widget.Yoloo.SettingsSubText"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:background="?attr/selectableItemBackground"
+          android:text="@string/settings_privacy_policy"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@+id/tv_terms_of_service" />
 
-      <TextView
-        android:id="@+id/tv_libraries"
-        style="@style/Widget.Yoloo.SettingsSubText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
-        android:text="Open Source Libraries"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_help" />
+        <TextView
+          android:id="@+id/tv_log_out"
+          style="@style/Widget.Yoloo.SettingsSubText"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:background="?attr/selectableItemBackground"
+          android:text="@string/settings_log_out"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintHorizontal_bias="0.0"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@+id/tv_privacy_policy" />
 
-      <TextView
-        android:id="@+id/tv_log_out"
-        style="@style/Widget.Yoloo.SettingsSubText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="?attr/selectableItemBackground"
-        android:text="Log out"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_libraries" />
+        <TextView
+          android:id="@+id/tv_version_title"
+          fontPath="fonts/OpenSans-Bold.ttf"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/settings_version"
+          android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+          android:visibility="visible"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@+id/tv_log_out"
+          tools:ignore="MissingPrefix" />
 
-      <TextView
-        android:id="@+id/tv_version_title"
-        fontPath="fonts/OpenSans-Bold.ttf"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Version"
-        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-        android:visibility="visible"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_log_out"
-        tools:ignore="MissingPrefix" />
+        <TextView
+          android:id="@+id/tv_version"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:paddingBottom="8dp"
+          android:paddingTop="8dp"
+          android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@+id/tv_version_title"
+          tools:text="v1.1.3" />
 
-      <TextView
-        android:id="@+id/tv_version"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingBottom="8dp"
-        android:paddingTop="8dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_version_title"
-        tools:text="v1.1.3" />
+      </android.support.constraint.ConstraintLayout>
 
-    </android.support.constraint.ConstraintLayout>
+    </ScrollView>
 
-  </ScrollView>
+  </LinearLayout>
 
-</LinearLayout>
+</android.support.design.widget.CoordinatorLayout>

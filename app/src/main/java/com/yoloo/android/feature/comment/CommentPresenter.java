@@ -29,7 +29,7 @@ class CommentPresenter extends MvpPresenter<CommentView> {
     this.userRepository = userRepository;
   }
 
-  void loadData(String postId, String acceptedCommentId) {
+  void loadData(String postId, String postOwnerId, String acceptedCommentId) {
     Observable<AccountRealm> userObservable =
         userRepository.getLocalMe().toObservable().observeOn(AndroidSchedulers.mainThread());
 
@@ -46,16 +46,22 @@ class CommentPresenter extends MvpPresenter<CommentView> {
           AccountRealm account = group.first;
           List<CommentRealm> commentList = new ArrayList<>(21);
 
-          if (group.second.isPresent()) {
-            CommentRealm accepted = group.second.get();
-            accepted.setOwner(account.getId().equals(accepted.getOwnerId()));
-            commentList.add(accepted);
+          final boolean accepted = group.second.isPresent();
+
+          if (accepted) {
+            CommentRealm acceptedComment = group.second.get();
+            acceptedComment.setOwner(account.getId().equals(acceptedComment.getOwnerId()));
+            commentList.add(acceptedComment);
           }
 
           List<CommentRealm> comments = Stream
               .of(group.third.getData())
-              .map(comment -> comment.setOwner(account.getId().equals(comment.getOwnerId())))
+              .map(comment -> comment
+                  .setOwner(account.getId().equals(comment.getOwnerId()))
+                  .setPostAccepted(accepted)
+                  .setPostOwner(postOwnerId.equals(account.getId())))
               .toList();
+
           commentList.addAll(comments);
 
           return Response.create(commentList, group.third.getCursor());

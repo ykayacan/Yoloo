@@ -2,11 +2,9 @@ package com.yoloo.android.data.model;
 
 import com.yoloo.backend.yolooApi.model.CommentDTO;
 import io.realm.RealmObject;
-import io.realm.annotations.Ignore;
 import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
 import java.util.Date;
-import java.util.Objects;
 
 public class CommentRealm extends RealmObject {
 
@@ -20,9 +18,9 @@ public class CommentRealm extends RealmObject {
   private int voteDir;
   @Index private boolean accepted;
   private long voteCount;
-  @Ignore boolean owner;
-  @Ignore boolean postAccepted;
-  @Ignore boolean postOwner;
+  private boolean owner;
+  private boolean postAccepted;
+  private boolean postOwner;
 
   public CommentRealm() {
     // empty constructor
@@ -169,24 +167,41 @@ public class CommentRealm extends RealmObject {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (!(o instanceof CommentRealm)) return false;
+
     CommentRealm that = (CommentRealm) o;
-    return voteDir == that.voteDir
-        && accepted == that.accepted
-        && voteCount == that.voteCount
-        && Objects.equals(id, that.id)
-        && Objects.equals(ownerId, that.ownerId)
-        && Objects.equals(username, that.username)
-        && Objects.equals(avatarUrl, that.avatarUrl)
-        && Objects.equals(postId, that.postId)
-        && Objects.equals(content, that.content)
-        && Objects.equals(created, that.created);
+
+    if (getVoteDir() != that.getVoteDir()) return false;
+    if (isAccepted() != that.isAccepted()) return false;
+    if (getVoteCount() != that.getVoteCount()) return false;
+    if (isOwner() != that.isOwner()) return false;
+    if (isPostAccepted() != that.isPostAccepted()) return false;
+    if (isPostOwner() != that.isPostOwner()) return false;
+    if (!getId().equals(that.getId())) return false;
+    if (!getOwnerId().equals(that.getOwnerId())) return false;
+    if (!getUsername().equals(that.getUsername())) return false;
+    if (!getAvatarUrl().equals(that.getAvatarUrl())) return false;
+    if (!getPostId().equals(that.getPostId())) return false;
+    if (!getContent().equals(that.getContent())) return false;
+    return getCreated().equals(that.getCreated());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, ownerId, username, avatarUrl, postId, content, created, voteDir,
-        accepted, voteCount);
+    int result = getId().hashCode();
+    result = 31 * result + getOwnerId().hashCode();
+    result = 31 * result + getUsername().hashCode();
+    result = 31 * result + getAvatarUrl().hashCode();
+    result = 31 * result + getPostId().hashCode();
+    result = 31 * result + getContent().hashCode();
+    result = 31 * result + getCreated().hashCode();
+    result = 31 * result + getVoteDir();
+    result = 31 * result + (isAccepted() ? 1 : 0);
+    result = 31 * result + (int) (getVoteCount() ^ (getVoteCount() >>> 32));
+    result = 31 * result + (isOwner() ? 1 : 0);
+    result = 31 * result + (isPostAccepted() ? 1 : 0);
+    result = 31 * result + (isPostOwner() ? 1 : 0);
+    return result;
   }
 
   @Override
@@ -218,6 +233,12 @@ public class CommentRealm extends RealmObject {
         + accepted
         + ", voteCount="
         + voteCount
+        + ", owner="
+        + owner
+        + ", postAccepted="
+        + postAccepted
+        + ", postOwner="
+        + postOwner
         + '}';
   }
 }

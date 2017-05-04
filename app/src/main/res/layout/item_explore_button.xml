@@ -24,7 +24,7 @@
       android:layout_gravity="center"
       android:drawablePadding="16dp"
       android:gravity="center"
-      android:text="Trending"
+      android:text="@string/explore_trending"
       android:textColor="@android:color/black"
       app:drawableStart="@drawable/ic_trending_up_black_24dp" />
 
@@ -48,7 +48,7 @@
       android:layout_gravity="center"
       android:drawablePadding="16dp"
       android:gravity="center"
-      android:text="New"
+      android:text="@string/explore_new"
       android:textColor="@android:color/black"
       app:drawableStart="@drawable/ic_flag_black_24dp" />
 

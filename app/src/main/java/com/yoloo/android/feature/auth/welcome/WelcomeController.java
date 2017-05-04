@@ -16,10 +16,9 @@ import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
-import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 import com.yoloo.android.R;
-import com.yoloo.android.feature.auth.selecttype.SelectTypeController;
 import com.yoloo.android.feature.auth.signin.SignInController;
+import com.yoloo.android.feature.auth.signupinit.SignUpInitController;
 import com.yoloo.android.feature.base.BaseController;
 import com.yoloo.android.ui.changehandler.CircularRevealChangeHandlerCompat;
 import com.yoloo.android.util.HtmlUtil;
@@ -98,13 +97,14 @@ public class WelcomeController extends BaseController {
 
   @OnClick(R.id.btn_login_start_using)
   void startUsing(View view) {
-    startTransaction(SelectTypeController.create(),
+    startTransaction(SignUpInitController.create(),
         new CircularRevealChangeHandlerCompat(view, view.getRootView()));
   }
 
   @OnClick(R.id.tv_login_action_login)
-  void login() {
-    startTransaction(SignInController.create(), new HorizontalChangeHandler());
+  void login(View view) {
+    startTransaction(SignInController.create(),
+        new CircularRevealChangeHandlerCompat(view, view.getRootView()));
   }
 
   @OnClick(R.id.tv_welcome_privacy_policy)

@@ -175,6 +175,6 @@ public class GroupGridOverviewController
     setSupportActionBar(toolbar);
 
     getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    getSupportActionBar().setTitle("All Groups");
+    getSupportActionBar().setTitle(R.string.label_explore_all_groups_title);
   }
 }

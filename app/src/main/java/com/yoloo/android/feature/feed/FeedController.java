@@ -54,6 +54,7 @@ import com.bumptech.glide.request.target.SimpleTarget;
 import com.claudiodegio.msv.MaterialSearchView;
 import com.claudiodegio.msv.OnSearchViewListener;
 import com.github.ag.floatingactionmenu.OptionsFabLayout;
+import com.github.florent37.tutoshowcase.TutoShowcase;
 import com.google.android.gms.appinvite.AppInvite;
 import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.android.gms.appinvite.AppInviteReferral;
@@ -123,6 +124,9 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
 
   private static final int REQUEST_INVITE = 0;
 
+  private static final String KEY_FEED_SHOWCASE_WELCOME = "SHOWCASE_FEED_WELCOME";
+  private static final String KEY_FEED_SHOWCASE_FAB = "SHOWCASE_FEED_FAB";
+
   @BindView(R.id.root_view) StateLayout rootView;
   @BindView(R.id.toolbar) Toolbar toolbar;
   @BindView(R.id.rv_feed) RecyclerView rvFeed;
@@ -154,6 +158,9 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
 
   private MenuItem menuItemMessage;
 
+  private TutoShowcase welcomeShowcase;
+  private TutoShowcase fabShowcase;
+
   private BroadcastReceiver newPostReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -173,7 +180,7 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
 
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
-    return inflater.inflate(R.layout.controller_home_feed, container, false);
+    return inflater.inflate(R.layout.controller_feed, container, false);
   }
 
   @Override
@@ -233,6 +240,7 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
     setupNavigation();
+    showWelcomeTutorial();
 
     handler = new WeakHandler();
     LocalBroadcastManager
@@ -405,6 +413,13 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
       case R.id.action_nav_settings:
         handler.postDelayed(
             () -> startTransaction(SettingsController.create(), new FadeChangeHandler()), 400);
+        break;
+      case R.id.action_nav_feedback:
+        handler.postDelayed(() -> {
+          Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+          emailIntent.setData(Uri.parse("mailto: hello@yoloo.com"));
+          startActivity(Intent.createChooser(emailIntent, "Send feedback"));
+        }, 400);
         break;
       default:
         break;
@@ -720,7 +735,7 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     Resources res = getResources();
 
     Intent intent = new AppInviteInvitation.IntentBuilder(res.getString(R.string.invitation_title))
-        .setMessage(res.getString(R.string.invitation_message))
+        .setMessage(res.getString(R.string.invitation_message, me.getUsername()))
         .setDeepLink(Uri.parse(res.getString(R.string.invitation_deep_link)))
         .setCustomImage(Uri.parse(res.getString(R.string.invitation_custom_image)))
         .setCallToActionText(res.getString(R.string.invitation_cta))
@@ -739,5 +754,31 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   @Override
   public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
+  }
+
+  private void showWelcomeTutorial() {
+    welcomeShowcase = TutoShowcase
+        .from(getActivity())
+        .setContentView(R.layout.showcase_feed_welcome)
+        .setFitsSystemWindows(true)
+        .on(toolbar)
+        .onClickContentView(R.id.tv_showcase_next, v -> {
+          welcomeShowcase.dismiss();
+          v.postDelayed(this::showFabTutorial, 500);
+        })
+        .showOnce(KEY_FEED_SHOWCASE_WELCOME);
+  }
+
+  private void showFabTutorial() {
+    fabShowcase = TutoShowcase
+        .from(getActivity())
+        .setContentView(R.layout.showcase_feed_fab)
+        .setFitsSystemWindows(true)
+        .on(R.id.hacky_view)
+        .addCircle()
+        .withBorder()
+        .onClick(v -> fabShowcase.dismiss())
+        .onClickContentView(R.id.tv_showcase_got_it, v -> fabShowcase.dismiss())
+        .showOnce(KEY_FEED_SHOWCASE_FAB);
   }
 }
