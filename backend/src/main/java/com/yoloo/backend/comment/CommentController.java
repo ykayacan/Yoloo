@@ -111,7 +111,7 @@ public class CommentController extends Controller {
     keyBuilder.add(trackerKey);
 
     // Create record key.
-    final Key<DeviceRecord> recordKey = DeviceRecord.createKey(postKey.getParent());
+    final Key<DeviceRecord> recordKey = DeviceRecord.createKey(accountKey);
     keyBuilder.add(recordKey);
 
     ImmutableSet<Key<?>> batchKeys = keyBuilder.build();
@@ -143,7 +143,7 @@ public class CommentController extends Controller {
 
     // Start gamification check.
     List<Notifiable> notifiables = Lists.newArrayList();
-    gameService.addAnswerFirstQuestionBonus(record, tracker, notifiables::addAll);
+    gameService.addAnswerFirstPostBonus(record, tracker, notifiables::addAll);
     gameService.addFirstCommenterBonus(record, tracker, postEntity, notifiables::addAll);
     gameService.addAnswerToUnansweredQuestionBonus(record, tracker, postEntity,
         notifiables::addAll);

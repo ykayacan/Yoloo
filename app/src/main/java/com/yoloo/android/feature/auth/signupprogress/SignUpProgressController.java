@@ -263,6 +263,7 @@ public class SignUpProgressController extends BaseController {
             fetBirthday.setText(dayOfMonth + "/" + month + "/" + year);
             tvContinue.setVisibility(View.VISIBLE);
           }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+      datePickerDialog.getDatePicker().updateDate(1996, 4, 1);
       datePickerDialog.getDatePicker().setMaxDate(new Date().getTime());
       datePickerDialog.show();
     });

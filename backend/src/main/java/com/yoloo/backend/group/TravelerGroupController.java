@@ -21,6 +21,7 @@ import io.reactivex.Single;
 import ix.Ix;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -256,6 +257,10 @@ public class TravelerGroupController extends Controller {
 
     Account account = ofy().load().key(accountKey).now();
 
+    if (account.getSubscribedGroupKeys() == null) {
+      return Collections.emptyList();
+    }
+
     return Ix
         .from(ofy().load().keys(account.getSubscribedGroupKeys()).values())
         .map(entity -> entity.withSubscribed(true))
@@ -282,7 +287,8 @@ public class TravelerGroupController extends Controller {
 
     query = query.limit(5);
 
-    return Ix.just(query.iterator())
+    return Ix
+        .just(query.iterator())
         .doOnNext(it -> System.out.println("Next? " + it.hasNext()))
         .filter(Iterator::hasNext)
         .map(Iterator::next)

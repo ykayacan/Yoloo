@@ -9,212 +9,221 @@
 
   <include layout="@layout/merge_appbar" />
 
-  <android.support.constraint.ConstraintLayout
+  <ScrollView
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
     android:paddingEnd="16dp"
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
     android:paddingStart="16dp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <ImageView
-      android:id="@+id/iv_editor_post_image"
-      android:layout_width="50dp"
-      android:layout_height="50dp"
-      android:layout_marginLeft="16dp"
-      android:layout_marginStart="16dp"
-      android:scaleType="centerCrop"
-      android:visibility="gone"
-      app:layout_constraintBottom_toBottomOf="@+id/et_editor_post_content"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toTopOf="@+id/et_editor_post_content"
-      tools:src="@drawable/login_bg"
-      tools:visibility="visible" />
+    <android.support.constraint.ConstraintLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content">
 
-    <TextView
-      android:id="@+id/tv_editor_post_image_counter"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:textAppearance="@style/TextAppearance.AppCompat.Large.Inverse"
-      android:visibility="gone"
-      app:layout_constraintBottom_toBottomOf="@+id/iv_editor_post_image"
-      app:layout_constraintEnd_toEndOf="@+id/iv_editor_post_image"
-      app:layout_constraintStart_toStartOf="@+id/iv_editor_post_image"
-      app:layout_constraintTop_toTopOf="@+id/iv_editor_post_image"
-      tools:text="+2" />
+      <ImageView
+        android:id="@+id/iv_editor_post_image"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:scaleType="centerCrop"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/et_editor_post_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/et_editor_post_content"
+        tools:src="@drawable/login_bg"
+        tools:visibility="visible" />
 
-    <EditText
-      android:id="@+id/et_editor_post_content"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginStart="16dp"
-      android:background="@android:color/transparent"
-      android:hint="@string/hint_editor_question_content"
-      android:inputType="textMultiLine|textCapSentences"
-      android:minHeight="80dp"
-      android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-      android:textSize="15sp"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toEndOf="@+id/iv_editor_post_image"
-      app:layout_constraintTop_toTopOf="parent" />
+      <TextView
+        android:id="@+id/tv_editor_post_image_counter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large.Inverse"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/iv_editor_post_image"
+        app:layout_constraintEnd_toEndOf="@+id/iv_editor_post_image"
+        app:layout_constraintStart_toStartOf="@+id/iv_editor_post_image"
+        app:layout_constraintTop_toTopOf="@+id/iv_editor_post_image"
+        tools:text="+2" />
 
-    <View
-      android:id="@+id/divider1"
-      android:layout_width="0dp"
-      android:layout_height="1dp"
-      android:background="@color/divider"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/et_editor_post_content" />
+      <EditText
+        android:id="@+id/et_editor_post_content"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:background="@android:color/transparent"
+        android:hint="@string/hint_editor_question_content"
+        android:inputType="textMultiLine|textCapSentences"
+        android:minHeight="72dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        android:textSize="15sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/iv_editor_post_image"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <com.yoloo.android.ui.widget.CompatTextView
-      android:id="@+id/tv_editor_post_add_media"
-      style="@style/TextAppearance.EditorItemText"
-      android:layout_width="0dp"
-      android:layout_height="48dp"
-      android:background="?attr/selectableItemBackground"
-      android:drawablePadding="16dp"
-      android:gravity="center_vertical"
-      android:padding="16dp"
-      android:text="@string/label_editor_add_media"
-      app:drawableStart="@drawable/ic_add_a_photo_black_24dp"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/divider1" />
+      <View
+        android:id="@+id/divider1"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="@color/divider"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/et_editor_post_content" />
 
-    <View
-      android:id="@+id/divider2"
-      android:layout_width="0dp"
-      android:layout_height="1dp"
-      android:layout_marginEnd="0dp"
-      android:layout_marginStart="0dp"
-      android:background="@color/divider"
-      app:layout_constraintEnd_toEndOf="@+id/tv_editor_post_add_media"
-      app:layout_constraintStart_toStartOf="@+id/tv_editor_post_add_media"
-      app:layout_constraintTop_toBottomOf="@+id/tv_editor_post_add_media" />
+      <com.yoloo.android.ui.widget.CompatTextView
+        android:id="@+id/tv_editor_post_add_media"
+        style="@style/TextAppearance.EditorItemText"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackground"
+        android:drawablePadding="16dp"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:text="@string/label_editor_add_media"
+        app:drawableStart="@drawable/ic_add_a_photo_black_24dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divider1" />
 
-    <com.yoloo.android.ui.widget.CompatTextView
-      android:id="@+id/tv_editor_post_select_group"
-      style="@style/TextAppearance.EditorItemText"
-      android:layout_width="0dp"
-      android:layout_height="48dp"
-      android:layout_marginEnd="0dp"
-      android:layout_marginStart="0dp"
-      android:background="?attr/selectableItemBackground"
-      android:drawablePadding="16dp"
-      android:gravity="center_vertical"
-      android:padding="16dp"
-      android:text="@string/label_editor_select_group"
-      app:drawableStart="@drawable/ic_local_library_black_24dp"
-      app:layout_constraintEnd_toEndOf="@+id/tv_editor_post_add_media"
-      app:layout_constraintStart_toStartOf="@+id/tv_editor_post_add_media"
-      app:layout_constraintTop_toBottomOf="@+id/divider2" />
+      <View
+        android:id="@+id/divider2"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
+        android:background="@color/divider"
+        app:layout_constraintEnd_toEndOf="@+id/tv_editor_post_add_media"
+        app:layout_constraintStart_toStartOf="@+id/tv_editor_post_add_media"
+        app:layout_constraintTop_toBottomOf="@+id/tv_editor_post_add_media" />
 
-    <View
-      android:id="@+id/divider3"
-      android:layout_width="0dp"
-      android:layout_height="1dp"
-      android:layout_marginEnd="0dp"
-      android:layout_marginStart="0dp"
-      android:background="@color/divider"
-      app:layout_constraintEnd_toEndOf="@+id/tv_editor_post_select_group"
-      app:layout_constraintStart_toStartOf="@+id/tv_editor_post_select_group"
-      app:layout_constraintTop_toBottomOf="@+id/tv_editor_post_select_group" />
+      <com.yoloo.android.ui.widget.CompatTextView
+        android:id="@+id/tv_editor_post_select_group"
+        style="@style/TextAppearance.EditorItemText"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
+        android:background="?attr/selectableItemBackground"
+        android:drawablePadding="16dp"
+        android:gravity="center_vertical"
+        android:padding="16dp"
+        android:text="@string/label_editor_select_group"
+        app:drawableStart="@drawable/ic_local_library_black_24dp"
+        app:layout_constraintEnd_toEndOf="@+id/tv_editor_post_add_media"
+        app:layout_constraintStart_toStartOf="@+id/tv_editor_post_add_media"
+        app:layout_constraintTop_toBottomOf="@+id/divider2" />
 
-    <com.hootsuite.nachos.NachoTextView
-      android:id="@+id/et_editor_post_tags"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginEnd="0dp"
-      android:background="@android:color/transparent"
-      android:drawableLeft="@drawable/ic_local_offer_black_24dp"
-      android:drawablePadding="16dp"
-      android:drawableStart="@drawable/ic_local_offer_black_24dp"
-      android:hint="@string/hint_editor_tag"
-      android:paddingBottom="6dp"
-      android:paddingLeft="16dp"
-      android:paddingStart="16dp"
-      android:paddingTop="6dp"
-      android:textSize="14sp"
-      app:chipTextSize="14sp"
-      app:layout_constraintEnd_toEndOf="@+id/tv_editor_post_select_group"
-      app:layout_constraintStart_toStartOf="@+id/tv_editor_post_select_group"
-      app:layout_constraintTop_toBottomOf="@+id/divider3" />
+      <View
+        android:id="@+id/divider3"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginStart="0dp"
+        android:background="@color/divider"
+        app:layout_constraintEnd_toEndOf="@+id/tv_editor_post_select_group"
+        app:layout_constraintStart_toStartOf="@+id/tv_editor_post_select_group"
+        app:layout_constraintTop_toBottomOf="@+id/tv_editor_post_select_group" />
 
-    <TextView
-      android:id="@+id/tv_editor_post_trending_tag_title"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginLeft="16dp"
-      android:layout_marginStart="16dp"
-      android:layout_marginTop="8dp"
-      android:paddingBottom="8dp"
-      android:paddingTop="8dp"
-      android:text="Trending Tags"
-      android:textAppearance="@style/TextAppearance.GroupTitle"
-      android:textColor="@color/lucky_point"
-      android:textSize="12sp"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/et_editor_post_tags" />
+      <com.hootsuite.nachos.NachoTextView
+        android:id="@+id/et_editor_post_tags"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="0dp"
+        android:background="@android:color/transparent"
+        android:drawableLeft="@drawable/ic_local_offer_black_24dp"
+        android:drawablePadding="16dp"
+        android:drawableStart="@drawable/ic_local_offer_black_24dp"
+        android:hint="@string/hint_editor_tag"
+        android:paddingBottom="6dp"
+        android:paddingLeft="16dp"
+        android:paddingStart="16dp"
+        android:paddingTop="6dp"
+        android:textSize="14sp"
+        app:chipTextSize="14sp"
+        app:layout_constraintEnd_toEndOf="@+id/tv_editor_post_select_group"
+        app:layout_constraintStart_toStartOf="@+id/tv_editor_post_select_group"
+        app:layout_constraintTop_toBottomOf="@+id/divider3" />
 
-    <android.support.v7.widget.RecyclerView
-      android:id="@+id/recycler_view"
-      android:layout_width="0dp"
-      android:layout_height="32dp"
-      android:paddingEnd="16dp"
-      android:paddingLeft="16dp"
-      android:paddingRight="16dp"
-      android:paddingStart="16dp"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/tv_editor_post_trending_tag_title" />
+      <TextView
+        android:id="@+id/tv_editor_post_trending_tag_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingTop="8dp"
+        android:text="@string/editor_trending_tags"
+        android:textAppearance="@style/TextAppearance.GroupTitle"
+        android:textColor="@color/lucky_point"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/et_editor_post_tags" />
 
-    <View
-      android:id="@+id/divider4"
-      android:layout_width="0dp"
-      android:layout_height="1dp"
-      android:layout_marginTop="16dp"
-      android:background="@color/divider"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/recycler_view" />
+      <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view"
+        android:layout_width="0dp"
+        android:layout_height="32dp"
+        android:paddingEnd="16dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingStart="16dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_editor_post_trending_tag_title" />
 
-    <TextView
-      android:id="@+id/tv_bounty_hint"
-      fontPath="fonts/OpenSans-Semibold.ttf"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:gravity="center"
-      android:padding="8dp"
-      android:text="Adding bounty makes your post more visible"
-      android:textColor="@color/lucky_point"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/divider4"
-      tools:ignore="MissingPrefix" />
+      <View
+        android:id="@+id/divider4"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="@color/divider"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/recycler_view" />
 
-    <com.yoloo.android.ui.widget.CompatTextView
-      android:id="@+id/tv_editor_post_add_bounty"
-      style="@style/TextAppearance.BountyText"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_gravity="center"
-      android:background="?attr/selectableItemBackground"
-      android:drawablePadding="8dp"
-      android:gravity="center"
-      android:paddingBottom="16dp"
-      android:paddingEnd="64dp"
-      android:paddingLeft="64dp"
-      android:paddingRight="64dp"
-      android:paddingStart="64dp"
-      android:paddingTop="16dp"
-      android:text="@string/action_editor_add_bounty"
-      app:drawableStart="@drawable/ic_bounty_coin_24dp"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/tv_bounty_hint" />
+      <TextView
+        android:id="@+id/tv_bounty_hint"
+        fontPath="fonts/OpenSans-Semibold.ttf"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="8dp"
+        android:text="@string/editor_bounty_tip"
+        android:textColor="@color/lucky_point"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divider4"
+        tools:ignore="MissingPrefix" />
 
-  </android.support.constraint.ConstraintLayout>
+      <com.yoloo.android.ui.widget.CompatTextView
+        android:id="@+id/tv_editor_post_add_bounty"
+        style="@style/TextAppearance.BountyText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="?attr/selectableItemBackground"
+        android:drawablePadding="8dp"
+        android:gravity="center"
+        android:paddingBottom="16dp"
+        android:paddingEnd="64dp"
+        android:paddingLeft="64dp"
+        android:paddingRight="64dp"
+        android:paddingStart="64dp"
+        android:paddingTop="16dp"
+        android:text="@string/action_editor_add_bounty"
+        app:drawableStart="@drawable/ic_bounty_coin_24dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_bounty_hint" />
+
+    </android.support.constraint.ConstraintLayout>
+
+  </ScrollView>
 
 </android.support.design.widget.CoordinatorLayout>

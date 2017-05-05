@@ -181,7 +181,6 @@ class PostRemoteDataStore {
                 .setRequestHeaders(setIdTokenHeader(idToken))
                 .execute())
             .subscribeOn(Schedulers.io()))
-        .filter(response -> response.getItems() != null)
         .compose(PostResponseTransformer.create());
   }
 

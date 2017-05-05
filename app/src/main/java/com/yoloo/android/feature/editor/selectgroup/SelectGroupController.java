@@ -64,13 +64,13 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-    getPresenter().loadSubscribedGroups();
+    getPresenter().loadGroups();
 
     querySubject.debounce(400, TimeUnit.MILLISECONDS).subscribe(query -> {
       if (query.length() > 2) {
         getPresenter().searchGroups(query);
       } else {
-        getPresenter().loadSubscribedGroups();
+        getPresenter().loadGroups();
       }
     });
   }

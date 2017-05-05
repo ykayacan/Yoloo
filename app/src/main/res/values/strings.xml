@@ -166,9 +166,6 @@
   <string name="label_login_welcome_description">Plan your trip, share your experience,
     and connect with travelers.
   </string>
-  <string name="label_login_select_categories">
-    Select at least 3 groupId to personalize your feed.
-  </string>
   <string name="label_login_or">or</string>
   <string name="label_loading">Loading</string>
 
@@ -240,16 +237,6 @@
 
   <!-- BLOGLIST -->
   <string name="label_bloglist_title">Top Blogs</string>
-
-  <!-- DIALOG LIST -->
-  <string-array name="action_dialog_list_group_options_dialog">
-    <item>Group info</item>
-    <item>Exit groupId</item>
-  </string-array>
-
-  <string-array name="action_dialog_list_normal_options_dialog">
-    <item>Delete</item>
-  </string-array>
 
   <!-- CREATE DIALOG -->
   <string name="label_create_dialog_toolbar_title">Select contact</string>
@@ -428,5 +415,6 @@
   <string name="sign_up_birthday">Birthday</string>
   <string name="select_group_search_a_group_hint">Search a group</string>
   <string name="facebook_friends">Facebook Friends</string>
+  <string name="editor_trending_tags">Trending Tags</string>
 
 </resources>

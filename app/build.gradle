@@ -83,7 +83,7 @@ android {
       versionCode gitVersionCode
       versionName gitVersionName
       // The actual minSdkVersion for the application.
-      minSdkVersion 16
+      minSdkVersion 19
     }
   }
 
@@ -197,7 +197,7 @@ dependencies {
 
   // Utility
   compile "com.annimon:stream:$annimonStream_version"
-  compile 'com.github.bumptech.glide:glide:3.7.0'
+  compile 'com.github.bumptech.glide:glide:3.8.0'
   compile "com.jakewharton.timber:timber:$timber_version"
   compile 'com.github.adhishlal:asdp:1.1'
   compile 'uk.co.chrisjenx:calligraphy:2.2.0'

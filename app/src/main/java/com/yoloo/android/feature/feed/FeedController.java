@@ -98,6 +98,7 @@ import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.search.SearchController;
 import com.yoloo.android.feature.settings.SettingsController;
 import com.yoloo.android.framework.MvpController;
+import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
@@ -160,6 +161,8 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
 
   private TutoShowcase welcomeShowcase;
   private TutoShowcase fabShowcase;
+
+  private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
 
   private BroadcastReceiver newPostReceiver = new BroadcastReceiver() {
     @Override
@@ -360,7 +363,12 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
 
   @Override
   public void onLoaded(List<FeedItem> items) {
-    epoxyController.setData(items, false);
+    if (items.isEmpty()) {
+      Timber.d("Empty");
+      epoxyController.hideLoader();
+    } else {
+      epoxyController.setData(items, false);
+    }
   }
 
   @Override
@@ -384,7 +392,8 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
 
   @Override
   public void onRefresh() {
-    epoxyController.onRefresh();
+    endlessRecyclerOnScrollListener.resetState();
+    //epoxyController.onRefresh();
     getPresenter().loadFeed(true);
   }
 
@@ -417,7 +426,7 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
       case R.id.action_nav_feedback:
         handler.postDelayed(() -> {
           Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
-          emailIntent.setData(Uri.parse("mailto: hello@yoloo.com"));
+          emailIntent.setData(Uri.parse("mailto: hello@yolooapp.com"));
           startActivity(Intent.createChooser(emailIntent, "Send feedback"));
         }, 400);
         break;
@@ -684,13 +693,16 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     rvFeed.setHasFixedSize(true);
     rvFeed.setAdapter(epoxyController.getAdapter());
 
-    /*rvFeed.addOnScrollListener(new EndlessRecyclerOnScrollListener(5) {
+    endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(lm) {
       @Override
-      public void onLoadMore() {
-        Timber.d("onLoadMore()");
+      public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+        Timber.d("onLoadMore(), totalItemCount: " + totalItemsCount);
         getPresenter().loadMorePosts();
+        epoxyController.showLoader();
       }
-    });*/
+    };
+
+    rvFeed.addOnScrollListener(endlessRecyclerOnScrollListener);
   }
 
   private void setupPullToRefresh() {

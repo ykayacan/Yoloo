@@ -85,10 +85,6 @@ class FeedPresenter extends MvpPresenter<FeedView> {
   }
 
   void loadMorePosts() {
-    getView().onLoading(true);
-
-    shouldResetCursor(true);
-
     Disposable d = getFeedObservable()
         .retry(2, throwable -> throwable instanceof SocketTimeoutException)
         .subscribe(response -> {

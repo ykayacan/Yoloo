@@ -50,7 +50,7 @@
   <string name="label_total_bounty">Toplam Bonus: %1$d</string>
   <string name="hint_enter_a_message">Mesaj yaz</string>
   <string name="label_points_next">Sonraki seviye\n%1$d</string>
-  <string name="label_points_initial">İlk sevite\n%1$d</string>
+  <string name="label_points_initial">İlk seviye\n%1$d</string>
   <string name="label_level">Seviye %1$d</string>
   <string name="label_subscribed_groups_title">Taki Edilen Gruplar</string>
   <string name="label_explore_title">Keşfet</string>
@@ -161,7 +161,7 @@
   <string name="selecty_type_get_started">İleri</string>
   <string name="selecty_type_discover">Keşfet</string>
   <string name="recent_medias_title">Son Gönderiler</string>
-  <string name="select_type_sub">Seni tanımlatan en az 3 gezgin tipi seç</string>
+  <string name="select_type_sub">Seni tanımlayan en az 3 gezgin tipi seç</string>
   <string name="invite_friends">Arkadaşlarını Davet Et</string>
   <string name="label_login_or">veya</string>
   <string name="label_profile_posts">%1$s gönderi</string>
@@ -237,4 +237,5 @@
   <string name="select_group_search_a_group_hint">Grup ara</string>
   <string name="label_nav_feedback">Geri Bildirim Gönder</string>
   <string name="facebook_friends">Facebook Arakadaşların</string>
+  <string name="editor_trending_tags">Popüler Etiketler</string>
 </resources>

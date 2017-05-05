@@ -200,8 +200,12 @@ public class FeedEpoxyController extends Typed2EpoxyController<List<FeedItem>, B
     }
   }
 
-  public void onRefresh() {
-    this.feedItems.clear();
+  public void showLoader() {
+    setData(feedItems, true);
+  }
+
+  public void hideLoader() {
+    setData(feedItems, false);
   }
 
   private void createTextQuestion(PostRealm post) {

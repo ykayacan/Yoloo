@@ -32,14 +32,14 @@ public final class AcceptNotification implements NotificationProvider {
 
     String content = context.getResources().getString(R.string.label_notification_accept);
 
-    NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+    return new NotificationCompat.Builder(context)
         .setSmallIcon(R.drawable.ic_yoloo_notification)
         .setContentTitle("Yoloo")
         .setContentText(content)
         .setAutoCancel(true)
+        .setPriority(Notification.PRIORITY_HIGH)
         .setDefaults(Notification.DEFAULT_ALL)
-        .setContentIntent(pendingIntent);
-
-    return builder.build();
+        .setContentIntent(pendingIntent)
+        .build();
   }
 }

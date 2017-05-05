@@ -88,7 +88,7 @@ class PostListPresenter extends MvpPresenter<PostListView> {
     shouldResetCursor(pullToRefresh);
 
     Observable<Response<List<PostRealm>>> postsObservable =
-        postRepository.listByBounty(cursor, limit).observeOn(AndroidSchedulers.mainThread(), true);
+        postRepository.listByBounty(cursor, limit).observeOn(AndroidSchedulers.mainThread());
 
     Disposable d = Observable
         .zip(getUserObservable(), postsObservable, Pair::create)

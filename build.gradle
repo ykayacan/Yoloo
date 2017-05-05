@@ -8,7 +8,7 @@ buildscript {
     classpath 'com.android.tools.build:gradle:2.4.0-alpha7'
     classpath 'com.google.gms:google-services:3.0.0'
     classpath 'com.google.firebase:firebase-plugins:1.0.4'
-    classpath 'io.realm:realm-gradle-plugin:3.1.3'
+    classpath 'io.realm:realm-gradle-plugin:3.1.4'
     classpath 'com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0-beta7'
     classpath 'com.google.guava:guava:20.0'
     classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
@@ -40,7 +40,7 @@ task wrapper(type: Wrapper) {
 }
 
 ext {
-  minSdk = 16
+  minSdk = 19
   targetSdk = 25
   compileSdk = 25
   buildTools = '25.0.3'
@@ -58,7 +58,7 @@ ext {
 
   butterKnife_version = '8.5.1'
   timber_version = '4.5.1'
-  conductor_version = '2.1.2'
+  conductor_version = '2.1.3'
   epoxy_version = '2.0.0'
   flexbox_version = '0.3.0-alpha3'
 

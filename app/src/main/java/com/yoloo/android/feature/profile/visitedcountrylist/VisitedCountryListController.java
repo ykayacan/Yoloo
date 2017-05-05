@@ -1,6 +1,9 @@
 package com.yoloo.android.feature.profile.visitedcountrylist;
 
+import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
@@ -22,6 +25,7 @@ import com.yoloo.android.data.model.CountryRealm;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.decoration.GridInsetItemDecoration;
+import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.DisplayUtil;
 import java.util.List;
 import timber.log.Timber;
@@ -31,9 +35,11 @@ public class VisitedCountryListController
     implements VisitedCountryListView {
 
   private static final String KEY_SHOWCASE_FAB = "SHOWCASE_FAB";
+  private static final String KEY_SELF = "SELF";
 
   @BindView(R.id.recycler_view) RecyclerView rvVisitedCountryList;
   @BindView(R.id.toolbar) Toolbar toolbar;
+  @BindView(R.id.fab) FloatingActionButton fab;
 
   private VisitedCountryListEpoxyController epoxyController;
 
@@ -41,8 +47,13 @@ public class VisitedCountryListController
 
   private TutoShowcase fabShowcase;
 
-  public static VisitedCountryListController create() {
-    return new VisitedCountryListController();
+  public static VisitedCountryListController create(boolean self) {
+    final Bundle bundle = new BundleBuilder().putBoolean(KEY_SELF, self).build();
+    return new VisitedCountryListController(bundle);
+  }
+
+  public VisitedCountryListController(@Nullable Bundle args) {
+    super(args);
   }
 
   @Override
@@ -60,7 +71,13 @@ public class VisitedCountryListController
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-    showFabTutorial();
+    boolean self = getArgs().getBoolean(KEY_SELF);
+
+    if (self) {
+      showFabTutorial();
+    } else {
+      fab.setVisibility(View.GONE);
+    }
   }
 
   @Override

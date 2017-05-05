@@ -1,153 +1,105 @@
 package com.yoloo.android.ui.recyclerview;
 
-import android.support.v7.widget.OrientationHelper;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.View;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 
 public abstract class EndlessRecyclerOnScrollListener extends RecyclerView.OnScrollListener {
 
-  // The total number getPost items in the dataset after the last load
-  private int previousTotal = 0;
+  // The minimum amount of items to have below your current scroll position
+  // before loading more.
+  private int visibleThreshold = 5;
 
-  // True if we are still waiting for the last set getPost data to load.
+  // The current offset index of data you have loaded
+  private int currentPage = 0;
+
+  // The total number of items in the dataset after the last load
+  private int previousTotalItemCount = 0;
+
+  // True if we are still waiting for the last set of data to load.
   private boolean loading = true;
 
-  // The minimum amount getPost items to have below your current scroll position
-  // before loading more.
-  private int visibleThreshold = -1;
-
-  private int firstVisibleItem, visibleItemCount, totalItemCount;
-
-  private boolean isOrientationHelperVertical;
-  private OrientationHelper orientationHelper;
+  // Sets the starting page index
+  private int startingPageIndex = 0;
 
   private RecyclerView.LayoutManager layoutManager;
 
-  public EndlessRecyclerOnScrollListener() {
-  }
-
-  public EndlessRecyclerOnScrollListener(RecyclerView.LayoutManager layoutManager) {
+  public EndlessRecyclerOnScrollListener(LinearLayoutManager layoutManager) {
     this.layoutManager = layoutManager;
   }
 
-  public EndlessRecyclerOnScrollListener(int visibleThreshold) {
-    this.visibleThreshold = visibleThreshold;
-  }
-
-  public EndlessRecyclerOnScrollListener(RecyclerView.LayoutManager layoutManager,
-      int visibleThreshold) {
+  public EndlessRecyclerOnScrollListener(GridLayoutManager layoutManager) {
     this.layoutManager = layoutManager;
-    this.visibleThreshold = visibleThreshold;
+    visibleThreshold = visibleThreshold * layoutManager.getSpanCount();
   }
 
-  private int findFirstVisibleItemPosition(RecyclerView recyclerView) {
-    final View child = findOneVisibleChild(0, layoutManager.getChildCount(), false, true);
-    return recyclerView.getChildAdapterPosition(child);
+  public EndlessRecyclerOnScrollListener(StaggeredGridLayoutManager layoutManager) {
+    this.layoutManager = layoutManager;
+    visibleThreshold = visibleThreshold * layoutManager.getSpanCount();
   }
 
-  private int findLastVisibleItemPosition(RecyclerView recyclerView) {
-    final View child = findOneVisibleChild(recyclerView.getChildCount() - 1, -1, false, true);
-    return recyclerView.getChildAdapterPosition(child);
-  }
-
-  private View findOneVisibleChild(int fromIndex, int toIndex, boolean completelyVisible,
-      boolean acceptPartiallyVisible) {
-    if (layoutManager.canScrollVertically() != isOrientationHelperVertical
-        || orientationHelper == null) {
-      isOrientationHelperVertical = layoutManager.canScrollVertically();
-      orientationHelper = isOrientationHelperVertical
-          ? OrientationHelper.createVerticalHelper(layoutManager)
-          : OrientationHelper.createHorizontalHelper(layoutManager);
-    }
-
-    final int start = orientationHelper.getStartAfterPadding();
-    final int end = orientationHelper.getEndAfterPadding();
-    final int next = toIndex > fromIndex ? 1 : -1;
-
-    View partiallyVisible = null;
-
-    for (int i = fromIndex; i != toIndex; i += next) {
-      final View child = layoutManager.getChildAt(i);
-
-      if (child != null) {
-        final int childStart = orientationHelper.getDecoratedStart(child);
-        final int childEnd = orientationHelper.getDecoratedEnd(child);
-        if (childStart < end && childEnd > start) {
-          if (completelyVisible) {
-            if (childStart >= start && childEnd <= end) {
-              return child;
-            } else if (acceptPartiallyVisible && partiallyVisible == null) {
-              partiallyVisible = child;
-            }
-          } else {
-            return child;
-          }
-        }
+  private int getLastVisibleItem(int[] lastVisibleItemPositions) {
+    int maxSize = 0;
+    final int size = lastVisibleItemPositions.length;
+    for (int i = 0; i < size; i++) {
+      if (i == 0) {
+        maxSize = lastVisibleItemPositions[i];
+      } else if (lastVisibleItemPositions[i] > maxSize) {
+        maxSize = lastVisibleItemPositions[i];
       }
     }
-    return partiallyVisible;
+    return maxSize;
   }
 
+  // This happens many times a second during a scroll, so be wary of the code you place here.
+  // We are given a few useful parameters to help us work out if we need to load some more data,
+  // but first we check if we are waiting for the previous load to finish.
   @Override
-  public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-    super.onScrolled(recyclerView, dx, dy);
-    if (layoutManager == null) {
-      layoutManager = recyclerView.getLayoutManager();
+  public void onScrolled(RecyclerView view, int dx, int dy) {
+    int lastVisibleItemPosition = 0;
+    int totalItemCount = layoutManager.getItemCount();
+
+    if (layoutManager instanceof StaggeredGridLayoutManager) {
+      int[] lastVisibleItemPositions =
+          ((StaggeredGridLayoutManager) layoutManager).findLastVisibleItemPositions(null);
+      // get maximum element within the list
+      lastVisibleItemPosition = getLastVisibleItem(lastVisibleItemPositions);
+    } else if (layoutManager instanceof GridLayoutManager) {
+      lastVisibleItemPosition = ((GridLayoutManager) layoutManager).findLastVisibleItemPosition();
+    } else if (layoutManager instanceof LinearLayoutManager) {
+      lastVisibleItemPosition = ((LinearLayoutManager) layoutManager).findLastVisibleItemPosition();
     }
 
-    // bail out if scrolling upward or already loading data
-    if (dy <= 0) {
-      return;
-    }
-
-    if (visibleThreshold == -1) {
-      visibleThreshold =
-          findLastVisibleItemPosition(recyclerView) - findFirstVisibleItemPosition(recyclerView);
-    }
-
-    visibleItemCount = recyclerView.getChildCount();
-    totalItemCount = layoutManager.getItemCount();
-    firstVisibleItem = findFirstVisibleItemPosition(recyclerView);
-
-    // If the total item count is zero and the previous isn't, assume the
-    // listNotifications is invalidated and should be reset back to initial state
-    if (totalItemCount < previousTotal) {
-      previousTotal = 0;
-      loading = true;
-    }
-
-    // If it's still loading, we check to see if the dataset count has
-    // changed, if so we conclude it has finished loading and updatePost the current page
+    // If it’s still loading, we check to see if the dataset count has
+    // changed, if so we conclude it has finished loading and update the current page
     // number and total item count.
-    if (loading && (totalItemCount > previousTotal)) {
+    if (loading && (totalItemCount > previousTotalItemCount)) {
       loading = false;
-      previousTotal = totalItemCount;
+      previousTotalItemCount = totalItemCount;
     }
 
-    // If it isn't currently loading, we check to see if we have breached
+    // If it isn’t currently loading, we check to see if we have breached
     // the visibleThreshold and need to reload more data.
     // If we do need to reload some more data, we execute onLoadMore to fetch the data.
-    if (!loading && (firstVisibleItem + visibleItemCount + visibleThreshold) >= totalItemCount) {
-      onLoadMore();
+    // threshold should reflect how many total columns there are too
+    if (!loading
+        && (lastVisibleItemPosition + visibleThreshold) > totalItemCount
+        && view.getAdapter().getItemCount()
+        > visibleThreshold) {// This condition will useful when recyclerview has less than visibleThreshold items
+      currentPage++;
+      onLoadMore(currentPage, totalItemCount, view);
       loading = true;
     }
   }
 
-  public RecyclerView.LayoutManager getLayoutManager() {
-    return layoutManager;
+  // Call whenever performing new searches
+  public void resetState() {
+    this.currentPage = startingPageIndex;
+    this.previousTotalItemCount = 0;
+    this.loading = true;
   }
 
-  public int getTotalItemCount() {
-    return totalItemCount;
-  }
-
-  public int getFirstVisibleItem() {
-    return firstVisibleItem;
-  }
-
-  public int getVisibleItemCount() {
-    return visibleItemCount;
-  }
-
-  public abstract void onLoadMore();
+  // Defines the process for actually loading more data based on page
+  public abstract void onLoadMore(int page, int totalItemsCount, RecyclerView view);
 }

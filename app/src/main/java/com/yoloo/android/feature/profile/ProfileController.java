@@ -211,7 +211,8 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
   @OnClick(R.id.card_profile_country_count)
   void openVisitedCountiesScreen() {
-    startTransaction(VisitedCountryListController.create(), new VerticalChangeHandler());
+    startTransaction(VisitedCountryListController.create(account.getId().equals(userId)),
+        new VerticalChangeHandler());
   }
 
   @OnClick(R.id.tv_profile_followers_counter_text)

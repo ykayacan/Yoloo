@@ -131,7 +131,7 @@ public class GameService {
    * @param tracker the tracker
    * @param listener the listener
    */
-  public void addAnswerFirstQuestionBonus(DeviceRecord record, Tracker tracker,
+  public void addAnswerFirstPostBonus(DeviceRecord record, Tracker tracker,
       NewNotificationListener listener) {
 
     if (!tracker.isFirstComment()) {

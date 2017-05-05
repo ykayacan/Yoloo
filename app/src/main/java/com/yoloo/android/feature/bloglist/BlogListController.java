@@ -18,7 +18,6 @@ import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.post.PostRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.framework.MvpController;
-import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
 import com.yoloo.android.ui.widget.StateLayout;
@@ -113,13 +112,5 @@ public class BlogListController extends MvpController<BlogListView, BlogListPres
 
     rvBlogList.setHasFixedSize(true);
     rvBlogList.setAdapter(epoxyController.getAdapter());
-
-    rvBlogList.addOnScrollListener(new EndlessRecyclerOnScrollListener(5) {
-      @Override
-      public void onLoadMore() {
-        /*handler.postDelayed(
-            () -> getPresenter().loadPosts(true, UUID.randomUUID().toString(), eTag, 20), 700);*/
-      }
-    });
   }
 }
