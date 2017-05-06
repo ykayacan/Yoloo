@@ -1,5 +1,6 @@
 package com.yoloo.android.data.repository.user;
 
+import com.annimon.stream.Stream;
 import com.google.api.client.http.HttpHeaders;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -37,6 +38,11 @@ class UserRemoteDataStore {
   private UserRemoteDataStore() {
   }
 
+  /**
+   * Gets instance.
+   *
+   * @return the instance
+   */
   static UserRemoteDataStore getInstance() {
     if (instance == null) {
       instance = new UserRemoteDataStore();
@@ -44,6 +50,11 @@ class UserRemoteDataStore {
     return instance;
   }
 
+  /**
+   * Gets me.
+   *
+   * @return the me
+   */
   Single<AccountRealm> getMe() {
     return getIdToken()
         .flatMap(idToken -> Single
@@ -59,6 +70,12 @@ class UserRemoteDataStore {
         .map(account -> account.setMe(true));
   }
 
+  /**
+   * Get single.
+   *
+   * @param userId the user id
+   * @return the single
+   */
   Single<AccountRealm> get(@Nonnull String userId) {
     return getIdToken()
         .flatMap(idToken -> Single
@@ -72,6 +89,12 @@ class UserRemoteDataStore {
         .map(AccountRealm::new);
   }
 
+  /**
+   * Add single.
+   *
+   * @param base64Payload the base 64 payload
+   * @return the single
+   */
   Single<AccountRealm> add(@Nonnull String base64Payload) {
     return Single
         .fromCallable(() -> INSTANCE
@@ -85,6 +108,12 @@ class UserRemoteDataStore {
         .map(__ -> __.setMe(true));
   }
 
+  /**
+   * Update single.
+   *
+   * @param account the account
+   * @return the single
+   */
   Single<AccountRealm> update(@Nonnull AccountRealm account) {
     return getIdToken()
         .flatMap(idToken -> {
@@ -114,6 +143,14 @@ class UserRemoteDataStore {
         .map(__ -> __.setSubscribedGroupIds(account.getSubscribedGroupIds()));
   }
 
+  /**
+   * Search user observable.
+   *
+   * @param name the name
+   * @param cursor the cursor
+   * @param limit the limit
+   * @return the observable
+   */
   Observable<Response<List<AccountRealm>>> searchUser(@Nonnull String name, @Nullable String cursor,
       int limit) {
     return getIdToken()
@@ -130,6 +167,14 @@ class UserRemoteDataStore {
         .compose(UserResponseTransformer.create());
   }
 
+  /**
+   * List followers observable.
+   *
+   * @param userId the user id
+   * @param cursor the cursor
+   * @param limit the limit
+   * @return the observable
+   */
   Observable<Response<List<AccountRealm>>> listFollowers(@Nonnull String userId,
       @Nullable String cursor, int limit) {
     return getIdToken()
@@ -146,6 +191,14 @@ class UserRemoteDataStore {
         .compose(UserResponseTransformer.create());
   }
 
+  /**
+   * List followings observable.
+   *
+   * @param userId the user id
+   * @param cursor the cursor
+   * @param limit the limit
+   * @return the observable
+   */
   Observable<Response<List<AccountRealm>>> listFollowings(@Nonnull String userId,
       @Nullable String cursor, int limit) {
     return getIdToken()
@@ -162,6 +215,13 @@ class UserRemoteDataStore {
         .compose(UserResponseTransformer.create());
   }
 
+  /**
+   * List recommended users observable.
+   *
+   * @param cursor the cursor
+   * @param limit the limit
+   * @return the observable
+   */
   Observable<Response<List<AccountRealm>>> listRecommendedUsers(@Nonnull String cursor, int limit) {
     return getIdToken()
         .flatMapObservable(idToken -> Observable
@@ -177,6 +237,32 @@ class UserRemoteDataStore {
         .compose(UserResponseTransformer.create());
   }
 
+  Observable<List<CountryRealm>> listVisitedCountries(@Nonnull String userId) {
+    return getIdToken()
+        .flatMapObservable(idToken -> Observable
+            .fromCallable(() -> INSTANCE
+                .getApi()
+                .users()
+                .visited(userId)
+                .setRequestHeaders(setIdTokenHeader(idToken))
+                .execute())
+            .subscribeOn(Schedulers.io()))
+        .map(collection -> {
+          if (collection == null) {
+            return Collections.emptyList();
+          }
+
+          return Stream.of(collection.getItems()).map(CountryRealm::new).toList();
+        });
+  }
+
+  /**
+   * List new users observable.
+   *
+   * @param cursor the cursor
+   * @param limit the limit
+   * @return the observable
+   */
   Observable<Response<List<AccountRealm>>> listNewUsers(@Nonnull String cursor, int limit) {
     return getIdToken()
         .flatMapObservable(idToken -> Observable
@@ -192,6 +278,13 @@ class UserRemoteDataStore {
         .compose(UserResponseTransformer.create());
   }
 
+  /**
+   * Relationship completable.
+   *
+   * @param userId the user id
+   * @param action the action
+   * @return the completable
+   */
   Completable relationship(@Nonnull String userId, @Nonnull String action) {
     return getIdToken().flatMapCompletable(idToken -> Completable
         .fromAction(() -> INSTANCE
@@ -203,6 +296,12 @@ class UserRemoteDataStore {
         .subscribeOn(Schedulers.io()));
   }
 
+  /**
+   * Check username single.
+   *
+   * @param username the username
+   * @return the single
+   */
   Single<Boolean> checkUsername(@Nonnull String username) {
     return Single
         .fromCallable(() -> INSTANCE.getApi().users().checkUsername(username).execute())
@@ -210,6 +309,12 @@ class UserRemoteDataStore {
         .map(WrappedBoolean::getAvailable);
   }
 
+  /**
+   * Check email single.
+   *
+   * @param email the email
+   * @return the single
+   */
   Single<Boolean> checkEmail(@Nonnull String email) {
     return Single
         .fromCallable(() -> INSTANCE.getApi().users().checkEmail(email).execute())
@@ -217,6 +322,11 @@ class UserRemoteDataStore {
         .map(WrappedBoolean::getAvailable);
   }
 
+  /**
+   * Gets game info.
+   *
+   * @return the game info
+   */
   Single<GameInfoRealm> getGameInfo() {
     return getIdToken()
         .flatMap(idToken -> Single

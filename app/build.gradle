@@ -218,7 +218,6 @@ dependencies {
     exclude group: 'org.slf4j'
   })
   compile 'com.github.k0shk0sh:RetainedDateTimePickers:1.0.2'
-  compile 'com.github.arthurghazaryan:floatingactionmenu:1.0.0'
   compile 'com.github.ekimual:country-picker-x:1.0.0'
   compile 'com.github.stfalcon:chatkit:0.2.1'
   compile 'com.github.florent37:tutoshowcase:1.0.1'

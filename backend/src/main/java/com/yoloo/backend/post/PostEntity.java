@@ -136,10 +136,7 @@ public class PostEntity implements Votable {
 
   @Nullable
   public String getAcceptedCommentId() {
-    if (acceptedCommentKey == null) {
-      return null;
-    }
-    return acceptedCommentKey.toWebSafeString();
+    return acceptedCommentKey == null ? null : acceptedCommentKey.toWebSafeString();
   }
 
   @Override

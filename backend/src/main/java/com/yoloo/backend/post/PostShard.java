@@ -50,11 +50,11 @@ public final class PostShard implements FeedShard, Shardable.Shard {
     return Key.create(PostShard.class, this.id);
   }
 
-  public void increaseComments() {
+  public void increaseCommentCount() {
     this.comments++;
   }
 
-  public void decreaseComments() {
+  public void decreaseCommentCount() {
     this.comments--;
   }
 

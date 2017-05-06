@@ -3,9 +3,11 @@ package com.yoloo.android.feature.grouplist;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -26,6 +28,8 @@ import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.DrawableHelper;
 import java.util.List;
+
+import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;
 
 public class GroupListEpoxyController extends TypedEpoxyController<List<GroupRealm>> {
 
@@ -70,9 +74,11 @@ public class GroupListEpoxyController extends TypedEpoxyController<List<GroupRea
       extends EpoxyModelWithHolder<GroupListItemModel.GroupListHolder> {
 
     @EpoxyAttribute GroupRealm group;
-    @EpoxyAttribute(hash = false) RequestManager glide;
-    @EpoxyAttribute(hash = false) OnItemClickListener<GroupRealm> onItemClickListener;
-    @EpoxyAttribute(hash = false) OnSubscribeListener onSubscribeClickListener;
+    @EpoxyAttribute(DoNotHash) boolean hideSubscribeButton;
+    @EpoxyAttribute(DoNotHash) boolean showNotSubscribedError;
+    @EpoxyAttribute(DoNotHash) RequestManager glide;
+    @EpoxyAttribute(DoNotHash) OnItemClickListener<GroupRealm> onItemClickListener;
+    @EpoxyAttribute(DoNotHash) OnSubscribeListener onSubscribeClickListener;
 
     @Override
     public void bind(GroupListHolder holder, List<Object> payloads) {
@@ -124,8 +130,16 @@ public class GroupListEpoxyController extends TypedEpoxyController<List<GroupRea
           group.isSubscribed() ? R.string.group_unsubscribed : R.string.group_subscribe;
       holder.btnSubscribe.setText(buttonText);
       holder.btnSubscribe.setSelected(group.isSubscribed());
+      holder.btnSubscribe.setVisibility(hideSubscribeButton ? View.GONE : View.VISIBLE);
 
-      holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(v, this, group));
+      holder.itemView.setOnClickListener(v -> {
+        if (showNotSubscribedError && !hideSubscribeButton) {
+          Snackbar.make(v, R.string.error_subscribe_group_first, Snackbar.LENGTH_SHORT).show();
+        } else {
+          onItemClickListener.onItemClick(v, this, group);
+        }
+      });
+
       holder.btnSubscribe.setOnClickListener(v -> {
         holder.btnSubscribe.setSelected(!group.isSubscribed());
         group.setSubscribed(!group.isSubscribed());

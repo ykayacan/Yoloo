@@ -3,15 +3,14 @@ package com.yoloo.android.feature.postdetail;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
-import com.airbnb.epoxy.EpoxyAdapter;
-import com.airbnb.epoxy.EpoxyModel;
+import com.airbnb.epoxy.AutoModel;
+import com.airbnb.epoxy.Typed2EpoxyController;
+import com.annimon.stream.Stream;
 import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.data.model.FeedItem;
 import com.yoloo.android.data.model.PostRealm;
-import com.yoloo.android.feature.comment.CommentModel;
 import com.yoloo.android.feature.comment.CommentModel_;
 import com.yoloo.android.feature.comment.OnMarkAsAcceptedClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
@@ -21,20 +20,23 @@ import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
-import com.yoloo.android.feature.feed.component.post.BlogModel;
 import com.yoloo.android.feature.feed.component.post.BlogModel_;
-import com.yoloo.android.feature.feed.component.post.RichQuestionModel;
 import com.yoloo.android.feature.feed.component.post.RichQuestionModel_;
-import com.yoloo.android.feature.feed.component.post.TextQuestionModel;
 import com.yoloo.android.feature.feed.component.post.TextQuestionModel_;
+import com.yoloo.android.feature.models.loader.LoaderModel;
 import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
+import java.util.ArrayList;
 import java.util.List;
 
-class PostDetailAdapter extends EpoxyAdapter {
+class PostDetailEpoxyController extends Typed2EpoxyController<List<FeedItem>, Boolean> {
 
   private final CropCircleTransformation cropCircleTransformation;
   private final RequestManager glide;
+
+  @AutoModel LoaderModel loaderModel;
+
+  private List<FeedItem> epoxyItems;
 
   private OnProfileClickListener onProfileClickListener;
   private OnPostOptionsClickListener onPostOptionsClickListener;
@@ -46,10 +48,10 @@ class PostDetailAdapter extends EpoxyAdapter {
   private OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener;
   private OnItemLongClickListener<CommentRealm> onCommentLongClickListener;
 
-  PostDetailAdapter(Context context, RequestManager glide) {
-    enableDiffing();
-    cropCircleTransformation = new CropCircleTransformation(context);
+  PostDetailEpoxyController(Context context, RequestManager glide) {
+    this.cropCircleTransformation = new CropCircleTransformation(context);
     this.glide = glide;
+    this.epoxyItems = new ArrayList<>();
   }
 
   public void setOnProfileClickListener(OnProfileClickListener listener) {
@@ -88,62 +90,67 @@ class PostDetailAdapter extends EpoxyAdapter {
     this.onCommentLongClickListener = listener;
   }
 
-  void addPost(PostRealm post) {
-    if (post.isTextQuestionPost()) {
-      addModel(createNormalQuestionDetail(post));
-    } else if (post.isRichQuestionPost()) {
-      addModel(createRichQuestionDetail(post));
-    } else if (post.isBlogPost()) {
-      addModel(createBlogDetail(post));
-    }
+  void addComment(CommentRealm comment) {
+    epoxyItems.add(new CommentFeedItem(comment));
+    setData(epoxyItems, false);
   }
 
-  void addComments(List<CommentRealm> comments, AccountRealm account, PostRealm post) {
-    for (CommentRealm comment : comments) {
-      // Don't add accepted comment twice.
-      if (comment.isAccepted()) {
-        continue;
-      }
-
-      models.add(createCommentModel(comment, account, post));
-    }
-
-    notifyModelsChanged();
-  }
-
-  void addComment(CommentRealm comment, AccountRealm account, PostRealm post) {
-    //showCommentsHeader(true);
-    addModel(createCommentModel(comment, account, post));
-  }
-
-  void clear() {
-    removeAllModels();
-  }
-
-  void delete(EpoxyModel<?> model) {
-    removeModel(model);
+  void deleteComment(CommentRealm comment) {
+    epoxyItems.remove(new CommentFeedItem(comment));
+    setData(epoxyItems, false);
   }
 
   void scrollToEnd(RecyclerView recyclerView) {
-    recyclerView.smoothScrollToPosition(getItemCount() - 1);
+    recyclerView.smoothScrollToPosition(getAdapter().getItemCount() - 1);
   }
 
-  private CommentModel createCommentModel(CommentRealm comment, AccountRealm account,
-      PostRealm post) {
-    return new CommentModel_().glide(glide)
+  @Override
+  public void setData(List<FeedItem> items, Boolean loadingMore) {
+    this.epoxyItems = items;
+    super.setData(items, loadingMore);
+  }
+
+  @Override
+  protected void buildModels(List<FeedItem> items, Boolean loadingMore) {
+    Stream.of(items).forEach(item -> {
+      if (item instanceof PostFeedItem) {
+        PostRealm post = ((PostFeedItem) item).getPost();
+        if (post.isTextQuestionPost()) {
+          createTextQuestionDetail(post);
+        } else if (post.isRichQuestionPost()) {
+          createRichQuestionDetail(post);
+        } else if (post.isBlogPost()) {
+          createBlogDetail(post);
+        }
+      } else if (item instanceof CommentFeedItem) {
+        createCommentModel(((CommentFeedItem) item).getComment());
+      }
+    });
+
+    loaderModel.addIf(loadingMore, this);
+  }
+
+  private void createCommentModel(CommentRealm comment) {
+    new CommentModel_()
+        .id(comment.getId())
         .comment(comment)
-        .postType(post.getPostType())
+        .glide(glide)
+        .postType(comment.getPostType())
         .backgroundColor(Color.WHITE)
         .circleTransformation(cropCircleTransformation)
         .onCommentLongClickListener(onCommentLongClickListener)
         .onProfileClickListener(onProfileClickListener)
         .onMentionClickListener(onMentionClickListener)
         .onMarkAsAcceptedClickListener(onMarkAsAcceptedClickListener)
-        .onVoteClickListener(onVoteClickListener);
+        .onVoteClickListener(onVoteClickListener)
+        .addTo(this);
   }
 
-  private RichQuestionModel createRichQuestionDetail(PostRealm post) {
-    return new RichQuestionModel_().glide(glide)
+  private void createRichQuestionDetail(PostRealm post) {
+    new RichQuestionModel_()
+        .id(post.getId())
+        .post(post)
+        .glide(glide)
         .onProfileClickListener(onProfileClickListener)
         .onPostOptionsClickListener(onPostOptionsClickListener)
         .onShareClickListener(onShareClickListener)
@@ -152,11 +159,14 @@ class PostDetailAdapter extends EpoxyAdapter {
         .onContentImageClickListener(onContentImageClickListener)
         .layout(R.layout.item_feed_question_rich_detail)
         .bitmapTransformation(cropCircleTransformation)
-        .post(post);
+        .addTo(this);
   }
 
-  private TextQuestionModel createNormalQuestionDetail(PostRealm post) {
-    return new TextQuestionModel_().glide(glide)
+  private void createTextQuestionDetail(PostRealm post) {
+    new TextQuestionModel_()
+        .id(post.getId())
+        .post(post)
+        .glide(glide)
         .onProfileClickListener(onProfileClickListener)
         .onPostOptionsClickListener(onPostOptionsClickListener)
         .onShareClickListener(onShareClickListener)
@@ -164,11 +174,14 @@ class PostDetailAdapter extends EpoxyAdapter {
         .onVoteClickListener(onVoteClickListener)
         .layout(R.layout.item_feed_question_text_detail)
         .bitmapTransformation(cropCircleTransformation)
-        .post(post);
+        .addTo(this);
   }
 
-  private BlogModel createBlogDetail(PostRealm post) {
-    return new BlogModel_().onProfileClickListener(onProfileClickListener)
+  private void createBlogDetail(PostRealm post) {
+    new BlogModel_()
+        .id(post.getId())
+        .post(post)
+        .onProfileClickListener(onProfileClickListener)
         .onPostOptionsClickListener(onPostOptionsClickListener)
         .onShareClickListener(onShareClickListener)
         .onCommentClickListener(onCommentClickListener)
@@ -176,18 +189,6 @@ class PostDetailAdapter extends EpoxyAdapter {
         .layout(R.layout.item_feed_blog_detail)
         .bitmapTransformation(cropCircleTransformation)
         .glide(glide)
-        .post(post);
-  }
-
-  private boolean isCommentOwner(CommentRealm comment, AccountRealm account) {
-    return comment.getOwnerId().equals(account.getId());
-  }
-
-  private boolean isPostOwner(PostRealm post, AccountRealm account) {
-    return post.getOwnerId().equals(account.getId());
-  }
-
-  private boolean isAccepted(PostRealm post) {
-    return !TextUtils.isEmpty(post.getAcceptedCommentId());
+        .addTo(this);
   }
 }

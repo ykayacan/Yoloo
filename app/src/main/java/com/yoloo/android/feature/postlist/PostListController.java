@@ -47,6 +47,7 @@ import com.yoloo.android.feature.fullscreenphoto.FullscreenPhotoController;
 import com.yoloo.android.feature.postdetail.PostDetailController;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.framework.MvpController;
+import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
@@ -87,6 +88,8 @@ public class PostListController extends MvpController<PostListView, PostListPres
   @BindColor(R.color.primary_dark) int primaryDarkColor;
 
   private PostListEpoxyController epoxyController;
+
+  private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
 
   private int viewType;
 
@@ -166,6 +169,16 @@ public class PostListController extends MvpController<PostListView, PostListPres
     setupToolbar();
     setHasOptionsMenu(true);
     setupRecyclerView();
+  }
+
+  @Override
+  protected void onAttach(@NonNull View view) {
+    super.onAttach(view);
+
+    if (!reEnter) {
+      chooseLoadMethod(false);
+      reEnter = true;
+    }
 
     rootView.setViewStateListener((stateView, viewState) -> {
       if (viewState == StateLayout.VIEW_STATE_EMPTY) {
@@ -188,18 +201,11 @@ public class PostListController extends MvpController<PostListView, PostListPres
             }
           });
         }
+      } else if (viewState == StateLayout.VIEW_STATE_ERROR) {
+        View errorActionView = ButterKnife.findById(stateView, R.id.error_view);
+        errorActionView.setOnClickListener(v -> chooseLoadMethod(false));
       }
     });
-  }
-
-  @Override
-  protected void onAttach(@NonNull View view) {
-    super.onAttach(view);
-
-    if (!reEnter) {
-      chooseLoadMethod(false);
-      reEnter = true;
-    }
   }
 
   @Override
@@ -219,7 +225,12 @@ public class PostListController extends MvpController<PostListView, PostListPres
 
   @Override
   public void onLoaded(List<FeedItem> value) {
-    epoxyController.setData(value, false);
+    Timber.d("onLoaded(): %s", value);
+    if (value.isEmpty()) {
+      epoxyController.hideLoader();
+    } else {
+      epoxyController.setData(value, false);
+    }
   }
 
   @Override
@@ -239,6 +250,8 @@ public class PostListController extends MvpController<PostListView, PostListPres
   public void onEmpty() {
     if (viewType == VIEW_TYPE_BOOKMARKED) {
       rootView.setEmptyViewRes(R.layout.layout_bookmarks_empty_view);
+    } else if (viewType == VIEW_TYPE_USER) {
+      rootView.setEmptyViewRes(R.layout.layout_user_posts_empty_view);
     }
     rootView.setState(StateLayout.VIEW_STATE_EMPTY);
     swipeRefreshLayout.setRefreshing(false);
@@ -246,7 +259,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
 
   @Override
   public void onRefresh() {
-    epoxyController.onRefresh();
+    endlessRecyclerOnScrollListener.resetState();
     chooseLoadMethod(true);
   }
 
@@ -281,7 +294,9 @@ public class PostListController extends MvpController<PostListView, PostListPres
 
   @Override
   public void onCommentClick(View v, PostRealm post) {
-    CommentController controller = CommentController.create(post);
+    CommentController controller =
+        CommentController.create(post.getId(), post.getOwnerId(), post.getPostType(),
+            post.getAcceptedCommentId() != null);
     controller.setModelUpdateEvent(this);
     startTransaction(controller, new VerticalChangeHandler());
   }
@@ -299,8 +314,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
 
   @Override
   public void onItemClick(View v, EpoxyModel<?> model, PostRealm item) {
-    PostDetailController controller =
-        PostDetailController.create(item.getId(), item.getAcceptedCommentId());
+    PostDetailController controller = PostDetailController.create(item.getId());
     controller.setModelUpdateEvent(this);
     startTransaction(controller, new HorizontalChangeHandler());
   }
@@ -361,12 +375,16 @@ public class PostListController extends MvpController<PostListView, PostListPres
     rvPostFeed.setHasFixedSize(true);
     rvPostFeed.setAdapter(epoxyController.getAdapter());
 
-    /*rvPostFeed.addOnScrollListener(new EndlessRecyclerOnScrollListener() {
+    endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(lm) {
       @Override
-      public void onLoadMore() {
-        handler.postDelayed(() -> chooseLoadMethod(true), 700);
+      public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+        Timber.d("onLoadMore(), totalItemCount: " + totalItemsCount);
+        chooseLoadMoreMethod();
+        epoxyController.showLoader();
       }
-    });*/
+    };
+
+    rvPostFeed.addOnScrollListener(endlessRecyclerOnScrollListener);
   }
 
   private void setupPullToRefresh() {
@@ -439,6 +457,29 @@ public class PostListController extends MvpController<PostListView, PostListPres
         break;
       case VIEW_TYPE_SORTER:
         getPresenter().loadPostsByPostSorter(pullToRefresh, postSorter, 20);
+        break;
+    }
+  }
+
+  private void chooseLoadMoreMethod() {
+    switch (viewType) {
+      case VIEW_TYPE_USER:
+        getPresenter().loadMorePostsByUser(userId, 20);
+        break;
+      case VIEW_TYPE_TAGS:
+        getPresenter().loadMorePostsByTag(tagName, PostSorter.NEWEST, 20);
+        break;
+      case VIEW_TYPE_GROUP:
+        getPresenter().loadMorePostsByGroup(groupId, PostSorter.NEWEST, 20);
+        break;
+      case VIEW_TYPE_BOUNTY:
+        getPresenter().loadMorePostsByBounty(20);
+        break;
+      case VIEW_TYPE_BOOKMARKED:
+        getPresenter().loadMorePostsByBounty(20);
+        break;
+      case VIEW_TYPE_SORTER:
+        getPresenter().loadMorePostsByPostSorter(postSorter, 20);
         break;
     }
   }

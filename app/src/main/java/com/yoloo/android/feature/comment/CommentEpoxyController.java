@@ -18,7 +18,6 @@ import com.yoloo.android.util.Preconditions;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.ArrayList;
 import java.util.List;
-import timber.log.Timber;
 
 class CommentEpoxyController extends Typed2EpoxyController<List<CommentRealm>, Boolean> {
 
@@ -66,7 +65,6 @@ class CommentEpoxyController extends Typed2EpoxyController<List<CommentRealm>, B
 
   @Override
   public void setData(List<CommentRealm> items, Boolean loadingMore) {
-    Timber.d("Comments: %s", items.get(0));
     this.comments = items;
     super.setData(items, Preconditions.checkNotNull(loadingMore, "loadingMore cannot be null."));
   }
@@ -82,7 +80,7 @@ class CommentEpoxyController extends Typed2EpoxyController<List<CommentRealm>, B
   }
 
   void scrollToEnd(RecyclerView recyclerView) {
-    recyclerView.smoothScrollToPosition(getAdapter().getItemCount() - 1);
+    recyclerView.smoothScrollToPosition(getAdapter().getItemCount());
   }
 
   @Override
@@ -90,6 +88,14 @@ class CommentEpoxyController extends Typed2EpoxyController<List<CommentRealm>, B
     Stream.of(comments).forEach(this::createCommentModel);
 
     loader.addIf(loadingMore, this);
+  }
+
+  void showLoader() {
+    setData(comments, true);
+  }
+
+  void hideLoader() {
+    setData(comments, false);
   }
 
   private void createCommentModel(CommentRealm comment) {
@@ -110,6 +116,9 @@ class CommentEpoxyController extends Typed2EpoxyController<List<CommentRealm>, B
   }
 
   private boolean shouldShowAcceptButton(CommentRealm comment) {
-    return !comment.isOwner() && comment.isPostOwner() && !comment.isPostAccepted() && postType != PostRealm.TYPE_BLOG;
+    return !comment.isOwner()
+        && comment.isPostOwner()
+        && !comment.isPostAccepted()
+        && postType != PostRealm.TYPE_BLOG;
   }
 }

@@ -80,7 +80,7 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_marginTop="16dp"
-          android:text="Honorary Members"
+          android:text="@string/settings_honorary_members"
           android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
           app:layout_constraintStart_toStartOf="parent"
           app:layout_constraintTop_toBottomOf="@+id/iv_facebook_icon"
@@ -93,7 +93,7 @@
           android:layout_marginTop="16dp"
           android:gravity="center"
           android:padding="16dp"
-          android:text="Click to see all honorary members"
+          android:text="@string/settings_click_to_see_all_honorary_members"
           app:layout_constraintEnd_toEndOf="parent"
           app:layout_constraintStart_toStartOf="parent"
           app:layout_constraintTop_toBottomOf="@+id/tv_honorary_members_title" />

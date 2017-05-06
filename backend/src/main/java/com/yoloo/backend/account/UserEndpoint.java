@@ -135,6 +135,15 @@ public class UserEndpoint {
         Optional.fromNullable(limit), user);
   }
 
+  /**
+   * List new users collection response.
+   *
+   * @param cursor the cursor
+   * @param limit the limit
+   * @param user the user
+   * @return the collection response
+   * @throws ServiceException the service exception
+   */
   @ApiMethod(name = "users.listNewUsers", path = "users/new", httpMethod = ApiMethod.HttpMethod.GET)
   public CollectionResponse<Account> listNewUsers(@Nullable @Named("cursor") String cursor,
       @Nullable @Named("limit") Integer limit, User user) throws ServiceException {

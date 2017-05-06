@@ -12,8 +12,8 @@ public class Deref {
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  public static <T> List<T> deref(List<Ref<T>> reflist) {
-    return Lists.transform(reflist, (Func) Func.INSTANCE);
+  public static <T> List<T> deref(List<Ref<T>> refList) {
+    return Lists.transform(refList, (Func) Func.INSTANCE);
   }
 
   private static class Func<T> implements Function<Ref<T>, T> {

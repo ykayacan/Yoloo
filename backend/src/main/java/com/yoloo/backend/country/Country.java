@@ -1,5 +1,6 @@
 package com.yoloo.backend.country;
 
+import com.google.api.server.spi.config.ApiTransformer;
 import com.google.appengine.api.datastore.Link;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
@@ -18,6 +19,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@ApiTransformer(CountryTransformer.class)
 @FieldDefaults(makeFinal = false)
 public class Country {
   public static final String FIELD_NAME = "name";

@@ -29,7 +29,8 @@ public class CommentService {
         commentShardService.createShardMapWithRef(commentKey);
 
     // Create new comment.
-    Comment comment = Comment.builder()
+    Comment comment = Comment
+        .builder()
         .id(commentKey.getId())
         .parent(account.getKey())
         .postKey(postKey)
@@ -37,9 +38,6 @@ public class CommentService {
         .content(content)
         .username(account.getUsername())
         .avatarUrl(account.getAvatarUrl())
-        .dir(Vote.Direction.DEFAULT.getValue())
-        .accepted(false)
-        .voteCount(0L)
         .created(DateTime.now())
         .build();
 

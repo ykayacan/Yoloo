@@ -20,10 +20,9 @@ import com.yoloo.android.R;
 import com.yoloo.android.data.model.GroupRealm;
 import com.yoloo.android.data.repository.group.GroupRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
+import com.yoloo.android.feature.grouplist.GroupListEpoxyController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
-import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
-import com.yoloo.android.util.DisplayUtil;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.ViewUtils;
 import io.reactivex.subjects.PublishSubject;
@@ -32,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import timber.log.Timber;
 
 public class SelectGroupController extends MvpController<SelectGroupView, SelectGroupPresenter>
-    implements SelectGroupView, OnItemClickListener<GroupRealm> {
+    implements SelectGroupView, OnItemClickListener<GroupRealm>,GroupListEpoxyController.OnSubscribeListener {
 
   private final PublishSubject<String> querySubject = PublishSubject.create();
 
@@ -65,12 +64,14 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
     getPresenter().loadGroups();
+    //getPresenter().loadSubscribedGroups();
 
     querySubject.debounce(400, TimeUnit.MILLISECONDS).subscribe(query -> {
-      if (query.length() > 2) {
+      if (!query.isEmpty()) {
         getPresenter().searchGroups(query);
       } else {
         getPresenter().loadGroups();
+        //getPresenter().loadSubscribedGroups();
       }
     });
   }
@@ -94,7 +95,21 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
 
   @Override
   public void onLoaded(List<GroupRealm> value) {
-    epoxyController.setData(value);
+    epoxyController.setData(value, false);
+  }
+
+  @Override
+  public void onSubscribedGroupsLoaded(List<GroupRealm> subscribedGroups) {
+
+  }
+
+  @Override
+  public void onSubscribe(@NonNull String groupId, boolean subscribed) {
+    if (subscribed) {
+      getPresenter().unsubscribe(groupId);
+    } else {
+      getPresenter().subscribe(groupId);
+    }
   }
 
   @Override
@@ -135,12 +150,11 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
   private void setupRecyclerview() {
     epoxyController = new SelectGroupEpoxyController(Glide.with(getActivity()));
     epoxyController.setOnItemClickListener(this);
+    epoxyController.setOnSubscribeListener(this);
 
     rvSelectGroup.setLayoutManager(new LinearLayoutManager(getActivity()));
     rvSelectGroup.setItemAnimator(new DefaultItemAnimator());
     rvSelectGroup.setHasFixedSize(true);
-    rvSelectGroup.addItemDecoration(
-        new SpaceItemDecoration(DisplayUtil.dpToPx(8), SpaceItemDecoration.VERTICAL));
     rvSelectGroup.setAdapter(epoxyController.getAdapter());
   }
 

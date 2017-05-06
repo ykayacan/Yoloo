@@ -5,4 +5,5 @@ import com.yoloo.android.framework.MvpDataView;
 import java.util.List;
 
 public interface SelectGroupView extends MvpDataView<List<GroupRealm>> {
+  void onSubscribedGroupsLoaded(List<GroupRealm> subscribedGroups);
 }

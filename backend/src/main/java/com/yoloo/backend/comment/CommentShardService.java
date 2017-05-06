@@ -17,7 +17,8 @@ public class CommentShardService implements Shardable<CommentShard, Comment> {
 
   @Override
   public Map<Ref<CommentShard>, CommentShard> createShardMapWithRef(Iterable<Key<Comment>> keys) {
-    return Observable.fromIterable(keys)
+    return Observable
+        .fromIterable(keys)
         .flatMap(this::createShardsFromPostKey)
         .toMap(Ref::create)
         .blockingGet();
@@ -25,22 +26,21 @@ public class CommentShardService implements Shardable<CommentShard, Comment> {
 
   @Override
   public Map<Key<CommentShard>, CommentShard> createShardMapWithKey(Iterable<Key<Comment>> keys) {
-    return Observable.fromIterable(keys)
+    return Observable
+        .fromIterable(keys)
         .flatMap(this::createShardsFromPostKey)
         .toMap(Key::create)
         .blockingGet();
   }
 
-  @Override public Map<Ref<CommentShard>, CommentShard> createShardMapWithRef(Key<Comment> key) {
-    return createShardsFromPostKey(key)
-        .toMap(Ref::create)
-        .blockingGet();
+  @Override
+  public Map<Ref<CommentShard>, CommentShard> createShardMapWithRef(Key<Comment> key) {
+    return createShardsFromPostKey(key).toMap(Ref::create).blockingGet();
   }
 
-  @Override public Map<Key<CommentShard>, CommentShard> createShardMapWithKey(Key<Comment> key) {
-    return createShardsFromPostKey(key)
-        .toMap(Key::create)
-        .blockingGet();
+  @Override
+  public Map<Key<CommentShard>, CommentShard> createShardMapWithKey(Key<Comment> key) {
+    return createShardsFromPostKey(key).toMap(Key::create).blockingGet();
   }
 
   @Override
@@ -49,15 +49,19 @@ public class CommentShardService implements Shardable<CommentShard, Comment> {
     return CommentShard.createKey(entityKey, shardNum);
   }
 
-  @Override public Observable<List<Comment>> mergeShards(Collection<? extends Comment> entities) {
-    return Observable.fromIterable(entities)
+  @Override
+  public Observable<List<Comment>> mergeShards(Collection<? extends Comment> entities) {
+    return Observable
+        .fromIterable(entities)
         .flatMap(this::mergeShards)
         .toList(entities.size() == 0 ? 1 : entities.size())
         .toObservable();
   }
 
-  @Override public Observable<Comment> mergeShards(Comment entity) {
-    return Observable.fromIterable(entity.getShards())
+  @Override
+  public Observable<Comment> mergeShards(Comment entity) {
+    return Observable
+        .fromIterable(entity.getShards())
         .cast(CommentShard.class)
         .reduce((s1, s2) -> s1.addValues(s2.getVotes()))
         .map(s -> entity.withVoteCount(s.getVotes()))
@@ -71,7 +75,8 @@ public class CommentShardService implements Shardable<CommentShard, Comment> {
   }
 
   private CommentShard createShard(Key<Comment> postKey, Integer shardNum) {
-    return CommentShard.builder()
+    return CommentShard
+        .builder()
         .id(ShardUtil.generateShardId(postKey, shardNum))
         .votes(0L)
         .build();

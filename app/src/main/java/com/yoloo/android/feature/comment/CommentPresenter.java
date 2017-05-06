@@ -8,11 +8,10 @@ import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.data.repository.comment.CommentRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.framework.MvpPresenter;
-import com.yoloo.android.util.Group;
+import com.yoloo.android.util.Pair;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import timber.log.Timber;
@@ -29,62 +28,32 @@ class CommentPresenter extends MvpPresenter<CommentView> {
     this.userRepository = userRepository;
   }
 
-  void loadData(String postId, String postOwnerId, String acceptedCommentId) {
-    Observable<AccountRealm> userObservable =
-        userRepository.getLocalMe().toObservable().observeOn(AndroidSchedulers.mainThread());
-
-    Observable<Optional<CommentRealm>> acceptedCommentObservable =
-        getAcceptedCommentObservable(postId, acceptedCommentId).observeOn(
-            AndroidSchedulers.mainThread());
-
-    Observable<Response<List<CommentRealm>>> commentsObservable =
-        commentRepository.listComments(postId, null, 20).observeOn(AndroidSchedulers.mainThread());
-
-    Disposable d = Observable
-        .zip(userObservable, acceptedCommentObservable, commentsObservable, Group.Of3::create)
-        .map(group -> {
-          AccountRealm account = group.first;
-          List<CommentRealm> commentList = new ArrayList<>(21);
-
-          final boolean accepted = group.second.isPresent();
-
-          if (accepted) {
-            CommentRealm acceptedComment = group.second.get();
-            acceptedComment.setOwner(account.getId().equals(acceptedComment.getOwnerId()));
-            commentList.add(acceptedComment);
-          }
-
-          List<CommentRealm> comments = Stream
-              .of(group.third.getData())
-              .map(comment -> comment
-                  .setOwner(account.getId().equals(comment.getOwnerId()))
-                  .setPostAccepted(accepted)
-                  .setPostOwner(postOwnerId.equals(account.getId())))
-              .toList();
-
-          commentList.addAll(comments);
-
-          return Response.create(commentList, group.third.getCursor());
-        })
-        .subscribe(response -> {
-          cursor = response.getCursor();
-          getView().onLoaded(response.getData());
-        }, this::showError);
-
-    getDisposable().add(d);
-  }
-
-  void loadComments(boolean pullToRefresh, @Nonnull String postId, int limit) {
+  void loadComments(boolean pullToRefresh, @Nonnull String postId, @Nonnull String postOwnerId,
+      boolean hasAcceptedComment) {
     shouldResetCursor(pullToRefresh);
 
-    Disposable d = commentRepository
-        .listComments(postId, cursor, limit)
-        .observeOn(AndroidSchedulers.mainThread(), true)
-        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
-        .subscribe(response -> {
-          cursor = response.getCursor();
-          getView().onLoaded(response.getData());
-        }, this::showError);
+    Observable<AccountRealm> meObservable =
+        userRepository.getLocalMe().toObservable().observeOn(AndroidSchedulers.mainThread());
+
+    Observable<Response<List<CommentRealm>>> commentsObservable = commentRepository
+        .listComments(postId, cursor, 20)
+        .observeOn(AndroidSchedulers.mainThread())
+        .doOnNext(response -> Timber.d("Comments: %s", response.getData()));
+
+    Disposable d = Observable.zip(meObservable, commentsObservable, Pair::create).map(pair -> {
+      List<CommentRealm> comments = Stream
+          .of(pair.second.getData())
+          .map(comment -> comment
+              .setOwner(pair.first.getId().equals(comment.getOwnerId()))
+              .setPostAccepted(hasAcceptedComment)
+              .setPostOwner(postOwnerId.equals(pair.first.getId())))
+          .toList();
+
+      return Pair.create(pair.first, Response.create(comments, pair.second.getCursor()));
+    }).subscribe(pair -> {
+      cursor = pair.second.getCursor();
+      getView().onLoaded(pair.second.getData());
+    }, this::showError);
 
     getDisposable().add(d);
   }
@@ -104,7 +73,7 @@ class CommentPresenter extends MvpPresenter<CommentView> {
     Disposable d = commentRepository
         .acceptComment(comment)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(c -> getView().onNewAccept(c.getId()), this::showError);
+        .subscribe(c -> getView().onCommentAccepted(c), this::showError);
 
     getDisposable().add(d);
   }

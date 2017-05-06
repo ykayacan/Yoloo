@@ -246,61 +246,61 @@ public class GameService {
   }
 
   /**
-   * Add accept comment bonus post.
+   * Add accept comment bonus post entity.
    *
-   * @param askerTracker the asker tracker
-   * @param answererTracker the answerer tracker
-   * @param askerRecord the asker record
-   * @param answererRecord the answerer record
-   * @param postEntity the post
-   * @param askerListener the asker listener
-   * @param answererListener the answerer listener
-   * @return the post
+   * @param postOwnerTracker the post owner tracker
+   * @param commenterTracker the commenter tracker
+   * @param postOwnerRecord the post owner record
+   * @param commentOwnerRecord the comment owner record
+   * @param post the post
+   * @param postOwnerListener the post owner listener
+   * @param commenterListener the commenter listener
+   * @return the post entity
    */
-  public PostEntity addAcceptCommentBonus(Tracker askerTracker, Tracker answererTracker,
-      DeviceRecord askerRecord, DeviceRecord answererRecord, PostEntity postEntity,
-      NewNotificationListener askerListener, NewNotificationListener answererListener) {
-    if (postEntity.getAcceptedCommentId() == null) {
-      List<Notifiable> askerBundle = new ArrayList<>(2);
-      List<Notifiable> answererBundle = new ArrayList<>(2);
+  public PostEntity addAcceptCommentBonus(Tracker postOwnerTracker, Tracker commenterTracker,
+      DeviceRecord postOwnerRecord, DeviceRecord commentOwnerRecord, PostEntity post,
+      NewNotificationListener postOwnerListener, NewNotificationListener commenterListener) {
+    if (post.getAcceptedCommentKey() == null) {
+      List<Notifiable> postOwnerNotifiables = new ArrayList<>(2);
+      List<Notifiable> commenterNotifiables = new ArrayList<>(2);
 
       final int bonusBounty =
-          answererTracker.getLevel() == 0 ? 1 : answererTracker.getLevel() + postEntity.getBounty();
-      answererTracker.addBounties(bonusBounty);
+          commenterTracker.getLevel() == 0 ? 1 : commenterTracker.getLevel() + post.getBounty();
+      commenterTracker.addBounties(bonusBounty);
 
-      boolean updatedAskerLevel = false;
-      int askerPoints = 0;
-      if (!askerTracker.isCap()) {
-        askerTracker.addPoints(20);
-        askerPoints = 20;
-        updatedAskerLevel = updateLevel(askerTracker);
+      boolean updatedPostOwnerLevel = false;
+      int postOwnerPoints = 0;
+      if (!postOwnerTracker.isCap()) {
+        postOwnerTracker.addPoints(20);
+        postOwnerPoints = 20;
+        updatedPostOwnerLevel = updateLevel(postOwnerTracker);
       }
 
-      boolean updateAnswererLevel = false;
-      int answererPoints = 0;
-      if (!answererTracker.isCap()) {
-        answererTracker.addPoints(50);
-        answererPoints = 50;
-        updateAnswererLevel = updateLevel(answererTracker);
+      boolean updateCommenterLevel = false;
+      int commenterPoints = 0;
+      if (!commenterTracker.isCap()) {
+        commenterTracker.addPoints(50);
+        commenterPoints = 50;
+        updateCommenterLevel = updateLevel(commenterTracker);
       }
 
-      askerBundle.add(GameBonusNotifiable.create(askerRecord, askerPoints, 0));
-      answererBundle.add(GameBonusNotifiable.create(answererRecord, answererPoints, bonusBounty));
+      postOwnerNotifiables.add(GameBonusNotifiable.create(postOwnerRecord, postOwnerPoints, 0));
+      commenterNotifiables.add(
+          GameBonusNotifiable.create(commentOwnerRecord, commenterPoints, bonusBounty));
 
-      if (updatedAskerLevel) {
-        askerBundle.add(LevelUpNotifiable.create(askerRecord, askerTracker));
+      if (updatedPostOwnerLevel) {
+        postOwnerNotifiables.add(LevelUpNotifiable.create(postOwnerRecord, postOwnerTracker));
+        postOwnerListener.newNotifications(postOwnerNotifiables);
       }
-      if (updateAnswererLevel) {
-        answererBundle.add(LevelUpNotifiable.create(answererRecord, answererTracker));
+      if (updateCommenterLevel) {
+        commenterNotifiables.add(LevelUpNotifiable.create(commentOwnerRecord, commenterTracker));
+        commenterListener.newNotifications(commenterNotifiables);
       }
 
-      askerListener.newNotifications(askerBundle);
-      answererListener.newNotifications(answererBundle);
-
-      return postEntity.withBounty(0);
+      return post.withBounty(0);
     }
 
-    return postEntity;
+    return post;
   }
 
   /**

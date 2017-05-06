@@ -9,7 +9,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +21,6 @@ import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.CommentRealm;
-import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.comment.CommentRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
@@ -33,13 +31,13 @@ import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.writecommentbox.CommentAutocomplete;
 import com.yoloo.android.framework.MvpController;
+import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
 import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.KeyboardUtil;
 import java.util.List;
-import org.parceler.Parcels;
 import timber.log.Timber;
 
 public class CommentController extends MvpController<CommentView, CommentPresenter>
@@ -48,7 +46,10 @@ public class CommentController extends MvpController<CommentView, CommentPresent
     OnMarkAsAcceptedClickListener, OnItemLongClickListener<CommentRealm>,
     CommentAutocomplete.NewCommentListener {
 
-  private static final String KEY_POST = "POST";
+  private static final String KEY_POST_ID = "POST_ID";
+  private static final String KEY_POST_OWNER_ID = "POST_OWNER_ID";
+  private static final String KEY_POST_TYPE = "POST_TYPE";
+  private static final String KEY_HAS_ACCEPTED_COMMENT = "HAS_ACCEPTED_COMMENT";
 
   @BindView(R.id.rv_comment) RecyclerView rvComment;
   @BindView(R.id.layout_compose) CommentAutocomplete composeLayout;
@@ -56,7 +57,10 @@ public class CommentController extends MvpController<CommentView, CommentPresent
 
   private CommentEpoxyController epoxyController;
 
-  private PostRealm post;
+  private String postId;
+  private String postOwnerId;
+  private int postType;
+  private boolean hasAcceptedComment;
 
   private boolean reEnter;
 
@@ -67,8 +71,14 @@ public class CommentController extends MvpController<CommentView, CommentPresent
     setRetainViewMode(RetainViewMode.RETAIN_DETACH);
   }
 
-  public static CommentController create(PostRealm post) {
-    final Bundle bundle = new BundleBuilder().putParcelable(KEY_POST, Parcels.wrap(post)).build();
+  public static CommentController create(@NonNull String postId, @NonNull String postOwnerId,
+      int postType, boolean hasAcceptedComment) {
+    final Bundle bundle = new BundleBuilder()
+        .putString(KEY_POST_ID, postId)
+        .putString(KEY_POST_OWNER_ID, postOwnerId)
+        .putInt(KEY_POST_TYPE, postType)
+        .putBoolean(KEY_HAS_ACCEPTED_COMMENT, hasAcceptedComment)
+        .build();
 
     return new CommentController(bundle);
   }
@@ -83,9 +93,12 @@ public class CommentController extends MvpController<CommentView, CommentPresent
     super.onViewBound(view);
 
     final Bundle args = getArgs();
-    post = Parcels.unwrap(args.getParcelable(KEY_POST));
+    postId = args.getString(KEY_POST_ID);
+    postOwnerId = args.getString(KEY_POST_OWNER_ID);
+    postType = args.getInt(KEY_POST_TYPE);
+    hasAcceptedComment = args.getBoolean(KEY_HAS_ACCEPTED_COMMENT);
 
-    composeLayout.setPostId(post.getId());
+    composeLayout.setPostId(postId);
     composeLayout.setNewCommentListener(this);
 
     setupToolbar();
@@ -96,14 +109,14 @@ public class CommentController extends MvpController<CommentView, CommentPresent
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
     if (!reEnter) {
-      getPresenter().loadData(post.getId(), post.getOwnerId(), post.getAcceptedCommentId());
+      getPresenter().loadComments(false, postId, postOwnerId, hasAcceptedComment);
       reEnter = true;
     }
   }
 
   @Override
   public boolean handleBack() {
-    composeLayout.hideKeyboard();
+    KeyboardUtil.hideKeyboard(getView());
     return super.handleBack();
   }
 
@@ -114,14 +127,11 @@ public class CommentController extends MvpController<CommentView, CommentPresent
 
   @Override
   public void onLoaded(List<CommentRealm> comments) {
-    epoxyController.setData(comments, false);
-  }
-
-  @Override
-  public void onNewAccept(String commentId) {
-    post.setAcceptedCommentId(commentId);
-
-    modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, post);
+    if (comments.isEmpty()) {
+      epoxyController.hideLoader();
+    } else {
+      epoxyController.setData(comments, false);
+    }
   }
 
   @Override
@@ -138,12 +148,12 @@ public class CommentController extends MvpController<CommentView, CommentPresent
   public void onNewComment(CommentRealm comment) {
     epoxyController.addComment(comment
         .setOwner(true)
-        .setPostAccepted(!TextUtils.isEmpty(post.getAcceptedCommentId()))
-        .setPostOwner(post.getOwnerId().equals(comment.getOwnerId())));
+        .setPostAccepted(hasAcceptedComment)
+        .setPostOwner(postOwnerId.equals(comment.getOwnerId())));
 
     epoxyController.scrollToEnd(rvComment);
 
-    modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, post);
+    modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, postId);
   }
 
   @Override
@@ -181,6 +191,11 @@ public class CommentController extends MvpController<CommentView, CommentPresent
   }
 
   @Override
+  public void onCommentAccepted(CommentRealm acceptedComment) {
+    modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, postId);
+  }
+
+  @Override
   public void onItemLongClick(View v, EpoxyModel<?> model, CommentRealm item) {
     new AlertDialog.Builder(getActivity())
         .setItems(R.array.action_comment_dialog, (dialog, which) -> {
@@ -203,7 +218,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
 
   private void setupRecyclerView() {
     epoxyController =
-        new CommentEpoxyController(getActivity(), post.getPostType(), Glide.with(getActivity()));
+        new CommentEpoxyController(getActivity(), postType, Glide.with(getActivity()));
     epoxyController.setOnCommentLongClickListener(this);
     epoxyController.setOnMarkAsAcceptedClickListener(this);
     epoxyController.setOnMentionClickListener(this);
@@ -213,12 +228,22 @@ public class CommentController extends MvpController<CommentView, CommentPresent
     final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
     rvComment.setLayoutManager(lm);
 
-    final SlideInItemAnimator animator = new SlideInItemAnimator();
-    animator.setSupportsChangeAnimations(false);
-    rvComment.setItemAnimator(animator);
+    rvComment.setItemAnimator(new SlideInItemAnimator());
 
     rvComment.setHasFixedSize(true);
     rvComment.setAdapter(epoxyController.getAdapter());
+
+    EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener =
+        new EndlessRecyclerOnScrollListener(lm) {
+          @Override
+          public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+            Timber.d("onLoadMore(), totalItemCount: " + totalItemsCount);
+            getPresenter().loadComments(false, postId, postOwnerId, hasAcceptedComment);
+            epoxyController.showLoader();
+          }
+        };
+
+    rvComment.addOnScrollListener(endlessRecyclerOnScrollListener);
   }
 
   private void startTransaction(Controller to, ControllerChangeHandler handler) {

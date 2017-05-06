@@ -8,7 +8,7 @@ import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.Interpolator;
-import com.github.ag.floatingactionmenu.OptionsFabLayout;
+import com.yoloo.android.ui.widget.floatingactionmenu.OptionsFabLayout;
 
 public class ScrollAwareFABBehavior extends CoordinatorLayout.Behavior<OptionsFabLayout> {
   private static final Interpolator INTERPOLATOR = new FastOutSlowInInterpolator();

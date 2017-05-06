@@ -215,7 +215,14 @@ public class TravelerGroupController extends Controller {
     TravelerGroupEntity group = (TravelerGroupEntity) fetched.get(groupKey);
 
     ofy().transact(() -> {
-      Account updatedAccount = account.toBuilder().subscribedGroupKey(groupKey).build();
+      List<Key<TravelerGroupEntity>> subscribedGroupKeys = account.getSubscribedGroupKeys();
+      if (subscribedGroupKeys == null) {
+        subscribedGroupKeys = new ArrayList<>();
+      }
+
+      subscribedGroupKeys.add(groupKey);
+
+      Account updatedAccount = account.withSubscribedGroupKeys(subscribedGroupKeys);
       TravelerGroupEntity updatedGroup = group.withSubscriberCount(group.getSubscriberCount() + 1);
 
       ofy().save().entities(updatedAccount, updatedGroup).now();

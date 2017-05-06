@@ -3,12 +3,9 @@ package com.yoloo.android.feature.profile.profileedit;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.framework.MvpPresenter;
-
-import javax.annotation.Nonnull;
-
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import timber.log.Timber;
+import javax.annotation.Nonnull;
 
 public class ProfileEditPresenter extends MvpPresenter<ProfileEditView> {
 
@@ -18,13 +15,15 @@ public class ProfileEditPresenter extends MvpPresenter<ProfileEditView> {
     this.userRepository = userRepository;
   }
 
-  @Override public void onAttachView(ProfileEditView view) {
+  @Override
+  public void onAttachView(ProfileEditView view) {
     super.onAttachView(view);
     loadMe();
   }
 
   private void loadMe() {
-    Disposable d = userRepository.getMe()
+    Disposable d = userRepository
+        .getMe()
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(account -> getView().onLoaded(account),
             throwable -> getView().onError(throwable));
@@ -33,17 +32,22 @@ public class ProfileEditPresenter extends MvpPresenter<ProfileEditView> {
   }
 
   void updateMe(@Nonnull AccountRealm account) {
-    Disposable d = userRepository.updateMe(account)
+    getView().onShowLoading();
+
+    Disposable d = userRepository
+        .updateMe(account)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(updated -> getView().onAccountUpdated(updated),
-            throwable -> getView().onError(throwable));
+        .subscribe(updated -> {
+          getView().onHideLoading();
+          getView().onAccountUpdated(updated);
+        }, throwable -> getView().onError(throwable));
 
     getDisposable().add(d);
   }
 
   void checkUsername(@Nonnull String username) {
-    Timber.d("checkUsername(): %s", username);
-    Disposable d = userRepository.checkUsername(username)
+    Disposable d = userRepository
+        .checkUsername(username)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(available -> {
           if (!available) {

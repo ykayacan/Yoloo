@@ -8,6 +8,7 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.AccountRealm;
+import com.yoloo.android.data.model.CountryRealm;
 import com.yoloo.android.data.model.GameInfoRealm;
 import com.yoloo.android.data.model.RegisterUserPayload;
 import io.reactivex.Completable;
@@ -133,6 +134,10 @@ public class UserRepository {
   public Observable<Response<List<AccountRealm>>> listRecommendedUsers(@Nullable String cursor,
       int limit) {
     return remoteDataStore.listRecommendedUsers(cursor, limit);
+  }
+
+  public Observable<List<CountryRealm>> listVisitedCountries(@Nonnull String userId) {
+    return remoteDataStore.listVisitedCountries(userId);
   }
 
   public Observable<List<AccountRealm>> listRecentSearchedUsers() {

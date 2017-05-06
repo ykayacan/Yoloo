@@ -54,7 +54,6 @@ public class MentionNotifiable implements Notifiable {
         .value(PushConstants.SENDER_USERNAME, sender.getUsername())
         .value(PushConstants.SENDER_AVATAR_URL, sender.getAvatarUrl().getValue())
         .value(PushConstants.COMMENT, CommentUtil.trimContent(comment.getContent(), 50))
-        .value(PushConstants.ACCEPTED_COMMENT_ID, postEntity.getAcceptedCommentId())
         .build();
 
     return PushMessage

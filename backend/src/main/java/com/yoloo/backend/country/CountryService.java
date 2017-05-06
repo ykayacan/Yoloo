@@ -6,10 +6,12 @@ import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ServingUrlOptions;
 import com.google.appengine.api.urlfetch.HTTPResponse;
 import com.google.appengine.api.urlfetch.URLFetchService;
+import com.google.appengine.api.users.User;
 import com.google.common.base.Preconditions;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.NotFoundException;
 import com.googlecode.objectify.cmd.Query;
+import com.yoloo.backend.account.Account;
 import com.yoloo.backend.config.MediaConfig;
 import com.yoloo.backend.country.json.GeognosResponse;
 import com.yoloo.backend.util.ServerConfig;
@@ -18,8 +20,10 @@ import ix.Ix;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.Future;
+import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 
@@ -78,7 +82,8 @@ public class CountryService {
         .flatMap(country -> {
           ofy().save().entity(country);
           return Single.just(country);
-        }).blockingGet();
+        })
+        .blockingGet();
   }
 
   public Map<Key<Country>, Country> getCountries(String... countryCodes) {
@@ -99,5 +104,22 @@ public class CountryService {
     query = query.limit(15);
 
     return query.list();
+  }
+
+  /**
+   * List visited countries collection.
+   *
+   * @param userId the user id
+   * @param user the user
+   * @return the collection
+   */
+  public Collection<Country> listVisitedCountries(@Nonnull String userId, User user) {
+    Account account = ofy().load().key(Key.<Account>create(userId)).now();
+
+    if (account.getVisitedCountries() == null) {
+      return Collections.emptyList();
+    }
+
+    return account.getVisitedCountries();
   }
 }

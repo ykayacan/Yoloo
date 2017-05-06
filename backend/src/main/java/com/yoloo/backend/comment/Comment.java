@@ -11,7 +11,6 @@ import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
 import com.googlecode.objectify.annotation.Parent;
-import com.googlecode.objectify.condition.IfNotDefault;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.comment.transformer.CommentTransformer;
 import com.yoloo.backend.post.PostEntity;
@@ -40,7 +39,6 @@ public class Comment implements Votable {
 
   public static final String FIELD_POST_KEY = "postKey";
   public static final String FIELD_CREATED = "created";
-  public static final String FIELD_ACCEPTED = "accepted";
 
   @Id private long id;
 
@@ -56,11 +54,10 @@ public class Comment implements Votable {
 
   @Index private Key<PostEntity> postKey;
 
-  @Wither @Index(IfNotDefault.class) private boolean accepted;
-
   @Index private DateTime created;
 
   // Extra fields
+  @Ignore @Wither private boolean accepted;
 
   @Ignore @Wither private int dir;
 
@@ -96,14 +93,13 @@ public class Comment implements Votable {
         .username(username)
         .avatarUrl(avatarUrl)
         .dir(dir.getValue())
-        .accepted(accepted)
         .voteCount(voteCount)
         .created(created)
         .build();
   }
 
   public List<CommentShard> getShards() {
-    return Deref.deref(this.shardRefs);
+    return Deref.deref(shardRefs);
   }
 
   @NoArgsConstructor

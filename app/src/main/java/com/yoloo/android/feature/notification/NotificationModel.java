@@ -23,7 +23,6 @@ import com.yoloo.android.ui.widget.timeview.TimeManager;
 import com.yoloo.android.util.HtmlUtil;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.List;
-import timber.log.Timber;
 
 @EpoxyModelClass(layout = R.layout.item_notification)
 abstract class NotificationModel
@@ -37,17 +36,22 @@ abstract class NotificationModel
   public void bind(NotificationHolder holder) {
     final Context context = holder.itemView.getContext();
 
-    Timber.d("Action: %s", notification.getAction());
-
-    if (notification.getAction().equals(NotificationRealm.GAME)) {
-      holder.ivUserAvatar.setImageDrawable(
-          ContextCompat.getDrawable(context, R.drawable.ic_bounty_3));
-    } else {
-      Glide
-          .with(context)
-          .load(notification.getSenderAvatarUrl())
-          .bitmapTransform(cropCircleTransformation)
-          .into(holder.ivUserAvatar);
+    switch (notification.getAction()) {
+      case NotificationRealm.GAME:
+        holder.ivUserAvatar.setImageDrawable(
+            ContextCompat.getDrawable(context, R.drawable.ic_bounty_3));
+        break;
+      case NotificationRealm.ACCEPT:
+        holder.ivUserAvatar.setImageDrawable(
+            ContextCompat.getDrawable(context, R.drawable.ic_check_green_48dp));
+        break;
+      default:
+        Glide
+            .with(context)
+            .load(notification.getSenderAvatarUrl())
+            .bitmapTransform(cropCircleTransformation)
+            .into(holder.ivUserAvatar);
+        break;
     }
 
     holder.ibFollow.setVisibility(

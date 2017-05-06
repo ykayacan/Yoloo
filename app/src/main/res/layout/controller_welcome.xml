@@ -58,7 +58,7 @@
   <Button
     android:id="@+id/btn_login_start_using"
     style="@style/Yoloo.Button.StartUsing"
-    android:layout_width="168dp"
+    android:layout_width="@dimen/_198asdp"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/_16asdp"
     android:text="@string/action_login_start_using"

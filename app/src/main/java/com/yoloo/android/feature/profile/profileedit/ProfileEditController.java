@@ -2,6 +2,7 @@ package com.yoloo.android.feature.profile.profileedit;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -28,8 +29,6 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.OnTextChanged;
-import com.bluelinelabs.conductor.ControllerChangeHandler;
-import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bumptech.glide.Glide;
 import com.github.jksiezni.permissive.Permissive;
 import com.google.firebase.auth.FirebaseAuth;
@@ -52,7 +51,6 @@ import com.yoloo.android.util.FormUtil;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.MediaUtil;
 import com.yoloo.android.util.TextViewUtil;
-import com.yoloo.android.util.VersionUtil;
 import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import io.reactivex.Observable;
@@ -89,6 +87,7 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   @BindString(R.string.error_profile_edit_invalid_email) String invalidEmailString;
   @BindString(R.string.error_profile_edit_invalid_website) String invalidWebsiteString;
   @BindString(R.string.error_invalid_password) String invalidPasswordString;
+  @BindString(R.string.label_loading) String loadingString;
 
   @BindColor(R.color.primary_dark) int primaryDarkColor;
   @BindColor(R.color.primary) int primaryColor;
@@ -105,6 +104,8 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   private AccountRealm original;
 
   private Disposable disposable;
+
+  private ProgressDialog progressDialog;
 
   private CountryPickerDialog countryPicker;
 
@@ -125,6 +126,7 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
     setupToolbar();
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
 
     ControllerUtil.preventDefaultBackPressAction(view, this::showDiscardDialog);
   }
@@ -165,13 +167,6 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     if (countryPicker != null && countryPicker.isShowing()) {
       countryPicker.dismiss();
     }
-  }
-
-  @Override
-  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
-      @NonNull ControllerChangeType changeType) {
-    super.onChangeEnded(changeHandler, changeType);
-    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @Override
@@ -229,6 +224,24 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   @Override
   public void onUsernameUnavailable() {
     tilUsername.setError(usernameUnavailableString);
+  }
+
+  @Override
+  public void onShowLoading() {
+    if (progressDialog == null) {
+      progressDialog = new ProgressDialog(getActivity());
+      progressDialog.setMessage(loadingString);
+      progressDialog.setIndeterminate(true);
+    }
+
+    progressDialog.show();
+  }
+
+  @Override
+  public void onHideLoading() {
+    if (progressDialog != null && progressDialog.isShowing()) {
+      progressDialog.dismiss();
+    }
   }
 
   @Override
@@ -406,10 +419,6 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
         .load(account.getAvatarUrl().replace("s96-c", "s80-c-rw"))
         .bitmapTransform(new CropCircleTransformation(getActivity()))
         .into(ivAvatar);
-
-    if (VersionUtil.hasL()) {
-      ivAvatar.setTransitionName(getResources().getString(R.string.transition_avatar));
-    }
 
     tilRealName.getEditText().setText(account.getRealname());
     tilUsername.getEditText().setText(account.getUsername());

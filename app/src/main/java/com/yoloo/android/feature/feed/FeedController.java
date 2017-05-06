@@ -53,7 +53,6 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.claudiodegio.msv.MaterialSearchView;
 import com.claudiodegio.msv.OnSearchViewListener;
-import com.github.ag.floatingactionmenu.OptionsFabLayout;
 import com.github.florent37.tutoshowcase.TutoShowcase;
 import com.google.android.gms.appinvite.AppInvite;
 import com.google.android.gms.appinvite.AppInviteInvitation;
@@ -103,6 +102,7 @@ import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
 import com.yoloo.android.ui.widget.StateLayout;
+import com.yoloo.android.ui.widget.floatingactionmenu.OptionsFabLayout;
 import com.yoloo.android.ui.widget.materialbadgetextview.MenuItemBadge;
 import com.yoloo.android.util.DisplayUtil;
 import com.yoloo.android.util.DrawableHelper;
@@ -201,7 +201,6 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
         fab.closeOptionsMenu();
       }
     });
-
     fab.setMiniFabSelectedListener(menuItem -> {
       final int itemId = menuItem.getItemId();
 
@@ -249,6 +248,13 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     LocalBroadcastManager
         .getInstance(view.getContext())
         .registerReceiver(newPostReceiver, new IntentFilter(SendPostJob.SEND_POST_EVENT));
+
+    rootView.setViewStateListener((stateView, viewState) -> {
+      if (viewState == StateLayout.VIEW_STATE_ERROR) {
+        View errorActionView = ButterKnife.findById(stateView, R.id.error_view);
+        errorActionView.setOnClickListener(v -> getPresenter().loadFeed(false));
+      }
+    });
   }
 
   @Override
@@ -364,7 +370,6 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   @Override
   public void onLoaded(List<FeedItem> items) {
     if (items.isEmpty()) {
-      Timber.d("Empty");
       epoxyController.hideLoader();
     } else {
       epoxyController.setData(items, false);
@@ -468,7 +473,9 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
 
   @Override
   public void onCommentClick(View v, PostRealm post) {
-    CommentController controller = CommentController.create(post);
+    CommentController controller =
+        CommentController.create(post.getId(), post.getOwnerId(), post.getPostType(),
+            post.getAcceptedCommentId() != null);
     controller.setModelUpdateEvent(this);
     startTransaction(controller, new VerticalChangeHandler());
   }
@@ -482,7 +489,6 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
       if (itemId == R.id.action_popup_delete) {
         getPresenter().deletePost(post.getId());
         epoxyController.deletePost(post);
-        //adapter.delete(model);
         return true;
       }
 
@@ -522,8 +528,7 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
 
   @Override
   public void onItemClick(View v, EpoxyModel<?> model, PostRealm item) {
-    PostDetailController controller =
-        PostDetailController.create(item.getId(), item.getAcceptedCommentId());
+    PostDetailController controller = PostDetailController.create(item.getId());
     controller.setModelUpdateEvent(this);
     startTransaction(controller, new HorizontalChangeHandler());
   }

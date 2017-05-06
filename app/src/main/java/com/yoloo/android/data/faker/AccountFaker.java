@@ -51,7 +51,7 @@ public class AccountFaker {
             .setPostCount(random.nextInt(40))
             .setFollowerCount(random.nextInt(100))
             .setFollowingCount(random.nextInt(100))
-            .setAchievementCount(random.nextInt(5))
+            .setCountryCount(random.nextInt(5))
             .setPointCount(random.nextInt(120))
             .setMe(false);
 
@@ -75,7 +75,7 @@ public class AccountFaker {
         .setPostCount(56)
         .setFollowerCount(123)
         .setFollowingCount(13)
-        .setAchievementCount(3)
+        .setCountryCount(3)
         .setPointCount(88)
         .setMe(true);
   }
@@ -95,7 +95,7 @@ public class AccountFaker {
         .setPostCount(random.nextInt(40))
         .setFollowerCount(random.nextInt(100))
         .setFollowingCount(random.nextInt(100))
-        .setAchievementCount(random.nextInt(5))
+        .setCountryCount(random.nextInt(5))
         .setPointCount(random.nextInt(120))
         .setMe(false);
   }
@@ -115,7 +115,7 @@ public class AccountFaker {
           .setPostCount(4)
           .setFollowerCount(12)
           .setFollowingCount(6)
-          .setAchievementCount(1)
+          .setCountryCount(1)
           .setPointCount(25)
           .setMe(true);
 
@@ -142,7 +142,7 @@ public class AccountFaker {
           .setPostCount(8)
           .setFollowerCount(5)
           .setFollowingCount(14)
-          .setAchievementCount(1)
+          .setCountryCount(1)
           .setPointCount(20)
           .setMe(true);
 

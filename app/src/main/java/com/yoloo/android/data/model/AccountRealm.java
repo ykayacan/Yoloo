@@ -33,7 +33,7 @@ public class AccountRealm extends RealmObject {
   private long followerCount;
   private long postCount;
 
-  private int achievementCount;
+  private int countryCount;
   private String levelTitle;
   private int level;
   private int pointCount;
@@ -71,6 +71,8 @@ public class AccountRealm extends RealmObject {
           .of(dto.getVisitedCountries())
           .map(CountryRealm::new)
           .forEach(country -> visitedCountries.add(country));
+
+      countryCount = visitedCountries.size();
     }
 
     following = dto.getFollowing();
@@ -196,12 +198,12 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
-  public int getAchievementCount() {
-    return achievementCount;
+  public int getCountryCount() {
+    return countryCount;
   }
 
-  public AccountRealm setAchievementCount(int achievementCount) {
-    this.achievementCount = achievementCount;
+  public AccountRealm setCountryCount(int countryCount) {
+    this.countryCount = countryCount;
     return this;
   }
 
@@ -370,7 +372,7 @@ public class AccountRealm extends RealmObject {
     if (getFollowingCount() != that.getFollowingCount()) return false;
     if (getFollowerCount() != that.getFollowerCount()) return false;
     if (getPostCount() != that.getPostCount()) return false;
-    if (getAchievementCount() != that.getAchievementCount()) return false;
+    if (getCountryCount() != that.getCountryCount()) return false;
     if (getLevel() != that.getLevel()) return false;
     if (getPointCount() != that.getPointCount()) return false;
     if (getBountyCount() != that.getBountyCount()) return false;
@@ -476,7 +478,7 @@ public class AccountRealm extends RealmObject {
     result = 31 * result + (int) (getFollowingCount() ^ (getFollowingCount() >>> 32));
     result = 31 * result + (int) (getFollowerCount() ^ (getFollowerCount() >>> 32));
     result = 31 * result + (int) (getPostCount() ^ (getPostCount() >>> 32));
-    result = 31 * result + getAchievementCount();
+    result = 31 * result + getCountryCount();
     result = 31 * result + (getLevelTitle() != null ? getLevelTitle().hashCode() : 0);
     result = 31 * result + getLevel();
     result = 31 * result + getPointCount();
@@ -538,8 +540,8 @@ public class AccountRealm extends RealmObject {
         + followerCount
         + ", postCount="
         + postCount
-        + ", achievementCount="
-        + achievementCount
+        + ", countryCount="
+        + countryCount
         + ", levelTitle='"
         + levelTitle
         + '\''

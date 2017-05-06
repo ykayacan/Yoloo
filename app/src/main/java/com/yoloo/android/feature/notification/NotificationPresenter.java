@@ -20,7 +20,7 @@ class NotificationPresenter extends MvpPresenter<NotificationView> {
 
   @Override public void onAttachView(NotificationView view) {
     super.onAttachView(view);
-    loadNotifications(false, 20);
+    loadNotifications(false, 30);
   }
 
   void loadNotifications(boolean pullToRefresh, int limit) {

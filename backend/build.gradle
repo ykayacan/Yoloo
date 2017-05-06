@@ -29,17 +29,16 @@ apply plugin: 'com.github.ben-manes.versions'
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
-final APP_ENGINE_VERSION = '1.9.51'
+final APP_ENGINE_VERSION = '1.9.52'
 final JACKSON_VERSION = '2.9.0.pr3'
-final DAGGER2_VERSION = '2.11-rc1'
+final DAGGER2_VERSION = '2.11-rc2'
 
 dependencies {
   // App Engine
   compile "com.google.appengine:appengine:$APP_ENGINE_VERSION"
-  //compile "com.google.appengine:appengine-api-1.0-sdk:$APP_ENGINE_VERSION"
   compile "com.google.appengine:appengine-api-labs:$APP_ENGINE_VERSION"
  
-  compile 'com.google.cloud:google-cloud:0.17.1-alpha'
+  compile 'com.google.cloud:google-cloud:0.17.2-alpha'
 
   // Endpoints
   compile 'com.google.endpoints:endpoints-framework:2.0.7'

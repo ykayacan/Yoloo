@@ -14,6 +14,6 @@
     android:right="8dp"
     android:top="8dp" />
 
-  <solid android:color="@color/white" />
+  <solid android:color="@color/background_lightish_2" />
 
 </shape>

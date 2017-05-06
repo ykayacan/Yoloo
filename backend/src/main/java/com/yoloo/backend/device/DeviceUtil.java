@@ -11,9 +11,6 @@ import lombok.NoArgsConstructor;
 public class DeviceUtil {
 
   public static List<Key<DeviceRecord>> createKeysFromAccount(List<Key<Account>> accountKeys) {
-    return Observable.fromIterable(accountKeys)
-        .map(DeviceRecord::createKey)
-        .toList()
-        .blockingGet();
+    return Observable.fromIterable(accountKeys).map(DeviceRecord::createKey).toList().blockingGet();
   }
 }

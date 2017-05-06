@@ -22,10 +22,22 @@
   <TextView
     android:id="@+id/tv_item_select_group_title"
     style="@style/Widget.Yoloo.Username"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:gravity="center_vertical"
     android:maxLines="1"
     tools:text="Test Group" />
+
+  <Button
+    android:id="@+id/btn_subscribe"
+    style="@style/Yoloo.Button.Colored.Subscribe"
+    android:layout_width="wrap_content"
+    android:layout_height="32dp"
+    android:layout_marginBottom="0dp"
+    android:layout_gravity="end"
+    android:layout_marginEnd="16dp"
+    android:layout_marginTop="0dp"
+    android:foreground="?attr/selectableItemBackgroundBorderless"
+    tools:text="Subscribe" />
 
 </LinearLayout>

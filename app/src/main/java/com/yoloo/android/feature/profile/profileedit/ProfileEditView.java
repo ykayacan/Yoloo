@@ -8,4 +8,8 @@ public interface ProfileEditView extends MvpDataView<AccountRealm> {
   void onAccountUpdated(AccountRealm account);
 
   void onUsernameUnavailable();
+
+  void onShowLoading();
+
+  void onHideLoading();
 }

@@ -35,6 +35,7 @@ public class VisitedCountryListController
     implements VisitedCountryListView {
 
   private static final String KEY_SHOWCASE_FAB = "SHOWCASE_FAB";
+  private static final String KEY_USER_ID = "USER_ID";
   private static final String KEY_SELF = "SELF";
 
   @BindView(R.id.recycler_view) RecyclerView rvVisitedCountryList;
@@ -47,13 +48,14 @@ public class VisitedCountryListController
 
   private TutoShowcase fabShowcase;
 
-  public static VisitedCountryListController create(boolean self) {
-    final Bundle bundle = new BundleBuilder().putBoolean(KEY_SELF, self).build();
-    return new VisitedCountryListController(bundle);
-  }
-
   public VisitedCountryListController(@Nullable Bundle args) {
     super(args);
+  }
+
+  public static VisitedCountryListController create(boolean self, @NonNull String userId) {
+    final Bundle bundle =
+        new BundleBuilder().putBoolean(KEY_SELF, self).putString(KEY_USER_ID, userId).build();
+    return new VisitedCountryListController(bundle);
   }
 
   @Override
@@ -72,10 +74,13 @@ public class VisitedCountryListController
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
     boolean self = getArgs().getBoolean(KEY_SELF);
+    String userId = getArgs().getString(KEY_USER_ID);
 
     if (self) {
+      getPresenter().loadMyVisitedCountries();
       showFabTutorial();
     } else {
+      getPresenter().loadVisitedCountries(userId);
       fab.setVisibility(View.GONE);
     }
   }

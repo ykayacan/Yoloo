@@ -28,7 +28,7 @@
   <string name="action_feed_menu_notification">Gönderiler</string>
   <string name="label_toolbar_bookmark_title">Kaydedilenler</string>
   <string name="hint_editor_write_title">Başlık yazmak için buraya tıkla…</string>
-  <string name="hint_editor_blog_content">Hikayen hakkında bir şeyler yaz…</string>
+  <string name="hint_editor_blog_content">Seyahatin hakkında bir şeyler yaz…</string>
   <string name="hint_editor_question_content">Seyahatin hakkında soru sor…</string>
   <string name="hint_editor_max_tags">7 etikete kadar</string>
   <string name="action_editor_add_bounty">Bonus ekle</string>
@@ -52,7 +52,7 @@
   <string name="label_points_next">Sonraki seviye\n%1$d</string>
   <string name="label_points_initial">İlk seviye\n%1$d</string>
   <string name="label_level">Seviye %1$d</string>
-  <string name="label_subscribed_groups_title">Taki Edilen Gruplar</string>
+  <string name="label_subscribed_groups_title">Taki Edilen</string>
   <string name="label_explore_title">Keşfet</string>
   <string name="label_explore_all_groups_title">Bütün Gruplar</string>
   <string name="label_menu_write_blog">Blog Yaz</string>
@@ -178,7 +178,7 @@
   <string name="trending_tags">Popüler Etiketler</string>
   <string name="chat_list_title">Mesajlar</string>
   <string name="create_chat_title">Kulanıcı ara</string>
-  <string name="settings_like_us">Bizi Beğenin</string>
+  <string name="settings_like_us">Bizi Takip Edin</string>
   <string name="settings_about">Hakkında</string>
   <string name="settings_privacy_policy">Gizlilik İlkesi</string>
   <string name="settings_terms_of_service">Hizmet Kullanım Şartları</string>
@@ -238,4 +238,9 @@
   <string name="label_nav_feedback">Geri Bildirim Gönder</string>
   <string name="facebook_friends">Facebook Arakadaşların</string>
   <string name="editor_trending_tags">Popüler Etiketler</string>
+  <string name="settings_honorary_members">Onursal Hayranlar</string>
+  <string name="settings_click_to_see_all_honorary_members">Tüm onursal hayranları görmek için buraya tıklayın</string>
+  <string name="empy_posts_user">Oops, henüz hiç gönderi paylaşmamışsın</string>
+  <string name="label_all_groups_title">Hepsi</string>
+  <string name="error_subscribe_group_first">Grubu seçmeden önce takip etmelisiniz.</string>
 </resources>

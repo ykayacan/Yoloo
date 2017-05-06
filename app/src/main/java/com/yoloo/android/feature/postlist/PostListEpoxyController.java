@@ -119,18 +119,6 @@ public class PostListEpoxyController extends Typed2EpoxyController<List<FeedItem
     loader.addIf(loadingMore, this);
   }
 
-  public void addPost(PostRealm post) {
-    if (post.isTextQuestionPost()) {
-      feedItems.add(3, new TextQuestionItem(post));
-    } else if (post.isRichQuestionPost()) {
-      feedItems.add(3, new RichQuestionItem(post));
-    } else if (post.isBlogPost()) {
-      feedItems.add(3, new BlogItem(post));
-    }
-
-    setData(feedItems, false);
-  }
-
   public void deletePost(PostRealm post) {
     if (post.isTextQuestionPost()) {
       feedItems.remove(new TextQuestionItem(post));
@@ -143,8 +131,12 @@ public class PostListEpoxyController extends Typed2EpoxyController<List<FeedItem
     setData(feedItems, false);
   }
 
-  public void onRefresh() {
-    this.feedItems.clear();
+  public void showLoader() {
+    setData(feedItems, true);
+  }
+
+  public void hideLoader() {
+    setData(feedItems, false);
   }
 
   private void createRichQuestion(PostRealm post) {

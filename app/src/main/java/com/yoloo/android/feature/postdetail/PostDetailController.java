@@ -27,6 +27,7 @@ import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.data.model.FeedItem;
 import com.yoloo.android.data.model.MediaRealm;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.comment.CommentRepositoryProvider;
@@ -66,7 +67,6 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     OnMarkAsAcceptedClickListener, OnItemLongClickListener<CommentRealm>, OnMentionClickListener {
 
   private static final String KEY_POST_ID = "POST_ID";
-  private static final String KEY_ACCEPTED_COMMENT_ID = "ACCEPTED_COMMENT_ID";
 
   @BindView(R.id.toolbar) Toolbar toolbar;
   @BindView(R.id.rv_post_detail) RecyclerView rvFeed;
@@ -77,13 +77,12 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   @BindColor(R.color.primary_dark) int primaryDarkColor;
   @BindColor(R.color.divider) int dividerColor;
 
-  private PostDetailAdapter adapter;
+  private PostDetailEpoxyController epoxyController;
 
   private String postId;
-  private String acceptedCommentId;
 
   private PostRealm post;
-  private AccountRealm account;
+  private AccountRealm me;
 
   private boolean reEnter;
 
@@ -91,15 +90,10 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   public PostDetailController(@Nullable Bundle args) {
     super(args);
-    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
   }
 
-  public static PostDetailController create(@NonNull String postId,
-      @Nullable String acceptedCommentId) {
-    final Bundle bundle = new BundleBuilder()
-        .putString(KEY_POST_ID, postId)
-        .putString(KEY_ACCEPTED_COMMENT_ID, acceptedCommentId)
-        .build();
+  public static PostDetailController create(@NonNull String postId) {
+    final Bundle bundle = new BundleBuilder().putString(KEY_POST_ID, postId).build();
 
     return new PostDetailController(bundle);
   }
@@ -112,10 +106,10 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   @Override
   protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
 
     final Bundle args = getArgs();
     postId = args.getString(KEY_POST_ID);
-    acceptedCommentId = args.getString(KEY_ACCEPTED_COMMENT_ID);
 
     setupPullToRefresh();
     setupToolbar();
@@ -129,7 +123,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
     if (!reEnter) {
-      getPresenter().loadData(false, postId, acceptedCommentId, 20);
+      getPresenter().loadData(false, postId);
       reEnter = true;
     }
   }
@@ -153,25 +147,19 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   }
 
   @Override
-  public void onLoaded(List<CommentRealm> comments) {
-    adapter.addComments(comments, account, post);
+  public void onLoaded(List<FeedItem> value) {
+    epoxyController.setData(value, false);
     swipeRefreshLayout.setRefreshing(false);
-  }
-
-  @Override
-  public void onAccountLoaded(AccountRealm account) {
-    this.account = account;
   }
 
   @Override
   public void onPostLoaded(PostRealm post) {
     this.post = post;
-    adapter.addPost(post);
   }
 
   @Override
-  public void onAcceptedCommentLoaded(CommentRealm comment) {
-    adapter.addComment(comment, account, post);
+  public void onMeLoaded(AccountRealm me) {
+    this.me = me;
   }
 
   @Override
@@ -182,7 +170,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   }
 
   @Override
-  public void onNewAccept(String commentId) {
+  public void onCommentAccepted(String commentId) {
 
   }
 
@@ -204,9 +192,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   @Override
   public void onRefresh() {
-    adapter.clear();
-
-    getPresenter().loadData(true, postId, acceptedCommentId, 20);
+    getPresenter().loadData(true, postId);
   }
 
   @NonNull
@@ -223,18 +209,16 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   @Override
   public void onPostOptionsClick(View v, PostRealm post) {
-    final PopupMenu optionsMenu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
-    final boolean self = false;
-    optionsMenu.getMenu().getItem(1).setVisible(self);
-    optionsMenu.getMenu().getItem(2).setVisible(self);
+    final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
 
-    optionsMenu.setOnMenuItemClickListener(item -> {
+    menu.setOnMenuItemClickListener(item -> {
       final int itemId = item.getItemId();
       if (itemId == R.id.action_popup_delete) {
         processPostDelete(post);
         return true;
       }
-      return false;
+
+      return super.onOptionsItemSelected(item);
     });
   }
 
@@ -273,14 +257,14 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   @Override
   public void onNewComment(CommentRealm comment) {
-    adapter.addComment(comment, account, post);
-    adapter.scrollToEnd(rvFeed);
+    comment
+        .setPostType(post.getPostType())
+        .setOwner(me.getId().equals(comment.getOwnerId()))
+        .setPostAccepted(post.getAcceptedCommentId() != null)
+        .setPostOwner(post.getOwnerId().equals(me.getId()));
 
-    post.increaseCommentCount();
-
-    if (modelUpdateEvent != null) {
-      modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, post);
-    }
+    epoxyController.addComment(comment);
+    epoxyController.scrollToEnd(rvFeed);
   }
 
   @Override
@@ -295,7 +279,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
         .setItems(R.array.action_comment_dialog, (dialog, which) -> {
           if (which == 0) {
             getPresenter().deleteComment(item);
-            adapter.delete(model);
+            epoxyController.deleteComment(item);
           }
         })
         .show();
@@ -307,34 +291,31 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   }
 
   private void setupRecyclerView() {
-    adapter = new PostDetailAdapter(getActivity(), Glide.with(getActivity()));
-    adapter.setOnProfileClickListener(this);
+    epoxyController =
+        new PostDetailEpoxyController(getActivity(), Glide.with(getActivity()));
+    epoxyController.setOnProfileClickListener(this);
 
-    adapter.setOnContentImageClickListener(this);
-    adapter.setOnPostOptionsClickListener(this);
+    epoxyController.setOnContentImageClickListener(this);
+    epoxyController.setOnPostOptionsClickListener(this);
 
-    adapter.setOnVoteClickListener(this);
-    adapter.setOnShareClickListener(this);
-    adapter.setOnCommentClickListener(this);
+    epoxyController.setOnVoteClickListener(this);
+    epoxyController.setOnShareClickListener(this);
+    epoxyController.setOnCommentClickListener(this);
 
-    adapter.setOnCommentLongClickListener(this);
-    adapter.setOnMentionClickListener(this);
+    epoxyController.setOnCommentLongClickListener(this);
+    epoxyController.setOnMentionClickListener(this);
 
-    adapter.setOnMarkAsAcceptedClickListener(this);
+    epoxyController.setOnMarkAsAcceptedClickListener(this);
 
     rvFeed.setLayoutManager(new LinearLayoutManager(getActivity()));
-
-    final SlideInItemAnimator animator = new SlideInItemAnimator();
-    animator.setSupportsChangeAnimations(false);
-    animator.setAddDuration(0L);
-    rvFeed.setItemAnimator(animator);
+    rvFeed.setItemAnimator(new SlideInItemAnimator());
 
     rvFeed.addItemDecoration(new InsetDividerDecoration(R.layout.item_comment,
         getResources().getDimensionPixelSize(R.dimen.divider_height),
         getResources().getDimensionPixelSize(R.dimen.keyline_1), dividerColor));
 
     rvFeed.setHasFixedSize(true);
-    rvFeed.setAdapter(adapter);
+    rvFeed.setAdapter(epoxyController.getAdapter());
   }
 
   private void setupPullToRefresh() {

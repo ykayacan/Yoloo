@@ -26,7 +26,7 @@ public class AcceptNotifiable implements Notifiable {
         .senderKey(sender.getKey())
         .receiverKey(record.getParent())
         .action(Action.ACCEPT)
-        .payload("postId", postEntity.getWebsafeId())
+        .payload(PushConstants.POST_ID, postEntity.getWebsafeId())
         .created(DateTime.now())
         .build();
 
@@ -41,7 +41,6 @@ public class AcceptNotifiable implements Notifiable {
         .value(PushConstants.SENDER_USERNAME, sender.getWebsafeId())
         .value(PushConstants.SENDER_AVATAR_URL, sender.getAvatarUrl().getValue())
         .value(PushConstants.POST_ID, postEntity.getWebsafeId())
-        .value(PushConstants.ACCEPTED_COMMENT_ID, postEntity.getAcceptedCommentId())
         .build();
 
     return PushMessage.builder().to(record.getRegId()).data(dataBody).build();

@@ -96,20 +96,17 @@ public class BaseActivity extends AppCompatActivity
         break;
       case NotificationConstants.COMMENT:
         startTransaction(
-            PostDetailController.create(intent.getStringExtra(NotificationResponse.KEY_POST_ID),
-                intent.getStringExtra(NotificationResponse.KEY_ACCEPTED_ID)),
+            PostDetailController.create(intent.getStringExtra(NotificationResponse.KEY_POST_ID)),
             new VerticalChangeHandler());
         break;
       case NotificationConstants.MENTION:
         startTransaction(
-            PostDetailController.create(intent.getStringExtra(NotificationResponse.KEY_POST_ID),
-                intent.getStringExtra(NotificationResponse.KEY_ACCEPTED_ID)),
+            PostDetailController.create(intent.getStringExtra(NotificationResponse.KEY_POST_ID)),
             new VerticalChangeHandler());
         break;
       case NotificationConstants.ACCEPT:
         startTransaction(
-            PostDetailController.create(intent.getStringExtra(NotificationResponse.KEY_POST_ID),
-                intent.getStringExtra(NotificationResponse.KEY_ACCEPTED_ID)),
+            PostDetailController.create(intent.getStringExtra(NotificationResponse.KEY_POST_ID)),
             new VerticalChangeHandler());
         break;
     }

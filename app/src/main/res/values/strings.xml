@@ -23,6 +23,7 @@
   <string name="label_nav_invite_friends">Invite Friends</string>
   <string name="label_nav_settings">Settings</string>
   <string name="label_nav_feedback">Send Feedback</string>
+  <string name="label_nav_rate">Rate Us</string>
 
   <string name="navigation_drawer_open">Open navigation drawer</string>
   <string name="navigation_drawer_close">Close navigation drawer</string>
@@ -58,7 +59,7 @@
 
   <!-- EDITOR -->
   <string name="hint_editor_write_title">Click here to write title…</string>
-  <string name="hint_editor_blog_content">Write anything about your story here…</string>
+  <string name="hint_editor_blog_content">Write anything about your trip here…</string>
   <string name="hint_editor_question_content">Ask anything about your trip here…</string>
   <string name="hint_editor_max_tags">Add up to 7 tags</string>
 
@@ -338,7 +339,8 @@
   <string name="label_explore_title">Explore</string>
 
   <string name="label_blog_username_info">%1$s &#8226; %2$s</string>
-  <string name="label_subscribed_groups_title">Subscribed Groups</string>
+  <string name="label_all_groups_title">All</string>
+  <string name="label_subscribed_groups_title">Subscribed</string>
 
   <string name="label_level">Lv %1$d</string>
   <string name="label_points_initial">Initial\n%1$d</string>
@@ -416,5 +418,10 @@
   <string name="select_group_search_a_group_hint">Search a group</string>
   <string name="facebook_friends">Facebook Friends</string>
   <string name="editor_trending_tags">Trending Tags</string>
+  <string name="settings_honorary_members">Honorary Members</string>
+  <string name="settings_click_to_see_all_honorary_members">Click to see all honorary members</string>
+  <string name="empy_posts_user">Oops, you didn\'t share any posts yet.</string>
+  <string name="error_string">There is an error.\nClick here to reload</string>
+  <string name="error_subscribe_group_first">You must subscribe the group before select it.</string>
 
 </resources>

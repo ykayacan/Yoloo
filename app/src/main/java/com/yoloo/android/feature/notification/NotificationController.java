@@ -42,8 +42,6 @@ public class NotificationController extends MvpController<NotificationView, Noti
 
   private NotificationEpoxyController epoxyController;
 
-  private EndlessRecyclerViewScrollListener endlessRecyclerViewScrollListener;
-
   public NotificationController() {
     setRetainViewMode(RetainViewMode.RETAIN_DETACH);
   }
@@ -59,19 +57,6 @@ public class NotificationController extends MvpController<NotificationView, Noti
     setupPullToRefresh();
     setupRecyclerView();
     setupToolbar();
-  }
-
-  @Override
-  protected void onAttach(@NonNull View view) {
-    super.onAttach(view);
-    /*LottieAnimationView animationView = (LottieAnimationView) ButterKnife
-        .findById(rootView.getEmptyView(), R.id.empty_view)
-        .findViewById(R.id.animation_view);
-    Timber.d("Scale: %s", animationView.getScale());
-    animationView.setScale(0.2F);
-    animationView.setColorFilter(bellColor);
-
-    Timber.d("Scale: %s", animationView.getScale());*/
   }
 
   @Override

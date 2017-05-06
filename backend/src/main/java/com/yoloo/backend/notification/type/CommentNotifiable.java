@@ -17,7 +17,7 @@ import org.joda.time.DateTime;
 @AllArgsConstructor(staticName = "create")
 public class CommentNotifiable implements Notifiable {
 
-  private Account sender;
+  private Account commenter;
   private DeviceRecord record;
   private Comment comment;
   private PostEntity postEntity;
@@ -26,10 +26,10 @@ public class CommentNotifiable implements Notifiable {
   public List<Notification> getNotifications() {
     Notification notification = Notification
         .builder()
-        .senderKey(sender.getKey())
+        .senderKey(commenter.getKey())
         .receiverKey(record.getParent())
-        .senderUsername(sender.getUsername())
-        .senderAvatarUrl(sender.getAvatarUrl())
+        .senderUsername(commenter.getUsername())
+        .senderAvatarUrl(commenter.getAvatarUrl())
         .action(Action.COMMENT)
         .payload(PushConstants.COMMENT, CommentUtil.trimContent(comment.getContent(), 50))
         .payload(PushConstants.POST_ID, comment.getPostKey().toWebSafeString())
@@ -45,9 +45,8 @@ public class CommentNotifiable implements Notifiable {
         .builder()
         .value(PushConstants.ACTION, Action.COMMENT.getValueString())
         .value(PushConstants.POST_ID, comment.getPostKey().toWebSafeString())
-        .value(PushConstants.SENDER_USERNAME, sender.getUsername())
-        .value(PushConstants.SENDER_AVATAR_URL, sender.getAvatarUrl().getValue())
-        .value(PushConstants.ACCEPTED_COMMENT_ID, postEntity.getAcceptedCommentId())
+        .value(PushConstants.SENDER_USERNAME, commenter.getUsername())
+        .value(PushConstants.SENDER_AVATAR_URL, commenter.getAvatarUrl().getValue())
         .build();
 
     return PushMessage.builder().to(record.getRegId()).data(dataBody).build();

@@ -54,15 +54,14 @@
 
   </android.support.v4.widget.SwipeRefreshLayout>
 
-  <com.github.ag.floatingactionmenu.OptionsFabLayout
+  <com.yoloo.android.ui.widget.floatingactionmenu.OptionsFabLayout
     android:id="@+id/fab_menu"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     app:background_color="@color/background_lightish"
     app:color="@color/primary"
     app:options_color="@color/primary"
-    app:options_menu="@menu/menu_fab"
-    app:src="@drawable/ic_add_white_24dp" />
+    app:options_menu="@menu/menu_fab" />
 
   <View
     android:id="@+id/hacky_view"

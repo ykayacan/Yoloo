@@ -141,7 +141,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     viewPager.setAdapter(pagerAdapter);
     tabLayout.setupWithViewPager(viewPager);
 
-    int randomNum = new Random().nextInt(8);
+    int randomNum = new Random().nextInt(8) + 1;
 
     final String backgroundUrl =
         "https://storage.googleapis.com/yoloo-151719.appspot.com/profile-bg-images/small/p"
@@ -149,6 +149,8 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
             + ".webp";
 
     Glide.with(getActivity()).load(backgroundUrl).into(ivProfileBg);
+
+    animateAvatar();
   }
 
   @Override
@@ -211,7 +213,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
   @OnClick(R.id.card_profile_country_count)
   void openVisitedCountiesScreen() {
-    startTransaction(VisitedCountryListController.create(account.getId().equals(userId)),
+    startTransaction(VisitedCountryListController.create(account.getId().equals(userId), userId),
         new VerticalChangeHandler());
   }
 
@@ -242,7 +244,9 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     final ActionBar ab = getSupportActionBar();
     ab.setDisplayShowTitleEnabled(false);
     ab.setDisplayHomeAsUpEnabled(true);
+  }
 
+  private void animateAvatar() {
     maxScrollSize = appBarLayout.getTotalScrollRange();
 
     appBarLayout.addOnOffsetChangedListener((layout, verticalOffset) -> {
@@ -311,7 +315,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
         CountUtil.formatCount(account.getPointCount())));
     tvBountyCount.setText(res.getString(R.string.label_profile_bounties, account.getBountyCount()));
     tvCountryCount.setText(
-        res.getString(R.string.label_profile_countries, account.getAchievementCount()));
+        res.getString(R.string.label_profile_countries, account.getCountryCount()));
 
     btnFollow.setVisibility(account.isMe() ? View.GONE : View.VISIBLE);
     btnFollow.setText(

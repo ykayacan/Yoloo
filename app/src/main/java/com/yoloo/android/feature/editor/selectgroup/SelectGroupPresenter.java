@@ -12,6 +12,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import java.util.List;
 import javax.annotation.Nonnull;
+import timber.log.Timber;
 
 class SelectGroupPresenter extends MvpPresenter<SelectGroupView> {
 
@@ -59,6 +60,26 @@ class SelectGroupPresenter extends MvpPresenter<SelectGroupView> {
             getView().onLoaded(groups);
           }
         }, throwable -> getView().onError(throwable));
+
+    getDisposable().add(d);
+  }
+
+  void subscribe(@Nonnull String groupId) {
+    Disposable d = groupRepository
+        .subscribe(groupId)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(() -> {
+        }, Timber::e);
+
+    getDisposable().add(d);
+  }
+
+  void unsubscribe(@Nonnull String groupId) {
+    Disposable d = groupRepository
+        .unsubscribe(groupId)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(() -> {
+        }, Timber::e);
 
     getDisposable().add(d);
   }

@@ -1,21 +1,24 @@
 package com.yoloo.android.feature.postdetail;
 
 import com.annimon.stream.Optional;
+import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.data.model.FeedItem;
 import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.data.repository.comment.CommentRepository;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.framework.MvpPresenter;
 import com.yoloo.android.util.Group;
+import com.yoloo.android.util.Pair;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 class PostDetailPresenter extends MvpPresenter<PostDetailView> {
 
@@ -24,79 +27,122 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
   private final UserRepository userRepository;
 
   private String cursor;
+  private PostRealm post;
 
-  PostDetailPresenter(
-      CommentRepository commentRepository,
-      PostRepository postRepository,
+  PostDetailPresenter(CommentRepository commentRepository, PostRepository postRepository,
       UserRepository userRepository) {
     this.commentRepository = commentRepository;
     this.postRepository = postRepository;
     this.userRepository = userRepository;
   }
 
-  void loadData(boolean pullToRefresh, @Nonnull String postId, @Nullable String acceptedCommentId,
-      int limit) {
+  void loadData(boolean pullToRefresh, @Nonnull String postId) {
     getView().onLoading(pullToRefresh);
 
     shouldResetCursor(pullToRefresh);
 
-    Observable<AccountRealm> meObservable =
-        userRepository.getLocalMe().toObservable().observeOn(AndroidSchedulers.mainThread());
-
-    Observable<PostRealm> postObservable = postRepository.getPost(postId)
-        .observeOn(AndroidSchedulers.mainThread(), true)
-        .filter(Optional::isPresent)
-        .map(Optional::get);
-
-    Observable<Optional<CommentRealm>> acceptedCommentObservable =
-        getAcceptedCommentObservable(postId, acceptedCommentId)
-            .observeOn(AndroidSchedulers.mainThread(), true);
-
-    Observable<Response<List<CommentRealm>>> commentsObservable =
-        commentRepository.listComments(postId, cursor, limit)
-            .observeOn(AndroidSchedulers.mainThread(), true);
-
     Disposable d = Observable
-        .zip(
-            meObservable,
-            postObservable,
-            acceptedCommentObservable,
-            commentsObservable,
-            Group.Of4::create)
+        .zip(getMeObservable(), getPostObservable(postId), getCommentsObservable(postId),
+            Group.Of3::create)
+        .map(group -> {
+          List<FeedItem> items = new ArrayList<>();
+          items.add(new PostFeedItem(group.second));
+
+          List<CommentFeedItem> comments = Stream
+              .of(group.third.getData())
+              .map(comment -> processComment(group, comment))
+              .map(CommentFeedItem::new)
+              .toList();
+
+          items.addAll(comments);
+
+          return Group.Of4.create(group.first, group.second, items, group.third.getCursor());
+        })
         .subscribe(group -> {
-          getView().onAccountLoaded(group.first);
+          getView().onMeLoaded(group.first);
           getView().onPostLoaded(group.second);
+          getView().onLoaded(group.third);
 
-          if (group.third.isPresent()) {
-            getView().onAcceptedCommentLoaded(group.third.get());
-          }
-
-          cursor = group.fourth.getCursor();
-          getView().onLoaded(group.fourth.getData());
+          post = group.second;
+          cursor = group.fourth;
         }, this::showError);
 
     getDisposable().add(d);
   }
 
+  private CommentRealm processComment(
+      Group.Of3<AccountRealm, PostRealm, Response<List<CommentRealm>>> group,
+      CommentRealm comment) {
+    return comment
+        .setPostType(group.second.getPostType())
+        .setOwner(group.first.getId().equals(comment.getOwnerId()))
+        .setPostAccepted(group.second.getAcceptedCommentId() != null)
+        .setPostOwner(group.second.getOwnerId().equals(group.first.getId()));
+  }
+
+  private Observable<AccountRealm> getMeObservable() {
+    return userRepository.getLocalMe().toObservable().observeOn(AndroidSchedulers.mainThread());
+  }
+
+  private Observable<Response<List<CommentRealm>>> getCommentsObservable(@Nonnull String postId) {
+    return commentRepository
+        .listComments(postId, cursor, 20)
+        .observeOn(AndroidSchedulers.mainThread(), true);
+  }
+
+  private Observable<PostRealm> getPostObservable(@Nonnull String postId) {
+    return postRepository
+        .getPost(postId)
+        .observeOn(AndroidSchedulers.mainThread(), true)
+        .filter(Optional::isPresent)
+        .map(Optional::get);
+  }
+
+  void loadMoreComments() {
+    Observable<AccountRealm> meObservable = getMeObservable();
+
+    Observable<Response<List<CommentRealm>>> commentsObservable =
+        getCommentsObservable(post.getId());
+
+    Disposable d = Observable.zip(meObservable, commentsObservable, Pair::create).map(pair -> {
+      List<CommentFeedItem> comments = Stream
+          .of(pair.second.getData())
+          .map(comment -> comment
+              .setOwner(pair.first.getId().equals(comment.getOwnerId()))
+              .setPostAccepted(post.getAcceptedCommentId() != null)
+              .setPostOwner(post.getOwnerId().equals(pair.first.getId())))
+          .map(CommentFeedItem::new)
+          .toList();
+
+      return Response.create(comments, pair.second.getCursor());
+    }).subscribe(response -> {
+      cursor = response.getCursor();
+
+      getView().onLoaded(new ArrayList<>(response.getData()));
+    }, this::showError);
+
+    getDisposable().add(d);
+  }
+
   void deletePost(@Nonnull String postId) {
-    Disposable d = postRepository
-        .deletePost(postId)
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe();
+    Disposable d =
+        postRepository.deletePost(postId).observeOn(AndroidSchedulers.mainThread()).subscribe();
 
     getDisposable().add(d);
   }
 
   void acceptComment(@Nonnull CommentRealm comment) {
-    Disposable d = commentRepository.acceptComment(comment)
+    Disposable d = commentRepository
+        .acceptComment(comment)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(__ -> getView().onNewAccept(__.getId()), this::showError);
+        .subscribe(__ -> getView().onCommentAccepted(__.getId()), this::showError);
 
     getDisposable().add(d);
   }
 
   void deleteComment(@Nonnull CommentRealm comment) {
-    Disposable d = commentRepository.deleteComment(comment)
+    Disposable d = commentRepository
+        .deleteComment(comment)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe();
 
@@ -104,7 +150,8 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
   }
 
   void votePost(@Nonnull String postId, int direction) {
-    Disposable d = postRepository.votePost(postId, direction)
+    Disposable d = postRepository
+        .votePost(postId, direction)
         .andThen(postRepository.getPost(postId))
         .observeOn(AndroidSchedulers.mainThread(), true)
         .filter(Optional::isPresent)
@@ -115,23 +162,17 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
   }
 
   void voteComment(@Nonnull String commentId, int direction) {
-    Disposable d = commentRepository.voteComment(commentId, direction)
+    Disposable d = commentRepository
+        .voteComment(commentId, direction)
         .observeOn(AndroidSchedulers.mainThread())
-        .doOnError(this::showError)
-        .subscribe();
+        .subscribe(() -> {
+        }, this::showError);
 
     getDisposable().add(d);
   }
 
   private void showError(Throwable throwable) {
     getView().onError(throwable);
-  }
-
-  private Observable<Optional<CommentRealm>> getAcceptedCommentObservable(
-      String postId, String acceptedCommentId) {
-    return acceptedCommentId == null
-        ? Observable.just(Optional.empty())
-        : commentRepository.getComment(postId, acceptedCommentId);
   }
 
   private void shouldResetCursor(boolean pullToRefresh) {

@@ -21,6 +21,7 @@ public class CommentRealm extends RealmObject {
   private boolean owner;
   private boolean postAccepted;
   private boolean postOwner;
+  private int postType;
 
   public CommentRealm() {
     // empty constructor
@@ -156,6 +157,15 @@ public class CommentRealm extends RealmObject {
     return this;
   }
 
+  public int getPostType() {
+    return postType;
+  }
+
+  public CommentRealm setPostType(int postType) {
+    this.postType = postType;
+    return this;
+  }
+
   public void increaseVotes() {
     ++this.voteCount;
   }
@@ -177,30 +187,52 @@ public class CommentRealm extends RealmObject {
     if (isOwner() != that.isOwner()) return false;
     if (isPostAccepted() != that.isPostAccepted()) return false;
     if (isPostOwner() != that.isPostOwner()) return false;
-    if (!getId().equals(that.getId())) return false;
-    if (!getOwnerId().equals(that.getOwnerId())) return false;
-    if (!getUsername().equals(that.getUsername())) return false;
-    if (!getAvatarUrl().equals(that.getAvatarUrl())) return false;
-    if (!getPostId().equals(that.getPostId())) return false;
-    if (!getContent().equals(that.getContent())) return false;
-    return getCreated().equals(that.getCreated());
+    if (getPostType() != that.getPostType()) return false;
+    if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) return false;
+    if (getOwnerId() != null
+        ? !getOwnerId().equals(that.getOwnerId())
+        : that.getOwnerId() != null) {
+      return false;
+    }
+    if (getUsername() != null
+        ? !getUsername().equals(that.getUsername())
+        : that.getUsername() != null) {
+      return false;
+    }
+    if (getAvatarUrl() != null
+        ? !getAvatarUrl().equals(that.getAvatarUrl())
+        : that.getAvatarUrl() != null) {
+      return false;
+    }
+    if (getPostId() != null ? !getPostId().equals(that.getPostId()) : that.getPostId() != null) {
+      return false;
+    }
+    if (getContent() != null
+        ? !getContent().equals(that.getContent())
+        : that.getContent() != null) {
+      return false;
+    }
+    return getCreated() != null
+        ? getCreated().equals(that.getCreated())
+        : that.getCreated() == null;
   }
 
   @Override
   public int hashCode() {
-    int result = getId().hashCode();
-    result = 31 * result + getOwnerId().hashCode();
-    result = 31 * result + getUsername().hashCode();
-    result = 31 * result + getAvatarUrl().hashCode();
-    result = 31 * result + getPostId().hashCode();
-    result = 31 * result + getContent().hashCode();
-    result = 31 * result + getCreated().hashCode();
+    int result = getId() != null ? getId().hashCode() : 0;
+    result = 31 * result + (getOwnerId() != null ? getOwnerId().hashCode() : 0);
+    result = 31 * result + (getUsername() != null ? getUsername().hashCode() : 0);
+    result = 31 * result + (getAvatarUrl() != null ? getAvatarUrl().hashCode() : 0);
+    result = 31 * result + (getPostId() != null ? getPostId().hashCode() : 0);
+    result = 31 * result + (getContent() != null ? getContent().hashCode() : 0);
+    result = 31 * result + (getCreated() != null ? getCreated().hashCode() : 0);
     result = 31 * result + getVoteDir();
     result = 31 * result + (isAccepted() ? 1 : 0);
     result = 31 * result + (int) (getVoteCount() ^ (getVoteCount() >>> 32));
     result = 31 * result + (isOwner() ? 1 : 0);
     result = 31 * result + (isPostAccepted() ? 1 : 0);
     result = 31 * result + (isPostOwner() ? 1 : 0);
+    result = 31 * result + getPostType();
     return result;
   }
 
@@ -239,6 +271,8 @@ public class CommentRealm extends RealmObject {
         + postAccepted
         + ", postOwner="
         + postOwner
+        + ", postType="
+        + postType
         + '}';
   }
 }

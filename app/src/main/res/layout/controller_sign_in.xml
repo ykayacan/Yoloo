@@ -57,7 +57,8 @@
             android:imeActionId="@+id/sign_up"
             android:imeActionLabel="@string/action_sing_up_short"
             android:inputType="textPassword"
-            android:maxLines="1" />
+            android:maxLines="1"
+            app:passwordToggleEnabled="true" />
 
           <Button
             android:id="@+id/btn_login_ready"

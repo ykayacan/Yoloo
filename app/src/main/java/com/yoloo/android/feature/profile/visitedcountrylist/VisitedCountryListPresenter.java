@@ -17,13 +17,17 @@ class VisitedCountryListPresenter extends MvpPresenter<VisitedCountryListView> {
     this.userRepository = userRepository;
   }
 
-  @Override
-  public void onAttachView(VisitedCountryListView view) {
-    super.onAttachView(view);
-    loadVisitedCountries();
+  void loadVisitedCountries(@Nonnull String userId) {
+    Disposable d = userRepository
+        .listVisitedCountries(userId)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(countries -> getView().onLoaded(countries),
+            throwable -> getView().onError(throwable));
+
+    getDisposable().add(d);
   }
 
-  private void loadVisitedCountries() {
+  void loadMyVisitedCountries() {
     Disposable d = userRepository
         .getLocalMe()
         .observeOn(AndroidSchedulers.mainThread())

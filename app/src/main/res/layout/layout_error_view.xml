@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.yoloo.android.ui.widget.BaselineGridTextView xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:tools="http://schemas.android.com/tools"
   android:id="@+id/error_view"
+  style="@style/TextAppearance.AppCompat.Title"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
   android:layout_gravity="center"
   android:gravity="center"
   android:orientation="vertical"
-  android:text="There is an error"
+  android:padding="24dp"
+  android:text="@string/error_string"
+  android:textColor="@color/primary"
   android:visibility="gone"
   tools:visibility="visible" />

@@ -25,7 +25,6 @@ public final class AcceptNotification implements NotificationProvider {
     Intent intent = new Intent(context, BaseActivity.class);
     intent.putExtra(NotificationResponse.KEY_ACTION, response.getAction());
     intent.putExtra(NotificationResponse.KEY_POST_ID, response.getPostId());
-    intent.putExtra(NotificationResponse.KEY_ACCEPTED_ID, response.getAcceptedCommentId());
 
     PendingIntent pendingIntent =
         PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);

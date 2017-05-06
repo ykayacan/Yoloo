@@ -118,7 +118,7 @@ public class ExploreController extends MvpController<ExploreView, ExplorePresent
 
           @Override
           public void onRecentPhotosClicked(PostRealm post) {
-            startTransaction(PostDetailController.create(post.getId(), post.getAcceptedCommentId()),
+            startTransaction(PostDetailController.create(post.getId()),
                 new VerticalChangeHandler());
           }
         });
