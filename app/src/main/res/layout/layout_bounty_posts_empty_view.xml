@@ -3,11 +3,12 @@
   xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:id="@+id/empty_view"
-  android:layout_width="@dimen/_216asdp"
+  android:layout_width="wrap_content"
   android:layout_height="wrap_content"
   android:layout_gravity="center"
   android:gravity="center"
   android:orientation="vertical"
+  android:padding="24dp"
   android:visibility="gone"
   tools:visibility="visible">
 
@@ -25,7 +26,7 @@
     android:layout_height="wrap_content"
     android:drawablePadding="@dimen/padding_normal"
     android:gravity="center"
-    android:text="@string/label_feed_no_data_1"
+    android:text="@string/bounty_posts_empty_title"
     android:textAppearance="@style/TextAppearance.EmptyTitle" />
 
   <com.yoloo.android.ui.widget.BaselineGridTextView
@@ -34,16 +35,16 @@
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/padding_micro"
     android:gravity="center"
-    android:text="@string/label_feed_no_data_2"
+    android:text="@string/bounty_posts_empty_subtitle"
     tools:visibility="visible" />
 
   <Button
     android:id="@+id/btn_empty_action"
-    style="@style/Yoloo.Button.Colored"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/spacing_large"
-    android:text="@string/action_feed_fab_ask_question"
-    android:theme="@style/Yoloo.Button" />
+    android:text="@string/bounty_posts_empty_action_text"
+    android:theme="@style/Yoloo.Button"
+    style="@style/Yoloo.Button.Colored" />
 
 </LinearLayout>

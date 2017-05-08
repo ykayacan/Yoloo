@@ -172,7 +172,7 @@ public class PostEditorController extends MvpController<EditorView, EditorPresen
       showDiscardDraftDialog();
     } else if (itemId == R.id.action_share && isValidToSend()) {
       setTempDraft();
-      getPresenter().updateDraft(draft, EditorPresenter.NAV_SEND);
+      getPresenter().updateDraft(draft);
     }
 
     return false;
@@ -215,12 +215,10 @@ public class PostEditorController extends MvpController<EditorView, EditorPresen
   }
 
   @Override
-  public void onDraftUpdated(int navigation) {
-    if (navigation == EditorPresenter.NAV_SEND) {
-      getPresenter().sendPost();
+  public void onDraftUpdated() {
+    getPresenter().sendPost();
 
-      getRouter().handleBack();
-    }
+    getRouter().handleBack();
   }
 
   @Override
@@ -229,7 +227,7 @@ public class PostEditorController extends MvpController<EditorView, EditorPresen
   }
 
   @Override
-  public void onRecommendedTagsLoaded(List<TagRealm> tags) {
+  public void onTrendingTagsLoaded(List<TagRealm> tags) {
     tagAdapter.addChipItems(tags);
   }
 
@@ -470,7 +468,7 @@ public class PostEditorController extends MvpController<EditorView, EditorPresen
   }
 
   private void setupChipTextView() {
-    tagAutoCompleteAdapter = new AutoCompleteTagAdapter(getActivity());
+    tagAutoCompleteAdapter = new AutoCompleteTagAdapter(getActivity(), etEditorTags);
 
     etEditorTags.setAdapter(tagAutoCompleteAdapter);
     etEditorTags.setIllegalCharacters('\"', '.', '~');

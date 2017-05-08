@@ -42,7 +42,7 @@ public class GroupUsersListController
   @BindString(R.string.user_followed) String userFollowedString;
   @BindString(R.string.user_unfollowed) String userUnfollowedString;
 
-  private GroupUsersListAdapter adapter;
+  private GroupUsersListEpoxyController epoxyController;
 
   public GroupUsersListController(@Nullable Bundle args) {
     super(args);
@@ -90,7 +90,7 @@ public class GroupUsersListController
 
   @Override
   public void onLoaded(List<AccountRealm> value) {
-    adapter.addUsers(value);
+    epoxyController.setData(value);
     stateLayout.setState(StateLayout.VIEW_STATE_CONTENT);
   }
 
@@ -135,11 +135,11 @@ public class GroupUsersListController
   }
 
   private void setupRecyclerview() {
-    adapter = new GroupUsersListAdapter(getActivity(), this, this);
+    epoxyController = new GroupUsersListEpoxyController(getActivity(), this, this);
 
     rvUsers.setLayoutManager(new LinearLayoutManager(getActivity()));
     rvUsers.addItemDecoration(new DividerItemDecoration(getActivity(), OrientationHelper.VERTICAL));
-    rvUsers.setAdapter(adapter);
+    rvUsers.setAdapter(epoxyController.getAdapter());
     rvUsers.setHasFixedSize(true);
   }
 

@@ -170,11 +170,15 @@ public class GroupController extends MvpController<GroupView, GroupPresenter> im
     btnSubscribe.setText(group.isSubscribed() ? subscribeString : unsubscribeString);
 
     if (group.isSubscribed()) {
+      long count = group.getSubscriberCount() - 1;
+      group.setSubscriberCount(count);
       getPresenter().unsubscribe(groupId);
-      tvSubscriberCount.setText(CountUtil.formatCount(group.getSubscriberCount() - 1));
+      tvSubscriberCount.setText(CountUtil.formatCount(group.getSubscriberCount()));
     } else {
+      long count = group.getSubscriberCount() + 1;
+      group.setSubscriberCount(count);
       getPresenter().subscribe(groupId);
-      tvSubscriberCount.setText(CountUtil.formatCount(group.getSubscriberCount() + 1));
+      tvSubscriberCount.setText(CountUtil.formatCount(group.getSubscriberCount()));
     }
 
     group.setSubscribed(!group.isSubscribed());
@@ -191,11 +195,6 @@ public class GroupController extends MvpController<GroupView, GroupPresenter> im
 
     final ActionBar ab = getSupportActionBar();
     ab.setDisplayHomeAsUpEnabled(true);
-  }
-
-  private void startTransaction(Controller to, ControllerChangeHandler handler) {
-    getRouter().pushController(
-        RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
   }
 
   private static class GroupPagerAdapter extends RouterPagerAdapter {

@@ -196,6 +196,7 @@ public class FabWithOptions extends LinearLayout {
   void closeOptionsMenu() {
     enableMiniFabs = false;
     visibilitySetup(View.GONE);
+    mMainFab.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.ic_add_white_24dp));
   }
 
   /**

@@ -1,5 +1,6 @@
 package com.yoloo.android.feature.feed;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -38,7 +39,6 @@ import butterknife.BindInt;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.ControllerChangeType;
@@ -69,6 +69,7 @@ import com.yoloo.android.data.repository.group.GroupRepositoryProvider;
 import com.yoloo.android.data.repository.post.PostRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.auth.util.GoogleApiHelper;
+import com.yoloo.android.feature.auth.welcome.WelcomeController;
 import com.yoloo.android.feature.blog.BlogController;
 import com.yoloo.android.feature.bloglist.BlogListController;
 import com.yoloo.android.feature.chat.chatlist.ChatListController;
@@ -321,7 +322,7 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     Timber.d("onActivityResult: resultCode=%s, requestCode=%s", resultCode, requestCode);
 
     if (requestCode == REQUEST_INVITE) {
-      if (resultCode == getActivity().RESULT_OK) {
+      if (resultCode == Activity.RESULT_OK) {
         // Get the invitation IDs of all sent messages
         String[] ids = AppInviteInvitation.getInvitationIds(resultCode, data);
         for (String id : ids) {
@@ -386,7 +387,12 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   public void onError(Throwable e) {
     rootView.setState(StateLayout.VIEW_STATE_ERROR);
     swipeRefreshLayout.setRefreshing(false);
+
     Timber.e("onError: %s", e);
+    
+    if (e.getMessage().contains("401")) {
+      getRouter().setRoot(RouterTransaction.with(WelcomeController.create()));
+    }
   }
 
   @Override
@@ -398,7 +404,6 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   @Override
   public void onRefresh() {
     endlessRecyclerOnScrollListener.resetState();
-    //epoxyController.onRefresh();
     getPresenter().loadFeed(true);
   }
 
@@ -518,16 +523,16 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   }
 
   @Override
-  public void onBookmarkClick(@NonNull String postId, boolean bookmark) {
+  public void onBookmarkClick(@NonNull PostRealm post, boolean bookmark) {
     if (bookmark) {
-      getPresenter().bookmarkPost(postId);
+      getPresenter().bookmarkPost(post.getId());
     } else {
-      getPresenter().unBookmarkPost(postId);
+      getPresenter().unBookmarkPost(post.getId());
     }
   }
 
   @Override
-  public void onItemClick(View v, EpoxyModel<?> model, PostRealm item) {
+  public void onItemClick(View v, PostRealm item) {
     PostDetailController controller = PostDetailController.create(item.getId());
     controller.setModelUpdateEvent(this);
     startTransaction(controller, new HorizontalChangeHandler());

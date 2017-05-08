@@ -162,6 +162,10 @@ public class UserRepository {
     return remoteDataStore.relationship(userId, direction == 1 ? "FOLLOW" : "UNFOLLOW");
   }
 
+  public Completable removeVisitedCountry(@Nonnull String countyCode) {
+    return remoteDataStore.removeVisitedCountry(countyCode);
+  }
+
   public Completable writeToPurchaseHistory(@Nonnull AccountRealm account, int bountyType) {
     return Completable.complete();
   }

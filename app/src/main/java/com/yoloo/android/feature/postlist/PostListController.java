@@ -16,7 +16,6 @@ import android.view.ViewGroup;
 import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.ControllerChangeType;
@@ -81,8 +80,8 @@ public class PostListController extends MvpController<PostListView, PostListPres
 
   @BindView(R.id.root_view) StateLayout rootView;
   @BindView(R.id.toolbar) Toolbar toolbar;
-  @BindView(R.id.rv_feed_global) RecyclerView rvPostFeed;
-  @BindView(R.id.swipe_feed_global) SwipeRefreshLayout swipeRefreshLayout;
+  @BindView(R.id.recycler_view) RecyclerView rvPostFeed;
+  @BindView(R.id.swipe) SwipeRefreshLayout swipeRefreshLayout;
 
   @BindColor(R.color.primary) int primaryColor;
   @BindColor(R.color.primary_dark) int primaryDarkColor;
@@ -150,8 +149,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
     return inflater.inflate(R.layout.controller_post_list, container, false);
   }
 
-  @Override
-  protected void onViewBound(@NonNull View view) {
+  @Override protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
 
     final Bundle args = getArgs();
@@ -171,8 +169,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
     setupRecyclerView();
   }
 
-  @Override
-  protected void onAttach(@NonNull View view) {
+  @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
 
     if (!reEnter) {
@@ -192,10 +189,8 @@ public class PostListController extends MvpController<PostListView, PostListPres
             } else {
               VerticalChangeHandler handler = new VerticalChangeHandler();
 
-              parentController
-                  .getRouter()
-                  .pushController(RouterTransaction
-                      .with(PostEditorController.create())
+              parentController.getRouter()
+                  .pushController(RouterTransaction.with(PostEditorController.create())
                       .pushChangeHandler(handler)
                       .popChangeHandler(handler));
             }
@@ -208,24 +203,20 @@ public class PostListController extends MvpController<PostListView, PostListPres
     });
   }
 
-  @Override
-  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+  @Override protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
       @NonNull ControllerChangeType changeType) {
     super.onChangeEnded(changeHandler, changeType);
     getDrawerLayout().setFitsSystemWindows(false);
     ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
-  @Override
-  public void onLoading(boolean pullToRefresh) {
+  @Override public void onLoading(boolean pullToRefresh) {
     if (!pullToRefresh) {
       rootView.setState(StateLayout.VIEW_STATE_LOADING);
     }
   }
 
-  @Override
-  public void onLoaded(List<FeedItem> value) {
-    Timber.d("onLoaded(): %s", value);
+  @Override public void onLoaded(List<FeedItem> value) {
     if (value.isEmpty()) {
       epoxyController.hideLoader();
     } else {
@@ -233,51 +224,57 @@ public class PostListController extends MvpController<PostListView, PostListPres
     }
   }
 
-  @Override
-  public void showContent() {
+  @Override public void showContent() {
     rootView.setState(StateLayout.VIEW_STATE_CONTENT);
     swipeRefreshLayout.setRefreshing(false);
   }
 
-  @Override
-  public void onError(Throwable e) {
+  @Override public void onError(Throwable e) {
     rootView.setState(StateLayout.VIEW_STATE_ERROR);
     swipeRefreshLayout.setRefreshing(false);
     Timber.e(e);
   }
 
-  @Override
-  public void onEmpty() {
-    if (viewType == VIEW_TYPE_BOOKMARKED) {
-      rootView.setEmptyViewRes(R.layout.layout_bookmarks_empty_view);
-    } else if (viewType == VIEW_TYPE_USER) {
-      rootView.setEmptyViewRes(R.layout.layout_user_posts_empty_view);
+  @Override public void onEmpty() {
+    switch (viewType) {
+      case VIEW_TYPE_BOOKMARKED:
+        rootView.setEmptyViewRes(R.layout.layout_bookmarked_posts_empty_view);
+        break;
+      case VIEW_TYPE_USER:
+        rootView.setEmptyViewRes(R.layout.layout_user_posts_empty_view);
+        break;
+      case VIEW_TYPE_BOUNTY:
+        rootView.setEmptyViewRes(R.layout.layout_bounty_posts_empty_view);
+        break;
+      case VIEW_TYPE_GROUP:
+        rootView.setEmptyViewRes(R.layout.layout_group_posts_empty_view);
+        break;
+      case VIEW_TYPE_SORTER:
+        if (postSorter == PostSorter.HOT) {
+          rootView.setEmptyViewRes(R.layout.layout_trending_posts_empty_view);
+        }
+        break;
     }
+
     rootView.setState(StateLayout.VIEW_STATE_EMPTY);
     swipeRefreshLayout.setRefreshing(false);
   }
 
-  @Override
-  public void onRefresh() {
+  @Override public void onRefresh() {
     endlessRecyclerOnScrollListener.resetState();
     chooseLoadMethod(true);
   }
 
-  @Override
-  public void onAccountLoaded(AccountRealm account) {
+  @Override public void onAccountLoaded(AccountRealm account) {
     epoxyController.setUserId(account.getId());
-    //adapter.setUserId(currentUserId);
   }
 
-  @NonNull
-  @Override
-  public PostListPresenter createPresenter() {
+  @NonNull @Override public PostListPresenter createPresenter() {
     return new PostListPresenter(PostRepositoryProvider.getRepository(),
         UserRepositoryProvider.getRepository());
   }
 
-  @Override
-  public void onPostOptionsClick(View v, PostRealm post) {
+  @Override public void onPostOptionsClick(View v, PostRealm post) {
     final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
 
     menu.setOnMenuItemClickListener(item -> {
@@ -292,8 +289,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
     });
   }
 
-  @Override
-  public void onCommentClick(View v, PostRealm post) {
+  @Override public void onCommentClick(View v, PostRealm post) {
     CommentController controller =
         CommentController.create(post.getId(), post.getOwnerId(), post.getPostType(),
             post.getAcceptedCommentId() != null);
@@ -301,52 +297,46 @@ public class PostListController extends MvpController<PostListView, PostListPres
     startTransaction(controller, new VerticalChangeHandler());
   }
 
-  @Override
-  public void onContentImageClick(View v, MediaRealm media) {
+  @Override public void onContentImageClick(View v, MediaRealm media) {
     startTransaction(FullscreenPhotoController.create(media.getLargeSizeUrl(), media.getId()),
         new FadeChangeHandler());
   }
 
-  @Override
-  public void onProfileClick(View v, String userId) {
+  @Override public void onProfileClick(View v, String userId) {
     startTransaction(ProfileController.create(userId), new VerticalChangeHandler());
   }
 
-  @Override
-  public void onItemClick(View v, EpoxyModel<?> model, PostRealm item) {
+  @Override public void onItemClick(View v, PostRealm item) {
     PostDetailController controller = PostDetailController.create(item.getId());
     controller.setModelUpdateEvent(this);
     startTransaction(controller, new HorizontalChangeHandler());
   }
 
-  @Override
-  public void onShareClick(View v, PostRealm post) {
+  @Override public void onShareClick(View v, PostRealm post) {
     ShareUtil.share(this, null, post.getContent());
   }
 
-  @Override
-  public void onVoteClick(String votableId, int direction, @Type int type) {
+  @Override public void onVoteClick(String votableId, int direction, @Type int type) {
     getPresenter().votePost(votableId, direction);
   }
 
-  @Override
-  public void onPostUpdated(PostRealm post) {
+  @Override public void onPostUpdated(PostRealm post) {
     if (modelUpdateEvent != null) {
       modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, post);
     }
   }
 
-  @Override
-  public void onBookmarkClick(@NonNull String postId, boolean bookmark) {
+  @Override public void onBookmarkClick(@NonNull PostRealm post, boolean bookmark) {
     if (bookmark) {
-      getPresenter().bookmarkPost(postId);
+      getPresenter().bookmarkPost(post.getId());
+      epoxyController.bookmarkPost(post);
     } else {
-      getPresenter().unBookmarkPost(postId);
+      getPresenter().unBookmarkPost(post.getId());
+      epoxyController.bookmarkPost(post);
     }
   }
 
-  @Override
-  public void onModelUpdateEvent(@FeedAction int action, @Nullable Object payload) {
+  @Override public void onModelUpdateEvent(@FeedAction int action, @Nullable Object payload) {
     if (payload instanceof PostRealm) {
       //adapter.updatePost(action, (PostRealm) payload);
     }
@@ -376,9 +366,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
     rvPostFeed.setAdapter(epoxyController.getAdapter());
 
     endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(lm) {
-      @Override
-      public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-        Timber.d("onLoadMore(), totalItemCount: " + totalItemsCount);
+      @Override public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
         chooseLoadMoreMethod();
         epoxyController.showLoader();
       }
@@ -417,9 +405,9 @@ public class PostListController extends MvpController<PostListView, PostListPres
         break;
       case VIEW_TYPE_SORTER:
         if (postSorter == PostSorter.HOT) {
-          ab.setTitle("Trending Posts");
+          ab.setTitle(R.string.trending_posts_title);
         } else if (postSorter == PostSorter.NEWEST) {
-          ab.setTitle("Newest Posts");
+          ab.setTitle(R.string.newest_posts_title);
         }
         break;
     }
@@ -431,8 +419,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
       getRouter().pushController(
           RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
     } else {
-      parentController
-          .getRouter()
+      parentController.getRouter()
           .pushController(
               RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
     }

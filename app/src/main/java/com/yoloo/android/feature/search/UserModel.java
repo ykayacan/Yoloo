@@ -1,7 +1,6 @@
 package com.yoloo.android.feature.search;
 
 import android.content.Context;
-import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -19,7 +18,7 @@ import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 
 import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;
 
-@EpoxyModelClass(layout = R.layout.item_search_user)
+@EpoxyModelClass(layout = R.layout.item_user)
 public abstract class UserModel extends EpoxyModelWithHolder<UserModel.UserHolder> {
 
   @EpoxyAttribute AccountRealm account;
@@ -45,15 +44,8 @@ public abstract class UserModel extends EpoxyModelWithHolder<UserModel.UserHolde
     holder.btnFollow.setVisibility(showFollowButton ? View.VISIBLE : View.GONE);
 
     holder.btnFollow.setOnClickListener(v -> {
-      v.setTag(v.getTag() == null);
-      account.setFollowing(v.getTag() != null);
+      //account.setFollowing(!account.isFollowing());
 
-      final int textResId =
-          v.getTag() == null ? R.string.label_search_followed : R.string.label_search_unfollowed;
-
-      Snackbar
-          .make(v, context.getString(textResId, account.getUsername()), Snackbar.LENGTH_SHORT)
-          .show();
       onFollowClickListener.onFollowClick(v, account, 1);
     });
 

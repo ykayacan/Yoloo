@@ -38,7 +38,9 @@ import org.joda.time.DateTime;
 @Cache
 @Value
 @Builder(toBuilder = true)
-@NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+@NoArgsConstructor(
+    force = true,
+    access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @ApiTransformer(AccountTransformer.class)
 @FieldDefaults(makeFinal = false)
@@ -48,7 +50,6 @@ public class Account {
   public static final String FIELD_USERNAME = "username";
   public static final String FIELD_SUBSCRIBED_GROUP_KEYS = "subscribedGroupKeys";
   public static final String FIELD_CREATED = "created";
-  public static final String FIELD_FACEBOOK_ID = "facebookId";
 
   @Id private long id;
 
@@ -78,6 +79,8 @@ public class Account {
   private DateTime birthDate;
 
   @Index(IfNotNull.class) @Singular @Wither private Set<Country> visitedCountries;
+
+  @Index @Wither private List<Key<TravelerGroupEntity>> preInterestedGroupKeys;
 
   @Index @Singular @Wither private List<Key<TravelerGroupEntity>> subscribedGroupKeys;
 
@@ -112,7 +115,20 @@ public class Account {
   }
 
   public enum Gender {
-    MALE, FEMALE, UNSPECIFIED
+    MALE, FEMALE, UNSPECIFIED;
+
+    public static Gender from(int genderId) {
+      switch (genderId) {
+        case 0:
+          return Gender.UNSPECIFIED;
+        case 1:
+          return Gender.MALE;
+        case 2:
+          return Gender.FEMALE;
+        default:
+          throw new IllegalArgumentException("Givend genderId: " + genderId + " is invalid.");
+      }
+    }
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)

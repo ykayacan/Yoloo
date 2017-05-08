@@ -29,17 +29,7 @@
     android:layout_marginTop="16dp"
     android:drawablePadding="@dimen/padding_normal"
     android:gravity="center"
-    android:text="@string/no_notification"
+    android:text="@string/notification_empty_title"
     android:textAppearance="@style/TextAppearance.EmptyTitle" />
-
-  <com.yoloo.android.ui.widget.BaselineGridTextView
-    android:id="@+id/tv_empty_content"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/padding_micro"
-    android:gravity="center"
-    android:text="@string/label_feed_no_data_2"
-    android:visibility="gone"
-    tools:visibility="visible" />
 
 </LinearLayout>

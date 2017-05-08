@@ -1,4 +1,4 @@
-package com.yoloo.android.feature.auth.signup;
+package com.yoloo.android.feature.auth.signupdiscover;
 
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
@@ -22,7 +22,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import timber.log.Timber;
 
-class SignUpPresenter extends MvpPresenter<SignUpView> {
+class SignUpDiscoverPresenter extends MvpPresenter<SignUpDiscoverView> {
 
   private static final String EMPTY_USER_IMAGE =
       "https://storage.googleapis.com/yoloo-151719.appspot.com/system-default/"
@@ -31,7 +31,8 @@ class SignUpPresenter extends MvpPresenter<SignUpView> {
   private final UserRepository userRepository;
   private final NotificationRepository notificationRepository;
 
-  SignUpPresenter(UserRepository userRepository, NotificationRepository notificationRepository) {
+  SignUpDiscoverPresenter(UserRepository userRepository,
+      NotificationRepository notificationRepository) {
     this.userRepository = userRepository;
     this.notificationRepository = notificationRepository;
   }
@@ -40,20 +41,6 @@ class SignUpPresenter extends MvpPresenter<SignUpView> {
   public void onDetachView() {
     getView().onHideLoading();
     super.onDetachView();
-  }
-
-  /**
-   * Check username.
-   *
-   * @param username the username
-   */
-  void checkUsername(@Nonnull String username) {
-    Disposable d = userRepository
-        .checkUsername(username.toLowerCase().trim())
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(available -> getView().onCheckUsername(available), Timber::e);
-
-    getDisposable().add(d);
   }
 
   /**
@@ -90,7 +77,8 @@ class SignUpPresenter extends MvpPresenter<SignUpView> {
             .setBirthdate(birthday)
             .setCountry(new CountryRealm(countryCode))
             .setLangCode(langCode)
-            .setTravelerTypeIds(travelerTypeIds);
+            .setTravelerTypeIds(travelerTypeIds)
+            .setFacebookId(response.getId());
 
         registerUserOnServer(newAccount);
       } else {

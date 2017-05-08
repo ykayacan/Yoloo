@@ -14,8 +14,7 @@ public class AccountControllerProvider implements ControllerFactory<AccountContr
   @Override
   public AccountController create() {
     return AccountController.create(AccountShardService.create(), GameService.create(),
-        ImagesServiceFactory.getImagesService(), MediaService.create(),
-        new CountryService(URLFetchServiceFactory.getURLFetchService(),
+        MediaService.create(), new CountryService(URLFetchServiceFactory.getURLFetchService(),
             ImagesServiceFactory.getImagesService()));
   }
 }

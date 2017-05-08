@@ -52,7 +52,7 @@ class GroupGridEpoxyController extends TypedEpoxyController<List<GroupRealm>> {
 
       holder.tvCategoryText.setText(category.getName());
 
-      holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(v, this, category));
+      holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(v, category));
     }
 
     static class CategoryHolder extends BaseEpoxyHolder {

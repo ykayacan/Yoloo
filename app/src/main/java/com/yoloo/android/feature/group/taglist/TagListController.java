@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindView;
-import com.airbnb.epoxy.EpoxyModel;
 import com.google.android.flexbox.FlexDirection;
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayoutManager;
@@ -75,7 +74,7 @@ public class TagListController extends BaseController implements OnItemClickList
   }
 
   @Override
-  public void onItemClick(View v, EpoxyModel<?> model, String item) {
+  public void onItemClick(View v, String item) {
     // TODO: 2.05.2017 Navigate to tag search on click
   }
 

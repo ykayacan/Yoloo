@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">Yoloo</string>
-  <string name="label_nav_profile">Profil</string>
-  <string name="label_nav_explore">Keşfet</string>
+  <string name="nav_profile_title">Profil</string>
+  <string name="nav_explore_title">Keşfet</string>
   <string name="label_nav_bookmarks">Kayıtlı Gönderiler</string>
   <string name="label_nav_invite_friends">Arkadaşlarını Davet Et</string>
   <string name="label_nav_settings">Ayarlar</string>
@@ -52,7 +52,7 @@
   <string name="label_points_next">Sonraki seviye\n%1$d</string>
   <string name="label_points_initial">İlk seviye\n%1$d</string>
   <string name="label_level">Seviye %1$d</string>
-  <string name="label_subscribed_groups_title">Taki Edilen</string>
+  <string name="label_subscribed_groups_title">Takip Edilen</string>
   <string name="label_explore_title">Keşfet</string>
   <string name="label_explore_all_groups_title">Bütün Gruplar</string>
   <string name="label_menu_write_blog">Blog Yaz</string>
@@ -65,7 +65,7 @@
   <string name="action_catalog_discard_draft">Çıkmak istiyor musun?</string>
   <string name="action_catalog_next">SONRAKİ</string>
   <string name="label_comment_toolbar_title">Yorumlar</string>
-  <string name="label_comment_accepted">Kabul Edilmiş</string>
+  <string name="label_comment_accepted">Kabul\nedilmiş</string>
   <string name="label_comment_accepted_confirm">Bir yorumu kabul ettin.</string>
   <string name="hint_comment_write">Yorum yaz…</string>
   <string name="action_comment_accept">Kabul et</string>
@@ -192,7 +192,7 @@
   <string name="showcase_welcome_next">Devam</string>
   <string name="showcase_welcome_sub">Gezginlerle tanışmak ve seyahatlerini paylaşmak için hazır ol</string>
   <string name="showcase_welcome_to_yoloo">Yoloo\'ya Hoşgeldin</string>
-  <string name="showcase_fab_title">Soru sormak ve sehahatini paylaşmak için buraya tıkla</string>
+  <string name="showcase_fab_title">Soru sormak ve sehayatini paylaşmak için buraya tıkla</string>
   <string name="showcase_fab_got_it">Anladım</string>
   <string name="group_activities">Aktiviteler</string>
   <string name="label_bloglist_title">Popüler Bloglar</string>
@@ -200,7 +200,7 @@
   <string name="group_study_abroad">Yurtdışı Eğitim</string>
   <string name="group_nightlife">Gece Hayatı</string>
   <string name="group_food_drink">Yiyecek &amp; İçecek</string>
-  <string name="group_solo_travel">Yalnız Seyahat</string>
+  <string name="group_solo_travel">Solo Seyahat</string>
   <string name="group_events">Etkinlikler</string>
   <string name="group_culture">Kültür</string>
   <string name="group_camping">Kamp</string>
@@ -243,4 +243,49 @@
   <string name="empy_posts_user">Oops, henüz hiç gönderi paylaşmamışsın</string>
   <string name="label_all_groups_title">Hepsi</string>
   <string name="error_subscribe_group_first">Grubu seçmeden önce takip etmelisiniz.</string>
+
+  <string name="level_2">Seyahat Meraklısı</string>
+  <string name="level_3">Kaşif</string>
+  <string name="level_4">Gezgin</string>
+  <string name="level_5">Tam Zamanlı Gezgin</string>
+
+  <string name="trending_posts_title">Popüler Gönderiler</string>
+  <string name="newest_posts_title">Yeni Gönderiler</string>
+  <string name="label_feed_no_data_1">Oops, bu grupta hiç gönderi yok…</string>
+  <string name="label_feed_no_data_2">İlk sen gönderi yapmaya ne dersin?</string>
+
+
+  <string name="all_error_title">Bir hata oluştu\nBuraya tıklayarak yeniden yükleyin</string>
+
+  <string name="group_posts_empty_title">Hmm, bu grupta hiç gönderi yok</string>
+  <string name="group_posts_empty_subtitle">İlk sen gönderi yapmaya ne dersin?</string>
+  <string name="group_posts_empty_action_text">Hemen paylaş</string>
+
+  <string name="group_users_empty_title">Hmm, bu grupta hiç kullanıcı yok</string>
+  <string name="group_users_empty_subtitle">Bir zamanlar bir yolculuk yapmış olan bir gezgin vardı ve bu grubu yalnız bırakmıştı…</string>
+
+  <string name="bookmarked_posts_empty_title">Henüz kaydedilen gönderi yok</string>
+  <string name="bookmarked_posts_empty_subtitle">Akıllı bir gezgin beğendiği gönderileri kaydeder</string>
+
+  <string name="bounty_posts_empty_title">Bonuslu gönderi yok</string>
+  <string name="bounty_posts_empty_subtitle">Akıllı bir gezgin gönderisine bonus eklemeyi ihmal etmez</string>
+  <string name="bounty_posts_empty_action_text">Hemen paylaş</string>
+
+  <string name="profile_posts_empty_title">Hmm, henüz gönderi paylaşmamışsın</string>
+  <string name="profile_posts_empty_subtitle">Aklında seyahatle ilgili sorular mı var?\nO zaman soru sormanın tam zamanı !</string>
+  <string name="profile_posts_empty_action_text">Hemen paylaş</string>
+
+  <string name="trending_posts_empty_title">Hmm, burda hiç gönderi yok</string>
+  <string name="trending_posts_empty_subtitle">Bunun için özür dileriz</string>
+
+  <string name="notification_empty_title">Bildirim yok</string>
+
+  <string name="visited_countries_already_added_error">Seçtiğin ülke listende mevcut</string>
+  <string name="signup_discover_empty_typeid_error">En az 3 tip seçmelisiniz</string>
+
+  <string name="controller_comments_title">Yorumlar</string>
+
+  <string name="comments_accepted_error">Bu gönderide kabul edilmiş bir cevap bulunmakta</string>
+
+  <string name="visited_countries_dialog_remove_title">Ülkeyi silmek istiyor musun?</string>
 </resources>

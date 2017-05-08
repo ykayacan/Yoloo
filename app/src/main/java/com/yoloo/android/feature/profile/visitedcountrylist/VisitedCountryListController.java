@@ -32,7 +32,7 @@ import timber.log.Timber;
 
 public class VisitedCountryListController
     extends MvpController<VisitedCountryListView, VisitedCountryListPresenter>
-    implements VisitedCountryListView {
+    implements VisitedCountryListView, CountryGridModel.OnVisitedCountryRemoveRequestListener {
 
   private static final String KEY_SHOWCASE_FAB = "SHOWCASE_FAB";
   private static final String KEY_USER_ID = "USER_ID";
@@ -63,15 +63,13 @@ public class VisitedCountryListController
     return inflater.inflate(R.layout.controller_visited_country_list, container, false);
   }
 
-  @Override
-  protected void onViewBound(@NonNull View view) {
+  @Override protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
     setupToolbar();
     setupRecyclerview();
   }
 
-  @Override
-  protected void onAttach(@NonNull View view) {
+  @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
     boolean self = getArgs().getBoolean(KEY_SELF);
     String userId = getArgs().getString(KEY_USER_ID);
@@ -85,52 +83,50 @@ public class VisitedCountryListController
     }
   }
 
-  @Override
-  protected void onDetach(@NonNull View view) {
+  @Override protected void onDetach(@NonNull View view) {
     super.onDetach(view);
     if (countryPicker != null && countryPicker.isShowing()) {
       countryPicker.dismiss();
     }
   }
 
-  @Override
-  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+  @Override protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
       @NonNull ControllerChangeType changeType) {
     super.onChangeEnded(changeHandler, changeType);
     getDrawerLayout().setFitsSystemWindows(false);
   }
 
-  @Override
-  public void onLoading(boolean pullToRefresh) {
+  @Override public void onLoading(boolean pullToRefresh) {
 
   }
 
-  @Override
-  public void onLoaded(List<CountryRealm> value) {
-    epoxyController.setData(value);
+  @Override public void onLoaded(List<CountryRealm> value) {
+    epoxyController.setData(value, null);
   }
 
-  @Override
-  public void onError(Throwable e) {
+  @Override public void onError(Throwable e) {
     Timber.e(e);
     if (e.getMessage().equals("100")) {
-      Snackbar.make(getView(), "Country is already added!", Snackbar.LENGTH_LONG).show();
+      Snackbar.make(getView(), R.string.visited_countries_already_added_error, Snackbar.LENGTH_LONG)
+          .show();
     }
   }
 
-  @Override
-  public void onEmpty() {
+  @Override public void onEmpty() {
     Timber.d("onEmpty()");
   }
 
-  @NonNull
-  @Override
-  public VisitedCountryListPresenter createPresenter() {
+  @Override public void onVisitedCountryRemoveRequest(CountryRealm country) {
+    getPresenter().removeVisitedCountry(country.getCode());
+
+    epoxyController.removeCountry(country);
+  }
+
+  @NonNull @Override public VisitedCountryListPresenter createPresenter() {
     return new VisitedCountryListPresenter(UserRepositoryProvider.getRepository());
   }
 
-  @OnClick(R.id.fab)
-  void openAddCountryDialog() {
+  @OnClick(R.id.fab) void openAddCountryDialog() {
     countryPicker = new CountryPickerDialog(getActivity(),
         (country, flagResId) -> getPresenter().addVisitedCountry(country.getIsoCode()), false, 0);
     countryPicker.show();
@@ -144,6 +140,7 @@ public class VisitedCountryListController
 
   private void setupRecyclerview() {
     epoxyController = new VisitedCountryListEpoxyController(Glide.with(getActivity()));
+    epoxyController.setListener(this);
 
     rvVisitedCountryList.setLayoutManager(new GridLayoutManager(getActivity(), 3));
     rvVisitedCountryList.setHasFixedSize(true);
@@ -153,14 +150,12 @@ public class VisitedCountryListController
     rvVisitedCountryList.setAdapter(epoxyController.getAdapter());
   }
 
-  @Override
-  public void onMeUpdated(AccountRealm me) {
-    epoxyController.setData(me.getVisitedCountries());
+  @Override public void onMeUpdated(AccountRealm me) {
+    epoxyController.setData(me.getVisitedCountries(), null);
   }
 
   private void showFabTutorial() {
-    fabShowcase = TutoShowcase
-        .from(getActivity())
+    fabShowcase = TutoShowcase.from(getActivity())
         .setContentView(R.layout.showcase_visited_countries_fab)
         .setFitsSystemWindows(true)
         .on(R.id.fab)

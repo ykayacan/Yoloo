@@ -9,7 +9,6 @@ import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.datastore.QueryResultIterator;
-import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -22,6 +21,9 @@ import com.yoloo.backend.Constants;
 import com.yoloo.backend.account.task.CreateUserFeedServlet;
 import com.yoloo.backend.authentication.oauth2.OAuth2;
 import com.yoloo.backend.base.Controller;
+import com.yoloo.backend.comment.Comment;
+import com.yoloo.backend.comment.CommentShard;
+import com.yoloo.backend.comment.CommentShardService;
 import com.yoloo.backend.country.Country;
 import com.yoloo.backend.country.CountryService;
 import com.yoloo.backend.device.DeviceRecord;
@@ -33,9 +35,9 @@ import com.yoloo.backend.media.MediaEntity;
 import com.yoloo.backend.media.MediaService;
 import com.yoloo.backend.media.Size;
 import com.yoloo.backend.media.size.ThumbSize;
+import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.relationship.Relationship;
 import com.yoloo.backend.travelertype.TravelerTypeEntity;
-import com.yoloo.backend.util.ServerConfig;
 import com.yoloo.backend.util.StringUtil;
 import ix.Ix;
 import java.util.ArrayList;
@@ -59,28 +61,16 @@ import static com.yoloo.backend.account.AccountUtil.isUserRegistered;
 @AllArgsConstructor(staticName = "create")
 public final class AccountController extends Controller {
 
-  /**
-   * Maximum number of postCount to return.
-   */
   private static final int DEFAULT_LIST_LIMIT = 20;
 
   private AccountShardService accountShardService;
 
   private GameService gameService;
 
-  private ImagesService imagesService;
-
   private MediaService mediaService;
 
   private CountryService countryService;
 
-  /**
-   * Get account.
-   *
-   * @param accountId the account id
-   * @param user the user
-   * @return the account
-   */
   public Account getAccount(String accountId, User user) {
     final Key<Account> targetAccountKey = Key.create(accountId);
     final Key<Account> currentAccountKey = Key.create(user.getUserId());
@@ -103,21 +93,13 @@ public final class AccountController extends Controller {
         .withDetail(buildDetail(tracker));
   }
 
-  /**
-   * Insert account account.
-   *
-   * @param request the request
-   * @return the account
-   * @throws ConflictException the conflict exception
-   * @throws BadRequestException the bad request exception
-   */
   public Account insertAccount(HttpServletRequest request)
       throws ConflictException, BadRequestException {
 
     final String authHeader = request.getHeader(OAuth2.HeaderType.AUTHORIZATION);
     final String base64Payload = StringUtil.split(authHeader, " ").get(1);
 
-    AccountJsonPayload payload = AccountJsonPayload.from(base64Payload);
+    final AccountJsonPayload payload = AccountJsonPayload.from(base64Payload);
 
     if (isUserRegistered(payload.getEmail())) {
       throw new ConflictException("User is already registered.");
@@ -126,22 +108,22 @@ public final class AccountController extends Controller {
 
       Tracker tracker = gameService.createTracker(account.getKey());
 
-      List<Key<TravelerGroupEntity>> groupKeys = findGroupKeys(payload.getTravelerTypeIds());
-
-      ImmutableList<Object> saveList = ImmutableList
-          .builder()
-          .add(account)
-          .addAll(account.getShardMap().values())
-          .add(tracker)
-          .build();
-
       return ofy().transact(() -> {
+        ImmutableList<Object> saveList = ImmutableList
+            .builder()
+            .add(account)
+            .addAll(account.getShardMap().values())
+            .add(tracker)
+            .build();
+
         ofy().save().entities(saveList).now();
 
-        final String stringifiedSubscribedIds =
-            Stream.of(groupKeys).map(Key::toWebSafeString).collect(Collectors.joining(","));
+        final String subscribedGroupIds = Stream
+            .of(account.getPreInterestedGroupKeys())
+            .map(Key::toWebSafeString)
+            .collect(Collectors.joining(","));
 
-        CreateUserFeedServlet.addToQueue(account.getWebsafeId(), stringifiedSubscribedIds);
+        CreateUserFeedServlet.addToQueue(account.getWebsafeId(), subscribedGroupIds);
 
         return account
             .withCounts(Account.Counts.builder().build())
@@ -202,6 +184,8 @@ public final class AccountController extends Controller {
 
     Country country = countryService.getCountry(payload.getCountryCode());
 
+    List<Key<TravelerGroupEntity>> groupKeys = findGroupKeys(payload.getTravelerTypeIds());
+
     return Account
         .builder()
         .id(accountKey.getId())
@@ -211,7 +195,8 @@ public final class AccountController extends Controller {
         .avatarUrl(new Link(payload.getProfileImageUrl()))
         .langCode(payload.getLangCode())
         .country(country)
-        .birthDate(new DateTime(payload.getBirthdate()))
+        .preInterestedGroupKeys(groupKeys)
+        .birthDate(new DateTime(payload.getBirthday()))
         .gender(Account.Gender.UNSPECIFIED)
         .shardRefs(Lists.newArrayList(shardMap.keySet()))
         .counts(Account.Counts.builder().build())
@@ -221,12 +206,6 @@ public final class AccountController extends Controller {
         .build();
   }
 
-  /**
-   * Add admin account.
-   *
-   * @return the account
-   * @throws ConflictException the conflict exception
-   */
   public Account insertAdmin() throws ConflictException {
     final long id = ofy().factory().allocateId(Account.class).getId();
     Account admin = ofy().load().key(Key.create(Account.class, id)).now();
@@ -260,23 +239,9 @@ public final class AccountController extends Controller {
     });
   }
 
-  /**
-   * Update account.
-   *
-   * @param accountId the account id
-   * @param mediaId the media id
-   * @param username the username
-   * @param realName the real name
-   * @param email the email
-   * @param websiteUrl the website url
-   * @param bio the bio
-   * @param gender the gender
-   * @param visitedCountryCode the country code
-   * @return the account
-   */
   public Account updateAccount(String accountId, Optional<String> mediaId,
       Optional<String> username, Optional<String> realName, Optional<String> email,
-      Optional<String> websiteUrl, Optional<String> bio, Optional<Account.Gender> gender,
+      Optional<String> url, Optional<String> bio, Optional<Account.Gender> gender,
       Optional<String> visitedCountryCode, Optional<String> countryCode) {
 
     ImmutableSet.Builder<Key<?>> keyBuilder = ImmutableSet.builder();
@@ -340,8 +305,8 @@ public final class AccountController extends Controller {
             updated = updated.withVisitedCountries(visitedCountries);
           }
 
-          if (websiteUrl.isPresent()) {
-            updated = updated.withWebsiteUrl(new Link(websiteUrl.get()));
+          if (url.isPresent()) {
+            updated = updated.withWebsiteUrl(new Link(url.get()));
           }
 
           if (bio.isPresent()) {
@@ -364,37 +329,56 @@ public final class AccountController extends Controller {
   public void deleteAccount(String accountId) {
     final Key<Account> accountKey = Key.create(accountId);
 
-    ofy().transact(() -> {
-      List<Key<Object>> keys = ofy().load().ancestor(accountKey).keys().list();
-      final Key<Tracker> trackerKey = Tracker.createKey(accountKey);
+    List<Key<Object>> keys = ofy().load().ancestor(accountKey).keys().list();
 
-      List<Key<MediaEntity>> mediaKeys =
-          ofy().load().type(MediaEntity.class).ancestor(accountKey).keys().list();
+    final Key<Tracker> trackerKey = Tracker.createKey(accountKey);
 
-      ImmutableSet<Key<?>> deleteList = ImmutableSet.<Key<?>>builder()
-          .addAll(keys)
-          .add(trackerKey)
-          .addAll(accountShardService.createShardMapWithKey(accountKey).keySet())
-          .build();
+    List<Key<MediaEntity>> mediaKeys =
+        ofy().load().type(MediaEntity.class).ancestor(accountKey).keys().list();
 
-      if (ServerConfig.isDev()) {
-        ofy().delete().keys(deleteList).now();
-      } else {
-        ofy().delete().keys(deleteList);
-      }
+    List<Key<Comment>> commentKeys =
+        ofy().load().type(Comment.class).ancestor(accountKey).keys().list();
+    Set<Key<CommentShard>> commentShardKeys =
+        CommentShardService.create().createShardMapWithKey(commentKeys).keySet();
 
-      mediaService.deleteMedias(mediaKeys);
-    });
+    List<Object> saveList = new ArrayList<>();
+    Query<PostEntity> postQuery = ofy().load().type(PostEntity.class);
+    for (Key<Comment> commentKey : commentKeys) {
+      postQuery = postQuery.filter(PostEntity.FIELD_ACCEPTED_COMMENT_KEY, commentKey);
+    }
+    List<PostEntity> posts = postQuery.list();
+
+    if (!posts.isEmpty()) {
+      posts = Ix.from(posts).map(post -> post.withAcceptedCommentKey(null)).toList();
+      saveList.addAll(posts);
+    }
+
+    Account account = ofy().load().key(accountKey).now();
+    if (account.getSubscribedGroupKeys() != null) {
+      Collection<TravelerGroupEntity> groups =
+          ofy().load().keys(account.getSubscribedGroupKeys()).values();
+
+      List<TravelerGroupEntity> updatedGroups = Ix
+          .from(groups)
+          .map(entity -> entity.withSubscriberCount(entity.getSubscriberCount() - 1))
+          .toList();
+
+      saveList.addAll(updatedGroups);
+    }
+
+    ImmutableSet<Key<?>> deleteList = ImmutableSet.<Key<?>>builder()
+        .addAll(keys)
+        .add(trackerKey)
+        .addAll(accountShardService.createShardMapWithKey(accountKey).keySet())
+        .addAll(commentShardKeys)
+        .build();
+
+    ofy().defer().delete().keys(deleteList);
+    ofy().defer().save().entities(saveList);
+
+    mediaService.deleteMedias(mediaKeys);
   }
 
-  /**
-   * Search accounts collection response.
-   *
-   * @param q the value
-   * @param cursor the cursor
-   * @param limit the limit
-   * @return the collection response
-   */
   public CollectionResponse<Account> searchAccounts(String q, Optional<String> cursor,
       Optional<Integer> limit) {
 
@@ -423,24 +407,11 @@ public final class AccountController extends Controller {
         .build();
   }
 
-  /**
-   * List recommended users collection response.
-   *
-   * @param cursor the cursor
-   * @param limit the limit
-   * @param user the user
-   * @return the collection response
-   */
   public CollectionResponse<Account> listRecommendedUsers(Optional<String> cursor,
       Optional<Integer> limit, User user) {
+    final Key<Account> accountKey = Key.create(user.getUserId());
 
-    Account account = ofy().load().key(Key.<Account>create(user.getUserId())).now();
-
-    Query<Account> query = ofy().load().type(Account.class);
-
-    /*for (Key<TravelerGroupEntity> key : account.getSubscribedGroupKeys()) {
-      query = query.filter(Account.FIELD_SUBSCRIBED_GROUP_KEYS, key);
-    }*/
+    Query<Account> query = ofy().load().type(Account.class).order("-" + Account.FIELD_CREATED);
 
     query = cursor.isPresent() ? query.startAt(Cursor.fromWebSafeString(cursor.get())) : query;
 
@@ -450,7 +421,14 @@ public final class AccountController extends Controller {
 
     List<Account> accounts = new ArrayList<>(DEFAULT_LIST_LIMIT);
     while (qi.hasNext()) {
-      accounts.add(qi.next());
+      Account account = qi.next();
+      if (!account.getKey().equivalent(accountKey)) {
+        accounts.add(account);
+      }
+    }
+
+    if (accounts.isEmpty()) {
+      return CollectionResponse.<Account>builder().build();
     }
 
     return CollectionResponse.<Account>builder()

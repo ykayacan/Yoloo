@@ -10,23 +10,27 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.TextView;
+import com.hootsuite.nachos.NachoTextView;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.TagRealm;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import java.util.ArrayList;
 import java.util.List;
+import timber.log.Timber;
 
 public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
 
   private final PublishSubject<String> subject = PublishSubject.create();
 
   private final List<TagRealm> items;
+  private final NachoTextView nachoTextView;
 
   private LayoutInflater inflater;
 
-  public AutoCompleteTagAdapter(Context context) {
+  public AutoCompleteTagAdapter(Context context, NachoTextView nachoTextView) {
     super(context, 0);
+    this.nachoTextView = nachoTextView;
     this.items = new ArrayList<>(5);
     this.inflater = LayoutInflater.from(context);
   }
@@ -45,7 +49,7 @@ public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
   @NonNull
   @Override
   public Filter getFilter() {
-    return new TagFilter(items, this, subject);
+    return new TagFilter(items, this, subject, nachoTextView);
   }
 
   @NonNull
@@ -91,12 +95,14 @@ public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
     private final List<TagRealm> items;
     private final AutoCompleteTagAdapter adapter;
     private final PublishSubject<String> subject;
+    private final NachoTextView nachoTextView;
 
     private TagFilter(List<TagRealm> items, AutoCompleteTagAdapter adapter,
-        PublishSubject<String> subject) {
+        PublishSubject<String> subject, NachoTextView nachoTextView) {
       this.items = items;
       this.adapter = adapter;
       this.subject = subject;
+      this.nachoTextView = nachoTextView;
     }
 
     @Override
@@ -120,6 +126,7 @@ public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
     @Override
     public CharSequence convertResultToString(Object resultValue) {
       if (resultValue instanceof TagRealm) {
+        Timber.d("Name: %s", ((TagRealm) resultValue).getName());
         return ((TagRealm) resultValue).getName();
       }
       return super.convertResultToString(resultValue);

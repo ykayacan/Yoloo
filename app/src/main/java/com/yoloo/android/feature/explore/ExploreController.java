@@ -129,7 +129,7 @@ public class ExploreController extends MvpController<ExploreView, ExplorePresent
     epoxyController.setOnTrendingClickListener(
         v -> startTransaction(PostListController.ofPostSorter(PostSorter.HOT),
             new HorizontalChangeHandler()));
-    epoxyController.setOnGroupClickListener((v, model, item) -> {
+    epoxyController.setOnGroupClickListener((v, item) -> {
       Controller controller = GroupController.create(item.getId());
       controller.setTargetController(this);
       startTransaction(controller, new FadeChangeHandler());

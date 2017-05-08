@@ -8,10 +8,10 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import butterknife.BindDimen;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import butterknife.OnLongClick;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.Transformation;
 import com.yoloo.android.R;
@@ -19,17 +19,19 @@ import com.yoloo.android.data.model.CommentRealm;
 import com.yoloo.android.ui.widget.linkabletextview.LinkableTextView;
 import com.yoloo.android.ui.widget.timeview.TimeTextView;
 import com.yoloo.android.util.DrawableHelper;
-import java.util.Date;
 
 public class CommentView extends ConstraintLayout {
 
   @BindView(R.id.iv_comment_user_avatar) ImageView ivUserAvatar;
   @BindView(R.id.tv_comment_username) TextView tvUsername;
   @BindView(R.id.tv_comment_time) TimeTextView tvTime;
-  @BindView(R.id.tv_comment_accepted_indicator) TextView tvAcceptedIndicator;
   @BindView(R.id.tv_comment_content) LinkableTextView tvContent;
+  @BindView(R.id.tv_comment_accepted_indicator) TextView tvAcceptedIndicator;
   @BindView(R.id.tv_mark_as_accepted) TextView tvMarkAsAccepted;
   @BindView(R.id.tv_comment_vote) VoteView voteView;
+
+  @BindDimen(R.dimen.padding_normal) int normalPadding;
+  @BindDimen(R.dimen.padding_micro) int microPadding;
 
   private OnCommentClickListener onCommentClickListener;
   private CommentRealm comment;
@@ -39,49 +41,27 @@ public class CommentView extends ConstraintLayout {
     inflate(getContext(), R.layout.layout_commentview, this);
     ButterKnife.bind(this);
 
+    setPadding(normalPadding, normalPadding, normalPadding, microPadding);
+
+
     DrawableHelper
         .create()
         .withDrawable(tvMarkAsAccepted.getCompoundDrawables()[0])
         .withColor(context, android.R.color.secondary_text_dark)
         .tint();
-
-    DrawableHelper
-        .create()
-        .withDrawable(tvAcceptedIndicator.getCompoundDrawables()[1])
-        .withColor(context, R.color.accepted)
-        .tint();
   }
 
-  public void setComment(CommentRealm comment) {
+  public void setComment(CommentRealm comment, boolean showAccept) {
     this.comment = comment;
-  }
 
-  public void setOnCommentClickListener(OnCommentClickListener onCommentClickListener) {
-    this.onCommentClickListener = onCommentClickListener;
+    tvUsername.setText(comment.getUsername());
+    tvTime.setTimeStamp(comment.getCreated().getTime() / 1000);
+    tvContent.setText(comment.getContent());
+    voteView.setVoteCount(comment.getVoteCount());
+    voteView.setVoteDirection(comment.getVoteDir());
 
-    tvContent.setOnLinkClickListener((type, value) -> {
-      if (type == LinkableTextView.Link.MENTION) {
-        onCommentClickListener.onCommentMentionClick(value);
-      }
-    });
-
-    voteView.setOnVoteEventListener(direction -> {
-      comment.setVoteDir(direction);
-      onCommentClickListener.onCommentVoteClick(comment.getId(), direction);
-    });
-
-    tvMarkAsAccepted.setOnClickListener(v -> {
-      comment.setAccepted(true);
-      tvMarkAsAccepted.setVisibility(View.GONE);
-      tvAcceptedIndicator.setVisibility(View.VISIBLE);
-      DrawableHelper
-          .create()
-          .withDrawable(tvAcceptedIndicator.getCompoundDrawables()[1])
-          .withColor(v.getContext(), R.color.accepted)
-          .tint();
-
-      onCommentClickListener.onMarkAsAccepted(comment);
-    });
+    tvAcceptedIndicator.setVisibility(comment.isAccepted() ? View.VISIBLE : View.GONE);
+    tvMarkAsAccepted.setVisibility(showAccept ? VISIBLE : GONE);
   }
 
   public void setUserAvatar(@NonNull RequestManager glide,
@@ -94,43 +74,36 @@ public class CommentView extends ConstraintLayout {
         .into(ivUserAvatar);
   }
 
-  public void setUsername(@NonNull String username) {
-    tvUsername.setText(username);
-  }
+  public void setOnCommentClickListener(OnCommentClickListener onCommentClickListener) {
+    this.onCommentClickListener = onCommentClickListener;
 
-  public void setTime(@NonNull Date date) {
-    tvTime.setTimeStamp(date.getTime() / 1000);
-  }
-
-  public void setContent(@NonNull String content) {
-    tvContent.setText(content);
-  }
-
-  public void setVoteCount(long voteCount) {
-    voteView.setVoteCount(voteCount);
-  }
-
-  public void setVoteDirection(int direction) {
-    voteView.setVoteDirection(direction);
-  }
-
-  public void setAcceptedMarkIndicatorVisibility(boolean accepted) {
-    tvAcceptedIndicator.setVisibility(accepted ? View.VISIBLE : View.GONE);
-  }
-
-  public void showAccept(boolean show) {
-    tvMarkAsAccepted.setVisibility(show ? VISIBLE : GONE);
-  }
-
-  @OnLongClick(R.id.root_view)
-  boolean onLongClick() {
-    if (comment.isOwner()) {
+    setOnLongClickListener(v -> {
       onCommentClickListener.onCommentLongClick(comment);
-    }
-    return true;
+      return comment.isOwner();
+    });
+
+    tvContent.setOnLinkClickListener((type, value) -> {
+      if (type == LinkableTextView.Link.MENTION) {
+        onCommentClickListener.onCommentMentionClick(value);
+      }
+    });
+
+
+    tvMarkAsAccepted.setOnClickListener(v -> {
+      comment.setAccepted(true);
+      tvMarkAsAccepted.setVisibility(View.GONE);
+      tvAcceptedIndicator.setVisibility(View.VISIBLE);
+
+      onCommentClickListener.onMarkAsAccepted(comment);
+    });
+
+    voteView.setOnVoteEventListener(direction -> {
+      comment.setVoteDir(direction);
+      onCommentClickListener.onCommentVoteClick(comment.getId(), direction);
+    });
   }
 
-  @OnClick({R.id.tv_comment_username, R.id.iv_comment_user_avatar})
+  @OnClick({ R.id.tv_comment_username, R.id.iv_comment_user_avatar })
   void onProfileClick() {
     onCommentClickListener.onCommentProfileClick(comment.getOwnerId());
   }

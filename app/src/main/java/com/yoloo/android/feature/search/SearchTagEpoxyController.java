@@ -23,7 +23,7 @@ class SearchTagEpoxyController extends TypedEpoxyController<List<TagRealm>> {
     new TagModel_()
         .id(tag.getId())
         .tag(tag)
-        .onClickListener(v -> onTagClickListener.onItemClick(v, null, tag))
+        .onClickListener(v -> onTagClickListener.onItemClick(v, tag))
         .addTo(this);
   }
 }

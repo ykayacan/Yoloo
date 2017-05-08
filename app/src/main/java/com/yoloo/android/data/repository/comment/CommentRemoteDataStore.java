@@ -140,6 +140,17 @@ class CommentRemoteDataStore {
         .map(CommentRealm::new);
   }
 
+  Completable vote(@Nonnull String commentId, int direction) {
+    return getIdToken().flatMapCompletable(idToken -> Completable
+        .fromCallable(() -> INSTANCE
+            .getApi()
+            .comments()
+            .vote(commentId, direction)
+            .setRequestHeaders(setIdTokenHeader(idToken))
+            .execute())
+        .subscribeOn(Schedulers.io()));
+  }
+
   private HttpHeaders setIdTokenHeader(@Nonnull String idToken) {
     Timber.d("Id Token: %s", idToken);
     return new HttpHeaders().setAuthorization("Bearer " + idToken);

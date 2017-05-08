@@ -103,7 +103,6 @@ class CommentEpoxyController extends Typed2EpoxyController<List<CommentRealm>, B
         .id(comment.getId())
         .comment(comment)
         .glide(glide)
-        .postType(postType)
         .showAcceptButton(shouldShowAcceptButton(comment))
         .backgroundColor(Color.TRANSPARENT)
         .circleTransformation(cropCircleTransformation)

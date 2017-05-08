@@ -13,10 +13,11 @@ import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
-import com.yoloo.android.feature.models.loader.LoaderModel;
 import com.yoloo.android.feature.feed.component.post.BlogModel_;
+import com.yoloo.android.feature.models.loader.LoaderModel;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
+import java.util.ArrayList;
 import java.util.List;
 
 class BlogListEpoxyController extends Typed2EpoxyController<List<PostRealm>, Boolean> {
@@ -36,9 +37,12 @@ class BlogListEpoxyController extends Typed2EpoxyController<List<PostRealm>, Boo
   private OnCommentClickListener onCommentClickListener;
   private OnVoteClickListener onVoteClickListener;
 
+  private List<PostRealm> posts;
+
   BlogListEpoxyController(Context context, RequestManager glide) {
     this.glide = glide;
     this.circleTransformation = new CropCircleTransformation(context);
+    this.posts = new ArrayList<>();
   }
 
   void setUserId(String userId) {
@@ -73,11 +77,29 @@ class BlogListEpoxyController extends Typed2EpoxyController<List<PostRealm>, Boo
     this.onVoteClickListener = onVoteClickListener;
   }
 
+  @Override public void setData(List<PostRealm> posts, Boolean loadingMore) {
+    this.posts = posts;
+    super.setData(posts, loadingMore);
+  }
+
   @Override
   protected void buildModels(List<PostRealm> posts, Boolean loadingMore) {
     Stream.of(posts).forEach(this::createBlog);
 
     loaderModel.addIf(loadingMore, this);
+  }
+
+  public void deletePost(PostRealm post) {
+    posts.remove(post);
+    setData(posts, false);
+  }
+
+  public void showLoader() {
+    setData(posts, true);
+  }
+
+  public void hideLoader() {
+    setData(posts, false);
   }
 
   private void createBlog(PostRealm post) {

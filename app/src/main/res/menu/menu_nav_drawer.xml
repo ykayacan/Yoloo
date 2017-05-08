@@ -7,11 +7,11 @@
     <item
       android:id="@+id/action_nav_profile"
       android:icon="@drawable/ic_person_black_24dp"
-      android:title="@string/label_nav_profile" />
+      android:title="@string/nav_profile_title" />
     <item
       android:id="@+id/action_nav_explore"
       android:icon="@drawable/ic_explore_black_24dp"
-      android:title="@string/label_nav_explore" />
+      android:title="@string/nav_explore_title" />
     <item
       android:id="@+id/action_nav_bookmarks"
       android:icon="@drawable/ic_bookmark_black_24dp"

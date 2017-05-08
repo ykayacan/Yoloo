@@ -6,6 +6,7 @@ import com.yoloo.android.framework.MvpPresenter;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import javax.annotation.Nonnull;
+import timber.log.Timber;
 
 public class ProfileEditPresenter extends MvpPresenter<ProfileEditView> {
 
@@ -38,6 +39,7 @@ public class ProfileEditPresenter extends MvpPresenter<ProfileEditView> {
         .updateMe(account)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(updated -> {
+          Timber.d("Updated: %s", updated);
           getView().onHideLoading();
           getView().onAccountUpdated(updated);
         }, throwable -> getView().onError(throwable));

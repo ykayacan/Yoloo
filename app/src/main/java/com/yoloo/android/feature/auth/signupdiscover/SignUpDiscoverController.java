@@ -1,8 +1,8 @@
-package com.yoloo.android.feature.auth.selecttype;
+package com.yoloo.android.feature.auth.signupdiscover;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Typeface;
@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.util.ArrayMap;
 import android.telephony.TelephonyManager;
 import android.view.LayoutInflater;
@@ -46,18 +47,24 @@ import java.util.ArrayList;
 import java.util.Random;
 import timber.log.Timber;
 
-public class SelectTypeController extends MvpController<SelectTypeView, SelectTypePresenter>
-    implements SelectTypeView {
+public class SignUpDiscoverController
+    extends MvpController<SignUpDiscoverView, SignUpDiscoverPresenter>
+    implements SignUpDiscoverView {
 
   private static final String KEY_INFO_BUNDLE = "INFO_BUNDLE";
   private static final String KEY_IDP_RESPONSE = "IDP_RESPONSE";
+
+  private static final int[] TYPE_DRAWABLE_IDS = {
+      R.drawable.escapist, R.drawable.guidebook_memorizer, R.drawable.know_it_all,
+      R.drawable.no_expense, R.drawable.partier, R.drawable.planner, R.drawable.repeater,
+      R.drawable.solo_traveler, R.drawable.thrill_seeker, R.drawable.travel_mate_seeker
+  };
 
   @BindView(R.id.bubblepicker) BubblePicker picker;
   @BindView(R.id.btn_sign_up_init_get_started) TextView tvGetStarted;
   @BindView(R.id.space_workaround) View space;
 
   @BindArray(R.array.colors) int[] colors;
-  @BindArray(R.array.traveler_types_images) TypedArray travelerTypeDrawables;
   @BindArray(R.array.traveler_types_titles) String[] travelerTypeTitles;
   @BindArray(R.array.traveler_types_ids) String[] travelerTypeIds;
 
@@ -72,24 +79,23 @@ public class SelectTypeController extends MvpController<SelectTypeView, SelectTy
 
   private ProgressDialog progressDialog;
 
-  public SelectTypeController(Bundle args) {
+  public SignUpDiscoverController(Bundle args) {
     super(args);
   }
 
-  public static SelectTypeController createWithProvider(@NonNull IdpResponse response,
+  public static SignUpDiscoverController createWithProvider(@NonNull IdpResponse response,
       @NonNull InfoBundle infoBundle) {
-    final Bundle bundle = new BundleBuilder()
-        .putParcelable(KEY_IDP_RESPONSE, response)
+    final Bundle bundle = new BundleBuilder().putParcelable(KEY_IDP_RESPONSE, response)
         .putParcelable(KEY_INFO_BUNDLE, infoBundle)
         .build();
 
-    return new SelectTypeController(bundle);
+    return new SignUpDiscoverController(bundle);
   }
 
-  public static SelectTypeController createWithEmail(@NonNull InfoBundle infoBundle) {
+  public static SignUpDiscoverController createWithEmail(@NonNull InfoBundle infoBundle) {
     final Bundle bundle = new BundleBuilder().putParcelable(KEY_INFO_BUNDLE, infoBundle).build();
 
-    return new SelectTypeController(bundle);
+    return new SignUpDiscoverController(bundle);
   }
 
   @Override
@@ -97,15 +103,9 @@ public class SelectTypeController extends MvpController<SelectTypeView, SelectTy
     return inflater.inflate(R.layout.controller_select_type, container, false);
   }
 
-  @Override
-  protected void onViewBound(@NonNull View view) {
+  @Override protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
-
-    Point point = ViewUtils.getNavigationBarSize(getActivity());
-
-    if (space != null) {
-      space.setVisibility(point.y > 0 ? View.VISIBLE : View.GONE);
-    }
+    setNavbarHack();
 
     for (int i = 0; i < travelerTypeTitles.length; i++) {
       types.put(travelerTypeTitles[i], travelerTypeIds[i]);
@@ -116,26 +116,17 @@ public class SelectTypeController extends MvpController<SelectTypeView, SelectTy
     picker.setVisibility(View.VISIBLE);
 
     for (int i = 0; i < travelerTypeTitles.length; i++) {
-      Drawable drawable = travelerTypeDrawables.getDrawable(i);
-      String title = travelerTypeTitles[i];
-
       int num = new Random().nextInt(4);
 
-      BubbleGradient gradient = new BubbleGradient(colors[num], colors[num]);
+      Drawable drawable = ContextCompat.getDrawable(getActivity(), TYPE_DRAWABLE_IDS[i]);
 
-      PickerItem item =
-          new PickerItem(title, null, true, null, gradient, 0.5F, Typeface.DEFAULT_BOLD,
-              Color.WHITE, 46.0F, drawable);
-      items.add(item);
+      items.add(getPickerItem(drawable, travelerTypeTitles[i], colors[num]));
     }
 
-    travelerTypeDrawables.recycle();
-
     picker.setItems(items);
-    picker.setBubbleSize(52);
+    picker.setBubbleSize(50);
     picker.setListener(new BubblePickerListener() {
-      @Override
-      public void onBubbleSelected(@NonNull PickerItem pickerItem) {
+      @Override public void onBubbleSelected(@NonNull PickerItem pickerItem) {
         if (types.containsKey(pickerItem.getTitle())) {
           selectedTypeIds.add(types.get(pickerItem.getTitle()));
 
@@ -145,8 +136,7 @@ public class SelectTypeController extends MvpController<SelectTypeView, SelectTy
         }
       }
 
-      @Override
-      public void onBubbleDeselected(@NonNull PickerItem pickerItem) {
+      @Override public void onBubbleDeselected(@NonNull PickerItem pickerItem) {
         if (types.containsKey(pickerItem.getTitle())) {
           selectedTypeIds.remove(types.get(pickerItem.getTitle()));
 
@@ -158,18 +148,51 @@ public class SelectTypeController extends MvpController<SelectTypeView, SelectTy
     });
   }
 
-  @OnClick(R.id.btn_sign_up_init_get_started)
-  void showSignUpScreen() {
+  @Override protected void onDetach(@NonNull View view) {
+    super.onDetach(view);
+    tvGetStarted.setVisibility(View.GONE);
+  }
+
+  @Override protected void onActivityResumed(@NonNull Activity activity) {
+    super.onActivityResumed(activity);
+    picker.onResume();
+  }
+
+  @Override protected void onActivityPaused(@NonNull Activity activity) {
+    super.onActivityPaused(activity);
+    picker.onPause();
+  }
+
+  @NonNull private PickerItem getPickerItem(Drawable drawable, String title, int color) {
+    BubbleGradient gradient = new BubbleGradient(color, color);
+
+    return new PickerItem(title, null, true, null, gradient, 0.5F, Typeface.DEFAULT_BOLD,
+        Color.WHITE, 45.0F, drawable);
+  }
+
+  private void setNavbarHack() {
+    Point point = ViewUtils.getNavigationBarSize(getActivity());
+
+    if (space != null) {
+      space.setVisibility(point.y > 0 ? View.VISIBLE : View.GONE);
+    }
+  }
+
+  @OnClick(R.id.btn_sign_up_init_get_started) void showSignUpScreen() {
+    KeyboardUtil.hideKeyboard(getView());
+
+    if (selectedTypeIds.isEmpty()) {
+      Snackbar.make(getView(), R.string.signup_discover_empty_typeid_error, Snackbar.LENGTH_SHORT)
+          .show();
+      return;
+    }
+
     InfoBundle bundle = getArgs().getParcelable(KEY_INFO_BUNDLE);
     IdpResponse response = getArgs().getParcelable(KEY_IDP_RESPONSE);
 
-    KeyboardUtil.hideKeyboard(getView());
-
     String locale = LocaleUtil.getCurrentLocale(getActivity()).getISO3Country();
 
-    TelephonyManager tm =
-        (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
-    String countryCode = tm.getNetworkCountryIso();
+    String countryCode = getCountryCode();
 
     if (response == null) {
       getPresenter().signUpWithPassword(bundle.getFullname(), bundle.getUsername(),
@@ -181,8 +204,7 @@ public class SelectTypeController extends MvpController<SelectTypeView, SelectTy
     }
   }
 
-  @Override
-  public void onError(Throwable t) {
+  @Override public void onError(Throwable t) {
     // TODO: 18.04.2017 Check error messages
     Timber.d(t);
 
@@ -202,8 +224,7 @@ public class SelectTypeController extends MvpController<SelectTypeView, SelectTy
     AuthUI.getInstance().signOut((FragmentActivity) getActivity());
   }
 
-  @Override
-  public void onShowLoading() {
+  @Override public void onShowLoading() {
     if (progressDialog == null) {
       progressDialog = new ProgressDialog(getActivity());
       progressDialog.setMessage(loadingString);
@@ -213,25 +234,26 @@ public class SelectTypeController extends MvpController<SelectTypeView, SelectTy
     progressDialog.show();
   }
 
-  @Override
-  public void onHideLoading() {
+  @Override public void onHideLoading() {
     if (progressDialog != null && progressDialog.isShowing()) {
       progressDialog.dismiss();
     }
   }
 
-  @Override
-  public void onSignedUp() {
-    getRouter().pushController(RouterTransaction
-        .with(RecommendUserController.create())
+  @Override public void onSignedUp() {
+    getRouter().pushController(RouterTransaction.with(RecommendUserController.create())
         .pushChangeHandler(new HorizontalChangeHandler())
         .popChangeHandler(new HorizontalChangeHandler()));
   }
 
-  @NonNull
-  @Override
-  public SelectTypePresenter createPresenter() {
-    return new SelectTypePresenter(UserRepositoryProvider.getRepository(),
+  @NonNull @Override public SignUpDiscoverPresenter createPresenter() {
+    return new SignUpDiscoverPresenter(UserRepositoryProvider.getRepository(),
         NotificationRepositoryProvider.getRepository());
+  }
+
+  private String getCountryCode() {
+    TelephonyManager tm =
+        (TelephonyManager) getActivity().getSystemService(Context.TELEPHONY_SERVICE);
+    return tm.getNetworkCountryIso();
   }
 }

@@ -9,6 +9,7 @@ import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
 import com.google.appengine.api.users.User;
 import com.yoloo.backend.Constants;
+import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
 import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
 import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
 import java.util.Collection;
@@ -16,10 +17,13 @@ import javax.inject.Named;
 
 @Api(name = "yolooApi",
     version = "v1",
-    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
-@ApiClass(resource = "posts", clientIds = {
-    Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
-}, audiences = {Constants.AUDIENCE_ID})
+    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER,
+        ownerName = Constants.API_OWNER))
+@ApiClass(resource = "posts",
+    clientIds = {
+        Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
+    },
+    audiences = { Constants.AUDIENCE_ID })
 public class CountryEndpoint {
 
   /**
@@ -40,7 +44,8 @@ public class CountryEndpoint {
 
   @ApiMethod(name = "users.visited",
       path = "users/{userId}/visited",
-      httpMethod = ApiMethod.HttpMethod.GET)
+      httpMethod = ApiMethod.HttpMethod.GET,
+      authenticators = FirebaseAuthenticator.class)
   public Collection<Country> listVisitedCountries(@Named("userId") String userId, User user)
       throws ServiceException {
 
@@ -48,5 +53,19 @@ public class CountryEndpoint {
 
     return new CountryService(URLFetchServiceFactory.getURLFetchService(),
         ImagesServiceFactory.getImagesService()).listVisitedCountries(userId, user);
+  }
+
+  @ApiMethod(name = "users.me.visited",
+      path = "users/me/visited",
+      httpMethod = ApiMethod.HttpMethod.DELETE,
+      authenticators = FirebaseAuthenticator.class)
+  public void deleteVisitedCountry(@Named("countryCode") String countryCode,
+      User user)
+      throws ServiceException {
+
+    EndpointsValidator.create().on(AuthValidator.create(user));
+
+    new CountryService(URLFetchServiceFactory.getURLFetchService(),
+        ImagesServiceFactory.getImagesService()).deleteVisitedCountry(countryCode, user);
   }
 }

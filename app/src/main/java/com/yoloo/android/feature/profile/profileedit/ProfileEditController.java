@@ -142,7 +142,6 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
         .doOnNext(username -> getPresenter().checkUsername(username))
         .subscribe();
 
-    // TODO: 19.03.2017 Fix error handling
     disposable = Observable
         .combineLatest(realNameErrorSubject, usernameErrorSubject, emailErrorSubject,
             passwordErrorSubject, websiteErrorSubject,
@@ -154,7 +153,6 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
                     && validWebsiteUrl)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(enabled -> {
-          Timber.d("Enabled: %s", enabled);
           ivSaveIcon.setImageAlpha(enabled ? 255 : 138);
           ivSaveIcon.setEnabled(enabled);
         });
@@ -217,7 +215,6 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
 
   @Override
   public void onAccountUpdated(AccountRealm account) {
-    Timber.d("Account: %s", account);
     getRouter().handleBack();
   }
 
@@ -366,13 +363,14 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
       // TODO: 19.03.2017 Implement password issue.
     }
 
-    String gender = spinnerGender.getSelectedItem().toString();
+    int genderId = spinnerGender.getSelectedItemPosition();
+    String gender = getGenderFromId(genderId);
     if (!gender.equalsIgnoreCase(original.getGender())) {
       draft.setGender(gender.toUpperCase());
     }
 
     String websiteUrl = tilWebsite.getEditText().getText().toString();
-    if (!websiteUrl.equals(original.getWebsiteUrl())) {
+    if (!TextUtils.isEmpty(websiteUrl) && !websiteUrl.equals(original.getWebsiteUrl())) {
       if (!websiteUrl.contains("http://") || websiteUrl.contains("https://")) {
         websiteUrl = "http://" + websiteUrl;
       }
@@ -385,8 +383,19 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     }
 
     getPresenter().updateMe(draft);
+  }
 
-    Timber.d("Changes will be saved: %s", draft.toString());
+  private String getGenderFromId(int genderId) {
+    switch (genderId) {
+      case 0:
+        return "UNSPECIFIED";
+      case 1:
+        return "MALE";
+      case 2:
+        return "FEMALE";
+      default:
+        throw new IllegalArgumentException("Given genderId " + genderId + " is not valid.");
+    }
   }
 
   private boolean isValid() {

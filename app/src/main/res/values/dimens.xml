@@ -27,11 +27,11 @@
 
   <dimen name="app_bar_height">208dp</dimen>
 
-  <dimen name="fab_margin">16dp</dimen>
   <dimen name="nav_header_vertical_spacing">16dp</dimen>
   <dimen name="nav_header_height">196dp</dimen>
 
   <dimen name="profile_avatar_width">72dp</dimen>
 
-  <dimen name="drag_dismiss_distance">112dp</dimen> <!-- 2 * ?android:actionBarSize -->
+  <dimen name="drag_dismiss_distance">112dp</dimen>
+  <dimen name="padding_explore_button">12dp</dimen> <!-- 2 * ?android:actionBarSize -->
 </resources>

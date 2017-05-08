@@ -20,12 +20,22 @@ import javax.annotation.Nullable;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
-@Api(name = "yolooApi",
+@Api(
+    name = "yolooApi",
     version = "v1",
-    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
-@ApiClass(resource = "accounts", clientIds = {
-    Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
-}, audiences = Constants.AUDIENCE_ID, authenticators = FirebaseAuthenticator.class)
+    namespace =
+    @ApiNamespace(
+        ownerDomain = Constants.API_OWNER,
+        ownerName = Constants.API_OWNER)
+)
+@ApiClass(
+    resource = "accounts",
+    clientIds = {
+        Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
+    },
+    audiences = Constants.AUDIENCE_ID,
+    authenticators = FirebaseAuthenticator.class
+)
 public class UserEndpoint {
 
   private final AccountController accountController = AccountControllerProvider.of().create();
@@ -38,7 +48,9 @@ public class UserEndpoint {
    * @return the user with the corresponding ID
    * @throws ServiceException the service exception
    */
-  @ApiMethod(name = "users.get", path = "users/{userId}", httpMethod = ApiMethod.HttpMethod.GET)
+  @ApiMethod(name = "users.get",
+      path = "users/{userId}",
+      httpMethod = ApiMethod.HttpMethod.GET)
   public Account get(@Named("userId") String userId, User user) throws ServiceException {
 
     EndpointsValidator
@@ -57,7 +69,9 @@ public class UserEndpoint {
    * @return the account
    * @throws ServiceException the service exception
    */
-  @ApiMethod(name = "users.register", path = "users", httpMethod = ApiMethod.HttpMethod.POST)
+  @ApiMethod(name = "users.register",
+      path = "users",
+      httpMethod = ApiMethod.HttpMethod.POST)
   public Account registerUser(HttpServletRequest request) throws ServiceException {
 
     EndpointsValidator
@@ -109,10 +123,14 @@ public class UserEndpoint {
    * @return the collection response
    * @throws ServiceException the service exception
    */
-  @ApiMethod(name = "users.search", path = "users", httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Account> search(@Named("q") String query,
-      @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
-      throws ServiceException {
+  @ApiMethod(name = "users.search",
+      path = "users",
+      httpMethod = ApiMethod.HttpMethod.GET)
+  public CollectionResponse<Account> search(
+      @Named("q") String query,
+      @Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit,
+      User user) throws ServiceException {
 
     EndpointsValidator
         .create()
@@ -144,9 +162,13 @@ public class UserEndpoint {
    * @return the collection response
    * @throws ServiceException the service exception
    */
-  @ApiMethod(name = "users.listNewUsers", path = "users/new", httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Account> listNewUsers(@Nullable @Named("cursor") String cursor,
-      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
+  @ApiMethod(name = "users.listNewUsers",
+      path = "users/new",
+      httpMethod = ApiMethod.HttpMethod.GET)
+  public CollectionResponse<Account> listNewUsers(
+      @Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit,
+      User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
@@ -161,7 +183,9 @@ public class UserEndpoint {
    * @return the entity with the corresponding ID
    * @throws ServiceException the service exception
    */
-  @ApiMethod(name = "users.me.get", path = "users/me", httpMethod = ApiMethod.HttpMethod.GET)
+  @ApiMethod(name = "users.me.get",
+      path = "users/me",
+      httpMethod = ApiMethod.HttpMethod.GET)
   public Account getMe(User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
@@ -176,7 +200,7 @@ public class UserEndpoint {
    * @param realName the real name
    * @param email the email
    * @param username the username
-   * @param websiteUrl the website url
+   * @param url the website url
    * @param bio the bio
    * @param gender the gender
    * @param visitedCountryCode the visited country code
@@ -185,21 +209,33 @@ public class UserEndpoint {
    * @return the updated version of the entity
    * @throws ServiceException the service exception
    */
-  @ApiMethod(name = "users.me.update", path = "users/me", httpMethod = ApiMethod.HttpMethod.PUT)
-  public Account updateMe(@Nullable @Named("mediaId") String mediaId,
-      @Nullable @Named("name") String realName, @Nullable @Named("email") String email,
+  @ApiMethod(name = "users.me.update",
+      path = "users/me",
+      httpMethod = ApiMethod.HttpMethod.PUT)
+  public Account updateMe(
+      @Nullable @Named("mediaId") String mediaId,
+      @Nullable @Named("name") String realName,
+      @Nullable @Named("email") String email,
       @Nullable @Named("username") String username,
-      @Nullable @Named("websiteUrl") String websiteUrl, @Nullable @Named("bio") String bio,
+      @Nullable @Named("url") String url,
+      @Nullable @Named("bio") String bio,
       @Nullable @Named("gender") Account.Gender gender,
       @Nullable @Named("visitedCountryCode") String visitedCountryCode,
-      @Nullable @Named("countryCode") String countryCode, User user) throws ServiceException {
+      @Nullable @Named("countryCode") String countryCode,
+      User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
-    return accountController.updateAccount(user.getUserId(), Optional.fromNullable(mediaId),
-        Optional.fromNullable(username), Optional.fromNullable(realName),
-        Optional.fromNullable(email), Optional.fromNullable(websiteUrl), Optional.fromNullable(bio),
-        Optional.fromNullable(gender), Optional.fromNullable(visitedCountryCode),
+    return accountController.updateAccount(
+        user.getUserId(),
+        Optional.fromNullable(mediaId),
+        Optional.fromNullable(username),
+        Optional.fromNullable(realName),
+        Optional.fromNullable(email),
+        Optional.fromNullable(url),
+        Optional.fromNullable(bio),
+        Optional.fromNullable(gender),
+        Optional.fromNullable(visitedCountryCode),
         Optional.fromNullable(countryCode));
   }
 
@@ -209,7 +245,9 @@ public class UserEndpoint {
    * @param user the user
    * @throws ServiceException the service exception
    */
-  @ApiMethod(name = "users.me.delete", path = "users/me", httpMethod = ApiMethod.HttpMethod.DELETE)
+  @ApiMethod(name = "users.me.delete",
+      path = "users/me",
+      httpMethod = ApiMethod.HttpMethod.DELETE)
   public void deleteMe(User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));

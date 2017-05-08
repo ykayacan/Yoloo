@@ -15,4 +15,17 @@ public class CommentItem implements EpoxyItem<CommentRealm> {
   public CommentRealm getItem() {
     return comment;
   }
+
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof CommentItem)) return false;
+
+    CommentItem that = (CommentItem) o;
+
+    return comment != null ? comment.equals(that.comment) : that.comment == null;
+  }
+
+  @Override public int hashCode() {
+    return comment != null ? comment.hashCode() : 0;
+  }
 }

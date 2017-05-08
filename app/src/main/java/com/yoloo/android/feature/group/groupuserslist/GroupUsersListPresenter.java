@@ -21,7 +21,7 @@ class GroupUsersListPresenter extends MvpPresenter<GroupUsersListView> {
 
   void loadUsers(@Nonnull String groupId) {
     Disposable d = groupRepository
-        .listGroupUsers(groupId, cursor, 20)
+        .listGroupUsers(groupId, cursor, 40)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(response -> {
           cursor = response.getCursor();

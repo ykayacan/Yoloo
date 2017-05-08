@@ -205,6 +205,8 @@ dependencies {
   compile 'com.github.jksiezni.permissive:permissive:0.2'
   compile "com.google.android:flexbox:$flexbox_version"
   compile 'com.airbnb.android:lottie:2.0.0-beta4'
+  compile 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
+  compile 'com.jakewharton.rxbinding2:rxbinding-design:2.0.0'
 
   // Views
   compile('com.sandrios.android:sandriosCamera:1.0.9', {

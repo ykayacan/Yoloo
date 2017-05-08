@@ -18,7 +18,8 @@ public class TrendingBlogListModelGroup extends EpoxyModelGroup {
   public TrendingBlogListModelGroup(String userId, TrendingBlogListItem item,
       FeedEpoxyController.TrendingBlogListCallbacks callbacks, RequestManager glide,
       Transformation<Bitmap> bitmapTransformation) {
-    super(R.layout.item_trending_blogs, buildModels(userId, item, callbacks, glide, bitmapTransformation));
+    super(R.layout.item_trending_blogs,
+        buildModels(userId, item, callbacks, glide, bitmapTransformation));
     id(item.getId());
   }
 
@@ -42,7 +43,9 @@ public class TrendingBlogListModelGroup extends EpoxyModelGroup {
             .bitmapTransformation(bitmapTransformation)
             .onPostOptionsClickListener(
                 (v, post1) -> callbacks.onTrendingBlogOptionsClicked(v, post))
-            .onBookmarkClickListener(callbacks::onTrendingBlogBookmarkClicked)
+            .onBookmarkClickListener(
+                (postRealm, bookmark) -> callbacks.onTrendingBlogBookmarkClicked(postRealm.getId(),
+                    bookmark))
             .onClickListener(v -> callbacks.onTrendingBlogClicked(post)))
         .toList();
 

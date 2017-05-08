@@ -1,11 +1,8 @@
 package com.yoloo.android.feature.recommenduser;
 
 import android.content.Context;
-import com.airbnb.epoxy.AutoModel;
-import com.airbnb.epoxy.SimpleEpoxyModel;
 import com.airbnb.epoxy.Typed2EpoxyController;
 import com.annimon.stream.Stream;
-import com.yoloo.android.R;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.feature.search.OnFollowClickListener;
 import com.yoloo.android.feature.search.UserModel_;
@@ -17,14 +14,11 @@ public class RecommendUserEpoxyController extends Typed2EpoxyController<List<Acc
 
   private final CropCircleTransformation cropCircleTransformation;
 
-  @AutoModel FacebookFriendHeaderModel facebookFriendsModel;
-
   private OnFollowClickListener onFollowClickListener;
 
-  private List<AccountRealm> models;
+  private List<AccountRealm> models = new ArrayList<>();
 
   public RecommendUserEpoxyController(Context context) {
-    models = new ArrayList<>();
     cropCircleTransformation = new CropCircleTransformation(context);
   }
 
@@ -40,28 +34,21 @@ public class RecommendUserEpoxyController extends Typed2EpoxyController<List<Acc
 
   @Override
   protected void buildModels(List<AccountRealm> accounts, Void aVoid) {
-    Stream
-        .of(accounts)
-        .forEach(account -> new UserModel_()
-            .id(account.getId())
-            .account(account)
-            .showFollowButton(true)
-            .onFollowClickListener(onFollowClickListener)
-            .cropCircleTransformation(cropCircleTransformation)
-            .addTo(this));
+    Stream.of(accounts).forEach(this::createUserModel);
+  }
 
-    //facebookFriendsModel.layout(R.layout.item_recommend_user_facebook_friends).addTo(this);
+  private void createUserModel(AccountRealm account) {
+    new UserModel_()
+        .id(account.getId())
+        .account(account)
+        .showFollowButton(true)
+        .onFollowClickListener(onFollowClickListener)
+        .cropCircleTransformation(cropCircleTransformation)
+        .addTo(this);
   }
 
   public void remove(AccountRealm account) {
     models.remove(account);
     setData(models, null);
-  }
-
-  public static class FacebookFriendHeaderModel extends SimpleEpoxyModel {
-
-    public FacebookFriendHeaderModel() {
-      super(R.layout.item_recommend_user_facebook_friends);
-    }
   }
 }

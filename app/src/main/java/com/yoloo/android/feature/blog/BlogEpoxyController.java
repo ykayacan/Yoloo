@@ -9,7 +9,7 @@ import com.yoloo.android.data.model.PostRealm;
 import com.yoloo.android.feature.blog.data.BlogItem;
 import com.yoloo.android.feature.blog.data.CommentItem;
 import com.yoloo.android.feature.blog.models.BlogModel_;
-import com.yoloo.android.feature.blog.models.CommentModel_;
+import com.yoloo.android.feature.models.comment.CommentModel_;
 import com.yoloo.android.ui.widget.CommentView;
 import com.yoloo.android.util.EpoxyItem;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
@@ -34,21 +34,6 @@ class BlogEpoxyController extends Typed2EpoxyController<List<EpoxyItem<?>>, Void
     this.onCommentClickListener = listener;
   }
 
-  private void createBlogModel(PostRealm post) {
-    new BlogModel_().id(post.getId()).post(post).addTo(this);
-  }
-
-  private void createCommentModel(CommentRealm comment) {
-    new CommentModel_()
-        .id(comment.getId())
-        .comment(comment)
-        .glide(glide)
-        .acceptable(false)
-        .circleTransformation(cropCircleTransformation)
-        .onCommentClickListener(onCommentClickListener)
-        .addTo(this);
-  }
-
   @Override
   public void setData(List<EpoxyItem<?>> items, Void data2) {
     this.items = items;
@@ -66,7 +51,7 @@ class BlogEpoxyController extends Typed2EpoxyController<List<EpoxyItem<?>>, Void
   }
 
   void addComment(CommentRealm comment) {
-    items.add(items.size() - 1, new CommentItem(comment));
+    items.add(new CommentItem(comment));
     setData(items, null);
   }
 
@@ -84,5 +69,20 @@ class BlogEpoxyController extends Typed2EpoxyController<List<EpoxyItem<?>>, Void
         createCommentModel(((CommentItem) item).getItem());
       }
     });
+  }
+
+  private void createBlogModel(PostRealm post) {
+    new BlogModel_().id(post.getId()).post(post).addTo(this);
+  }
+
+  private void createCommentModel(CommentRealm comment) {
+    new CommentModel_()
+        .id(comment.getId())
+        .comment(comment)
+        .glide(glide)
+        .showAcceptButton(false)
+        .circleTransformation(cropCircleTransformation)
+        .onCommentClickListener(onCommentClickListener)
+        .addTo(this);
   }
 }

@@ -3,6 +3,7 @@ package com.yoloo.android.feature.writecommentbox;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
@@ -22,11 +23,9 @@ import com.yoloo.android.ui.tokenizer.SpaceTokenizer;
 import com.yoloo.android.ui.widget.AutoCompleteMentionAdapter;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.Preconditions;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import timber.log.Timber;
 
 public class CommentAutocomplete
@@ -41,6 +40,8 @@ public class CommentAutocomplete
   private String postId;
 
   private AccountRealm me;
+
+  private RecyclerView recyclerView;
 
   private AutoCompleteMentionAdapter mentionAdapter;
   private Runnable mentionDropdownRunnable = () -> tvComment.showDropDown();
@@ -79,12 +80,13 @@ public class CommentAutocomplete
 
     setupMentionsAdapter();
 
-    mentionAdapter
+    /*mentionAdapter
         .getQuery()
         .filter(s -> !s.isEmpty())
+        .map(s -> s.substring(1))
         .debounce(AUTOCOMPLETE_DELAY, TimeUnit.MILLISECONDS)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(query -> getPresenter().suggestUsers(query));
+        .subscribe(query -> getPresenter().suggestUsers(query));*/
   }
 
   @Override
@@ -132,13 +134,13 @@ public class CommentAutocomplete
     this.newCommentListener = newCommentListener;
   }
 
+  public void setRecyclerView(RecyclerView recyclerView) {
+    this.recyclerView = recyclerView;
+  }
+
   public void showKeyboard() {
     tvComment.requestFocus();
     KeyboardUtil.showDelayedKeyboard(tvComment);
-  }
-
-  public void hideKeyboard() {
-    KeyboardUtil.hideKeyboard(tvComment);
   }
 
   @OnClick(R.id.btn_send_comment)
@@ -160,6 +162,8 @@ public class CommentAutocomplete
         .setAvatarUrl(me.getAvatarUrl())
         .setContent(content)
         .setCreated(new Date());
+
+    KeyboardUtil.hideKeyboard(getRootView());
 
     getPresenter().sendComment(comment);
 

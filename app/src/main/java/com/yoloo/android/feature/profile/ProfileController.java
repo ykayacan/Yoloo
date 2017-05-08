@@ -100,8 +100,6 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   @BindDrawable(R.drawable.ic_settings_white_24dp) Drawable settingDrawable;
   @BindDrawable(R.drawable.ic_email_outline) Drawable messageDrawable;
 
-  private String userId;
-
   private AccountRealm account;
 
   private boolean isAvatarShown = true;
@@ -123,12 +121,14 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     return inflater.inflate(R.layout.controller_profile, container, false);
   }
 
-  @Override
-  protected void onViewBound(@NonNull View view) {
+  @Override protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
     setupToolbar();
+  }
 
-    userId = getArgs().getString(KEY_USER_ID);
+  @Override protected void onAttach(@NonNull View view) {
+    super.onAttach(view);
+    final String userId = getArgs().getString(KEY_USER_ID);
 
     List<Pair<String, Controller>> pairs = new ArrayList<>(4);
     pairs.add(Pair.create(profilePostsTabString, PostListController.ofUser(userId)));
@@ -141,7 +141,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     viewPager.setAdapter(pagerAdapter);
     tabLayout.setupWithViewPager(viewPager);
 
-    int randomNum = new Random().nextInt(8) + 1;
+    int randomNum = new Random().nextInt(7) + 1;
 
     final String backgroundUrl =
         "https://storage.googleapis.com/yoloo-151719.appspot.com/profile-bg-images/small/p"
@@ -151,86 +151,68 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     Glide.with(getActivity()).load(backgroundUrl).into(ivProfileBg);
 
     animateAvatar();
-  }
 
-  @Override
-  protected void onAttach(@NonNull View view) {
-    super.onAttach(view);
     getPresenter().loadUserProfile(userId);
   }
 
-  @Override
-  protected void onDestroyView(@NonNull View view) {
+  @Override protected void onDestroyView(@NonNull View view) {
     viewPager.setAdapter(null);
     super.onDestroyView(view);
   }
 
-  @Override
-  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+  @Override protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
       @NonNull ControllerChangeType changeType) {
     super.onChangeEnded(changeHandler, changeType);
     getDrawerLayout().setFitsSystemWindows(false);
     ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
   }
 
-  @NonNull
-  @Override
-  public ProfilePresenter createPresenter() {
+  @NonNull @Override public ProfilePresenter createPresenter() {
     return new ProfilePresenter(UserRepositoryProvider.getRepository());
   }
 
-  @Override
-  public void onProfileLoaded(AccountRealm account) {
+  @Override public void onProfileLoaded(AccountRealm account) {
     this.account = account;
     setupProfileInfo(account);
   }
 
-  @Override
-  public void onError(Throwable t) {
+  @Override public void onError(Throwable t) {
     Timber.e(t);
   }
 
-  @OnClick(R.id.btn_profile_follow)
-  void onFollowClick() {
+  @OnClick(R.id.btn_profile_follow) void onFollowClick() {
     final Resources res = getResources();
 
-    btnFollow.setText(account.isFollowing()
-        ? res.getString(R.string.action_profile_follow)
+    btnFollow.setText(account.isFollowing() ? res.getString(R.string.action_profile_follow)
         : res.getString(R.string.action_profile_unfollow));
-    getPresenter().follow(userId, account.isFollowing() ? -1 : 1);
+    getPresenter().follow(account.getId(), account.isFollowing() ? -1 : 1);
     account.setFollowing(!account.isFollowing());
   }
 
-  @OnClick(R.id.card_profile_point_count)
-  void openPointScreen() {
+  @OnClick(R.id.card_profile_point_count) void openPointScreen() {
     startTransaction(PointsOverviewController.create(), new VerticalChangeHandler());
   }
 
-  @OnClick(R.id.card_profile_bounty_count)
-  void openBountyScreen() {
+  @OnClick(R.id.card_profile_bounty_count) void openBountyScreen() {
 
   }
 
-  @OnClick(R.id.card_profile_country_count)
-  void openVisitedCountiesScreen() {
-    startTransaction(VisitedCountryListController.create(account.getId().equals(userId), userId),
+  @OnClick(R.id.card_profile_country_count) void openVisitedCountiesScreen() {
+    startTransaction(VisitedCountryListController.create(account.isMe(), account.getId()),
         new VerticalChangeHandler());
   }
 
-  @OnClick(R.id.tv_profile_followers_counter_text)
-  void onFollowersClick() {
-    startTransaction(FollowController.create(userId, FollowController.TYPE_FOLLOWERS),
+  @OnClick(R.id.tv_profile_followers_counter_text) void onFollowersClick() {
+    startTransaction(FollowController.create(account.getId(), FollowController.TYPE_FOLLOWERS),
         new VerticalChangeHandler());
   }
 
-  @OnClick(R.id.tv_profile_following_counter_text)
-  void onFollowingClick() {
-    startTransaction(FollowController.create(userId, FollowController.TYPE_FOLLOWINGS),
+  @OnClick(R.id.tv_profile_following_counter_text) void onFollowingClick() {
+    startTransaction(FollowController.create(account.getId(), FollowController.TYPE_FOLLOWINGS),
         new VerticalChangeHandler());
   }
 
-  @OnClick(R.id.iv_profile_action)
-  void onProfileAction() {
+  @OnClick(R.id.iv_profile_action) void onProfileAction() {
     if (account.isMe()) {
       startTransaction(ProfileEditController.create(), new HorizontalChangeHandler());
     } else {
@@ -275,21 +257,18 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
     tvUsername.setText(account.getUsername());
 
-    Glide
-        .with(getActivity())
+    Glide.with(getActivity())
         .load(account.getAvatarUrl().replace("s96-c", "s96-c-rw"))
         .bitmapTransform(new CropCircleTransformation(getActivity()))
         .into(ivProfileAvatar);
 
     CountryRealm country = account.getCountry();
     tvCountry.setText(country.getName());
-    Glide
-        .with(getActivity())
+    Glide.with(getActivity())
         .load(country.getFlagUrl())
         .override(24, 24)
         .into(new SimpleTarget<GlideDrawable>() {
-          @Override
-          public void onResourceReady(GlideDrawable resource,
+          @Override public void onResourceReady(GlideDrawable resource,
               GlideAnimation<? super GlideDrawable> glideAnimation) {
             tvCountry.setCompoundDrawablesWithIntrinsicBounds(resource, null, null, null);
           }
@@ -342,18 +321,15 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
       this.pairs = pairs;
     }
 
-    @Override
-    public int getCount() {
+    @Override public int getCount() {
       return pairs.size();
     }
 
-    @Override
-    public CharSequence getPageTitle(int position) {
+    @Override public CharSequence getPageTitle(int position) {
       return pairs.get(position).first;
     }
 
-    @Override
-    public void configureRouter(@NonNull Router router, int position) {
+    @Override public void configureRouter(@NonNull Router router, int position) {
       if (!router.hasRootController()) {
         router.setRoot(RouterTransaction.with(pairs.get(position).second));
       }

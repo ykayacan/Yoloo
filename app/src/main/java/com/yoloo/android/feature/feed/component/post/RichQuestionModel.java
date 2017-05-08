@@ -181,8 +181,8 @@ public abstract class RichQuestionModel
         v -> onProfileClickListener.onProfileClick(v, post.getOwnerId()));
 
     if (onItemClickListener != null && post.shouldShowReadMore()) {
-      holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(v, this, post));
-      holder.tvContent.setOnClickListener(v -> onItemClickListener.onItemClick(v, this, post));
+      holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(v, post));
+      holder.tvContent.setOnClickListener(v -> onItemClickListener.onItemClick(v, post));
     }
 
     holder.tvShare.setOnClickListener(v -> onShareClickListener.onShareClick(v, post));
@@ -198,7 +198,7 @@ public abstract class RichQuestionModel
         holder.ibOptions.setColorFilter(ContextCompat.getColor(context, reversedColorRes),
             PorterDuff.Mode.SRC_IN);
         post.setBookmarked(!post.isBookmarked());
-        onBookmarkClickListener.onBookmarkClick(post.getId(), post.isBookmarked());
+        onBookmarkClickListener.onBookmarkClick(post, post.isBookmarked());
       }
     });
 

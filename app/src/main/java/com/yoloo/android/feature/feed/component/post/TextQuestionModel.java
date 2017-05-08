@@ -27,7 +27,6 @@ import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.ReadMoreUtil;
 import com.yoloo.android.util.TextViewUtil;
-import com.yoloo.android.util.VersionUtil;
 import java.util.List;
 
 @EpoxyModelClass(layout = R.layout.item_feed_question_text)
@@ -107,13 +106,6 @@ public abstract class TextQuestionModel extends BasePostModel<TextQuestionModel.
 
     tintDrawables(holder, context);
 
-    if (VersionUtil.hasL()) {
-      holder.ivUserAvatar.setTransitionName(
-          context.getResources().getString(R.string.transition_avatar));
-      holder.tvUsername.setTransitionName(
-          context.getResources().getString(R.string.transition_username, post.getOwnerId()));
-    }
-
     // listeners
     holder.ivUserAvatar.setOnClickListener(
         v -> onProfileClickListener.onProfileClick(v, post.getOwnerId()));
@@ -122,8 +114,8 @@ public abstract class TextQuestionModel extends BasePostModel<TextQuestionModel.
         v -> onProfileClickListener.onProfileClick(v, post.getOwnerId()));
 
     if (onItemClickListener != null && post.shouldShowReadMore()) {
-      holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(v, this, post));
-      holder.tvContent.setOnClickListener(v -> onItemClickListener.onItemClick(v, this, post));
+      holder.itemView.setOnClickListener(v -> onItemClickListener.onItemClick(v, post));
+      holder.tvContent.setOnClickListener(v -> onItemClickListener.onItemClick(v, post));
     }
 
     holder.tvShare.setOnClickListener(v -> onShareClickListener.onShareClick(v, post));
@@ -138,8 +130,8 @@ public abstract class TextQuestionModel extends BasePostModel<TextQuestionModel.
             post.isBookmarked() ? android.R.color.secondary_text_dark : R.color.primary;
         holder.ibOptions.setColorFilter(ContextCompat.getColor(context, reversedColorRes),
             PorterDuff.Mode.SRC_IN);
-        post.setBookmarked(!post.isBookmarked());
-        onBookmarkClickListener.onBookmarkClick(post.getId(), post.isBookmarked());
+        //post.setBookmarked(!post.isBookmarked());
+        onBookmarkClickListener.onBookmarkClick(post, post.isBookmarked());
       }
     });
 

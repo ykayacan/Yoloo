@@ -16,12 +16,11 @@ public class AccountJsonPayload {
   private String username;
   private String realname;
   private String email;
-  private long birthdate;
+  private long birthday;
   private String countryCode;
   private String langCode;
   private String profileImageUrl;
   private List<String> travelerTypeIds;
-  private String facebookId;
 
   @SneakyThrows({UnsupportedEncodingException.class, IOException.class})
   public static AccountJsonPayload from(@Nonnull String base64Payload) {

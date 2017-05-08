@@ -8,6 +8,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -85,7 +86,8 @@ public class PointsOverviewController
   @Override
   public void onLoaded(GameInfoRealm value) {
     tvLevel.setText(getActivity().getString(R.string.label_level, value.getCurrentLvl()));
-    tvLevelTitle.setText(value.getTitle() == null ? "Level 0" : value.getTitle());
+    tvLevelTitle.setText(value.getTitle());
+    tvLevelTitle.setVisibility(TextUtils.isEmpty(value.getTitle()) ? View.GONE : View.VISIBLE);
     tvPointsHeader.setText(String.valueOf(value.getMyPoints()));
 
     tvInitialPoints.setText(

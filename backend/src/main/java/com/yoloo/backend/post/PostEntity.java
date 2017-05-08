@@ -15,6 +15,7 @@ import com.googlecode.objectify.annotation.OnLoad;
 import com.googlecode.objectify.annotation.Parent;
 import com.googlecode.objectify.condition.IfFalse;
 import com.googlecode.objectify.condition.IfNotDefault;
+import com.googlecode.objectify.condition.IfNotNull;
 import com.googlecode.objectify.condition.IfNotZero;
 import com.googlecode.objectify.condition.IfNull;
 import com.googlecode.objectify.condition.IfTrue;
@@ -59,6 +60,7 @@ public class PostEntity implements Votable {
   public static final String FIELD_BOUNTY = "bounty";
   public static final String FIELD_POST_TYPE = "postType";
   public static final String FIELD_HAS_MEDIA = "hasMedia";
+  public static final String FIELD_ACCEPTED_COMMENT_KEY = "acceptedCommentKey";
 
   @Id private long id;
 
@@ -76,7 +78,7 @@ public class PostEntity implements Votable {
 
   @Singular @IgnoreSave(IfNull.class) private Set<Key<Account>> reportedByKeys;
 
-  @Wither @IgnoreSave(IfNull.class) private Key<Comment> acceptedCommentKey;
+  @Wither @Index(IfNotNull.class) @IgnoreSave(IfNull.class) private Key<Comment> acceptedCommentKey;
 
   /**
    * The bounty value for the question. Bounty listFeed is given below. 10, 20, 30, 40, 50

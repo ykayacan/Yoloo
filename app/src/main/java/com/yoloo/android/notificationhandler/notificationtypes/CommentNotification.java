@@ -33,14 +33,14 @@ public final class CommentNotification implements NotificationProvider {
         .getResources()
         .getString(R.string.label_notification_comment, response.getSenderUsername());
 
-    NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+    return new NotificationCompat.Builder(context)
         .setSmallIcon(R.drawable.ic_yoloo_notification)
         .setContentTitle("Yoloo")
         .setContentText(content)
         .setAutoCancel(true)
         .setDefaults(Notification.DEFAULT_ALL)
-        .setContentIntent(pendingIntent);
-
-    return builder.build();
+        .setContentIntent(pendingIntent)
+        .setGroup("comment")
+        .build();
   }
 }

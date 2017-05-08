@@ -16,8 +16,6 @@ import timber.log.Timber;
 
 class EditorPresenter extends MvpPresenter<EditorView> {
 
-  static final int NAV_SEND = 3;
-
   private final TagRepository tagRepository;
   private final PostRepository postRepository;
   private final UserRepository userRepository;
@@ -66,11 +64,11 @@ class EditorPresenter extends MvpPresenter<EditorView> {
     getDisposable().add(d);
   }
 
-  void updateDraft(@Nonnull PostRealm draft, int navigation) {
+  void updateDraft(@Nonnull PostRealm draft) {
     Disposable d = postRepository
         .addDraft(draft)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(() -> getView().onDraftUpdated(navigation), Timber::e);
+        .subscribe(() -> getView().onDraftUpdated(), Timber::e);
 
     getDisposable().add(d);
   }
@@ -104,7 +102,7 @@ class EditorPresenter extends MvpPresenter<EditorView> {
     Disposable d = tagRepository
         .listRecommendedTags()
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(tags -> getView().onRecommendedTagsLoaded(tags), Timber::e);
+        .subscribe(tags -> getView().onTrendingTagsLoaded(tags), Timber::e);
 
     getDisposable().add(d);
   }

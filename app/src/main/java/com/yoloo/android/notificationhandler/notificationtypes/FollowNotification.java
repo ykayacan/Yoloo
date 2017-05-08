@@ -20,8 +20,7 @@ public final class FollowNotification implements NotificationProvider {
     this.context = context;
   }
 
-  @Override
-  public Notification getNotification() {
+  @Override public Notification getNotification() {
     Intent intent = new Intent(context, BaseActivity.class);
     intent.putExtra(NotificationResponse.KEY_ACTION, response.getAction());
     intent.putExtra(NotificationResponse.KEY_USER_ID, response.getUserId());
@@ -29,18 +28,16 @@ public final class FollowNotification implements NotificationProvider {
     PendingIntent pendingIntent =
         PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-    String content = context
-        .getResources()
+    String content = context.getResources()
         .getString(R.string.label_notification_follow, response.getSenderUsername());
 
-    NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
-        .setSmallIcon(R.drawable.ic_yoloo_notification)
+    return new NotificationCompat.Builder(context).setSmallIcon(R.drawable.ic_yoloo_notification)
         .setContentTitle("Yoloo")
         .setContentText(content)
         .setAutoCancel(true)
         .setDefaults(Notification.DEFAULT_ALL)
-        .setContentIntent(pendingIntent);
-
-    return builder.build();
+        .setPriority(Notification.PRIORITY_HIGH)
+        .setContentIntent(pendingIntent)
+        .build();
   }
 }

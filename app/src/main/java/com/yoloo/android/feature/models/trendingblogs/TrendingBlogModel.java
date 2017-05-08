@@ -37,7 +37,7 @@ public abstract class TrendingBlogModel
 
   @EpoxyAttribute PostRealm post;
   @EpoxyAttribute boolean self;
-  @EpoxyAttribute({DoNotHash, NoGetter}) RequestManager glide;
+  @EpoxyAttribute({ DoNotHash, NoGetter }) RequestManager glide;
   @EpoxyAttribute(DoNotHash) View.OnClickListener onClickListener;
   @EpoxyAttribute(DoNotHash) Transformation<Bitmap> bitmapTransformation;
   @EpoxyAttribute(DoNotHash) OnBookmarkClickListener onBookmarkClickListener;
@@ -100,7 +100,7 @@ public abstract class TrendingBlogModel
         holder.ibOptions.setColorFilter(ContextCompat.getColor(context, reversedColorRes),
             PorterDuff.Mode.SRC_IN);
         post.setBookmarked(!post.isBookmarked());
-        onBookmarkClickListener.onBookmarkClick(post.getId(), post.isBookmarked());
+        onBookmarkClickListener.onBookmarkClick(post, post.isBookmarked());
       }
     });
 

@@ -7,7 +7,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -130,13 +129,12 @@ public class GroupListEpoxyController extends TypedEpoxyController<List<GroupRea
           group.isSubscribed() ? R.string.group_unsubscribed : R.string.group_subscribe;
       holder.btnSubscribe.setText(buttonText);
       holder.btnSubscribe.setSelected(group.isSubscribed());
-      holder.btnSubscribe.setVisibility(hideSubscribeButton ? View.GONE : View.VISIBLE);
 
       holder.itemView.setOnClickListener(v -> {
-        if (showNotSubscribedError && !hideSubscribeButton) {
+        if (showNotSubscribedError && !group.isSubscribed()) {
           Snackbar.make(v, R.string.error_subscribe_group_first, Snackbar.LENGTH_SHORT).show();
         } else {
-          onItemClickListener.onItemClick(v, this, group);
+          onItemClickListener.onItemClick(v, group);
         }
       });
 

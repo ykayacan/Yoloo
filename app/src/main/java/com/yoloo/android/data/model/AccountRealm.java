@@ -1,7 +1,10 @@
 package com.yoloo.android.data.model;
 
+import android.content.res.Resources;
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
+import com.yoloo.android.R;
+import com.yoloo.android.YolooApp;
 import com.yoloo.backend.yolooApi.model.AccountDTO;
 import io.realm.RealmList;
 import io.realm.RealmObject;
@@ -344,7 +347,24 @@ public class AccountRealm extends RealmObject {
   }
 
   public String getLevelTitle() {
-    return levelTitle;
+    Resources res = YolooApp.getAppContext().getResources();
+
+    if (levelTitle == null) {
+      return null;
+    }
+
+    switch (levelTitle) {
+      case "Travel Enthusiast":
+        return res.getString(R.string.level_2);
+      case "Explorer":
+        return res.getString(R.string.level_3);
+      case "Traveler":
+        return res.getString(R.string.level_4);
+      case "Full Time Traveler":
+        return res.getString(R.string.level_5);
+      default:
+        return "";
+    }
   }
 
   public void setLevelTitle(String levelTitle) {

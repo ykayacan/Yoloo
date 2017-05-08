@@ -6,25 +6,23 @@ import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.Toolbar;
-import android.text.Editable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.TextView;
 import butterknife.BindView;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
+import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.rafakob.floatingedittext.FloatingEditText;
 import com.yoloo.android.R;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.auth.InfoBundle;
-import com.yoloo.android.feature.auth.selecttype.SelectTypeController;
+import com.yoloo.android.feature.auth.signupdiscover.SignUpDiscoverController;
 import com.yoloo.android.feature.auth.util.ValidationResult;
 import com.yoloo.android.feature.auth.util.ValidationUtils;
 import com.yoloo.android.feature.base.BaseController;
@@ -35,7 +33,6 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.subjects.PublishSubject;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -57,41 +54,20 @@ public class SignUpProgressController extends BaseController {
   @BindView(R.id.btn_sign_up_continue) TextView tvContinue;
 
   private @LayoutRes int layoutRes;
-  private CompositeDisposable disposable;
+
+  private CompositeDisposable disposable = new CompositeDisposable();
+  private UserRepository repository = UserRepositoryProvider.getRepository();
 
   public SignUpProgressController(Bundle args) {
     super(args);
   }
 
   public static SignUpProgressController create(@LayoutRes int layoutRes, InfoBundle infoBundle) {
-    final Bundle bundle = new BundleBuilder()
-        .putInt(KEY_LAYOUT_RES, layoutRes)
+    final Bundle bundle = new BundleBuilder().putInt(KEY_LAYOUT_RES, layoutRes)
         .putParcelable(KEY_INFO_BUNDLE, infoBundle)
         .build();
 
     return new SignUpProgressController(bundle);
-  }
-
-  private static Observable<String> getAsObservable(@NonNull final EditText editText) {
-
-    final PublishSubject<String> subject = PublishSubject.create();
-
-    editText.addTextChangedListener(new TextWatcher() {
-      @Override
-      public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-      }
-
-      @Override
-      public void onTextChanged(CharSequence s, int start, int before, int count) {
-      }
-
-      @Override
-      public void afterTextChanged(Editable s) {
-        subject.onNext(s.toString());
-      }
-    });
-
-    return subject;
   }
 
   @Override
@@ -100,13 +76,16 @@ public class SignUpProgressController extends BaseController {
     return inflater.inflate(layoutRes, container, false);
   }
 
-  @Override
-  protected void onViewBound(@NonNull View view) {
+  @Override protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
     setupToolbar();
     setRetainViewMode(RetainViewMode.RETAIN_DETACH);
+  }
+
+  @Override protected void onAttach(@NonNull View view) {
+    super.onAttach(view);
+
     tvContinue.setVisibility(View.GONE);
-    disposable = new CompositeDisposable();
 
     switch (layoutRes) {
       case R.layout.controller_sign_up_name:
@@ -127,19 +106,29 @@ public class SignUpProgressController extends BaseController {
     }
   }
 
-  @Override
-  public boolean handleBack() {
+  @Override protected void onDestroy() {
+    super.onDestroy();
+    if (!disposable.isDisposed()) {
+      disposable.dispose();
+    }
+  }
+
+  @Override public boolean handleBack() {
     KeyboardUtil.hideKeyboard(getView());
     return super.handleBack();
   }
 
   private void setNameAndSurname() {
-    Observable<String> nameObservable = getAsObservable(fetName.getEditText());
-    Observable<String> surnameObservable = getAsObservable(fetSurname.getEditText());
 
-    Disposable d = Observable
-        .combineLatest(nameObservable, surnameObservable,
-            (s, s2) -> !TextUtils.isEmpty(s) && !TextUtils.isEmpty(s2))
+    Observable<String> nameObservable = RxTextView.afterTextChangeEvents(fetName.getEditText())
+        .map(event -> event.editable().toString());
+
+    Observable<String> surnameObservable =
+        RxTextView.afterTextChangeEvents(fetSurname.getEditText())
+            .map(event -> event.editable().toString());
+
+    Disposable d = Observable.combineLatest(nameObservable, surnameObservable,
+        (s, s2) -> !TextUtils.isEmpty(s) && !TextUtils.isEmpty(s2))
         .subscribe(enable -> tvContinue.setVisibility(enable ? View.VISIBLE : View.GONE));
 
     disposable.add(d);
@@ -154,22 +143,17 @@ public class SignUpProgressController extends BaseController {
   }
 
   private void setEmail() {
-    Observable<String> emailObservable = getAsObservable(fetEmail.getEditText());
-
-    UserRepository repository = UserRepositoryProvider.getRepository();
-
-    Disposable d = emailObservable
+    Disposable d = RxTextView.afterTextChangeEvents(fetEmail.getEditText())
         .debounce(400, TimeUnit.MILLISECONDS)
-        .map(this::validateEmail)
+        .map(event -> event.editable().toString())
+        .map(ValidationUtils::isValidEmailAddress)
         .switchMapSingle(result -> {
           if (!result.isValid()) {
             return Single.just(result);
           }
 
-          return repository
-              .checkEmail(result.getData())
-              .map(available -> available
-                  ? ValidationResult.success(result.getData())
+          return repository.checkEmail(result.getData())
+              .map(available -> available ? ValidationResult.success(result.getData())
                   : ValidationResult.failure("Email is already taken", result.getData()));
         })
         .observeOn(AndroidSchedulers.mainThread())
@@ -192,22 +176,17 @@ public class SignUpProgressController extends BaseController {
   }
 
   private void setUsername() {
-    Observable<String> usernameObservable = getAsObservable(fetUsername.getEditText());
-
-    UserRepository repository = UserRepositoryProvider.getRepository();
-
-    Disposable d = usernameObservable
+    Disposable d = RxTextView.afterTextChangeEvents(fetUsername.getEditText())
         .debounce(400, TimeUnit.MILLISECONDS)
-        .map(this::validateUsername)
+        .map(event -> event.editable().toString())
+        .map(ValidationUtils::isValidUsername)
         .switchMapSingle(result -> {
           if (!result.isValid()) {
             return Single.just(result);
           }
 
-          return repository
-              .checkUsername(result.getData())
-              .map(available -> available
-                  ? ValidationResult.success(result.getData())
+          return repository.checkUsername(result.getData())
+              .map(available -> available ? ValidationResult.success(result.getData())
                   : ValidationResult.failure("Username is already taken", result.getData()));
         })
         .observeOn(AndroidSchedulers.mainThread())
@@ -230,11 +209,10 @@ public class SignUpProgressController extends BaseController {
   }
 
   private void setPassword() {
-    Observable<String> passwordObservable = getAsObservable(fetPassword.getEditText());
-
-    Disposable d = passwordObservable
+    Disposable d = RxTextView.afterTextChangeEvents(fetPassword.getEditText())
         .debounce(200, TimeUnit.MILLISECONDS)
-        .map(this::validatePassword)
+        .map(event -> event.editable().toString())
+        .map(ValidationUtils::isValidPassword)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(result -> {
           fetPassword.setError(result.getReason());
@@ -255,18 +233,15 @@ public class SignUpProgressController extends BaseController {
   }
 
   private void setBirthday() {
+    fetBirthday.getEditText().setKeyListener(null);
+
     final Calendar c = Calendar.getInstance();
 
-    fetBirthday.getEditText().setOnClickListener(v -> {
-      DatePickerDialog datePickerDialog =
-          new DatePickerDialog(getActivity(), (view, year, month, dayOfMonth) -> {
-            fetBirthday.setText(dayOfMonth + "/" + month + "/" + year);
-            tvContinue.setVisibility(View.VISIBLE);
-          }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
-      datePickerDialog.getDatePicker().updateDate(1996, 4, 1);
-      datePickerDialog.getDatePicker().setMaxDate(new Date().getTime());
-      datePickerDialog.show();
-    });
+    fetBirthday.getEditText().setOnClickListener(v -> showDatePickerDialog(c));
+
+    RxTextView.afterTextChangeEvents(fetBirthday.getEditText())
+        .map(event -> event.editable().toString())
+        .subscribe(s -> tvContinue.setVisibility(s.isEmpty() ? View.GONE : View.VISIBLE));
 
     tvContinue.setOnClickListener(v -> {
       InfoBundle bundle = getArgs().getParcelable(KEY_INFO_BUNDLE);
@@ -275,17 +250,9 @@ public class SignUpProgressController extends BaseController {
           new InfoBundle(bundle.getName(), bundle.getSurname(), bundle.getEmail(),
               bundle.getUsername(), bundle.getPassword(), c.getTimeInMillis());
 
-      startTransaction(SelectTypeController.createWithEmail(newBundle),
+      startTransaction(SignUpDiscoverController.createWithEmail(newBundle),
           new HorizontalChangeHandler());
     });
-  }
-
-  @Override
-  protected void onDetach(@NonNull View view) {
-    super.onDetach(view);
-    if (!disposable.isDisposed()) {
-      disposable.dispose();
-    }
   }
 
   private void setupToolbar() {
@@ -299,15 +266,16 @@ public class SignUpProgressController extends BaseController {
         RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
   }
 
-  private ValidationResult<String> validateEmail(@NonNull String email) {
-    return ValidationUtils.isValidEmailAddress(email);
-  }
+  private void showDatePickerDialog(Calendar calendar) {
+    DatePickerDialog datePickerDialog =
+        new DatePickerDialog(getActivity(), (view, year, month, dayOfMonth) -> {
+          month += 1;
 
-  private ValidationResult<String> validateUsername(@NonNull String username) {
-    return ValidationUtils.isValidUsername(username);
-  }
+          fetBirthday.setText(dayOfMonth + "/" + month + "/" + year);
+        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH));
 
-  private ValidationResult<String> validatePassword(@NonNull String password) {
-    return ValidationUtils.isValidPassword(password);
+    datePickerDialog.getDatePicker().setMaxDate(new Date().getTime());
+    datePickerDialog.show();
   }
 }

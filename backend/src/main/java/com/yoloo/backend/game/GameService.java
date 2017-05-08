@@ -413,6 +413,7 @@ public class GameService {
   private boolean updateLevel(Tracker tracker) {
     if (isLevelUp(tracker, tracker.getPoints())) {
       tracker.setLevel(tracker.getLevel() + 1);
+      tracker.setTitle(Level.findLevelTitleByLevel(tracker.getLevel()));
       return true;
     }
 

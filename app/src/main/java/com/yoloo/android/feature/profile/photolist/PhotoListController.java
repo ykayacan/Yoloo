@@ -9,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindView;
-import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
@@ -90,7 +89,7 @@ public class PhotoListController extends MvpController<PhotoListView, PhotoListP
   }
 
   @Override
-  public void onItemClick(View v, EpoxyModel<?> model, MediaRealm item) {
+  public void onItemClick(View v, MediaRealm item) {
     Controller controller = FullscreenPhotoController.create(item.getLargeSizeUrl(), item.getId());
     RouterTransaction transaction = RouterTransaction
         .with(controller)

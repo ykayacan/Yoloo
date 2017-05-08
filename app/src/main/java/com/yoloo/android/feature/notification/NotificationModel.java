@@ -5,7 +5,6 @@ import android.content.res.Resources;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
-import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import butterknife.BindView;
@@ -24,13 +23,15 @@ import com.yoloo.android.util.HtmlUtil;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.List;
 
+import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;
+
 @EpoxyModelClass(layout = R.layout.item_notification)
 abstract class NotificationModel
     extends EpoxyModelWithHolder<NotificationModel.NotificationHolder> {
 
   @EpoxyAttribute NotificationRealm notification;
-  @EpoxyAttribute(hash = false) OnProfileClickListener onProfileClickListener;
-  @EpoxyAttribute(hash = false) CropCircleTransformation cropCircleTransformation;
+  @EpoxyAttribute(DoNotHash) OnProfileClickListener onProfileClickListener;
+  @EpoxyAttribute(DoNotHash) CropCircleTransformation cropCircleTransformation;
 
   @Override
   public void bind(NotificationHolder holder) {
@@ -53,9 +54,6 @@ abstract class NotificationModel
             .into(holder.ivUserAvatar);
         break;
     }
-
-    holder.ibFollow.setVisibility(
-        notification.getAction().equals(NotificationRealm.FOLLOW) ? View.VISIBLE : View.GONE);
 
     final Resources res = context.getResources();
 

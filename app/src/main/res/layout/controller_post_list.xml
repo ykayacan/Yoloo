@@ -6,22 +6,22 @@
   android:layout_height="match_parent"
   android:background="@color/background_grey_100"
   android:fitsSystemWindows="true"
-  app:contentViewId="@+id/swipe_feed_global"
-  app:emptyLayout="@layout/layout_group_empty_view"
+  app:contentViewId="@+id/swipe"
+  app:emptyLayout="@layout/layout_group_posts_empty_view"
   app:errorLayout="@layout/layout_error_view"
   app:initialViewState="loading"
   app:loadingLayout="@layout/layout_feed_loading_view">
 
-  <include layout="@layout/merge_appbar"/>
+  <include layout="@layout/merge_appbar" />
 
   <android.support.v4.widget.SwipeRefreshLayout
-    android:id="@+id/swipe_feed_global"
+    android:id="@+id/swipe"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <android.support.v7.widget.RecyclerView
-      android:id="@+id/rv_feed_global"
+      android:id="@+id/recycler_view"
       android:layout_width="match_parent"
       android:layout_height="wrap_content" />
 

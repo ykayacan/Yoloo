@@ -3,7 +3,7 @@ package com.yoloo.android.feature.editor.selectgroup;
 import com.airbnb.epoxy.AutoModel;
 import com.airbnb.epoxy.EpoxyModelClass;
 import com.airbnb.epoxy.SimpleEpoxyModel;
-import com.airbnb.epoxy.Typed2EpoxyController;
+import com.airbnb.epoxy.TypedEpoxyController;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
@@ -11,13 +11,15 @@ import com.yoloo.android.data.model.GroupRealm;
 import com.yoloo.android.feature.grouplist.GroupListEpoxyController;
 import com.yoloo.android.feature.grouplist.GroupListEpoxyController$GroupListItemModel_;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
+import com.yoloo.android.util.EpoxyItem;
 import java.util.List;
 
-class SelectGroupEpoxyController extends Typed2EpoxyController<List<GroupRealm>, Boolean> {
+class SelectGroupEpoxyController extends TypedEpoxyController<List<EpoxyItem<?>>> {
 
   private final RequestManager glide;
 
-  @AutoModel SelectGroupEpoxyController$GroupHeaderModel_ header;
+  @AutoModel SelectGroupEpoxyController$GroupHeaderModel_ headerAllModel;
+  @AutoModel SelectGroupEpoxyController$GroupHeaderModel_ headerSubscribedModel;
 
   private OnItemClickListener<GroupRealm> onItemClickListener;
   private GroupListEpoxyController.OnSubscribeListener onSubscribeListener;
@@ -30,17 +32,21 @@ class SelectGroupEpoxyController extends Typed2EpoxyController<List<GroupRealm>,
     this.onItemClickListener = onItemClickListener;
   }
 
-  public void setOnSubscribeListener(
-      GroupListEpoxyController.OnSubscribeListener onSubscribeListener) {
+  void setOnSubscribeListener(GroupListEpoxyController.OnSubscribeListener onSubscribeListener) {
     this.onSubscribeListener = onSubscribeListener;
   }
 
   @Override
-  protected void buildModels(List<GroupRealm> groups, Boolean showSubscribedHeader) {
-    header.layout(R.layout.item_select_all_group_header).addTo(this);
-    Stream.of(groups).forEach(this::createModel);
-
-    //header.layout(R.layout.item_select_subscribed_group_header).addTo(this);
+  protected void buildModels(List<EpoxyItem<?>> groups) {
+    Stream.of(groups).forEach(item -> {
+      if (item instanceof SelectGroupPresenter.SubscribedHeader) {
+        headerAllModel.layout(R.layout.item_select_all_group_header).addTo(this);
+      } else if (item instanceof SelectGroupPresenter.AllHeader) {
+        headerSubscribedModel.layout(R.layout.item_select_subscribed_group_header).addTo(this);
+      } else if (item instanceof SelectGroupPresenter.GroupItem) {
+        createModel(((SelectGroupPresenter.GroupItem) item).getItem());
+      }
+    });
   }
 
   private void createModel(GroupRealm group) {
@@ -49,7 +55,6 @@ class SelectGroupEpoxyController extends Typed2EpoxyController<List<GroupRealm>,
         .group(group)
         .glide(glide)
         .showNotSubscribedError(true)
-        .hideSubscribeButton(group.isSubscribed())
         .onItemClickListener(onItemClickListener)
         .onSubscribeClickListener(onSubscribeListener)
         .addTo(this);
@@ -57,7 +62,7 @@ class SelectGroupEpoxyController extends Typed2EpoxyController<List<GroupRealm>,
 
   @EpoxyModelClass(layout = R.layout.item_select_all_group_header)
   static abstract class GroupHeaderModel extends SimpleEpoxyModel {
-    public GroupHeaderModel() {
+    GroupHeaderModel() {
       super(R.layout.item_select_all_group_header);
     }
   }

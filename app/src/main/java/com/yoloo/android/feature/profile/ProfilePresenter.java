@@ -15,9 +15,8 @@ class ProfilePresenter extends MvpPresenter<ProfileView> {
   }
 
   void loadUserProfile(@Nonnull String userId) {
-    Disposable d = userRepository
-        .getUser(userId)
-        .observeOn(AndroidSchedulers.mainThread(), true)
+    Disposable d = userRepository.getUser(userId)
+        .observeOn(AndroidSchedulers.mainThread())
         .subscribe(account -> getView().onProfileLoaded(account),
             throwable -> getView().onError(throwable));
 
@@ -25,8 +24,7 @@ class ProfilePresenter extends MvpPresenter<ProfileView> {
   }
 
   void follow(String userId, int direction) {
-    Disposable d = userRepository
-        .relationship(userId, direction)
+    Disposable d = userRepository.relationship(userId, direction)
         .observeOn(AndroidSchedulers.mainThread())
         .doOnError(Throwable::printStackTrace)
         .subscribe();

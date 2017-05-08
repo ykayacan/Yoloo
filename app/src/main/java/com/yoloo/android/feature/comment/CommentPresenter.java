@@ -1,6 +1,5 @@
 package com.yoloo.android.feature.comment;
 
-import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.model.AccountRealm;
@@ -90,13 +89,6 @@ class CommentPresenter extends MvpPresenter<CommentView> {
 
   private void showError(Throwable throwable) {
     getView().onError(throwable);
-  }
-
-  private Observable<Optional<CommentRealm>> getAcceptedCommentObservable(String postId,
-      String acceptedCommentId) {
-    return acceptedCommentId == null
-        ? Observable.just(Optional.empty())
-        : commentRepository.getComment(postId, acceptedCommentId);
   }
 
   private void shouldResetCursor(boolean pullToRefresh) {

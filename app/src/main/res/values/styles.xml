@@ -232,8 +232,10 @@
     <item name="android:textColor">@android:color/white</item>
   </style>
 
-  <style name="TextAppearance.EmptyTitle" parent="@style/TextAppearance.AppCompat.Subhead">
+  <style name="TextAppearance.EmptyTitle" parent="android:TextAppearance">
+    <item name="android:textSize">18sp</item>
     <item name="fontPath">fonts/OpenSans-Semibold.ttf</item>
+    <item name="android:textColor">@color/lucky_point</item>
   </style>
 
   <style name="TextAppearance.TrendingBlogTitle" parent="@style/TextAppearance.AppCompat.Subhead">

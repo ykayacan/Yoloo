@@ -13,7 +13,6 @@ import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
 import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
 import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
 import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
-import com.yoloo.backend.endpointsvalidator.validator.ForbiddenValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
 import com.yoloo.backend.post.PostEntity;
 import javax.annotation.Nullable;
@@ -66,8 +65,7 @@ public class BookmarkEndpoint {
         .create()
         .on(BadRequestValidator.create(postId, "postId is required."))
         .on(AuthValidator.create(user))
-        .on(NotFoundValidator.create(postId, "Invalid postId."))
-        .on(ForbiddenValidator.create(postId, user, ForbiddenValidator.Op.DELETE));
+        .on(NotFoundValidator.create(postId, "Invalid postId."));
 
     bookmarkController.deleteBookmark(postId, user);
   }

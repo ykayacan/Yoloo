@@ -101,7 +101,15 @@ class PostDetailEpoxyController extends Typed2EpoxyController<List<FeedItem>, Bo
   }
 
   void scrollToEnd(RecyclerView recyclerView) {
-    recyclerView.smoothScrollToPosition(getAdapter().getItemCount() - 1);
+    recyclerView.smoothScrollToPosition(getAdapter().getItemCount());
+  }
+
+  void showLoader() {
+    setData(epoxyItems, true);
+  }
+
+  void hideLoader() {
+    setData(epoxyItems, false);
   }
 
   @Override
@@ -135,7 +143,6 @@ class PostDetailEpoxyController extends Typed2EpoxyController<List<FeedItem>, Bo
         .id(comment.getId())
         .comment(comment)
         .glide(glide)
-        .postType(comment.getPostType())
         .backgroundColor(Color.WHITE)
         .circleTransformation(cropCircleTransformation)
         .onCommentLongClickListener(onCommentLongClickListener)

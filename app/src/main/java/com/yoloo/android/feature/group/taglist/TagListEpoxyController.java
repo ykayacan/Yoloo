@@ -31,7 +31,7 @@ public class TagListEpoxyController extends TypedEpoxyController<List<String>> {
     new TagListEpoxyController$TagListModel_()
         .id(tagName)
         .tagName(tagName)
-        .onClickListener(v -> onItemClickListener.onItemClick(null, null, tagName))
+        .onClickListener(v -> onItemClickListener.onItemClick(null, tagName))
         .addTo(this);
   }
 

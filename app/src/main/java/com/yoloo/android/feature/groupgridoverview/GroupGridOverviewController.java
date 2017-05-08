@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindColor;
 import butterknife.BindView;
-import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.ControllerChangeType;
@@ -138,7 +137,7 @@ public class GroupGridOverviewController
   }
 
   @Override
-  public void onItemClick(View v, EpoxyModel<?> model, GroupRealm item) {
+  public void onItemClick(View v, GroupRealm item) {
     Controller parentController = getParentController();
     if (parentController == null) {
       getRouter().pushController(RouterTransaction

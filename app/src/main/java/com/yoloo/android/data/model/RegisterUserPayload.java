@@ -6,23 +6,21 @@ public final class RegisterUserPayload {
   private final String username;
   private final String realname;
   private final String email;
-  private final long birthdate;
+  private final long birthday;
   private final String countryCode;
   private final String langCode;
   private final String profileImageUrl;
   private final List<String> travelerTypeIds;
-  private final String faceebookId;
 
   public RegisterUserPayload(AccountRealm account) {
     this.realname = account.getRealname();
     this.username = account.getUsername();
     this.email = account.getEmail();
-    this.birthdate = account.getBirthdate().getTime();
+    this.birthday = account.getBirthdate().getTime();
     this.countryCode = account.getCountry().getCode();
     this.langCode = account.getLangCode();
     this.profileImageUrl = account.getAvatarUrl();
     this.travelerTypeIds = account.getTravelerTypeIds();
-    this.faceebookId = account.getFacebookId();
   }
 
   public String getUsername() {
@@ -37,8 +35,8 @@ public final class RegisterUserPayload {
     return email;
   }
 
-  public long getBirthdate() {
-    return birthdate;
+  public long getBirthday() {
+    return birthday;
   }
 
   public String getCountryCode() {
@@ -55,9 +53,5 @@ public final class RegisterUserPayload {
 
   public List<String> getTravelerTypeIds() {
     return travelerTypeIds;
-  }
-
-  public String getFaceebookId() {
-    return faceebookId;
   }
 }

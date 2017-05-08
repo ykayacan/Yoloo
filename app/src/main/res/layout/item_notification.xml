@@ -47,6 +47,7 @@
     android:background="?android:attr/selectableItemBackground"
     android:padding="8dp"
     android:tint="@color/accent"
+    android:visibility="gone"
     app:layout_constraintBottom_toBottomOf="@+id/iv_not_item_avatar"
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toTopOf="@+id/iv_not_item_avatar"

@@ -11,6 +11,8 @@ import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import java.util.List;
+import javax.annotation.Nonnull;
+import timber.log.Timber;
 
 public class BlogListPresenter extends MvpPresenter<BlogListView> {
 
@@ -41,7 +43,48 @@ public class BlogListPresenter extends MvpPresenter<BlogListView> {
     getDisposable().add(d);
   }
 
-  private void loadTrendingBlogs() {
+  void votePost(@Nonnull String postId, int direction) {
+    Disposable d = postRepository
+        .votePost(postId, direction)
+        .andThen(postRepository.getPost(postId))
+        .observeOn(AndroidSchedulers.mainThread(), true)
+        .subscribe(post -> {
+          if (post.isPresent()) {
+            getView().onPostUpdated(post.get());
+          }
+        }, throwable -> getView().onError(throwable));
+
+    getDisposable().add(d);
+  }
+
+  void bookmarkPost(@Nonnull String postId) {
+    Disposable d = postRepository
+        .bookmarkPost(postId)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(() -> {
+        }, Timber::e);
+
+    getDisposable().add(d);
+  }
+
+  void unBookmarkPost(@Nonnull String postId) {
+    Disposable d = postRepository
+        .unBookmarkPost(postId)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(() -> {
+        }, Timber::e);
+
+    getDisposable().add(d);
+  }
+
+  void deletePost(@Nonnull String postId) {
+    Disposable d =
+        postRepository.deletePost(postId).observeOn(AndroidSchedulers.mainThread()).subscribe();
+
+    getDisposable().add(d);
+  }
+
+  void loadTrendingBlogs() {
     getView().onLoading(false);
 
     Observable<AccountRealm> meObservable =

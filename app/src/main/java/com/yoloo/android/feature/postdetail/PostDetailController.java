@@ -16,7 +16,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindColor;
 import butterknife.BindView;
-import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.ControllerChangeType;
@@ -47,7 +46,7 @@ import com.yoloo.android.feature.fullscreenphoto.FullscreenPhotoController;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.writecommentbox.CommentAutocomplete;
 import com.yoloo.android.framework.MvpController;
-import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
+import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
 import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.InsetDividerDecoration;
@@ -60,8 +59,7 @@ import java.util.List;
 import timber.log.Timber;
 
 public class PostDetailController extends MvpController<PostDetailView, PostDetailPresenter>
-    implements PostDetailView, SwipeRefreshLayout.OnRefreshListener,
-    EndlessRecyclerViewScrollListener.OnLoadMoreListener, OnProfileClickListener,
+    implements PostDetailView, SwipeRefreshLayout.OnRefreshListener, OnProfileClickListener,
     OnPostOptionsClickListener, OnShareClickListener, OnCommentClickListener, OnVoteClickListener,
     OnContentImageClickListener, CommentAutocomplete.NewCommentListener,
     OnMarkAsAcceptedClickListener, OnItemLongClickListener<CommentRealm>, OnMentionClickListener {
@@ -82,11 +80,14 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   private String postId;
 
   private PostRealm post;
-  private AccountRealm me;
 
   private boolean reEnter;
 
   private OnModelUpdateEvent modelUpdateEvent;
+
+  private KeyboardUtil.SoftKeyboardToggleListener keyboardToggleListener;
+
+  private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
 
   public PostDetailController(@Nullable Bundle args) {
     super(args);
@@ -126,6 +127,19 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
       getPresenter().loadData(false, postId);
       reEnter = true;
     }
+
+    keyboardToggleListener = isVisible -> {
+      if (isVisible) {
+        rvFeed.smoothScrollToPosition(rvFeed.getAdapter().getItemCount());
+      }
+    };
+
+    KeyboardUtil.addKeyboardToggleListener(getActivity(), keyboardToggleListener);
+  }
+
+  @Override protected void onDestroy() {
+    super.onDestroy();
+    KeyboardUtil.removeKeyboardToggleListener(keyboardToggleListener);
   }
 
   @Override
@@ -148,7 +162,11 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   @Override
   public void onLoaded(List<FeedItem> value) {
-    epoxyController.setData(value, false);
+    if (value.isEmpty()) {
+      epoxyController.hideLoader();
+    } else {
+      epoxyController.setData(value, false);
+    }
     swipeRefreshLayout.setRefreshing(false);
   }
 
@@ -159,7 +177,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   @Override
   public void onMeLoaded(AccountRealm me) {
-    this.me = me;
+
   }
 
   @Override
@@ -186,12 +204,8 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   }
 
   @Override
-  public void onLoadMore() {
-    Timber.d("onLoadMore");
-  }
-
-  @Override
   public void onRefresh() {
+    endlessRecyclerOnScrollListener.resetState();
     getPresenter().loadData(true, postId);
   }
 
@@ -257,24 +271,28 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   @Override
   public void onNewComment(CommentRealm comment) {
-    comment
+    epoxyController.addComment(comment.setOwner(true)
         .setPostType(post.getPostType())
-        .setOwner(me.getId().equals(comment.getOwnerId()))
         .setPostAccepted(post.getAcceptedCommentId() != null)
-        .setPostOwner(post.getOwnerId().equals(me.getId()));
+        .setPostOwner(post.getOwnerId().equals(comment.getOwnerId())));
 
-    epoxyController.addComment(comment);
     epoxyController.scrollToEnd(rvFeed);
   }
 
   @Override
   public void onMarkAsAccepted(View v, CommentRealm comment) {
-    Snackbar.make(getView(), R.string.label_comment_accepted_confirm, Snackbar.LENGTH_SHORT).show();
-    getPresenter().acceptComment(comment);
+    if (post.getAcceptedCommentId() != null) {
+      Snackbar.make(getView(), R.string.comments_accepted_error, Snackbar.LENGTH_SHORT).show();
+    } else {
+      Snackbar.make(getView(), R.string.label_comment_accepted_confirm, Snackbar.LENGTH_SHORT)
+          .show();
+      getPresenter().acceptComment(comment);
+      post.setAcceptedCommentId(comment.getId());
+    }
   }
 
   @Override
-  public void onItemLongClick(View v, EpoxyModel<?> model, CommentRealm item) {
+  public void onItemLongClick(View v, CommentRealm item) {
     new AlertDialog.Builder(getActivity())
         .setItems(R.array.action_comment_dialog, (dialog, which) -> {
           if (which == 0) {
@@ -307,7 +325,8 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
     epoxyController.setOnMarkAsAcceptedClickListener(this);
 
-    rvFeed.setLayoutManager(new LinearLayoutManager(getActivity()));
+    LinearLayoutManager lm = new LinearLayoutManager(getActivity());
+    rvFeed.setLayoutManager(lm);
     rvFeed.setItemAnimator(new SlideInItemAnimator());
 
     rvFeed.addItemDecoration(new InsetDividerDecoration(R.layout.item_comment,
@@ -316,6 +335,16 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
     rvFeed.setHasFixedSize(true);
     rvFeed.setAdapter(epoxyController.getAdapter());
+
+    endlessRecyclerOnScrollListener =
+        new EndlessRecyclerOnScrollListener(lm) {
+          @Override public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+            getPresenter().loadMoreComments();
+            epoxyController.showLoader();
+          }
+        };
+
+    rvFeed.addOnScrollListener(endlessRecyclerOnScrollListener);
   }
 
   private void setupPullToRefresh() {

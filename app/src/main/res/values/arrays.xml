@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string-array name="traveler_types_ids">
+  <string-array name="traveler_types_ids" translatable="false">
     <item>ag5lfnlvbG9vLTE1MTcxOXIuCxISVHJhdmVsZXJUeXBlRW50aXR5IhZ0cmF2ZWxlcl90eXBlOkVzY2FwaXN0DA</item>
     <item>ag5lfnlvbG9vLTE1MTcxOXI5CxISVHJhdmVsZXJUeXBlRW50aXR5IiF0cmF2ZWxlcl90eXBlOkd1aWRlYm9vayBNZW1vcml6ZXIM</item>
     <item>ag5lfnlvbG9vLTE1MTcxOXIxCxISVHJhdmVsZXJUeXBlRW50aXR5Ihl0cmF2ZWxlcl90eXBlOktub3ctSXQtQWxsDA</item>
@@ -13,7 +13,7 @@
     <item>ag5lfnlvbG9vLTE1MTcxOXI4CxISVHJhdmVsZXJUeXBlRW50aXR5IiB0cmF2ZWxlcl90eXBlOlRyYXZlbCBNYXRlIFNlZWtlcgw</item>
   </string-array>
 
-  <string-array name="traveler_types_titles">
+  <string-array name="traveler_types_titles" translatable="false">
     <item>@string/type_escapist</item>
     <item>@string/type_guidebook_memorizer</item>
     <item>@string/type_know_it_all</item>
@@ -26,33 +26,12 @@
     <item>@string/type_travel_mate_seeker</item>
   </string-array>
 
-  <integer-array name="traveler_types_images">
-    <item>@drawable/escapist</item>
-    <item>@drawable/guidebook_memorizer</item>
-    <item>@drawable/know_it_all</item>
-    <item>@drawable/no_expense</item>
-    <item>@drawable/partier</item>
-    <item>@drawable/planner</item>
-    <item>@drawable/repeater</item>
-    <item>@drawable/solo_traveler</item>
-    <item>@drawable/thrill_seeker</item>
-    <item>@drawable/travel_mate_seeker</item>
-  </integer-array>
-
   <integer-array name="colors">
     <item>@color/primary</item>
     <item>@color/primary_blue</item>
     <item>@color/primary_yellow</item>
     <item>@color/accepted</item>
   </integer-array>
-
-  <string-array name="bounty_times">
-    <item>15 mins</item>
-    <item>30 mins</item>
-    <item>45 mins</item>
-    <item>50 mins</item>
-    <item>60 mins</item>
-  </string-array>
 
   <string-array name="points_hint_text">
     <item>Tip: You can earn more points by asking questions.</item>

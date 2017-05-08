@@ -12,14 +12,14 @@ import com.yoloo.backend.account.Account;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
 import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
 import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
-
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
 @Api(
     name = "yolooApi",
     version = "v1",
-    namespace = @ApiNamespace(
+    namespace =
+    @ApiNamespace(
         ownerDomain = Constants.API_OWNER,
         ownerName = Constants.API_OWNER)
 )

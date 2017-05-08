@@ -1,8 +1,8 @@
-package com.yoloo.android.feature.auth.selecttype;
+package com.yoloo.android.feature.auth.signupdiscover;
 
 import com.yoloo.android.framework.MvpView;
 
-interface SelectTypeView extends MvpView {
+interface SignUpDiscoverView extends MvpView {
 
   void onError(Throwable t);
 

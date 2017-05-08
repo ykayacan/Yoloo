@@ -32,7 +32,7 @@ class MediaEpoxyController extends Typed2EpoxyController<List<MediaRealm>, Boole
     new MediaModel_()
         .id(media.getId())
         .glide(glide)
-        .onClickListener(v -> onItemClickListener.onItemClick(null, null, media))
+        .onClickListener(v -> onItemClickListener.onItemClick(null, media))
         .addTo(this);
   }
 }

@@ -7,4 +7,6 @@ import java.util.List;
 
 interface BlogListView extends MvpDataView<List<PostRealm>> {
   void onMeLoaded(AccountRealm me);
+
+  void onPostUpdated(PostRealm post);
 }

@@ -129,7 +129,7 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
 
   @Override
   public void onEmpty() {
-
+    swipeRefreshLayout.setRefreshing(false);
   }
 
   @Override

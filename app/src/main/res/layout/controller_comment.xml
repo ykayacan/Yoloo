@@ -1,36 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
-  xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="@android:color/white"
-  android:fitsSystemWindows="true">
+  android:background="@android:color/white">
 
-  <android.support.design.widget.AppBarLayout
-    android:id="@+id/appbar"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:theme="@style/Yoloo.AppBarOverlay.Light">
-
-    <android.support.v7.widget.Toolbar
-      android:id="@+id/toolbar"
-      android:layout_width="match_parent"
-      android:layout_height="?attr/actionBarSize"
-      android:background="@android:color/white"
-      app:popupTheme="@style/Yoloo.PopupOverlay"
-      app:title="@string/label_comment_toolbar_title"
-      app:titleTextColor="@android:color/primary_text_light" />
-
-  </android.support.design.widget.AppBarLayout>
+  <include layout="@layout/merge_appbar_transparent" />
 
   <android.support.v7.widget.RecyclerView
     android:id="@+id/rv_comment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginBottom="48dp"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:listitem="@layout/item_comment" />
+    app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
   <com.yoloo.android.feature.writecommentbox.CommentAutocomplete
     android:id="@+id/layout_compose"

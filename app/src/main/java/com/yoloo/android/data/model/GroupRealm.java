@@ -74,6 +74,10 @@ public class GroupRealm extends RealmObject implements Chipable {
     this.subscribed = subscribed;
   }
 
+  public void setSubscriberCount(long subscriberCount) {
+    this.subscriberCount = subscriberCount;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;

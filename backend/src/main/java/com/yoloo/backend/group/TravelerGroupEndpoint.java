@@ -23,10 +23,13 @@ import javax.inject.Named;
 
 @Api(name = "yolooApi",
     version = "v1",
-    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
-@ApiClass(resource = "groups", clientIds = {
-    Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
-}, audiences = {Constants.AUDIENCE_ID})
+    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER,
+        ownerName = Constants.API_OWNER))
+@ApiClass(resource = "groups",
+    clientIds = {
+        Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
+    },
+    audiences = { Constants.AUDIENCE_ID })
 public class TravelerGroupEndpoint {
 
   private final TravelerGroupController travelerGroupController =
@@ -140,7 +143,7 @@ public class TravelerGroupEndpoint {
   @ApiMethod(name = "groups.list",
       path = "groups",
       httpMethod = ApiMethod.HttpMethod.GET,
-      authenticators = {AdminAuthenticator.class, FirebaseAuthenticator.class})
+      authenticators = { AdminAuthenticator.class, FirebaseAuthenticator.class })
   public CollectionResponse<TravelerGroupEntity> list(@Nullable @Named("sort") GroupSorter sorter,
       @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
       throws ServiceException {
@@ -203,7 +206,7 @@ public class TravelerGroupEndpoint {
   @ApiMethod(name = "groups.search",
       path = "groups/search",
       httpMethod = ApiMethod.HttpMethod.GET,
-      authenticators = {FirebaseAuthenticator.class, AdminAuthenticator.class})
+      authenticators = { FirebaseAuthenticator.class, AdminAuthenticator.class })
   public Collection<TravelerGroupEntity> searchGroups(@Named("query") String query, User user)
       throws ServiceException {
 
@@ -215,7 +218,9 @@ public class TravelerGroupEndpoint {
     return travelerGroupController.searchGroups(query);
   }
 
-  @ApiMethod(name = "groups.setup", path = "groups/setup", httpMethod = ApiMethod.HttpMethod.GET)
+  @ApiMethod(name = "groups.setup",
+      path = "groups/setup",
+      httpMethod = ApiMethod.HttpMethod.GET)
   public void setup(@Named("env") String env) throws ServiceException {
     if (env.equals("prod")) {
       travelerGroupController.setup();

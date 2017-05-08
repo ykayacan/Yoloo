@@ -10,18 +10,17 @@ import com.google.appengine.api.users.User;
 import com.google.common.base.Preconditions;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.NotFoundException;
-import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.config.MediaConfig;
 import com.yoloo.backend.country.json.GeognosResponse;
 import com.yoloo.backend.util.ServerConfig;
 import io.reactivex.Single;
-import ix.Ix;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.Future;
 import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
@@ -86,26 +85,6 @@ public class CountryService {
         .blockingGet();
   }
 
-  public Map<Key<Country>, Country> getCountries(String... countryCodes) {
-    Preconditions.checkNotNull(countryCodes);
-
-    return ofy().load().keys(Ix.fromArray(countryCodes).map(Key::<Country>create).toList());
-  }
-
-  public Collection<Country> searchCountry(String q) {
-    q = q.toLowerCase().trim();
-
-    Query<Country> query = ofy()
-        .load()
-        .type(Country.class)
-        .filter(Country.FIELD_NAME + " >=", q)
-        .filter(Country.FIELD_NAME + " <", q + "\ufffd");
-
-    query = query.limit(15);
-
-    return query.list();
-  }
-
   /**
    * List visited countries collection.
    *
@@ -121,5 +100,25 @@ public class CountryService {
     }
 
     return account.getVisitedCountries();
+  }
+
+  public void deleteVisitedCountry(@Nonnull String countryCode, User user) {
+    Account account = ofy().load().key(Key.<Account>create(user.getUserId())).now();
+
+    Set<Country> visited = account.getVisitedCountries();
+
+    if (visited != null) {
+      Iterator<Country> it = visited.iterator();
+
+      while (it.hasNext()) {
+        if (it.next().getId().equals(countryCode)) {
+          it.remove();
+        }
+      }
+
+      account.withVisitedCountries(visited);
+
+      ofy().save().entity(account);
+    }
   }
 }

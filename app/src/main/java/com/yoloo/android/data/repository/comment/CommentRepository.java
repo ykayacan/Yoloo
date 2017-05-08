@@ -63,7 +63,7 @@ public class CommentRepository {
   }
 
   public Completable voteComment(@Nonnull String commentId, int direction) {
-    return diskDataStore.vote(commentId, direction).subscribeOn(Schedulers.io());
+    return remoteDataStore.vote(commentId, direction).subscribeOn(Schedulers.io());
   }
 
   public Single<CommentRealm> acceptComment(@Nonnull CommentRealm comment) {

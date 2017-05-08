@@ -1,5 +1,6 @@
 package com.yoloo.android.feature.profile.visitedcountrylist;
 
+import android.app.AlertDialog;
 import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindView;
@@ -20,11 +21,25 @@ public abstract class CountryGridModel
 
   @EpoxyAttribute CountryRealm country;
   @EpoxyAttribute(DoNotHash) RequestManager glide;
+  @EpoxyAttribute(DoNotHash) OnVisitedCountryRemoveRequestListener
+      onVisitedCountryRemoveRequestListener;
 
   @Override
   public void bind(CountryGridHolder holder) {
     super.bind(holder);
     holder.tvCountryTv.setText(country.getName());
+
+    holder.itemView.setOnLongClickListener(v -> {
+      new AlertDialog.Builder(v.getContext())
+          .setTitle(R.string.visited_countries_dialog_remove_title)
+          .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+            onVisitedCountryRemoveRequestListener.onVisitedCountryRemoveRequest(country);
+          })
+          .setNegativeButton(android.R.string.cancel, null)
+          .show();
+
+      return true;
+    });
 
     glide.load(country.getFlagUrl()).into(holder.ivCountryBg);
   }
@@ -34,6 +49,10 @@ public abstract class CountryGridModel
     super.unbind(holder);
     Glide.clear(holder.ivCountryBg);
     holder.ivCountryBg.setImageDrawable(null);
+  }
+
+  public interface OnVisitedCountryRemoveRequestListener {
+    void onVisitedCountryRemoveRequest(CountryRealm country);
   }
 
   static class CountryGridHolder extends BaseEpoxyHolder {

@@ -7,8 +7,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,9 +14,9 @@ import android.widget.EditText;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.airbnb.epoxy.EpoxyControllerAdapter;
-import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
+import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.yoloo.android.R;
 import com.yoloo.android.data.model.AccountRealm;
 import com.yoloo.android.data.model.TagRealm;
@@ -42,23 +40,6 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
   private static final String KEY_SEARCH_TYPE = "SEARCH_TYPE";
 
   private final PublishSubject<String> searchSubject = PublishSubject.create();
-
-  private final TextWatcher watcher = new TextWatcher() {
-    @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-    }
-
-    @Override
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
-      searchSubject.onNext(s.toString());
-    }
-
-    @Override
-    public void afterTextChanged(Editable s) {
-
-    }
-  };
 
   @BindView(R.id.rv_child_search) RecyclerView rvChildSearch;
 
@@ -94,20 +75,13 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
   }
 
   @Override
-  protected void onViewBound(@NonNull View view) {
-    super.onViewBound(view);
-
+  protected void onAttach(@NonNull View view) {
+    super.onAttach(view);
     searchType = getArgs().getInt(KEY_SEARCH_TYPE);
 
     etSearch = ButterKnife.findById(getParentController().getView(), R.id.et_search);
-  }
-
-  @Override
-  protected void onAttach(@NonNull View view) {
-    super.onAttach(view);
 
     viewPager = ButterKnife.findById(getParentController().getView(), R.id.viewpager_search);
-
     viewPager.addOnPageChangeListener(onPageChangeListener);
 
     if (searchType == SearchType.TAG) {
@@ -120,9 +94,8 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
       getPresenter().loadRecentUsers();
     }
 
-    etSearch.addTextChangedListener(watcher);
-
-    searchSubject
+    RxTextView.afterTextChangeEvents(etSearch)
+        .map(event -> event.editable().toString())
         .filter(s -> !s.isEmpty())
         .debounce(400, TimeUnit.MILLISECONDS)
         .subscribe(query -> loadBySearchType(query, true));
@@ -131,7 +104,6 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
   @Override
   protected void onDetach(@NonNull View view) {
     super.onDetach(view);
-    etSearch.removeTextChangedListener(watcher);
     viewPager.removeOnPageChangeListener(onPageChangeListener);
   }
 
@@ -163,7 +135,7 @@ public class ChildSearchController extends MvpController<ChildSearchView, ChildS
   }
 
   @Override
-  public void onItemClick(View v, EpoxyModel<?> model, TagRealm item) {
+  public void onItemClick(View v, TagRealm item) {
     KeyboardUtil.hideKeyboard(etSearch);
 
     getParentController()

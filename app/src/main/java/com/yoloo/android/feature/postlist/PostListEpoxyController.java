@@ -119,6 +119,21 @@ public class PostListEpoxyController extends Typed2EpoxyController<List<FeedItem
     loader.addIf(loadingMore, this);
   }
 
+  public void bookmarkPost(PostRealm post) {
+    if (post.isTextQuestionPost()) {
+      feedItems.remove(new TextQuestionItem(post));
+      //feedItems.add(new TextQuestionItem(post));
+    } else if (post.isRichQuestionPost()) {
+      feedItems.remove(new RichQuestionItem(post));
+      feedItems.add(new RichQuestionItem(post));
+    } else if (post.isBlogPost()) {
+      feedItems.remove(new BlogItem(post));
+      feedItems.add(new BlogItem(post));
+    }
+
+    setData(feedItems, false);
+  }
+
   public void deletePost(PostRealm post) {
     if (post.isTextQuestionPost()) {
       feedItems.remove(new TextQuestionItem(post));

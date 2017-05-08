@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.OnTextChanged;
-import com.airbnb.epoxy.EpoxyModel;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bumptech.glide.Glide;
@@ -23,6 +22,7 @@ import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.grouplist.GroupListEpoxyController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
+import com.yoloo.android.util.EpoxyItem;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.ViewUtils;
 import io.reactivex.subjects.PublishSubject;
@@ -31,7 +31,8 @@ import java.util.concurrent.TimeUnit;
 import timber.log.Timber;
 
 public class SelectGroupController extends MvpController<SelectGroupView, SelectGroupPresenter>
-    implements SelectGroupView, OnItemClickListener<GroupRealm>,GroupListEpoxyController.OnSubscribeListener {
+    implements SelectGroupView, OnItemClickListener<GroupRealm>,
+    GroupListEpoxyController.OnSubscribeListener {
 
   private final PublishSubject<String> querySubject = PublishSubject.create();
 
@@ -58,6 +59,8 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
     super.onViewBound(view);
     setupToolbar();
     setupRecyclerview();
+
+    Timber.d("Parent view: %s", view.getParent());
   }
 
   @Override
@@ -94,13 +97,8 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
   }
 
   @Override
-  public void onLoaded(List<GroupRealm> value) {
-    epoxyController.setData(value, false);
-  }
-
-  @Override
-  public void onSubscribedGroupsLoaded(List<GroupRealm> subscribedGroups) {
-
+  public void onLoaded(List<EpoxyItem<?>> value) {
+    epoxyController.setData(value);
   }
 
   @Override
@@ -141,7 +139,7 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
   }
 
   @Override
-  public void onItemClick(View v, EpoxyModel<?> model, GroupRealm item) {
+  public void onItemClick(View v, GroupRealm item) {
     ((Groupable) getTargetController()).onGroupSelected(item);
 
     getRouter().handleBack();

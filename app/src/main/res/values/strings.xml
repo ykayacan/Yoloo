@@ -1,4 +1,7 @@
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+  <!-- <WHAT>_<WHERE>_<DESC>_<SIZE> -->
+
   <string name="app_name">Yoloo</string>
 
   <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
@@ -17,8 +20,8 @@
   <string name="fb_login_protocol_scheme">fb1587185934920884</string>
 
   <!-- NAV DRAWER -->
-  <string name="label_nav_profile">Profile</string>
-  <string name="label_nav_explore">Explore</string>
+  <string name="nav_profile_title">Profile</string>
+  <string name="nav_explore_title">Explore</string>
   <string name="label_nav_bookmarks">Bookmarks</string>
   <string name="label_nav_invite_friends">Invite Friends</string>
   <string name="label_nav_settings">Settings</string>
@@ -45,7 +48,7 @@
   <string name="action_feed_popup_edit">Edit</string>
   <string name="action_feed_popup_delete">Delete</string>
   <string name="action_feed_share">Share</string>
-  <string name="action_feed_bounty_questions">Bounty Questions</string>
+  <string name="action_feed_bounty_questions">Bounty Posts</string>
   <string name="action_feed_fab_ask_question">Ask question</string>
   <string name="action_feed_fab_share_trip">Share trip</string>
   <string name="action_feed_menu_search">Search</string>
@@ -310,7 +313,7 @@
   <string name="invitation_custom_image">http://yolooapp.com/images/yoloo-logo.png</string>
   <string name="invitation_cta">Install!</string>
 
-  <string name="sent_invitations_fmt" formatted="false">Sent %d invitations</string>
+  <string formatted="false" name="sent_invitations_fmt">Sent %d invitations</string>
   <string name="send_failed">Sending invitations failed</string>
   <string name="invite_dialog_title">You got an invitation!</string>
 
@@ -321,8 +324,8 @@
   <string name="invitation_id_default">Invitation ID not set</string>
   <string name="invite_friends">Invite Friends</string>
 
-  <string name="deep_link_fmt" formatted="false">Deep Link: %s</string>
-  <string name="invitation_id_fmt" formatted="false">Invitation ID: %s</string>
+  <string formatted="false" name="deep_link_fmt">Deep Link: %s</string>
+  <string formatted="false" name="invitation_id_fmt">Invitation ID: %s</string>
 
   <string name="tag_hint">Tag</string>
 
@@ -421,7 +424,46 @@
   <string name="settings_honorary_members">Honorary Members</string>
   <string name="settings_click_to_see_all_honorary_members">Click to see all honorary members</string>
   <string name="empy_posts_user">Oops, you didn\'t share any posts yet.</string>
-  <string name="error_string">There is an error.\nClick here to reload</string>
+  <string name="all_error_title">There is an error.\nClick here to reload</string>
   <string name="error_subscribe_group_first">You must subscribe the group before select it.</string>
+
+  <string name="level_2">Travel Enthusiast</string>
+  <string name="level_3">Explorer</string>
+  <string name="level_4">Traveler</string>
+  <string name="level_5">Full Time Traveler</string>
+  <string name="trending_posts_title">Trending Posts</string>
+  <string name="newest_posts_title">Newest Posts</string>
+
+  <string name="group_posts_empty_title">Oops, the group doesn\'t have posts</string>
+  <string name="group_posts_empty_subtitle">Be the first one to share a post\nAll others will be jealous</string>
+  <string name="group_posts_empty_action_text">Share a post now</string>
+
+  <string name="group_users_empty_title">Oops, the group doesn\'t have users</string>
+  <string name="group_users_empty_subtitle">Once upon a time, there was a traveler, who\'d gone on a journey and left this group alone…</string>
+
+  <string name="bookmarked_posts_empty_title">You didn\'t bookmark any post</string>
+  <string name="bookmarked_posts_empty_subtitle">A wise traveler always bookmark posts</string>
+
+  <string name="bounty_posts_empty_title">Oops, no bounty posts in here</string>
+  <string name="bounty_posts_empty_subtitle">Wise travelers generally add bounty to their posts</string>
+  <string name="bounty_posts_empty_action_text">Share a bounty post now</string>
+
+  <string name="profile_posts_empty_title">Oops, you didn\'t share any post</string>
+  <string name="profile_posts_empty_subtitle">Do you have a question in your mind?\nThen it is time to share a post !</string>
+  <string name="profile_posts_empty_action_text">Share a post now</string>
+
+  <string name="trending_posts_empty_title">Oops, we don\'t have post</string>
+  <string name="trending_posts_empty_subtitle">It\'s embarrassing for us</string>
+
+  <string name="notification_empty_title">You don\'t have notifications</string>
+
+  <string name="visited_countries_already_added_error">The country is already in your list</string>
+  <string name="signup_discover_empty_typeid_error">You must select as least 3 types</string>
+
+  <string name="controller_comments_title">Comments</string>
+
+  <string name="comments_accepted_error">This post has an accepted comment</string>
+
+  <string name="visited_countries_dialog_remove_title">Remove country?</string>
 
 </resources>

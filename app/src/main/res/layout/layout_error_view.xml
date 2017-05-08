@@ -9,7 +9,7 @@
   android:gravity="center"
   android:orientation="vertical"
   android:padding="24dp"
-  android:text="@string/error_string"
+  android:text="@string/all_error_title"
   android:textColor="@color/primary"
   android:visibility="gone"
   tools:visibility="visible" />

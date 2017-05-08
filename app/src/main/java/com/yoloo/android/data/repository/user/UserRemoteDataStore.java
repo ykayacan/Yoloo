@@ -4,7 +4,6 @@ import com.annimon.stream.Stream;
 import com.google.api.client.http.HttpHeaders;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.UploadManager;
@@ -124,13 +123,13 @@ class UserRemoteDataStore {
             return UploadManager.INSTANCE
                 .upload(account.getId(), files, UploadManager.MediaOrigin.PROFILE)
                 .map(response -> response.body().string())
-                .map(json -> {
-                  Moshi moshi = new Moshi.Builder().build();
-                  JsonAdapter<UploadResponse> jsonAdapter = moshi.adapter(UploadResponse.class);
-                  return jsonAdapter.fromJson(json);
-                })
-                .doOnSuccess(response -> account.setAvatarUrl(response.getItems().get(0).getId()))
-                .flatMap(ignored -> Single.fromCallable(() -> updateUser(account, idToken)))
+                .doOnSuccess(s -> Timber.d("Response: %s", s))
+                .map(json -> new Moshi.Builder().build()
+                    .adapter(UploadResponse.class)
+                    .fromJson(json))
+                .map(response -> account.setAvatarUrl(response.getItems().get(0).getId()))
+                .flatMap(updated -> Single.fromCallable(() -> updateUser(updated, idToken))
+                    .subscribeOn(Schedulers.io()))
                 .subscribeOn(Schedulers.io());
           }
 
@@ -139,6 +138,7 @@ class UserRemoteDataStore {
               .subscribeOn(Schedulers.io());
         })
         .map(AccountRealm::new)
+        .doOnSuccess(accountRealm -> Timber.d("Updated: %s", accountRealm))
         .map(__ -> __.setMe(account.isMe()))
         .map(__ -> __.setSubscribedGroupIds(account.getSubscribedGroupIds()));
   }
@@ -146,19 +146,20 @@ class UserRemoteDataStore {
   /**
    * Search user observable.
    *
-   * @param name the name
+   * @param query the name
    * @param cursor the cursor
    * @param limit the limit
    * @return the observable
    */
-  Observable<Response<List<AccountRealm>>> searchUser(@Nonnull String name, @Nullable String cursor,
+  Observable<Response<List<AccountRealm>>> searchUser(@Nonnull String query,
+      @Nullable String cursor,
       int limit) {
     return getIdToken()
         .flatMapObservable(idToken -> Observable
             .fromCallable(() -> INSTANCE
                 .getApi()
                 .users()
-                .search(name)
+                .search(query)
                 .setCursor(cursor)
                 .setLimit(limit)
                 .setRequestHeaders(setIdTokenHeader(idToken))
@@ -341,6 +342,18 @@ class UserRemoteDataStore {
         .map(GameInfoRealm::new);
   }
 
+  Completable removeVisitedCountry(@Nonnull String countyCode) {
+    return getIdToken().flatMapCompletable(idToken -> Completable
+        .fromAction(() -> INSTANCE
+            .getApi()
+            .users()
+            .me()
+            .visited(countyCode)
+            .setRequestHeaders(setIdTokenHeader(idToken))
+            .execute())
+        .subscribeOn(Schedulers.io()));
+  }
+
   private HttpHeaders setIdTokenHeader(@Nonnull String idToken) {
     Timber.d("ID TOKEN: %s", idToken);
     return new HttpHeaders().setAuthorization("Bearer " + idToken);
@@ -393,13 +406,15 @@ class UserRemoteDataStore {
 
     String websiteUrl = account.getWebsiteUrl();
     if (!StringUtil.isNullOrEmpty(websiteUrl)) {
-      update.setWebsiteUrl(websiteUrl);
+      update.setUrl(websiteUrl);
     }
 
     String bio = account.getBio();
     if (!StringUtil.isNullOrEmpty(bio)) {
       update.setBio(bio);
     }
+
+    Timber.d("Lat call before update: %s", account);
 
     return update.setRequestHeaders(setIdTokenHeader(idToken)).execute();
   }

@@ -29,7 +29,6 @@ import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;
 public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.CommentHolder> {
 
   @EpoxyAttribute CommentRealm comment;
-  @EpoxyAttribute int postType;
   @EpoxyAttribute @ColorInt int backgroundColor;
   @EpoxyAttribute(DoNotHash) boolean showAcceptButton;
   @EpoxyAttribute(DoNotHash) RequestManager glide;
@@ -79,7 +78,7 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
   private void setupClickListeners(CommentHolder holder) {
     if (comment.isOwner()) {
       holder.itemView.setOnLongClickListener(v -> {
-        onCommentLongClickListener.onItemLongClick(v, this, comment);
+        onCommentLongClickListener.onItemLongClick(v, comment);
         return true;
       });
     }

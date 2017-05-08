@@ -57,4 +57,13 @@ class VisitedCountryListPresenter extends MvpPresenter<VisitedCountryListView> {
 
     getDisposable().add(d);
   }
+
+  void removeVisitedCountry(@Nonnull String countryCode) {
+    Disposable d = userRepository
+        .removeVisitedCountry(countryCode)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(() -> {}, throwable -> getView().onError(throwable));
+
+    getDisposable().add(d);
+  }
 }
