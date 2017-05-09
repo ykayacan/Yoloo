@@ -20,32 +20,33 @@ import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.CommentRealm;
-import com.yoloo.android.data.model.MediaRealm;
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.CommentRealm;
+import com.yoloo.android.data.db.MediaRealm;
+import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.data.repository.comment.CommentRepositoryProvider;
 import com.yoloo.android.data.repository.post.PostRepositoryProvider;
 import com.yoloo.android.feature.profile.ProfileController;
-import com.yoloo.android.feature.writecommentbox.CommentAutocomplete;
+import com.yoloo.android.feature.writecommentbox.CommentInput;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.widget.CommentView;
 import com.yoloo.android.ui.widget.SliderView;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.KeyboardUtil;
+import com.yoloo.android.util.ShareUtil;
 import java.util.List;
 import org.parceler.Parcels;
 import timber.log.Timber;
 
 public class BlogController extends MvpController<BlogView, BlogPresenter>
     implements BlogView, CommentView.OnCommentClickListener,
-    CommentAutocomplete.NewCommentListener {
+    CommentInput.NewCommentListener {
 
   private static final String KEY_POST = "POST_ID";
 
   @BindView(R.id.recycler_view) RecyclerView rvBlog;
   @BindView(R.id.slider) SliderView sliderView;
   @BindView(R.id.toolbar) Toolbar toolbar;
-  @BindView(R.id.layout_compose) CommentAutocomplete composeLayout;
+  @BindView(R.id.layout_input) CommentInput input;
 
   private BlogEpoxyController epoxyController;
   private PostRealm post;
@@ -78,8 +79,8 @@ public class BlogController extends MvpController<BlogView, BlogPresenter>
     post = Parcels.unwrap(getArgs().getParcelable(KEY_POST));
     sliderView.setImageUrls(Stream.of(post.getMedias()).map(MediaRealm::getMediumSizeUrl).toList());
 
-    composeLayout.setPostId(post.getId());
-    composeLayout.setNewCommentListener(this);
+    input.setPostId(post.getId());
+    input.setNewCommentListener(this);
 
     epoxyController.addBlog(post);
   }
@@ -180,6 +181,11 @@ public class BlogController extends MvpController<BlogView, BlogPresenter>
   private void setupRecyclerview() {
     epoxyController = new BlogEpoxyController(getActivity(), Glide.with(getActivity()));
     epoxyController.setOnCommentClickListener(this);
+    epoxyController.setOnCommentClickListener2((v, post1) -> input.showKeyboard());
+    epoxyController.setOnPostVoteClickListener(
+        (post1, direction) -> getPresenter().votePost(post.getId(), direction));
+    epoxyController.setOnShareClickListener(
+        (v, post1) -> ShareUtil.share(this, null, post.getContent()));
 
     rvBlog.setItemAnimator(new DefaultItemAnimator());
     rvBlog.setLayoutManager(new LinearLayoutManager(getActivity()));

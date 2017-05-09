@@ -20,8 +20,7 @@ public final class MentionNotification implements NotificationProvider {
     this.context = context;
   }
 
-  @Override
-  public Notification getNotification() {
+  @Override public Notification getNotification() {
     Intent intent = new Intent(context, BaseActivity.class);
     intent.putExtra(NotificationResponse.KEY_ACTION, response.getAction());
     intent.putExtra(NotificationResponse.KEY_POST_ID, response.getPostId());
@@ -34,15 +33,14 @@ public final class MentionNotification implements NotificationProvider {
         .getString(R.string.label_notification_mention, response.getSenderUsername(),
             response.getComment());
 
-    NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+    return new NotificationCompat.Builder(context)
         .setSmallIcon(R.drawable.ic_yoloo_notification)
         .setContentTitle("Yoloo")
         .setContentText(content)
         .setAutoCancel(true)
         .setDefaults(Notification.DEFAULT_ALL)
         .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
-        .setContentIntent(pendingIntent);
-
-    return builder.build();
+        .setContentIntent(pendingIntent)
+        .build();
   }
 }

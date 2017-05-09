@@ -27,6 +27,7 @@ import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.media.MediaEntity;
 import com.yoloo.backend.media.MediaService;
 import com.yoloo.backend.notification.NotificationService;
+import com.yoloo.backend.notification.SendNewPostNotificationServlet;
 import com.yoloo.backend.notification.type.Notifiable;
 import com.yoloo.backend.post.sort_strategy.PostSorter;
 import com.yoloo.backend.tag.Tag;
@@ -258,6 +259,7 @@ public final class PostController extends Controller {
 
     if (!ServerConfig.isTest()) {
       UpdateFeedServlet.addToQueue(user.getUserId(), post.getWebsafeId());
+      SendNewPostNotificationServlet.addToQueue(user.getUserId(), post.getWebsafeId());
     }
 
     return post;

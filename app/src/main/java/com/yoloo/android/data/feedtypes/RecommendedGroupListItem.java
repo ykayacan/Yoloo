@@ -1,6 +1,6 @@
 package com.yoloo.android.data.feedtypes;
 
-import com.yoloo.android.data.model.GroupRealm;
+import com.yoloo.android.data.db.GroupRealm;
 import java.util.List;
 
 public class RecommendedGroupListItem implements FeedItem {

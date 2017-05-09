@@ -17,7 +17,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.AccountRealm;
+import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.feature.search.OnFollowClickListener;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 

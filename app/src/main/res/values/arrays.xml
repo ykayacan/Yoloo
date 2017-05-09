@@ -34,9 +34,9 @@
   </integer-array>
 
   <string-array name="points_hint_text">
-    <item>Tip: You can earn more points by asking questions.</item>
-    <item>Tip: You can earn more points by commenting questions.</item>
-    <item>Tip: Adding bounties to your post makes it more visible.</item>
+    <item>@string/points_overview_tip_1</item>
+    <item>@string/points_overview_tip_2</item>
+    <item>@string/points_overview_tip_3</item>
   </string-array>
 
 </resources>

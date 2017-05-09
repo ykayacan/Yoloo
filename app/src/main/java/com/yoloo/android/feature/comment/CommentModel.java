@@ -11,10 +11,10 @@ import com.airbnb.epoxy.EpoxyModelClass;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.data.db.CommentRealm;
+import com.yoloo.android.feature.feed.common.listener.OnCommentVoteClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
 import com.yoloo.android.ui.widget.VoteView;
@@ -34,7 +34,7 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
   @EpoxyAttribute(DoNotHash) RequestManager glide;
   @EpoxyAttribute(DoNotHash) OnItemLongClickListener<CommentRealm> onCommentLongClickListener;
   @EpoxyAttribute(DoNotHash) OnProfileClickListener onProfileClickListener;
-  @EpoxyAttribute(DoNotHash) OnVoteClickListener onVoteClickListener;
+  @EpoxyAttribute(DoNotHash) OnCommentVoteClickListener onVoteClickListener;
   @EpoxyAttribute(DoNotHash) OnMentionClickListener onMentionClickListener;
   @EpoxyAttribute(DoNotHash) OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener;
   @EpoxyAttribute(DoNotHash) CropCircleTransformation circleTransformation;
@@ -106,7 +106,7 @@ public abstract class CommentModel extends EpoxyModelWithHolder<CommentModel.Com
     });
     holder.voteView.setOnVoteEventListener(direction -> {
       comment.setVoteDir(direction);
-      onVoteClickListener.onVoteClick(comment.getId(), direction, OnVoteClickListener.Type.COMMENT);
+      onVoteClickListener.onVoteClick(comment, direction);
     });
   }
 

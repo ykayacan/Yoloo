@@ -20,8 +20,8 @@ import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.AccountRealm;
+import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.data.repository.post.PostRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.comment.CommentController;
@@ -168,8 +168,10 @@ public class BlogListController extends MvpController<BlogListView, BlogListPres
     ShareUtil.share(this, null, post.getContent());
   }
 
-  @Override public void onVoteClick(String votableId, int direction, int type) {
-    getPresenter().votePost(votableId, direction);
+  @Override public void onPostVoteClick(PostRealm post, int direction) {
+    getPresenter().votePost(post.getId(), direction);
+    post.setVoteDir(direction);
+    epoxyController.updatePost(post);
   }
 
   @Override public void onModelUpdateEvent(int action, @Nullable Object payload) {

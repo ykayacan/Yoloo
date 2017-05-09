@@ -1,7 +1,7 @@
 package com.yoloo.android.feature.notification;
 
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.NotificationRealm;
+import com.yoloo.android.data.db.NotificationRealm;
 import com.yoloo.android.data.repository.notification.NotificationRepository;
 import com.yoloo.android.framework.MvpPresenter;
 import io.reactivex.android.schedulers.AndroidSchedulers;

@@ -1,8 +1,8 @@
 package com.yoloo.android.feature.search;
 
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.TagRealm;
+import com.yoloo.android.data.db.AccountRealm;
+import com.yoloo.android.data.db.TagRealm;
 import com.yoloo.android.data.repository.tag.TagRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.framework.MvpPresenter;

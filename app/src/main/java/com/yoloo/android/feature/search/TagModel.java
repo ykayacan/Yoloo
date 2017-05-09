@@ -8,7 +8,7 @@ import com.airbnb.epoxy.EpoxyAttribute;
 import com.airbnb.epoxy.EpoxyModelClass;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.TagRealm;
+import com.yoloo.android.data.db.TagRealm;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 
 import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;

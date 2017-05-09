@@ -17,8 +17,7 @@ import com.annimon.stream.Stream;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.YolooApp;
-import com.yoloo.android.data.model.PostRealm;
-import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
+import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.ui.widget.CompatTextView;
 import com.yoloo.android.ui.widget.VoteView;
@@ -95,7 +94,7 @@ public abstract class BlogModel extends BasePostModel<BlogModel.BlogHolder> {
         tag.setText(context.getString(R.string.label_tag, tagName));
         tag.setGravity(Gravity.CENTER);
         tag.setPadding(16, 10, 16, 10);
-        //tag.setBackground(ContextCompat.getDrawable(context, R.drawable.dialog_tag_bg));
+        tag.setBackground(ContextCompat.getDrawable(context, R.drawable.chip_tag_bg));
         TextViewUtil.setTextAppearance(tag, context, R.style.TextAppearance_AppCompat);
 
         holder.tagContainer.addView(tag);
@@ -133,7 +132,7 @@ public abstract class BlogModel extends BasePostModel<BlogModel.BlogHolder> {
 
     holder.voteView.setOnVoteEventListener(direction -> {
       post.setVoteDir(direction);
-      onVoteClickListener.onVoteClick(post.getId(), direction, OnVoteClickListener.Type.POST);
+      onVoteClickListener.onPostVoteClick(post, direction);
     });
   }
 
@@ -172,7 +171,7 @@ public abstract class BlogModel extends BasePostModel<BlogModel.BlogHolder> {
 
   @Override
   protected int getDetailLayoutRes() {
-    return R.layout.item_feed_question_rich_detail;
+    return R.layout.item_feed_blog_detail;
   }
 
   static class BlogHolder extends BaseEpoxyHolder {

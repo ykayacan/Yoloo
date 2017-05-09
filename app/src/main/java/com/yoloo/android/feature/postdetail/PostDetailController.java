@@ -24,17 +24,19 @@ import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.CommentRealm;
-import com.yoloo.android.data.model.FeedItem;
-import com.yoloo.android.data.model.MediaRealm;
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.AccountRealm;
+import com.yoloo.android.data.db.CommentRealm;
+import com.yoloo.android.data.db.MediaRealm;
+import com.yoloo.android.data.db.PostRealm;
+import com.yoloo.android.data.feed.FeedItem;
 import com.yoloo.android.data.repository.comment.CommentRepositoryProvider;
 import com.yoloo.android.data.repository.post.PostRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.comment.OnMarkAsAcceptedClickListener;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
+import com.yoloo.android.feature.feed.common.listener.OnBookmarkClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
+import com.yoloo.android.feature.feed.common.listener.OnCommentVoteClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnModelUpdateEvent;
@@ -44,7 +46,7 @@ import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.feature.fullscreenphoto.FullscreenPhotoController;
 import com.yoloo.android.feature.profile.ProfileController;
-import com.yoloo.android.feature.writecommentbox.CommentAutocomplete;
+import com.yoloo.android.feature.writecommentbox.CommentInput;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
 import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
@@ -61,15 +63,16 @@ import timber.log.Timber;
 public class PostDetailController extends MvpController<PostDetailView, PostDetailPresenter>
     implements PostDetailView, SwipeRefreshLayout.OnRefreshListener, OnProfileClickListener,
     OnPostOptionsClickListener, OnShareClickListener, OnCommentClickListener, OnVoteClickListener,
-    OnContentImageClickListener, CommentAutocomplete.NewCommentListener,
-    OnMarkAsAcceptedClickListener, OnItemLongClickListener<CommentRealm>, OnMentionClickListener {
+    OnContentImageClickListener, CommentInput.NewCommentListener,
+    OnMarkAsAcceptedClickListener, OnItemLongClickListener<CommentRealm>, OnMentionClickListener,
+    OnBookmarkClickListener, OnCommentVoteClickListener {
 
   private static final String KEY_POST_ID = "POST_ID";
 
   @BindView(R.id.toolbar) Toolbar toolbar;
-  @BindView(R.id.rv_post_detail) RecyclerView rvFeed;
-  @BindView(R.id.swipe_post_detail) SwipeRefreshLayout swipeRefreshLayout;
-  @BindView(R.id.layout_compose) CommentAutocomplete composeLayout;
+  @BindView(R.id.recycler_view) RecyclerView recyclerView;
+  @BindView(R.id.swipe) SwipeRefreshLayout swipeRefreshLayout;
+  @BindView(R.id.layout_input) CommentInput input;
 
   @BindColor(R.color.primary) int primaryColor;
   @BindColor(R.color.primary_dark) int primaryDarkColor;
@@ -116,8 +119,8 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     setupToolbar();
     setupRecyclerView();
 
-    composeLayout.setPostId(postId);
-    composeLayout.setNewCommentListener(this);
+    input.setPostId(postId);
+    input.setNewCommentListener(this);
   }
 
   @Override
@@ -130,7 +133,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
     keyboardToggleListener = isVisible -> {
       if (isVisible) {
-        rvFeed.smoothScrollToPosition(rvFeed.getAdapter().getItemCount());
+        recyclerView.smoothScrollToPosition(recyclerView.getAdapter().getItemCount());
       }
     };
 
@@ -142,10 +145,10 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     KeyboardUtil.removeKeyboardToggleListener(keyboardToggleListener);
   }
 
-  @Override
-  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+  @Override protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
       @NonNull ControllerChangeType changeType) {
     super.onChangeEnded(changeHandler, changeType);
+    getDrawerLayout().setFitsSystemWindows(false);
     ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
@@ -157,11 +160,11 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   @Override
   public void onLoading(boolean pullToRefresh) {
-
+    // empty
   }
 
   @Override
-  public void onLoaded(List<FeedItem> value) {
+  public void onLoaded(List<FeedItem<?>> value) {
     if (value.isEmpty()) {
       epoxyController.hideLoader();
     } else {
@@ -218,7 +221,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   @Override
   public void onCommentClick(View v, PostRealm post) {
-    composeLayout.showKeyboard();
+    input.showKeyboard();
   }
 
   @Override
@@ -228,7 +231,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     menu.setOnMenuItemClickListener(item -> {
       final int itemId = item.getItemId();
       if (itemId == R.id.action_popup_delete) {
-        processPostDelete(post);
+        deletePost(post);
         return true;
       }
 
@@ -236,7 +239,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     });
   }
 
-  private void processPostDelete(PostRealm post) {
+  private void deletePost(PostRealm post) {
     getPresenter().deletePost(post.getId());
     if (modelUpdateEvent != null) {
       modelUpdateEvent.onModelUpdateEvent(FeedAction.DELETE, post);
@@ -261,12 +264,16 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   }
 
   @Override
-  public void onVoteClick(String votableId, int direction, @Type int type) {
-    if (type == Type.POST) {
-      getPresenter().votePost(votableId, direction);
-    } else {
-      getPresenter().voteComment(votableId, direction);
-    }
+  public void onPostVoteClick(PostRealm post, int direction) {
+    getPresenter().votePost(post.getId(), direction);
+    epoxyController.votePost(post, direction);
+  }
+
+  @Override public void onVoteClick(CommentRealm comment, int direction) {
+    getPresenter().voteComment(comment.getId(), direction);
+    CommentRealm newComment  = new CommentRealm(comment);
+    newComment.setVoteDir(direction);
+    epoxyController.updateComment(newComment);
   }
 
   @Override
@@ -276,7 +283,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
         .setPostAccepted(post.getAcceptedCommentId() != null)
         .setPostOwner(post.getOwnerId().equals(comment.getOwnerId())));
 
-    epoxyController.scrollToEnd(rvFeed);
+    epoxyController.scrollToEnd(recyclerView);
   }
 
   @Override
@@ -308,33 +315,47 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     Timber.d("Mentions: %s", username);
   }
 
+  @Override public void onBookmarkClick(@NonNull PostRealm post, boolean bookmark) {
+    if (post.isBookmarked()) {
+      post.setBookmarked(false);
+      getPresenter().unBookmarkPost(post.getId());
+    } else {
+      post.setBookmarked(true);
+      getPresenter().bookmarkPost(post.getId());
+    }
+
+    epoxyController.updatePost(post);
+  }
+
   private void setupRecyclerView() {
-    epoxyController =
-        new PostDetailEpoxyController(getActivity(), Glide.with(getActivity()));
+    epoxyController = new PostDetailEpoxyController(getActivity(), Glide.with(getActivity()));
     epoxyController.setOnProfileClickListener(this);
 
     epoxyController.setOnContentImageClickListener(this);
     epoxyController.setOnPostOptionsClickListener(this);
 
-    epoxyController.setOnVoteClickListener(this);
+    epoxyController.setOnPostVoteClickListener(this);
     epoxyController.setOnShareClickListener(this);
     epoxyController.setOnCommentClickListener(this);
 
     epoxyController.setOnCommentLongClickListener(this);
     epoxyController.setOnMentionClickListener(this);
+    epoxyController.setOnCommentVoteClickListener(this);
 
     epoxyController.setOnMarkAsAcceptedClickListener(this);
 
-    LinearLayoutManager lm = new LinearLayoutManager(getActivity());
-    rvFeed.setLayoutManager(lm);
-    rvFeed.setItemAnimator(new SlideInItemAnimator());
+    epoxyController.setOnBookmarkClickListener(this);
 
-    rvFeed.addItemDecoration(new InsetDividerDecoration(R.layout.item_comment,
+    LinearLayoutManager lm = new LinearLayoutManager(getActivity());
+    recyclerView.setLayoutManager(lm);
+    recyclerView.setItemAnimator(new SlideInItemAnimator());
+
+    recyclerView.addItemDecoration(new InsetDividerDecoration(R.layout.item_comment,
         getResources().getDimensionPixelSize(R.dimen.divider_height),
         getResources().getDimensionPixelSize(R.dimen.keyline_1), dividerColor));
 
-    rvFeed.setHasFixedSize(true);
-    rvFeed.setAdapter(epoxyController.getAdapter());
+    recyclerView.setHasFixedSize(true);
+    recyclerView.setAdapter(epoxyController.getAdapter());
 
     endlessRecyclerOnScrollListener =
         new EndlessRecyclerOnScrollListener(lm) {
@@ -344,7 +365,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
           }
         };
 
-    rvFeed.addOnScrollListener(endlessRecyclerOnScrollListener);
+    recyclerView.addOnScrollListener(endlessRecyclerOnScrollListener);
   }
 
   private void setupPullToRefresh() {

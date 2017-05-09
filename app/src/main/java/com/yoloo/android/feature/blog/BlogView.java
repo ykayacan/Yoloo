@@ -1,6 +1,6 @@
 package com.yoloo.android.feature.blog;
 
-import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.data.db.CommentRealm;
 import com.yoloo.android.framework.MvpDataView;
 import java.util.List;
 

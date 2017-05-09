@@ -14,7 +14,7 @@ import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.MediaRealm;
+import com.yoloo.android.data.db.MediaRealm;
 import com.yoloo.android.data.repository.media.MediaRepositoryProvider;
 import com.yoloo.android.feature.fullscreenphoto.FullscreenPhotoController;
 import com.yoloo.android.framework.MvpController;

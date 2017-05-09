@@ -2,7 +2,7 @@ package com.yoloo.android.data.repository.post;
 
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.backend.yolooApi.model.CollectionResponsePostEntity;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;

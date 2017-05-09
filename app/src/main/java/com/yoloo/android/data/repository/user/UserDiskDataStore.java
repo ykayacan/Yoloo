@@ -1,8 +1,8 @@
 package com.yoloo.android.data.repository.user;
 
 import com.annimon.stream.Optional;
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.AccountRealmFields;
+import com.yoloo.android.data.db.AccountRealm;
+import com.yoloo.android.data.db.AccountRealmFields;
 
 import java.util.Collections;
 import java.util.List;

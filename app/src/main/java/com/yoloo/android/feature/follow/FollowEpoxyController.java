@@ -4,7 +4,7 @@ import android.content.Context;
 import com.airbnb.epoxy.AutoModel;
 import com.airbnb.epoxy.Typed2EpoxyController;
 import com.annimon.stream.Stream;
-import com.yoloo.android.data.model.AccountRealm;
+import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.models.loader.LoaderModel;
 import com.yoloo.android.feature.search.OnFollowClickListener;

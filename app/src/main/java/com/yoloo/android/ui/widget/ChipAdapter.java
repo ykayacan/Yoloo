@@ -11,7 +11,7 @@ import com.airbnb.epoxy.EpoxyModel;
 import com.airbnb.epoxy.EpoxyModelClass;
 import com.annimon.stream.Stream;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.Chipable;
+import com.yoloo.android.data.db.Chipable;
 import com.yoloo.android.ui.recyclerview.SelectableAdapter;
 import java.util.List;
 

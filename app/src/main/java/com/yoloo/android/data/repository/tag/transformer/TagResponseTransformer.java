@@ -2,7 +2,7 @@ package com.yoloo.android.data.repository.tag.transformer;
 
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.TagRealm;
+import com.yoloo.android.data.db.TagRealm;
 import com.yoloo.backend.yolooApi.model.CollectionResponseTag;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;

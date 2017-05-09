@@ -1,7 +1,7 @@
 package com.yoloo.android.data.repository.media;
 
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.MediaRealm;
+import com.yoloo.android.data.db.MediaRealm;
 import io.reactivex.Observable;
 import java.util.List;
 import javax.annotation.Nonnull;

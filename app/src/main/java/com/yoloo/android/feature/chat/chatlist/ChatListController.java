@@ -16,7 +16,7 @@ import com.bumptech.glide.Glide;
 import com.stfalcon.chatkit.dialogs.DialogsList;
 import com.stfalcon.chatkit.dialogs.DialogsListAdapter;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.chat.Dialog;
+import com.yoloo.android.data.chat.Dialog;
 import com.yoloo.android.data.repository.chat.ChatRepository;
 import com.yoloo.android.feature.base.BaseController;
 import com.yoloo.android.feature.chat.chat.ChatController;

@@ -7,11 +7,11 @@ import com.airbnb.epoxy.AutoModel;
 import com.airbnb.epoxy.Typed2EpoxyController;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.RequestManager;
-import com.yoloo.android.data.model.CommentRealm;
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.CommentRealm;
+import com.yoloo.android.data.db.PostRealm;
+import com.yoloo.android.feature.feed.common.listener.OnCommentVoteClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.feature.models.loader.LoaderModel;
 import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
 import com.yoloo.android.util.Preconditions;
@@ -28,10 +28,10 @@ class CommentEpoxyController extends Typed2EpoxyController<List<CommentRealm>, B
 
   @AutoModel LoaderModel loader;
 
-  private List<CommentRealm> comments;
+  private List<CommentRealm> items;
   private OnItemLongClickListener<CommentRealm> onCommentLongClickListener;
   private OnProfileClickListener onProfileClickListener;
-  private OnVoteClickListener onVoteClickListener;
+  private OnCommentVoteClickListener onVoteClickListener;
   private OnMentionClickListener onMentionClickListener;
   private OnMarkAsAcceptedClickListener onMarkAsAcceptedClickListener;
 
@@ -39,7 +39,7 @@ class CommentEpoxyController extends Typed2EpoxyController<List<CommentRealm>, B
     this.postType = postType;
     this.glide = glide;
     this.cropCircleTransformation = new CropCircleTransformation(context);
-    this.comments = new ArrayList<>();
+    this.items = new ArrayList<>();
     setDebugLoggingEnabled(true);
   }
 
@@ -51,7 +51,7 @@ class CommentEpoxyController extends Typed2EpoxyController<List<CommentRealm>, B
     this.onProfileClickListener = listener;
   }
 
-  void setOnVoteClickListener(OnVoteClickListener listener) {
+  void setOnCommentVoteClickListener(OnCommentVoteClickListener listener) {
     this.onVoteClickListener = listener;
   }
 
@@ -65,18 +65,25 @@ class CommentEpoxyController extends Typed2EpoxyController<List<CommentRealm>, B
 
   @Override
   public void setData(List<CommentRealm> items, Boolean loadingMore) {
-    this.comments = items;
+    this.items = items;
     super.setData(items, Preconditions.checkNotNull(loadingMore, "loadingMore cannot be null."));
   }
 
   void addComment(CommentRealm comment) {
-    comments.add(comment);
-    setData(comments, false);
+    items.add(comment);
+    setData(items, false);
   }
 
   void delete(CommentRealm comment) {
-    comments.remove(comment);
-    setData(comments, false);
+    items.remove(comment);
+    setData(items, false);
+  }
+
+  public void updateComment(CommentRealm comment) {
+    final int index = items.indexOf(comment);
+    items.add(index, comment);
+
+    setData(items, false);
   }
 
   void scrollToEnd(RecyclerView recyclerView) {
@@ -91,11 +98,11 @@ class CommentEpoxyController extends Typed2EpoxyController<List<CommentRealm>, B
   }
 
   void showLoader() {
-    setData(comments, true);
+    setData(items, true);
   }
 
   void hideLoader() {
-    setData(comments, false);
+    setData(items, false);
   }
 
   private void createCommentModel(CommentRealm comment) {

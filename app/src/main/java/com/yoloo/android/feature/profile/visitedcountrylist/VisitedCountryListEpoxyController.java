@@ -3,7 +3,7 @@ package com.yoloo.android.feature.profile.visitedcountrylist;
 import com.airbnb.epoxy.Typed2EpoxyController;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.RequestManager;
-import com.yoloo.android.data.model.CountryRealm;
+import com.yoloo.android.data.db.CountryRealm;
 import java.util.ArrayList;
 import java.util.List;
 

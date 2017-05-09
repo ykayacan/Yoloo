@@ -2,8 +2,8 @@ package com.yoloo.android.data.repository.notification;
 
 import com.google.api.client.http.HttpHeaders;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.FcmRealm;
-import com.yoloo.android.data.model.NotificationRealm;
+import com.yoloo.android.data.db.FcmRealm;
+import com.yoloo.android.data.db.NotificationRealm;
 import com.yoloo.android.data.repository.notification.transformer.NotificationResponseTransformer;
 import io.reactivex.Completable;
 import io.reactivex.Observable;

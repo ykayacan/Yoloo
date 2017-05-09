@@ -129,7 +129,7 @@
         android:paddingRight="@dimen/padding_normal"
         android:paddingStart="@dimen/padding_normal"
         android:paddingTop="@dimen/padding_micro"
-        android:text="Progress"
+        android:text="@string/points_overview_progress_text"
         android:textAppearance="@style/TextAppearance.GroupTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

@@ -6,7 +6,7 @@ import com.airbnb.epoxy.EpoxyHolder;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.Transformation;
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.feature.feed.common.listener.OnBookmarkClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;

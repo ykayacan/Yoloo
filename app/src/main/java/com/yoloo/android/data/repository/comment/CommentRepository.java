@@ -2,7 +2,7 @@ package com.yoloo.android.data.repository.comment;
 
 import com.annimon.stream.Optional;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.data.db.CommentRealm;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;

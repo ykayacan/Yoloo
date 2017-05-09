@@ -1,7 +1,7 @@
 package com.yoloo.android.feature.profile.visitedcountrylist;
 
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.CountryRealm;
+import com.yoloo.android.data.db.AccountRealm;
+import com.yoloo.android.data.db.CountryRealm;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.framework.MvpPresenter;
 import io.reactivex.Observable;

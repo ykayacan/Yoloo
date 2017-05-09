@@ -1,6 +1,6 @@
 package com.yoloo.android.feature.editor.selectbounty;
 
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.framework.MvpPresenter;

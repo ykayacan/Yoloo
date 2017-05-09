@@ -1,6 +1,6 @@
 package com.yoloo.android.feature.profile.profileedit;
 
-import com.yoloo.android.data.model.AccountRealm;
+import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.framework.MvpPresenter;
 import io.reactivex.android.schedulers.AndroidSchedulers;

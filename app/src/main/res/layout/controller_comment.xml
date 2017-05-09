@@ -14,8 +14,8 @@
     android:layout_marginBottom="48dp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
-  <com.yoloo.android.feature.writecommentbox.CommentAutocomplete
-    android:id="@+id/layout_compose"
+  <com.yoloo.android.feature.writecommentbox.CommentInput
+    android:id="@+id/layout_input"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="bottom" />

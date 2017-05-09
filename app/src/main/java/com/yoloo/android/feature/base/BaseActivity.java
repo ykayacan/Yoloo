@@ -23,7 +23,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.messaging.RemoteMessage;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.FcmRealm;
+import com.yoloo.android.data.db.FcmRealm;
 import com.yoloo.android.data.repository.notification.NotificationRepositoryProvider;
 import com.yoloo.android.fcm.FCMListener;
 import com.yoloo.android.fcm.FCMManager;
@@ -105,6 +105,11 @@ public class BaseActivity extends AppCompatActivity
             new VerticalChangeHandler());
         break;
       case NotificationConstants.ACCEPT:
+        startTransaction(
+            PostDetailController.create(intent.getStringExtra(NotificationResponse.KEY_POST_ID)),
+            new VerticalChangeHandler());
+        break;
+      case NotificationConstants.NEW_POST:
         startTransaction(
             PostDetailController.create(intent.getStringExtra(NotificationResponse.KEY_POST_ID)),
             new VerticalChangeHandler());

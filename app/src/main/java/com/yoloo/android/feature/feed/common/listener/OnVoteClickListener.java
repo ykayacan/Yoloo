@@ -1,20 +1,8 @@
 package com.yoloo.android.feature.feed.common.listener;
 
-import android.support.annotation.IntDef;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import com.yoloo.android.data.db.PostRealm;
 
 public interface OnVoteClickListener {
 
-  void onVoteClick(String votableId, int direction, @Type int type);
-
-  @IntDef({
-      Type.POST,
-      Type.COMMENT
-  })
-  @Retention(RetentionPolicy.SOURCE)
-  @interface Type {
-    int POST = 0;
-    int COMMENT = 1;
-  }
+  void onPostVoteClick(PostRealm post, int direction);
 }

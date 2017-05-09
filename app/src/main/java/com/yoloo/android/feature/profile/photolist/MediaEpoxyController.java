@@ -4,7 +4,7 @@ import com.airbnb.epoxy.AutoModel;
 import com.airbnb.epoxy.Typed2EpoxyController;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.RequestManager;
-import com.yoloo.android.data.model.MediaRealm;
+import com.yoloo.android.data.db.MediaRealm;
 import com.yoloo.android.feature.models.loader.LoaderModel;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import java.util.List;

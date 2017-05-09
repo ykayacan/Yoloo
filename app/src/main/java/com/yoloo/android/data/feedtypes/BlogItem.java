@@ -1,6 +1,6 @@
 package com.yoloo.android.data.feedtypes;
 
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.PostRealm;
 
 public class BlogItem implements FeedItem {
   private final PostRealm post;

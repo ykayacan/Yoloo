@@ -5,9 +5,9 @@ import com.google.api.client.http.HttpHeaders;
 import com.squareup.moshi.Moshi;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.UploadManager;
-import com.yoloo.android.data.model.MediaRealm;
-import com.yoloo.android.data.model.PostRealm;
-import com.yoloo.android.data.model.upload.UploadResponse;
+import com.yoloo.android.data.db.MediaRealm;
+import com.yoloo.android.data.db.PostRealm;
+import com.yoloo.android.data.UploadResponse;
 import com.yoloo.android.data.sorter.PostSorter;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
@@ -69,7 +69,7 @@ class PostRemoteDataStore {
    */
   Single<PostRealm> add(@Nonnull PostRealm post) {
     return getIdToken().flatMap(idToken -> {
-      if (post.isTextQuestionPost() || post.isRichQuestionPost()) {
+      if (post.isTextPost() || post.isRichPost()) {
         if (post.getMedias().isEmpty()) {
           return Single
               .fromCallable(() -> INSTANCE

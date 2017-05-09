@@ -25,9 +25,6 @@ import org.solovyev.android.checkout.Purchase;
 
 public class BuyBountyController extends BaseController {
 
-  private final ActivityCheckout checkout =
-      Checkout.forActivity(getActivity(), YolooApp.getInstance().getBilling());
-
   @BindView(R.id.toolbar) Toolbar toolbar;
   @BindView(R.id.bountyView_1) BountyView bountyView1;
   @BindView(R.id.bountyView_2) BountyView bountyView2;
@@ -35,7 +32,7 @@ public class BuyBountyController extends BaseController {
   @BindView(R.id.bountyView_4) BountyView bountyView4;
   @BindView(R.id.bountyView_5) BountyView bountyView5;
   @BindView(R.id.bountyView_6) BountyView bountyView6;
-
+  private ActivityCheckout checkout;
   private CompositeDisposable disposable;
   private Inventory inventory;
 
@@ -48,6 +45,9 @@ public class BuyBountyController extends BaseController {
   protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
     setupToolbar();
+
+    checkout = Checkout.forActivity(getActivity(),
+        ((YolooApp) getActivity().getApplication()).getBilling());
 
     checkout.start();
 

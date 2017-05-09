@@ -61,10 +61,10 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.yoloo.android.R;
 import com.yoloo.android.data.feedtypes.FeedItem;
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.GroupRealm;
-import com.yoloo.android.data.model.MediaRealm;
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.AccountRealm;
+import com.yoloo.android.data.db.GroupRealm;
+import com.yoloo.android.data.db.MediaRealm;
+import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.data.repository.group.GroupRepositoryProvider;
 import com.yoloo.android.data.repository.post.PostRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
@@ -512,8 +512,8 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   }
 
   @Override
-  public void onVoteClick(String votableId, int direction, @Type int type) {
-    getPresenter().votePost(votableId, direction);
+  public void onPostVoteClick(PostRealm post, int direction) {
+    getPresenter().votePost(post.getId(), direction);
   }
 
   @Override

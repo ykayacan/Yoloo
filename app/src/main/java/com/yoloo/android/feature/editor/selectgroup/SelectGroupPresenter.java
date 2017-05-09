@@ -2,8 +2,8 @@ package com.yoloo.android.feature.editor.selectgroup;
 
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.GroupRealm;
+import com.yoloo.android.data.db.AccountRealm;
+import com.yoloo.android.data.db.GroupRealm;
 import com.yoloo.android.data.repository.group.GroupRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.sorter.GroupSorter;

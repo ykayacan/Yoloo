@@ -7,7 +7,7 @@ import com.annimon.stream.Stream;
 import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
 import com.yoloo.android.data.feedtypes.NewUsersFeedItem;
-import com.yoloo.android.data.model.AccountRealm;
+import com.yoloo.android.data.db.AccountRealm;
 import java.util.ArrayList;
 import java.util.List;
 

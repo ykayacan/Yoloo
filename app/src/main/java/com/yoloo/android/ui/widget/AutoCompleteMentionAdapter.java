@@ -13,7 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.AccountRealm;
+import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;

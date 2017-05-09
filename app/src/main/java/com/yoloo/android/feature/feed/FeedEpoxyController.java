@@ -18,9 +18,9 @@ import com.yoloo.android.data.feedtypes.RecommendedGroupListItem;
 import com.yoloo.android.data.feedtypes.RichQuestionItem;
 import com.yoloo.android.data.feedtypes.TextQuestionItem;
 import com.yoloo.android.data.feedtypes.TrendingBlogListItem;
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.GroupRealm;
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.AccountRealm;
+import com.yoloo.android.data.db.GroupRealm;
+import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.feature.feed.common.listener.OnBookmarkClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
@@ -163,9 +163,9 @@ public class FeedEpoxyController extends Typed2EpoxyController<List<FeedItem>, B
   }
 
   public void addPost(PostRealm post) {
-    if (post.isTextQuestionPost()) {
+    if (post.isTextPost()) {
       feedItems.add(getInsertionIndex(), new TextQuestionItem(post));
-    } else if (post.isRichQuestionPost()) {
+    } else if (post.isRichPost()) {
       feedItems.add(getInsertionIndex(), new RichQuestionItem(post));
     } else if (post.isBlogPost()) {
       feedItems.add(getInsertionIndex(), new BlogItem(post));
@@ -175,9 +175,9 @@ public class FeedEpoxyController extends Typed2EpoxyController<List<FeedItem>, B
   }
 
   public void deletePost(PostRealm post) {
-    if (post.isTextQuestionPost()) {
+    if (post.isTextPost()) {
       feedItems.remove(new TextQuestionItem(post));
-    } else if (post.isRichQuestionPost()) {
+    } else if (post.isRichPost()) {
       feedItems.remove(new RichQuestionItem(post));
     } else if (post.isBlogPost()) {
       feedItems.remove(new BlogItem(post));

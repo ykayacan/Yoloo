@@ -12,7 +12,7 @@ import android.widget.Filter;
 import android.widget.TextView;
 import com.hootsuite.nachos.NachoTextView;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.TagRealm;
+import com.yoloo.android.data.db.TagRealm;
 import io.reactivex.Observable;
 import io.reactivex.subjects.PublishSubject;
 import java.util.ArrayList;

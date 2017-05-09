@@ -17,7 +17,7 @@ import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.GroupRealm;
+import com.yoloo.android.data.db.GroupRealm;
 import com.yoloo.android.data.repository.group.GroupRepositoryProvider;
 import com.yoloo.android.feature.group.GroupController;
 import com.yoloo.android.framework.MvpController;

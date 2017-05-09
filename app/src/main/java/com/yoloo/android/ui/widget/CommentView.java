@@ -15,7 +15,7 @@ import butterknife.OnClick;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.Transformation;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.data.db.CommentRealm;
 import com.yoloo.android.ui.widget.linkabletextview.LinkableTextView;
 import com.yoloo.android.ui.widget.timeview.TimeTextView;
 import com.yoloo.android.util.DrawableHelper;
@@ -90,15 +90,15 @@ public class CommentView extends ConstraintLayout {
 
 
     tvMarkAsAccepted.setOnClickListener(v -> {
-      comment.setAccepted(true);
+      /*comment.setAccepted(true);
       tvMarkAsAccepted.setVisibility(View.GONE);
-      tvAcceptedIndicator.setVisibility(View.VISIBLE);
+      tvAcceptedIndicator.setVisibility(View.VISIBLE);*/
 
       onCommentClickListener.onMarkAsAccepted(comment);
     });
 
     voteView.setOnVoteEventListener(direction -> {
-      comment.setVoteDir(direction);
+      //comment.setVoteDir(direction);
       onCommentClickListener.onCommentVoteClick(comment.getId(), direction);
     });
   }

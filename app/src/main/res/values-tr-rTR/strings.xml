@@ -89,6 +89,7 @@
   <string name="label_notification_title">Bildirimler</string>
   <string name="label_notification_comment">\@%1$s senin gönderine yorum yaptı.</string>
   <string name="label_notification_mention">\@%1$s bir yorumda senden bahsetti: %2$s</string>
+  <string name="label_notification_new_post">\@%1$s yeni bir gönderi paylaştı</string>
   <string name="label_notification_follow">\@%1$s seni takip etti</string>
   <string name="label_notification_accept">Yorumun kabul edildi</string>
   <string name="label_notification_game_level_up">🎊🎉 Tebrikler! %1$s. seviyeye ulaştın</string>
@@ -288,4 +289,9 @@
   <string name="comments_accepted_error">Bu gönderide kabul edilmiş bir cevap bulunmakta</string>
 
   <string name="visited_countries_dialog_remove_title">Ülkeyi silmek istiyor musun?</string>
+  <string name="points_overview_progress_text">İlerleme</string>
+
+  <string name="points_overview_tip_1">İpucu 1: Gönderi paylaşarak daha fazla puan kazanabilirsin.</string>
+  <string name="points_overview_tip_2">İpucu 2: Gönderilere yorum yaparak daha fazla puan kazanabilirsin.</string>
+  <string name="points_overview_tip_3">İpucu 3: Gönderilerine bonus ekleyerek onları daha görünür yapabilirsin.</string>
 </resources>

@@ -8,7 +8,7 @@ import com.evernote.android.job.Job;
 import com.evernote.android.job.JobRequest;
 import com.google.firebase.FirebaseException;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.util.NotificationUtil;
 import io.reactivex.android.schedulers.AndroidSchedulers;

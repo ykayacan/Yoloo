@@ -10,6 +10,7 @@ import com.yoloo.android.notificationhandler.notificationtypes.CommentNotificati
 import com.yoloo.android.notificationhandler.notificationtypes.FollowNotification;
 import com.yoloo.android.notificationhandler.notificationtypes.GameNotification;
 import com.yoloo.android.notificationhandler.notificationtypes.MentionNotification;
+import com.yoloo.android.notificationhandler.notificationtypes.NewUserSharedPostNotification;
 import java.io.IOException;
 import java.util.Map;
 import timber.log.Timber;
@@ -19,6 +20,7 @@ import static com.yoloo.android.notificationhandler.NotificationConstants.COMMEN
 import static com.yoloo.android.notificationhandler.NotificationConstants.FOLLOW;
 import static com.yoloo.android.notificationhandler.NotificationConstants.GAME;
 import static com.yoloo.android.notificationhandler.NotificationConstants.MENTION;
+import static com.yoloo.android.notificationhandler.NotificationConstants.NEW_POST;
 
 public final class NotificationHandler {
 
@@ -61,6 +63,8 @@ public final class NotificationHandler {
         return new GameNotification(response, context).getNotification();
       case ACCEPT:
         return new AcceptNotification(response, context).getNotification();
+      case NEW_POST:
+        return new NewUserSharedPostNotification(response, context).getNotification();
       default:
         return null;
     }

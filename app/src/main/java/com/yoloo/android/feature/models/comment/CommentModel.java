@@ -5,7 +5,7 @@ import com.airbnb.epoxy.EpoxyModel;
 import com.airbnb.epoxy.EpoxyModelClass;
 import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.data.db.CommentRealm;
 import com.yoloo.android.ui.widget.CommentView;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 

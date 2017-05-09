@@ -2,8 +2,8 @@ package com.yoloo.android.data.repository.group;
 
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.GroupRealm;
-import com.yoloo.android.data.model.GroupRealmFields;
+import com.yoloo.android.data.db.GroupRealm;
+import com.yoloo.android.data.db.GroupRealmFields;
 import com.yoloo.android.data.sorter.GroupSorter;
 import io.reactivex.Observable;
 import io.realm.Realm;

@@ -1,6 +1,6 @@
 package com.yoloo.android.feature.profile.profileedit;
 
-import com.yoloo.android.data.model.AccountRealm;
+import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.framework.MvpDataView;
 
 public interface ProfileEditView extends MvpDataView<AccountRealm> {

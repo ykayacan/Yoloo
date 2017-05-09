@@ -2,7 +2,7 @@ package com.yoloo.android.data.repository.user;
 
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.AccountRealm;
+import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.backend.yolooApi.model.CollectionResponseAccount;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;

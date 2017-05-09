@@ -10,11 +10,11 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.Transformation;
 import com.yoloo.android.R;
-import com.yoloo.android.data.feedtypes.BlogItem;
-import com.yoloo.android.data.feedtypes.FeedItem;
-import com.yoloo.android.data.feedtypes.RichQuestionItem;
-import com.yoloo.android.data.feedtypes.TextQuestionItem;
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.PostRealm;
+import com.yoloo.android.data.feed.BlogFeedItem;
+import com.yoloo.android.data.feed.FeedItem;
+import com.yoloo.android.data.feed.RichPostFeedItem;
+import com.yoloo.android.data.feed.TextPostFeedItem;
 import com.yoloo.android.feature.feed.common.listener.OnBookmarkClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
@@ -22,17 +22,19 @@ import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
-import com.yoloo.android.feature.models.loader.LoaderModel;
 import com.yoloo.android.feature.feed.component.post.BlogModel_;
 import com.yoloo.android.feature.feed.component.post.RichQuestionModel_;
 import com.yoloo.android.feature.feed.component.post.TextQuestionModel_;
+import com.yoloo.android.feature.models.loader.LoaderModel;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
-import com.yoloo.android.util.Preconditions;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PostListEpoxyController extends Typed2EpoxyController<List<FeedItem>, Boolean> {
+import static com.yoloo.android.util.Preconditions.checkNotNull;
+
+public class PostListEpoxyController
+    extends Typed2EpoxyController<List<? super FeedItem<?>>, Boolean> {
 
   private final RequestManager glide;
   private final Transformation<Bitmap> bitmapTransformation;
@@ -40,7 +42,7 @@ public class PostListEpoxyController extends Typed2EpoxyController<List<FeedItem
 
   @AutoModel LoaderModel loader;
 
-  private List<FeedItem> feedItems;
+  private List<? super FeedItem<?>> items;
   private String userId;
 
   private OnProfileClickListener onProfileClickListener;
@@ -56,8 +58,7 @@ public class PostListEpoxyController extends Typed2EpoxyController<List<FeedItem
     this.bitmapTransformation = new CropCircleTransformation(context);
     this.glide = Glide.with(context);
     this.constraintSet = new ConstraintSet();
-    this.feedItems = new ArrayList<>(20);
-    setData(feedItems, false);
+    this.items = new ArrayList<>(20);
     setDebugLoggingEnabled(true);
   }
 
@@ -99,62 +100,50 @@ public class PostListEpoxyController extends Typed2EpoxyController<List<FeedItem
   }
 
   @Override
-  public void setData(List<FeedItem> items, Boolean loadingMore) {
-    this.feedItems = items;
-    super.setData(items, Preconditions.checkNotNull(loadingMore, "loadingMore cannot be null."));
+  public void setData(List<? super FeedItem<?>> items, Boolean loadingMore) {
+    this.items = items;
+    super.setData(items, checkNotNull(loadingMore, "loadingMore cannot be null."));
   }
 
-  @Override
-  protected void buildModels(List<FeedItem> feedItems, Boolean loadingMore) {
-    Stream.of(feedItems).forEach(item -> {
-      if (item instanceof TextQuestionItem) {
-        createTextQuestion(((TextQuestionItem) item).getPost());
-      } else if (item instanceof RichQuestionItem) {
-        createRichQuestion(((RichQuestionItem) item).getPost());
-      } else if (item instanceof BlogItem) {
-        createBlog(((BlogItem) item).getPost());
-      }
-    });
-
-    loader.addIf(loadingMore, this);
-  }
-
-  public void bookmarkPost(PostRealm post) {
-    if (post.isTextQuestionPost()) {
-      feedItems.remove(new TextQuestionItem(post));
-      //feedItems.add(new TextQuestionItem(post));
-    } else if (post.isRichQuestionPost()) {
-      feedItems.remove(new RichQuestionItem(post));
-      feedItems.add(new RichQuestionItem(post));
+  public void updatePost(PostRealm post) {
+    if (post.isTextPost()) {
+      FeedItem<?> item = new TextPostFeedItem(post);
+      final int index = items.indexOf(item);
+      items.add(index, item);
+    } else if (post.isRichPost()) {
+      FeedItem<?> item = new RichPostFeedItem(post);
+      final int index = items.indexOf(item);
+      items.add(index, item);
     } else if (post.isBlogPost()) {
-      feedItems.remove(new BlogItem(post));
-      feedItems.add(new BlogItem(post));
+      FeedItem<?> item = new BlogFeedItem(post);
+      final int index = items.indexOf(item);
+      items.add(index, item);
     }
 
-    setData(feedItems, false);
+    setData(items, false);
   }
 
   public void deletePost(PostRealm post) {
-    if (post.isTextQuestionPost()) {
-      feedItems.remove(new TextQuestionItem(post));
-    } else if (post.isRichQuestionPost()) {
-      feedItems.remove(new RichQuestionItem(post));
+    if (post.isTextPost()) {
+      items.remove(new TextPostFeedItem(post));
+    } else if (post.isRichPost()) {
+      items.remove(new RichPostFeedItem(post));
     } else if (post.isBlogPost()) {
-      feedItems.remove(new BlogItem(post));
+      items.remove(new BlogFeedItem(post));
     }
 
-    setData(feedItems, false);
+    setData(items, false);
   }
 
   public void showLoader() {
-    setData(feedItems, true);
+    setData(items, true);
   }
 
   public void hideLoader() {
-    setData(feedItems, false);
+    setData(items, false);
   }
 
-  private void createRichQuestion(PostRealm post) {
+  private void createRichPost(PostRealm post) {
     new RichQuestionModel_()
         .id(post.getId())
         .onProfileClickListener(onProfileClickListener)
@@ -174,7 +163,7 @@ public class PostListEpoxyController extends Typed2EpoxyController<List<FeedItem
         .addTo(this);
   }
 
-  private void createTextQuestion(PostRealm post) {
+  private void createTextPost(PostRealm post) {
     new TextQuestionModel_()
         .id(post.getId())
         .post(post)
@@ -208,5 +197,20 @@ public class PostListEpoxyController extends Typed2EpoxyController<List<FeedItem
         .bitmapTransformation(bitmapTransformation)
         .glide(glide)
         .addTo(this);
+  }
+
+  @Override
+  protected void buildModels(List<? super FeedItem<?>> feedItems, Boolean loadingMore) {
+    Stream.of(feedItems).forEach(item -> {
+      if (item instanceof TextPostFeedItem) {
+        createTextPost(((TextPostFeedItem) item).getItem());
+      } else if (item instanceof RichPostFeedItem) {
+        createRichPost(((RichPostFeedItem) item).getItem());
+      } else if (item instanceof BlogFeedItem) {
+        createBlog(((BlogFeedItem) item).getItem());
+      }
+    });
+
+    loader.addIf(loadingMore, this);
   }
 }

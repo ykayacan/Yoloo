@@ -19,16 +19,16 @@ import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.data.db.CommentRealm;
 import com.yoloo.android.data.repository.comment.CommentRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
+import com.yoloo.android.feature.feed.common.listener.OnCommentVoteClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnModelUpdateEvent;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.feature.profile.ProfileController;
-import com.yoloo.android.feature.writecommentbox.CommentAutocomplete;
+import com.yoloo.android.feature.writecommentbox.CommentInput;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
 import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
@@ -39,9 +39,9 @@ import java.util.List;
 import timber.log.Timber;
 
 public class CommentController extends MvpController<CommentView, CommentPresenter>
-    implements CommentView, OnProfileClickListener, OnVoteClickListener, OnMentionClickListener,
+    implements CommentView, OnProfileClickListener, OnCommentVoteClickListener, OnMentionClickListener,
     OnMarkAsAcceptedClickListener, OnItemLongClickListener<CommentRealm>,
-    CommentAutocomplete.NewCommentListener {
+    CommentInput.NewCommentListener {
 
   private static final String KEY_POST_ID = "POST_ID";
   private static final String KEY_POST_OWNER_ID = "POST_OWNER_ID";
@@ -49,7 +49,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
   private static final String KEY_HAS_ACCEPTED_COMMENT = "HAS_ACCEPTED_COMMENT";
 
   @BindView(R.id.rv_comment) RecyclerView rvComment;
-  @BindView(R.id.layout_compose) CommentAutocomplete composeLayout;
+  @BindView(R.id.layout_input) CommentInput composeLayout;
   @BindView(R.id.toolbar) Toolbar toolbar;
 
   private CommentEpoxyController epoxyController;
@@ -176,8 +176,10 @@ public class CommentController extends MvpController<CommentView, CommentPresent
     startTransaction(ProfileController.create(userId), new VerticalChangeHandler());
   }
 
-  @Override public void onVoteClick(String votableId, int direction, @Type int type) {
-    getPresenter().voteComment(votableId, direction);
+  @Override public void onVoteClick(CommentRealm comment, int direction) {
+    getPresenter().voteComment(comment.getId(), direction);
+    comment.setVoteDir(direction);
+    epoxyController.updateComment(comment);
   }
 
   @Override public void onMarkAsAccepted(View v, CommentRealm comment) {
@@ -216,7 +218,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
     epoxyController.setOnMarkAsAcceptedClickListener(this);
     epoxyController.setOnMentionClickListener(this);
     epoxyController.setOnProfileClickListener(this);
-    epoxyController.setOnVoteClickListener(this);
+    epoxyController.setOnCommentVoteClickListener(this);
 
     final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
     rvComment.setLayoutManager(lm);

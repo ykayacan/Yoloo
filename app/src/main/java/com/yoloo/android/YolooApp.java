@@ -19,7 +19,6 @@ import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 public class YolooApp extends MultiDexApplication {
 
   private static Context appContext;
-  private static YolooApp instance;
 
   static {
     AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
@@ -33,10 +32,6 @@ public class YolooApp extends MultiDexApplication {
     }
   });
 
-  public YolooApp() {
-    instance = this;
-  }
-
   public static File getCacheDirectory() {
     return appContext.getCacheDir();
   }
@@ -45,16 +40,11 @@ public class YolooApp extends MultiDexApplication {
     return appContext;
   }
 
-  public static YolooApp getInstance() {
-    return instance;
-  }
-
   public Billing getBilling() {
     return billing;
   }
 
-  @Override
-  public void onCreate() {
+  @Override public void onCreate() {
     super.onCreate();
     appContext = this;
 
@@ -64,9 +54,6 @@ public class YolooApp extends MultiDexApplication {
     FirebaseDatabase.getInstance().setPersistenceEnabled(true);
     initCalligraphy();
     JobManager.create(this).addJobCreator(new YolooJobCreator());
-
-    //AccountFaker.generateAll();
-    //PostFaker.fakePosts();
 
     //enabledStrictMode();
   }
@@ -108,13 +95,11 @@ public class YolooApp extends MultiDexApplication {
 
   private static class ReleaseTree extends Timber.Tree {
 
-    @Override
-    protected boolean isLoggable(String tag, int priority) {
+    @Override protected boolean isLoggable(String tag, int priority) {
       return !(priority == Log.VERBOSE || priority == Log.DEBUG);
     }
 
-    @Override
-    protected void log(int priority, String tag, String message, Throwable throwable) {
+    @Override protected void log(int priority, String tag, String message, Throwable throwable) {
       if (isLoggable(tag, priority)) {
         Throwable t = throwable != null ? throwable : new Exception(message);
 

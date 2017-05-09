@@ -3,7 +3,7 @@ package com.yoloo.android.feature.recommenduser;
 import android.content.Context;
 import com.airbnb.epoxy.Typed2EpoxyController;
 import com.annimon.stream.Stream;
-import com.yoloo.android.data.model.AccountRealm;
+import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.feature.search.OnFollowClickListener;
 import com.yoloo.android.feature.search.UserModel_;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;

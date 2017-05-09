@@ -10,7 +10,7 @@ import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.CountryRealm;
+import com.yoloo.android.data.db.CountryRealm;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 
 import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;

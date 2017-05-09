@@ -1,6 +1,6 @@
 package com.yoloo.android.feature.groupgridoverview;
 
-import com.yoloo.android.data.model.GroupRealm;
+import com.yoloo.android.data.db.GroupRealm;
 import com.yoloo.android.framework.MvpView;
 import java.util.List;
 

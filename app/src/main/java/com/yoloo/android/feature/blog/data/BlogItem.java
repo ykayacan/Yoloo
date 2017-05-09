@@ -1,6 +1,6 @@
 package com.yoloo.android.feature.blog.data;
 
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.util.EpoxyItem;
 
 public class BlogItem implements EpoxyItem<PostRealm> {

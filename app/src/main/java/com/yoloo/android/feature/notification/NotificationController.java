@@ -16,7 +16,7 @@ import butterknife.BindView;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.NotificationRealm;
+import com.yoloo.android.data.db.NotificationRealm;
 import com.yoloo.android.data.repository.notification.NotificationRepositoryProvider;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.profile.ProfileController;

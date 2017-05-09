@@ -3,7 +3,7 @@ package com.yoloo.android.feature.notification;
 import android.content.Context;
 import com.airbnb.epoxy.TypedEpoxyController;
 import com.annimon.stream.Stream;
-import com.yoloo.android.data.model.NotificationRealm;
+import com.yoloo.android.data.db.NotificationRealm;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.List;

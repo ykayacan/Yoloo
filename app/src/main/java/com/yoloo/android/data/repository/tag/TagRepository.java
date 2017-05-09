@@ -1,7 +1,7 @@
 package com.yoloo.android.data.repository.tag;
 
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.TagRealm;
+import com.yoloo.android.data.db.TagRealm;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 import java.util.List;

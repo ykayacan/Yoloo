@@ -1,6 +1,6 @@
 package com.yoloo.android.feature.blog;
 
-import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.data.db.CommentRealm;
 import com.yoloo.android.data.repository.comment.CommentRepository;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.framework.MvpPresenter;
@@ -55,6 +55,16 @@ class BlogPresenter extends MvpPresenter<BlogView> {
   void deleteComment(@Nonnull CommentRealm comment) {
     Disposable d = commentRepository
         .deleteComment(comment)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(() -> {
+        }, throwable -> getView().onError(throwable));
+
+    getDisposable().add(d);
+  }
+
+  void votePost(@Nonnull String postId, int direction) {
+    Disposable d = postRepository
+        .votePost(postId, direction)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(() -> {
         }, throwable -> getView().onError(throwable));

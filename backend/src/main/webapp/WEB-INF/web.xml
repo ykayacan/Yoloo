@@ -112,6 +112,16 @@
     <url-pattern>/upload</url-pattern>
   </servlet-mapping>
 
+  <servlet>
+    <servlet-name>SendNewPostNotificationServlet</servlet-name>
+    <servlet-class>com.yoloo.backend.notification.SendNewPostNotificationServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>SendNewPostNotificationServlet</servlet-name>
+    <url-pattern>/tasks/send/notification</url-pattern>
+  </servlet-mapping>
+
   <!-- End Servlets -->
 
   <!-- Begin Filters -->
@@ -216,6 +226,16 @@
     <web-resource-collection>
       <web-resource-name>CreateUserFeedServlet</web-resource-name>
       <url-pattern>/tasks/create/feed</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>admin</role-name>
+    </auth-constraint>
+  </security-constraint>
+
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>SendNewPostNotificationServlet</web-resource-name>
+      <url-pattern>/tasks/send/notification</url-pattern>
     </web-resource-collection>
     <auth-constraint>
       <role-name>admin</role-name>

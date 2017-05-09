@@ -2,7 +2,7 @@ package com.yoloo.android.feature.search;
 
 import com.airbnb.epoxy.TypedEpoxyController;
 import com.annimon.stream.Stream;
-import com.yoloo.android.data.model.TagRealm;
+import com.yoloo.android.data.db.TagRealm;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import java.util.List;
 

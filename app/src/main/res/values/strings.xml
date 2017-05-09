@@ -153,8 +153,9 @@
 
   <!-- NOTIFICATION -->
   <string name="label_notification_title">Notifications</string>
-  <string name="label_notification_comment">\@%1$s commented on your post.</string>
+  <string name="label_notification_comment">\@%1$s commented on your post</string>
   <string name="label_notification_mention">\@%1$s mentioned you in a comment: %2$s</string>
+  <string name="label_notification_new_post">\@%1$s shared a new post</string>
   <string name="label_notification_follow">\@%1$s followed you</string>
   <string name="label_notification_accept">Your comment is accepted</string>
   <string name="label_notification_game_level_up">🎊🎉 Congrats! You reached Level %1$s</string>
@@ -465,5 +466,10 @@
   <string name="comments_accepted_error">This post has an accepted comment</string>
 
   <string name="visited_countries_dialog_remove_title">Remove country?</string>
+  <string name="points_overview_progress_text">Progress</string>
+
+  <string name="points_overview_tip_1">Tip: You can earn more points by asking questions.</string>
+  <string name="points_overview_tip_2">Tip: You can earn more points by commenting questions.</string>
+  <string name="points_overview_tip_3">Tip: Adding bounties to your post makes it more visible.</string>
 
 </resources>

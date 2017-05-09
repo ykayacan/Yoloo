@@ -7,7 +7,7 @@ import com.airbnb.epoxy.TypedEpoxyController;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.GroupRealm;
+import com.yoloo.android.data.db.GroupRealm;
 import com.yoloo.android.feature.grouplist.GroupListEpoxyController;
 import com.yoloo.android.feature.grouplist.GroupListEpoxyController$GroupListItemModel_;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;

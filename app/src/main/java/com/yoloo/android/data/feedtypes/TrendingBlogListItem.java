@@ -1,6 +1,6 @@
 package com.yoloo.android.data.feedtypes;
 
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.PostRealm;
 import java.util.List;
 
 public class TrendingBlogListItem implements FeedItem {

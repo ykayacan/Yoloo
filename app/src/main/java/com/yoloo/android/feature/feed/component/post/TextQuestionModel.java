@@ -17,8 +17,7 @@ import com.annimon.stream.Stream;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.YolooApp;
-import com.yoloo.android.data.model.PostRealm;
-import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
+import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.ui.widget.CompatTextView;
 import com.yoloo.android.ui.widget.VoteView;
@@ -72,8 +71,10 @@ public abstract class TextQuestionModel extends BasePostModel<TextQuestionModel.
 
     holder.tvUsername.setText(post.getUsername());
     holder.tvTime.setTimeStamp(post.getCreated().getTime() / 1000);
+
     holder.tvBounty.setVisibility(post.getBounty() == 0 ? View.GONE : View.VISIBLE);
     holder.tvBounty.setText(String.valueOf(post.getBounty()));
+
     holder.tvContent.setText(
         isNormal() ? ReadMoreUtil.addReadMore(context, post.getContent(), 200) : post.getContent());
     holder.tvComment.setText(CountUtil.formatCount(post.getCommentCount()));
@@ -130,14 +131,14 @@ public abstract class TextQuestionModel extends BasePostModel<TextQuestionModel.
             post.isBookmarked() ? android.R.color.secondary_text_dark : R.color.primary;
         holder.ibOptions.setColorFilter(ContextCompat.getColor(context, reversedColorRes),
             PorterDuff.Mode.SRC_IN);
-        //post.setBookmarked(!post.isBookmarked());
+        post.setBookmarked(!post.isBookmarked());
         onBookmarkClickListener.onBookmarkClick(post, post.isBookmarked());
       }
     });
 
     holder.voteView.setOnVoteEventListener(direction -> {
       post.setVoteDir(direction);
-      onVoteClickListener.onVoteClick(post.getId(), direction, OnVoteClickListener.Type.POST);
+      onVoteClickListener.onPostVoteClick(post, direction);
     });
   }
 

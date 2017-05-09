@@ -2,7 +2,7 @@ package com.yoloo.android.data.repository.media;
 
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.MediaRealm;
+import com.yoloo.android.data.db.MediaRealm;
 import com.yoloo.backend.yolooApi.model.CollectionResponseMediaEntity;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;

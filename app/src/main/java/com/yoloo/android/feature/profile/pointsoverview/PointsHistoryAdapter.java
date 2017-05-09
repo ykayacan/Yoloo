@@ -10,7 +10,7 @@ import com.airbnb.epoxy.EpoxyAttribute;
 import com.airbnb.epoxy.EpoxyModelClass;
 import com.airbnb.epoxy.EpoxyModelWithHolder;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.GameHistoryRealm;
+import com.yoloo.android.data.db.GameHistoryRealm;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 import java.util.List;
 

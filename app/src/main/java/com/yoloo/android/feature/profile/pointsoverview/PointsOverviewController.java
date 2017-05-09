@@ -20,7 +20,7 @@ import butterknife.BindView;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.ControllerChangeType;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.GameInfoRealm;
+import com.yoloo.android.data.db.GameInfoRealm;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.ViewUtils;

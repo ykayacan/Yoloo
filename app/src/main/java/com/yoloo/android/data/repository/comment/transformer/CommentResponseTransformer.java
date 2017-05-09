@@ -2,7 +2,7 @@ package com.yoloo.android.data.repository.comment.transformer;
 
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.data.db.CommentRealm;
 import com.yoloo.backend.yolooApi.model.CollectionResponseComment;
 
 import java.util.Collections;

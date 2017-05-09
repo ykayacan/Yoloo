@@ -6,7 +6,7 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum Action {
-  FOLLOW(1), COMMENT(2), MENTION(3), GAME(4), ACCEPT(5);
+  FOLLOW(1), COMMENT(2), MENTION(3), GAME(4), ACCEPT(5), NEW_FRIEND_POST(6);
 
   int value;
 

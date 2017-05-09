@@ -5,7 +5,7 @@ import com.airbnb.epoxy.AutoModel;
 import com.airbnb.epoxy.Typed2EpoxyController;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.RequestManager;
-import com.yoloo.android.data.model.GroupRealm;
+import com.yoloo.android.data.db.GroupRealm;
 import com.yoloo.android.feature.explore.data.ButtonItem;
 import com.yoloo.android.feature.explore.data.ExploreItem;
 import com.yoloo.android.feature.explore.data.GroupItem;

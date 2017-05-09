@@ -1,8 +1,8 @@
 package com.yoloo.android.data.repository.group;
 
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.GroupRealm;
+import com.yoloo.android.data.db.AccountRealm;
+import com.yoloo.android.data.db.GroupRealm;
 import com.yoloo.android.data.sorter.GroupSorter;
 import io.reactivex.Completable;
 import io.reactivex.Observable;

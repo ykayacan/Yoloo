@@ -7,7 +7,7 @@ import com.airbnb.epoxy.EpoxyModel;
 import com.airbnb.epoxy.EpoxyModelClass;
 import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.PostRealm;
 
 import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;
 

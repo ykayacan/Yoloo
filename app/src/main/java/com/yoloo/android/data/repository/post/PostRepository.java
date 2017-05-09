@@ -3,7 +3,7 @@ package com.yoloo.android.data.repository.post;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.data.sorter.PostSorter;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -49,13 +49,16 @@ public class PostRepository {
    * @return the post
    */
   public Observable<Optional<PostRealm>> getPost(@Nonnull String postId) {
-    return Observable.mergeDelayError(
-        diskDataStore.get(postId).subscribeOn(Schedulers.io()).toObservable(), remoteDataStore
-            .get(postId)
-            .doOnSuccess(diskDataStore::add)
-            .map(Optional::of)
-            .toObservable()
-            .subscribeOn(Schedulers.io()));
+    Observable<Optional<PostRealm>> remoteObservable = remoteDataStore.get(postId)
+        .doOnSuccess(diskDataStore::add)
+        .map(Optional::of)
+        .toObservable()
+        .subscribeOn(Schedulers.io());
+
+    Observable<Optional<PostRealm>> diskObservable =
+        diskDataStore.get(postId).subscribeOn(Schedulers.io()).toObservable();
+
+    return Observable.mergeDelayError(diskObservable, remoteObservable);
   }
 
   /**

@@ -2,7 +2,7 @@ package com.yoloo.android.data.repository.notification.transformer;
 
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.NotificationRealm;
+import com.yoloo.android.data.db.NotificationRealm;
 import com.yoloo.backend.yolooApi.model.CollectionResponseNotification;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;

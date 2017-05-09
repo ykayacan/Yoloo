@@ -6,7 +6,7 @@ import com.airbnb.epoxy.SimpleEpoxyModel;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.feature.explore.data.RecentMediaListItem;
 import java.util.ArrayList;
 import java.util.List;

@@ -24,10 +24,10 @@ import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
-import com.yoloo.android.data.feedtypes.FeedItem;
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.MediaRealm;
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.AccountRealm;
+import com.yoloo.android.data.db.MediaRealm;
+import com.yoloo.android.data.db.PostRealm;
+import com.yoloo.android.data.feed.FeedItem;
 import com.yoloo.android.data.repository.post.PostRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.data.sorter.PostSorter;
@@ -80,7 +80,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
 
   @BindView(R.id.root_view) StateLayout rootView;
   @BindView(R.id.toolbar) Toolbar toolbar;
-  @BindView(R.id.recycler_view) RecyclerView rvPostFeed;
+  @BindView(R.id.recycler_view) RecyclerView recyclerView;
   @BindView(R.id.swipe) SwipeRefreshLayout swipeRefreshLayout;
 
   @BindColor(R.color.primary) int primaryColor;
@@ -216,7 +216,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
     }
   }
 
-  @Override public void onLoaded(List<FeedItem> value) {
+  @Override public void onLoaded(List<? super FeedItem<?>> value) {
     if (value.isEmpty()) {
       epoxyController.hideLoader();
     } else {
@@ -281,7 +281,6 @@ public class PostListController extends MvpController<PostListView, PostListPres
       final int itemId = item.getItemId();
       if (itemId == R.id.action_popup_delete) {
         deletePost(post);
-        epoxyController.deletePost(post);
         return true;
       }
 
@@ -316,8 +315,8 @@ public class PostListController extends MvpController<PostListView, PostListPres
     ShareUtil.share(this, null, post.getContent());
   }
 
-  @Override public void onVoteClick(String votableId, int direction, @Type int type) {
-    getPresenter().votePost(votableId, direction);
+  @Override public void onPostVoteClick(PostRealm post, int direction) {
+    getPresenter().votePost(post.getId(), direction);
   }
 
   @Override public void onPostUpdated(PostRealm post) {
@@ -327,13 +326,15 @@ public class PostListController extends MvpController<PostListView, PostListPres
   }
 
   @Override public void onBookmarkClick(@NonNull PostRealm post, boolean bookmark) {
-    if (bookmark) {
-      getPresenter().bookmarkPost(post.getId());
-      epoxyController.bookmarkPost(post);
-    } else {
+    if (post.isBookmarked()) {
+      post.setBookmarked(false);
       getPresenter().unBookmarkPost(post.getId());
-      epoxyController.bookmarkPost(post);
+    } else {
+      post.setBookmarked(true);
+      getPresenter().bookmarkPost(post.getId());
     }
+
+    epoxyController.updatePost(post);
   }
 
   @Override public void onModelUpdateEvent(@FeedAction int action, @Nullable Object payload) {
@@ -355,15 +356,15 @@ public class PostListController extends MvpController<PostListView, PostListPres
 
     final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
 
-    rvPostFeed.setLayoutManager(lm);
-    rvPostFeed.addItemDecoration(new SpaceItemDecoration(8, SpaceItemDecoration.VERTICAL));
+    recyclerView.setLayoutManager(lm);
+    recyclerView.addItemDecoration(new SpaceItemDecoration(8, SpaceItemDecoration.VERTICAL));
 
     final SlideInItemAnimator animator = new SlideInItemAnimator();
     animator.setSupportsChangeAnimations(false);
-    rvPostFeed.setItemAnimator(animator);
+    recyclerView.setItemAnimator(animator);
 
-    rvPostFeed.setHasFixedSize(true);
-    rvPostFeed.setAdapter(epoxyController.getAdapter());
+    recyclerView.setHasFixedSize(true);
+    recyclerView.setAdapter(epoxyController.getAdapter());
 
     endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(lm) {
       @Override public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
@@ -372,7 +373,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
       }
     };
 
-    rvPostFeed.addOnScrollListener(endlessRecyclerOnScrollListener);
+    recyclerView.addOnScrollListener(endlessRecyclerOnScrollListener);
   }
 
   private void setupPullToRefresh() {
@@ -451,22 +452,22 @@ public class PostListController extends MvpController<PostListView, PostListPres
   private void chooseLoadMoreMethod() {
     switch (viewType) {
       case VIEW_TYPE_USER:
-        getPresenter().loadMorePostsByUser(userId, 20);
+        getPresenter().loadMorePostsByUser(userId, 30);
         break;
       case VIEW_TYPE_TAGS:
-        getPresenter().loadMorePostsByTag(tagName, PostSorter.NEWEST, 20);
+        getPresenter().loadMorePostsByTag(tagName, PostSorter.NEWEST, 30);
         break;
       case VIEW_TYPE_GROUP:
-        getPresenter().loadMorePostsByGroup(groupId, PostSorter.NEWEST, 20);
+        getPresenter().loadMorePostsByGroup(groupId, PostSorter.NEWEST, 30);
         break;
       case VIEW_TYPE_BOUNTY:
-        getPresenter().loadMorePostsByBounty(20);
+        getPresenter().loadMorePostsByBounty(30);
         break;
       case VIEW_TYPE_BOOKMARKED:
-        getPresenter().loadMorePostsByBounty(20);
+        getPresenter().loadMorePostsByBounty(30);
         break;
       case VIEW_TYPE_SORTER:
-        getPresenter().loadMorePostsByPostSorter(postSorter, 20);
+        getPresenter().loadMorePostsByPostSorter(postSorter, 30);
         break;
     }
   }

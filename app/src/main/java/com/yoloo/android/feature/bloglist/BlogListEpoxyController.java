@@ -6,7 +6,7 @@ import com.airbnb.epoxy.Typed2EpoxyController;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.feature.feed.common.listener.OnBookmarkClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
@@ -37,12 +37,12 @@ class BlogListEpoxyController extends Typed2EpoxyController<List<PostRealm>, Boo
   private OnCommentClickListener onCommentClickListener;
   private OnVoteClickListener onVoteClickListener;
 
-  private List<PostRealm> posts;
+  private List<PostRealm> items;
 
   BlogListEpoxyController(Context context, RequestManager glide) {
     this.glide = glide;
     this.circleTransformation = new CropCircleTransformation(context);
-    this.posts = new ArrayList<>();
+    this.items = new ArrayList<>();
   }
 
   void setUserId(String userId) {
@@ -78,7 +78,7 @@ class BlogListEpoxyController extends Typed2EpoxyController<List<PostRealm>, Boo
   }
 
   @Override public void setData(List<PostRealm> posts, Boolean loadingMore) {
-    this.posts = posts;
+    this.items = posts;
     super.setData(posts, loadingMore);
   }
 
@@ -90,16 +90,23 @@ class BlogListEpoxyController extends Typed2EpoxyController<List<PostRealm>, Boo
   }
 
   public void deletePost(PostRealm post) {
-    posts.remove(post);
-    setData(posts, false);
+    items.remove(post);
+    setData(items, false);
+  }
+
+  public void updatePost(PostRealm post) {
+    int index = items.indexOf(post);
+    items.add(index, post);
+
+    setData(items, false);
   }
 
   public void showLoader() {
-    setData(posts, true);
+    setData(items, true);
   }
 
   public void hideLoader() {
-    setData(posts, false);
+    setData(items, false);
   }
 
   private void createBlog(PostRealm post) {

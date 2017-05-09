@@ -2,8 +2,8 @@ package com.yoloo.android.feature.comment;
 
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.data.db.AccountRealm;
+import com.yoloo.android.data.db.CommentRealm;
 import com.yoloo.android.data.repository.comment.CommentRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.framework.MvpPresenter;

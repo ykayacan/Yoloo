@@ -3,10 +3,14 @@ package com.yoloo.android.feature.postdetail;
 import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.AccountRealm;
-import com.yoloo.android.data.model.CommentRealm;
-import com.yoloo.android.data.model.FeedItem;
-import com.yoloo.android.data.model.PostRealm;
+import com.yoloo.android.data.db.AccountRealm;
+import com.yoloo.android.data.db.CommentRealm;
+import com.yoloo.android.data.db.PostRealm;
+import com.yoloo.android.data.feed.BlogFeedItem;
+import com.yoloo.android.data.feed.CommentFeedItem;
+import com.yoloo.android.data.feed.FeedItem;
+import com.yoloo.android.data.feed.RichPostFeedItem;
+import com.yoloo.android.data.feed.TextPostFeedItem;
 import com.yoloo.android.data.repository.comment.CommentRepository;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
@@ -19,6 +23,7 @@ import io.reactivex.disposables.Disposable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
+import timber.log.Timber;
 
 class PostDetailPresenter extends MvpPresenter<PostDetailView> {
 
@@ -45,8 +50,16 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
         .zip(getMeObservable(), getPostObservable(postId), getCommentsObservable(postId),
             Group.Of3::create)
         .map(group -> {
-          List<FeedItem> items = new ArrayList<>();
-          items.add(new PostFeedItem(group.second));
+          List<FeedItem<?>> items = new ArrayList<>();
+
+          PostRealm post = group.second;
+          if (post.isTextPost()) {
+            items.add(new TextPostFeedItem(post));
+          } else if (post.isRichPost()) {
+            items.add(new RichPostFeedItem(post));
+          } else if (post.isBlogPost()) {
+            items.add(new BlogFeedItem(post));
+          }
 
           List<CommentFeedItem> comments = Stream
               .of(group.third.getData())
@@ -68,34 +81,6 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
         }, this::showError);
 
     getDisposable().add(d);
-  }
-
-  private CommentRealm processComment(
-      Group.Of3<AccountRealm, PostRealm, Response<List<CommentRealm>>> group,
-      CommentRealm comment) {
-    return comment
-        .setPostType(group.second.getPostType())
-        .setOwner(group.first.getId().equals(comment.getOwnerId()))
-        .setPostAccepted(group.second.getAcceptedCommentId() != null)
-        .setPostOwner(group.second.getOwnerId().equals(group.first.getId()));
-  }
-
-  private Observable<AccountRealm> getMeObservable() {
-    return userRepository.getLocalMe().toObservable().observeOn(AndroidSchedulers.mainThread());
-  }
-
-  private Observable<Response<List<CommentRealm>>> getCommentsObservable(@Nonnull String postId) {
-    return commentRepository
-        .listComments(postId, cursor, 20)
-        .observeOn(AndroidSchedulers.mainThread(), true);
-  }
-
-  private Observable<PostRealm> getPostObservable(@Nonnull String postId) {
-    return postRepository
-        .getPost(postId)
-        .observeOn(AndroidSchedulers.mainThread(), true)
-        .filter(Optional::isPresent)
-        .map(Optional::get);
   }
 
   void loadMoreComments() {
@@ -171,6 +156,36 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
     getDisposable().add(d);
   }
 
+  /**
+   * Bookmark post.
+   *
+   * @param postId the post id
+   */
+  void bookmarkPost(@Nonnull String postId) {
+    Disposable d = postRepository
+        .bookmarkPost(postId)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(() -> {
+        }, Timber::e);
+
+    getDisposable().add(d);
+  }
+
+  /**
+   * Un bookmark post.
+   *
+   * @param postId the post id
+   */
+  void unBookmarkPost(@Nonnull String postId) {
+    Disposable d = postRepository
+        .unBookmarkPost(postId)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(() -> {
+        }, Timber::e);
+
+    getDisposable().add(d);
+  }
+
   private void showError(Throwable throwable) {
     getView().onError(throwable);
   }
@@ -179,5 +194,33 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
     if (pullToRefresh) {
       cursor = null;
     }
+  }
+
+  private Observable<AccountRealm> getMeObservable() {
+    return userRepository.getLocalMe().toObservable().observeOn(AndroidSchedulers.mainThread());
+  }
+
+  private Observable<Response<List<CommentRealm>>> getCommentsObservable(@Nonnull String postId) {
+    return commentRepository
+        .listComments(postId, cursor, 20)
+        .observeOn(AndroidSchedulers.mainThread(), true);
+  }
+
+  private Observable<PostRealm> getPostObservable(@Nonnull String postId) {
+    return postRepository
+        .getPost(postId)
+        .observeOn(AndroidSchedulers.mainThread(), true)
+        .filter(Optional::isPresent)
+        .map(Optional::get);
+  }
+
+  private CommentRealm processComment(
+      Group.Of3<AccountRealm, PostRealm, Response<List<CommentRealm>>> group,
+      CommentRealm comment) {
+    return comment
+        .setPostType(group.second.getPostType())
+        .setOwner(group.first.getId().equals(comment.getOwnerId()))
+        .setPostAccepted(group.second.getAcceptedCommentId() != null)
+        .setPostOwner(group.second.getOwnerId().equals(group.first.getId()));
   }
 }

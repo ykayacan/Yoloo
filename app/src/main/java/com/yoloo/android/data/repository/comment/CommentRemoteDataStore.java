@@ -2,7 +2,7 @@ package com.yoloo.android.data.repository.comment;
 
 import com.google.api.client.http.HttpHeaders;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.data.db.CommentRealm;
 import com.yoloo.android.data.repository.comment.transformer.CommentResponseTransformer;
 import io.reactivex.Completable;
 import io.reactivex.Observable;

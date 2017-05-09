@@ -1,6 +1,6 @@
 package com.yoloo.android.feature.blog.data;
 
-import com.yoloo.android.data.model.CommentRealm;
+import com.yoloo.android.data.db.CommentRealm;
 import com.yoloo.android.util.EpoxyItem;
 
 public class CommentItem implements EpoxyItem<CommentRealm> {

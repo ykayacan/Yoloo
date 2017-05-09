@@ -3,7 +3,7 @@ package com.yoloo.android.data.repository.tag;
 import com.annimon.stream.Stream;
 import com.google.api.client.http.HttpHeaders;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.TagRealm;
+import com.yoloo.android.data.db.TagRealm;
 import com.yoloo.android.data.repository.tag.transformer.TagResponseTransformer;
 import com.yoloo.android.data.sorter.TagSorter;
 import com.yoloo.backend.yolooApi.model.TagCollection;

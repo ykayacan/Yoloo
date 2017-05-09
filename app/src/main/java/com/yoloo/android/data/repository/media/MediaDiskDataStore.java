@@ -2,10 +2,10 @@ package com.yoloo.android.data.repository.media;
 
 import com.annimon.stream.Optional;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.model.CommentRealm;
-import com.yoloo.android.data.model.CommentRealmFields;
-import com.yoloo.android.data.model.PostRealm;
-import com.yoloo.android.data.model.PostRealmFields;
+import com.yoloo.android.data.db.CommentRealm;
+import com.yoloo.android.data.db.CommentRealmFields;
+import com.yoloo.android.data.db.PostRealm;
+import com.yoloo.android.data.db.PostRealmFields;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
