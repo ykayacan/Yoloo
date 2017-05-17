@@ -5,24 +5,25 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class MediaConfig {
 
-  public static final String BASE_URL = "yoloo-151719.appspot.com";
+  public static final String BASE_BUCKET = "yoloo-151719.appspot.com";
 
-  public static final String STORAGE_PREFIX = "/gs/";
+  public static final String GS_PREFIX = "/gs";
 
-  public static final String BASE_BUCKET_URL = "yoloo-151719.appspot.com";
+  public static final String SERVE_GROUP_WITH_ICON =
+      GS_PREFIX + "/" + BASE_BUCKET + "/groups/with_icon";
 
-  public static final String SERVE_GROUP_BUCKET_WITH_ICON =
-      STORAGE_PREFIX + BASE_BUCKET_URL + "/groups/with_icon";
-  public static final String SERVE_GROUP_BUCKET_WITHOUT_ICON =
-      STORAGE_PREFIX + BASE_BUCKET_URL + "/groups/without_icon";
-  public static final String SERVE_TRAVELER_TYPES_BUCKET =
-      STORAGE_PREFIX + BASE_BUCKET_URL + "/traveler-types";
-  public static final String SERVE_USER_MEDIAS_BUCKET =
-      STORAGE_PREFIX + BASE_BUCKET_URL + "/user-medias";
-  public static final String SERVE_FLAGS_BUCKET =
-      STORAGE_PREFIX + BASE_BUCKET_URL + "/flags/icons";
+  public static final String SERVE_GROUP_WITHOUT_ICON =
+      GS_PREFIX + "/" + BASE_BUCKET + "/groups/without_icon";
 
-  public static final String USER_MEDIA_BUCKET = "user-medias";
+  public static final String SERVE_TRAVELER_TYPES =
+      GS_PREFIX + "/" + BASE_BUCKET + "/traveler-types";
+
+  public static final String SERVE_FLAGS =
+      GS_PREFIX + "/" + BASE_BUCKET + "/flags/icons";
+
+  public static final String USER_MEDIAS_POSTS_PATH = "user-medias/posts";
+  public static final String USER_MEDIAS_PROFILES_PATH = "user-medias/profiles";
+  public static final String USER_MEDIAS_CHATS_PATH = "user-medias/chats";
 
   public static final int MINI_SIZE = 48;
   public static final int THUMB_SIZE = 150;

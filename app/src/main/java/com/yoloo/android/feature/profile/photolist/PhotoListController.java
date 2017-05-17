@@ -53,6 +53,7 @@ public class PhotoListController extends MvpController<PhotoListView, PhotoListP
   @Override
   protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
     setupRecyclerView();
   }
 
@@ -90,7 +91,7 @@ public class PhotoListController extends MvpController<PhotoListView, PhotoListP
 
   @Override
   public void onItemClick(View v, MediaRealm item) {
-    Controller controller = FullscreenPhotoController.create(item.getLargeSizeUrl(), item.getId());
+    Controller controller = FullscreenPhotoController.create(item.getLargeSizeUrl());
     RouterTransaction transaction = RouterTransaction
         .with(controller)
         .pushChangeHandler(new FadeChangeHandler())

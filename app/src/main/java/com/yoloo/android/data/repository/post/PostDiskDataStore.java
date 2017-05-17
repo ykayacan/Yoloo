@@ -144,7 +144,7 @@ class PostDiskDataStore {
     });
   }
 
-  Observable<Response<List<PostRealm>>> listByTrendingBlogPosts() {
+  Observable<Response<List<PostRealm>>> listByTrendingBlogPosts(int limit) {
     return Observable.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 
@@ -156,7 +156,7 @@ class PostDiskDataStore {
           .findAllSorted(PostRealmFields.RANK, Sort.DESCENDING);
 
       List<PostRealm> posts =
-          results.isEmpty() ? Collections.emptyList() : realm.copyFromRealm(results);
+          results.isEmpty() ? Collections.emptyList() : realm.copyFromRealm(results, limit);
 
       realm.close();
 

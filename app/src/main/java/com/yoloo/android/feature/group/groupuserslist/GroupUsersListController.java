@@ -1,6 +1,5 @@
 package com.yoloo.android.feature.group.groupuserslist;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,11 +8,15 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import butterknife.BindColor;
 import butterknife.BindString;
 import butterknife.BindView;
+import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
@@ -24,6 +27,7 @@ import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.search.OnFollowClickListener;
 import com.yoloo.android.framework.MvpController;
+import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
 import com.yoloo.android.ui.widget.StateLayout;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.ViewUtils;
@@ -37,10 +41,17 @@ public class GroupUsersListController
   private static final String KEY_GROUP_ID = "GROUP_ID";
 
   @BindView(R.id.root_view) StateLayout stateLayout;
+  @BindView(R.id.toolbar) Toolbar toolbar;
   @BindView(R.id.recycler_view) RecyclerView rvUsers;
 
   @BindString(R.string.user_followed) String userFollowedString;
   @BindString(R.string.user_unfollowed) String userUnfollowedString;
+
+  @BindColor(R.color.primary_dark) int primaryDarkColor;
+
+  private String groupId;
+
+  private boolean reEnter;
 
   private GroupUsersListEpoxyController epoxyController;
 
@@ -62,18 +73,27 @@ public class GroupUsersListController
   @Override
   protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
     setupRecyclerview();
+    setupToolbar();
   }
 
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-    getDrawerLayout().setFitsSystemWindows(false);
-    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
 
-    final String groupId = getArgs().getString(KEY_GROUP_ID);
+    groupId = getArgs().getString(KEY_GROUP_ID);
 
-    getPresenter().loadUsers(groupId);
+    if (!reEnter) {
+      getPresenter().loadUsers(groupId, false);
+      reEnter = true;
+    }
+  }
+
+  @Override protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+      @NonNull ControllerChangeType changeType) {
+    super.onChangeEnded(changeHandler, changeType);
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @NonNull
@@ -90,7 +110,7 @@ public class GroupUsersListController
 
   @Override
   public void onLoaded(List<AccountRealm> value) {
-    epoxyController.setData(value);
+    epoxyController.setData(value, false);
     stateLayout.setState(StateLayout.VIEW_STATE_CONTENT);
   }
 
@@ -112,7 +132,7 @@ public class GroupUsersListController
         .pushChangeHandler(new VerticalChangeHandler())
         .popChangeHandler(new VerticalChangeHandler());
 
-    getParentController().getRouter().pushController(transaction);
+    getRouter().pushController(transaction);
   }
 
   @Override
@@ -134,13 +154,36 @@ public class GroupUsersListController
     showSnackbar(userUnfollowedString);
   }
 
+  @Override public void onMoreDataLoaded(List<AccountRealm> accounts) {
+    if (accounts.isEmpty()) {
+      epoxyController.hideLoader();
+    } else {
+      epoxyController.setLoadMoreData(accounts);
+    }
+  }
+
   private void setupRecyclerview() {
     epoxyController = new GroupUsersListEpoxyController(getActivity(), this, this);
 
-    rvUsers.setLayoutManager(new LinearLayoutManager(getActivity()));
+    LinearLayoutManager lm = new LinearLayoutManager(getActivity());
+    rvUsers.setLayoutManager(lm);
     rvUsers.addItemDecoration(new DividerItemDecoration(getActivity(), OrientationHelper.VERTICAL));
     rvUsers.setAdapter(epoxyController.getAdapter());
     rvUsers.setHasFixedSize(true);
+
+    EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener =
+        new EndlessRecyclerOnScrollListener(lm) {
+          @Override public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+            getPresenter().loadUsers(groupId, true);
+            epoxyController.showLoader();
+          }
+        };
+  }
+
+  private void setupToolbar() {
+    setSupportActionBar(toolbar);
+    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    getSupportActionBar().setTitle(R.string.group_tab_users);
   }
 
   private void showSnackbar(String message) {

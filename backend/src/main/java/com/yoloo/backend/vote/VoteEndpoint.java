@@ -11,19 +11,25 @@ import com.google.common.base.Optional;
 import com.yoloo.backend.Constants;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.authentication.authenticators.FirebaseAuthenticator;
+import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.endpointsvalidator.EndpointsValidator;
 import com.yoloo.backend.endpointsvalidator.validator.AuthValidator;
 import com.yoloo.backend.endpointsvalidator.validator.BadRequestValidator;
 import com.yoloo.backend.endpointsvalidator.validator.NotFoundValidator;
+import com.yoloo.backend.post.PostEntity;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
 @Api(name = "yolooApi",
     version = "v1",
-    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
-@ApiClass(resource = "votes", clientIds = {
-    Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
-}, audiences = {Constants.AUDIENCE_ID}, authenticators = {FirebaseAuthenticator.class})
+    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER,
+        ownerName = Constants.API_OWNER))
+@ApiClass(resource = "votes",
+    clientIds = {
+        Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
+    },
+    audiences = { Constants.AUDIENCE_ID },
+    authenticators = { FirebaseAuthenticator.class })
 public class VoteEndpoint {
 
   private final VoteController voteController = VoteControllerFactory.of().create();
@@ -39,7 +45,7 @@ public class VoteEndpoint {
   @ApiMethod(name = "posts.vote",
       path = "posts/{postId}/votes",
       httpMethod = ApiMethod.HttpMethod.POST)
-  public void votePost(@Named("postId") String postId, @Named("dir") int direction, User user)
+  public PostEntity votePost(@Named("postId") String postId, @Named("dir") int direction, User user)
       throws ServiceException {
 
     EndpointsValidator
@@ -48,7 +54,7 @@ public class VoteEndpoint {
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(postId, "Invalid postId."));
 
-    voteController.vote(postId, direction, user);
+    return voteController.votePost(postId, direction, user);
   }
 
   /**
@@ -62,7 +68,7 @@ public class VoteEndpoint {
   @ApiMethod(name = "comments.vote",
       path = "comments/{commentId}/votes",
       httpMethod = ApiMethod.HttpMethod.POST)
-  public void voteComment(@Named("commentId") String commentId, @Named("dir") int direction,
+  public Comment voteComment(@Named("commentId") String commentId, @Named("dir") int direction,
       User user) throws ServiceException {
 
     EndpointsValidator
@@ -71,7 +77,7 @@ public class VoteEndpoint {
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(commentId, "Invalid commentId."));
 
-    voteController.vote(commentId, direction, user);
+    return voteController.voteComment(commentId, direction, user);
   }
 
   /**

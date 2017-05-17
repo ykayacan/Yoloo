@@ -1,10 +1,8 @@
 package com.yoloo.android.feature.auth.signupprepared;
 
-import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +12,6 @@ import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
-import com.jakewharton.rxbinding2.view.RxView;
 import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.rafakob.floatingedittext.FloatingEditText;
 import com.yoloo.android.R;
@@ -33,8 +30,6 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class SignUpPreparedController extends BaseController {
@@ -46,7 +41,7 @@ public class SignUpPreparedController extends BaseController {
   @BindView(R.id.fet_sign_up_fullname) FloatingEditText fetFullname;
   @BindView(R.id.fet_sign_up_email) FloatingEditText fetEmail;
   @BindView(R.id.fet_sign_up_username) FloatingEditText fetUsername;
-  @BindView(R.id.fet_sign_up_birthday) FloatingEditText fetBirthday;
+  //@BindView(R.id.fet_sign_up_birthday) FloatingEditText fetBirthday;
   @BindView(R.id.tv_sign_up_continue) TextView tvContinue;
 
   private CompositeDisposable disposable = new CompositeDisposable();
@@ -71,7 +66,7 @@ public class SignUpPreparedController extends BaseController {
     setupToolbar();
     setRetainViewMode(RetainViewMode.RETAIN_DETACH);
 
-    fetBirthday.getEditText().setKeyListener(null);
+    //fetBirthday.getEditText().setKeyListener(null);
   }
 
   @Override protected void onAttach(@NonNull View view) {
@@ -83,22 +78,23 @@ public class SignUpPreparedController extends BaseController {
 
     UserRepository repository = UserRepositoryProvider.getRepository();
 
-    final Calendar calendar = Calendar.getInstance();
-    setBirthday(calendar);
+    //final Calendar calendar = Calendar.getInstance();
+    //setBirthday(calendar);
 
-    Observable<ValidationResult<String>> usernameObservable = getUsernameObservable(repository);
-
-    Observable<String> birthdayObservable =
+    /*Observable<String> birthdayObservable =
         RxTextView.afterTextChangeEvents(fetBirthday.getEditText())
-            .map(event -> event.editable().toString());
+            .map(event -> event.editable().toString());*/
 
-    Disposable d = Observable.combineLatest(usernameObservable, birthdayObservable,
+    Disposable d = getUsernameObservable(repository)
+        .subscribe(result -> tvContinue.setVisibility(result.isValid() ? View.VISIBLE : View.GONE));
+
+    /*Disposable d = Observable.combineLatest(usernameObservable, birthdayObservable,
         (username, birthday) -> username.isValid() && !TextUtils.isEmpty(birthday))
-        .subscribe(enable -> tvContinue.setVisibility(enable ? View.VISIBLE : View.GONE));
+        .subscribe(enable -> tvContinue.setVisibility(enable ? View.VISIBLE : View.GONE));*/
 
     disposable.add(d);
 
-    navigateToSignUpDiscoverScreen(idpResponse, calendar);
+    navigateToSignUpDiscoverScreen(idpResponse);
   }
 
   @Override protected void onDestroy() {
@@ -115,11 +111,11 @@ public class SignUpPreparedController extends BaseController {
     fetEmail.setEnabled(false);
   }
 
-  private void navigateToSignUpDiscoverScreen(IdpResponse idpResponse, Calendar calendar) {
+  private void navigateToSignUpDiscoverScreen(IdpResponse idpResponse) {
     tvContinue.setOnClickListener(v -> {
       InfoBundle bundle =
           new InfoBundle(idpResponse.getName(), null, idpResponse.getEmail(), fetUsername.getText(),
-              null, calendar.getTimeInMillis());
+              null);
 
       KeyboardUtil.hideKeyboard(getView());
       startTransaction(SignUpDiscoverController.createWithProvider(idpResponse, bundle),
@@ -144,9 +140,9 @@ public class SignUpPreparedController extends BaseController {
         .doOnNext(result -> fetUsername.setError(result.getReason()));
   }
 
-  private void setBirthday(Calendar calendar) {
+  /*private void setBirthday(Calendar calendar) {
     RxView.clicks(fetBirthday.getEditText()).subscribe(o -> showDatePickerDialog(calendar));
-  }
+  }*/
 
   private void setupToolbar() {
     setSupportActionBar(toolbar);
@@ -159,7 +155,7 @@ public class SignUpPreparedController extends BaseController {
         RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
   }
 
-  private void showDatePickerDialog(Calendar calendar) {
+  /*private void showDatePickerDialog(Calendar calendar) {
     DatePickerDialog datePickerDialog =
         new DatePickerDialog(getActivity(), (view, year, month, dayOfMonth) -> {
           month += 1;
@@ -170,5 +166,5 @@ public class SignUpPreparedController extends BaseController {
 
     datePickerDialog.getDatePicker().setMaxDate(new Date().getTime());
     datePickerDialog.show();
-  }
+  }*/
 }

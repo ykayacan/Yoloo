@@ -7,4 +7,6 @@ import java.util.List;
 interface NotificationView extends MvpDataView<List<NotificationRealm>> {
 
   void showContent();
+
+  void onMoreDataLoaded(List<NotificationRealm> notifications);
 }

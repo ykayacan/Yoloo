@@ -38,7 +38,6 @@
 
   <datastore-index ancestor="false" kind="PostEntity" source="manual">
     <property name="tags" direction="asc" />
-    <property name="postType" direction="asc" />
     <property name="created" direction="desc" />
   </datastore-index>
 
@@ -69,4 +68,5 @@
     <property name="postKey" direction="asc" />
     <property name="created" direction="desc" />
   </datastore-index>
+
 </datastore-indexes>

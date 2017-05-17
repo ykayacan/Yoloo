@@ -45,7 +45,7 @@ public class CommentShardService implements Shardable<CommentShard, Comment> {
 
   @Override
   public Key<CommentShard> getRandomShardKey(Key<Comment> entityKey) {
-    final int shardNum = new Random().nextInt(ShardConfig.COMMENT_SHARD_COUNTER - 1 + 1) + 1;
+    final int shardNum = new Random().nextInt(ShardConfig.COMMENT_SHARD_COUNTER) + 1;
     return CommentShard.createKey(entityKey, shardNum);
   }
 

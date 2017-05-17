@@ -29,6 +29,8 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.OnTextChanged;
+import com.bluelinelabs.conductor.ControllerChangeHandler;
+import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bumptech.glide.Glide;
 import com.github.jksiezni.permissive.Permissive;
 import com.google.firebase.auth.FirebaseAuth;
@@ -126,7 +128,6 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
     setupToolbar();
-    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
 
     ControllerUtil.preventDefaultBackPressAction(view, this::showDiscardDialog);
   }
@@ -165,6 +166,12 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     if (countryPicker != null && countryPicker.isShowing()) {
       countryPicker.dismiss();
     }
+  }
+
+  @Override protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
+      @NonNull ControllerChangeType changeType) {
+    super.onChangeEnded(changeHandler, changeType);
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @Override
@@ -308,7 +315,7 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     websiteErrorSubject.onNext(!FormUtil.isWebUrl(text));
   }
 
-  @OnClick(R.id.til_profile_edit_country)
+  @OnClick(R.id.et_profile_edit_country)
   void changeCountry() {
     countryPicker = new CountryPickerDialog(getActivity(), (country, flagResId) -> {
       tilCountry.getEditText().setText(country.getCountryName(getActivity()));
@@ -354,7 +361,7 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     }
 
     String email = tilEmail.getEditText().getText().toString();
-    if (!email.equals(original.getEmail())) {
+    if (!email.equals(original.getEmail().trim())) {
       draft.setEmail(email);
     }
 
@@ -374,7 +381,7 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
       if (!websiteUrl.contains("http://") || websiteUrl.contains("https://")) {
         websiteUrl = "http://" + websiteUrl;
       }
-      draft.setWebsiteUrl(websiteUrl);
+      draft.setWebsiteUrl(websiteUrl.replaceAll("\\s+",""));
     }
 
     String bio = tilBio.getEditText().getText().toString();
@@ -423,6 +430,8 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
   }
 
   private void setProfile(AccountRealm account) {
+    Timber.d("Profile: %s", account);
+
     Glide
         .with(getActivity())
         .load(account.getAvatarUrl().replace("s96-c", "s80-c-rw"))

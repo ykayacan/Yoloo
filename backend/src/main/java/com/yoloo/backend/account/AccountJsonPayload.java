@@ -16,7 +16,6 @@ public class AccountJsonPayload {
   private String username;
   private String realname;
   private String email;
-  private long birthday;
   private String countryCode;
   private String langCode;
   private String profileImageUrl;

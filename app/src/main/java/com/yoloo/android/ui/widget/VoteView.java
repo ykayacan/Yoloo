@@ -8,13 +8,17 @@ import android.view.MotionEvent;
 import com.yoloo.android.R;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.DrawableHelper;
-import com.yoloo.android.util.Preconditions;
 
+import static com.yoloo.android.util.Preconditions.checkNotNull;
+
+/**
+ * The type Vote view.
+ */
 public class VoteView extends BaselineGridTextView {
 
-  public static final int DIRECTION_UP = 1;
-  public static final int DIRECTION_DEFAULT = 0;
-  public static final int DIRECTION_DOWN = -1;
+  private static final int DIRECTION_UP = 1;
+  private static final int DIRECTION_DEFAULT = 0;
+  private static final int DIRECTION_DOWN = -1;
 
   private static final int LEFT_DRAWABLE = 0;
   private static final int RIGHT_DRAWABLE = 2;
@@ -53,7 +57,7 @@ public class VoteView extends BaselineGridTextView {
   }
 
   @Override public boolean onTouchEvent(MotionEvent event) {
-    Preconditions.checkNotNull(onVoteEventListener,
+    checkNotNull(onVoteEventListener,
         "Vote listener is not implemented. Please implement OnVoteEventListener");
 
     if (event.getAction() == MotionEvent.ACTION_UP) {
@@ -61,6 +65,7 @@ public class VoteView extends BaselineGridTextView {
         if (upConsumed) {
           setText(CountUtil.formatCount(--votes));
           setDefaultTint(LEFT_DRAWABLE);
+
           upConsumed = false;
 
           onVoteEventListener.onVoteEvent(DIRECTION_DEFAULT);
@@ -69,6 +74,7 @@ public class VoteView extends BaselineGridTextView {
           setText(CountUtil.formatCount(votes));
           setDefaultTint(RIGHT_DRAWABLE);
           setUpTint();
+
           downConsumed = false;
           upConsumed = true;
 
@@ -76,6 +82,7 @@ public class VoteView extends BaselineGridTextView {
         } else {
           setText(CountUtil.formatCount(++votes));
           setUpTint();
+
           upConsumed = true;
 
           onVoteEventListener.onVoteEvent(DIRECTION_UP);
@@ -84,13 +91,16 @@ public class VoteView extends BaselineGridTextView {
         if (downConsumed) {
           setText(CountUtil.formatCount(++votes));
           setDefaultTint(RIGHT_DRAWABLE);
-          onVoteEventListener.onVoteEvent(DIRECTION_DEFAULT);
+
           downConsumed = false;
+
+          onVoteEventListener.onVoteEvent(DIRECTION_DEFAULT);
         } else if (upConsumed) {
           votes -= 2;
           setText(CountUtil.formatCount(votes));
           setDefaultTint(LEFT_DRAWABLE);
           setDownTint();
+
           upConsumed = false;
           downConsumed = true;
 
@@ -98,11 +108,14 @@ public class VoteView extends BaselineGridTextView {
         } else {
           setText(CountUtil.formatCount(--votes));
           setDownTint();
+
           downConsumed = true;
 
           onVoteEventListener.onVoteEvent(DIRECTION_DOWN);
         }
       }
+
+      invalidate();
     }
     return true;
   }
@@ -134,14 +147,29 @@ public class VoteView extends BaselineGridTextView {
         .tint();
   }
 
+  /**
+   * Sets on vote event listener.
+   *
+   * @param onVoteEventListener the on vote event listener
+   */
   public void setOnVoteEventListener(OnVoteEventListener onVoteEventListener) {
     this.onVoteEventListener = onVoteEventListener;
   }
 
+  /**
+   * Gets direction.
+   *
+   * @return the direction
+   */
   public int getDirection() {
     return direction;
   }
 
+  /**
+   * Sets vote direction.
+   *
+   * @param direction the direction
+   */
   public void setVoteDirection(int direction) {
     this.direction = direction;
     switch (direction) {
@@ -166,16 +194,34 @@ public class VoteView extends BaselineGridTextView {
     }
   }
 
+  /**
+   * Gets votes.
+   *
+   * @return the votes
+   */
   public long getVotes() {
     return votes;
   }
 
+  /**
+   * Sets vote count.
+   *
+   * @param votes the votes
+   */
   public void setVoteCount(long votes) {
     this.votes = votes;
-    setText(CountUtil.formatCount(this.votes));
+    setText(CountUtil.formatCount(votes));
   }
 
+  /**
+   * The interface On vote event listener.
+   */
   public interface OnVoteEventListener {
+    /**
+     * On vote event.
+     *
+     * @param direction the direction
+     */
     void onVoteEvent(int direction);
   }
 }

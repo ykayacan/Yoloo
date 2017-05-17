@@ -47,9 +47,6 @@ public class CreateUserFeedServlet extends HttpServlet {
     final String userId = req.getParameter(USER_ID);
     final String stringifiedSubscribedIds = req.getParameter(TRAVEL_GROUP_IDS);
 
-    log.info("userId: " + userId);
-    log.info("subscribedIds: " + stringifiedSubscribedIds);
-
     List<Key<TravelerGroupEntity>> groupKeys =
         KeyUtil.extractKeysFromIds(stringifiedSubscribedIds, ",");
 
@@ -63,8 +60,6 @@ public class CreateUserFeedServlet extends HttpServlet {
         query.order("-" + PostEntity.FIELD_CREATED).limit(100).keys().list();
 
     List<Feed> feeds = Ix.from(postKeys).map(postKey -> getFeed(userId, postKey)).toList();
-
-    log.info("Feeds: " + feeds);
 
     ofy().save().entities(feeds);
   }

@@ -6,15 +6,14 @@ import com.google.api.server.spi.response.CollectionResponse;
 import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.ServingUrlOptions;
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.storage.Blob;
-import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
+import com.google.cloud.storage.BucketInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.base.Strings;
+import com.google.common.net.MediaType;
 import com.googlecode.objectify.Key;
-import com.yoloo.backend.Constants;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.config.MediaConfig;
 import com.yoloo.backend.media.dto.Media;
@@ -25,7 +24,6 @@ import ix.Ix;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
-import java.util.UUID;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -99,49 +97,41 @@ public class UploadServlet extends HttpServlet {
 
     final ServletFileUpload upload = new ServletFileUpload();
 
+    Storage storage = StorageOptions.getDefaultInstance().getService();
+
+    MediaEntity.MediaOrigin origin = MediaEntity.MediaOrigin.valueOf(mediaOrigin);
+
     Observable
         .fromCallable(() -> upload.getItemIterator(req))
         .filter(FileItemIterator::hasNext)
         .map(FileItemIterator::next)
         .filter(this::isValidFile)
         .flatMap(file -> {
-          final String mime = file.getContentType();
+          final String contentType = file.getContentType();
 
-          final ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(
-              getServletContext().getResourceAsStream(Constants.FIREBASE_SECRET_JSON_PATH));
+          /*final ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(
+              getServletContext().getResourceAsStream(Constants.FIREBASE_SECRET_JSON_PATH));*/
 
-          final Storage storage =
-              StorageOptions.newBuilder().setCredentials(credentials).build().getService();
+          /*final Storage storage =
+              StorageOptions.newBuilder().setCredentials(credentials).build().getService();*/
 
-          final String extension = MediaUtil.extractExtension(mime);
+          String mediaFileName = MediaUtil.createMediaFileName(contentType);
+          String filePath = createMediaPath(origin, accountKey, mediaFileName);
 
-          final String filePath =
-              MediaConfig.USER_MEDIA_BUCKET + "/" + accountKey.toWebSafeString() + "/" + UUID
-                  .randomUUID()
-                  .toString() + "." + extension;
-
-          BlobId blobId = BlobId.of(MediaConfig.BASE_URL, filePath);
-          BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType(mime).build();
-
+          BucketInfo info = BucketInfo.of(MediaConfig.BASE_BUCKET);
+          BlobInfo blobInfo =
+              BlobInfo.newBuilder(info, filePath).setContentType(contentType).build();
           Blob blob = storage.create(blobInfo, file.openStream());
 
-          final String path = MediaConfig.STORAGE_PREFIX + blob.getBucket() + "/" + blob.getName();
+          final String servePath =
+              MediaConfig.GS_PREFIX + "/" + blob.getBucket() + "/" + blob.getName();
 
           ServingUrlOptions options =
-              ServingUrlOptions.Builder.withGoogleStorageFileName(path).secureUrl(true);
+              ServingUrlOptions.Builder.withGoogleStorageFileName(servePath).secureUrl(true);
 
-          MediaEntity mediaEntity = MediaEntity
-              .builder()
-              .id(blob.getBucket() + "/" + blob.getName())
-              .parent(accountKey)
-              .mime(mime)
-              .url(ServerConfig.isDev() ? "" : imagesService.getServingUrl(options))
-              .originalPath(blob.getName())
-              .mediaOrigin(MediaEntity.parse(mediaOrigin))
-              .created(DateTime.now())
-              .build();
+          MediaEntity media = createMedia(mediaOrigin, accountKey, contentType, blob, options);
 
-          return Observable.just(mediaEntity);
+          return Observable.just(media);
         })
         .toList()
         .doOnSuccess(medias -> ofy().transact(() -> ofy().save().entities(medias).now()))
@@ -150,9 +140,46 @@ public class UploadServlet extends HttpServlet {
             throwable -> printErrorResponse(throwable.getMessage(), out));
   }
 
+  private MediaEntity createMedia(String mediaOrigin, Key<Account> accountKey, String contentType,
+      Blob blob, ServingUrlOptions options) {
+    return MediaEntity
+        .builder()
+        .parent(accountKey)
+        .mime(contentType)
+        .url(ServerConfig.isDev() ? "" : imagesService.getServingUrl(options))
+        .originalPath(blob.getName())
+        .mediaOrigin(MediaEntity.MediaOrigin.parse(mediaOrigin))
+        .created(DateTime.now())
+        .build();
+  }
+
+  private String createMediaPath(MediaEntity.MediaOrigin origin, Key<Account> accountKey,
+      String mediaFileName) {
+
+    String path = getBaseMediaPath(origin);
+
+    return Strings.isNullOrEmpty(path)
+        ? null
+        : path + "/" + accountKey.toWebSafeString() + "/" + mediaFileName;
+  }
+
+  private String getBaseMediaPath(MediaEntity.MediaOrigin origin) {
+    switch (origin) {
+      case POST:
+        return MediaConfig.USER_MEDIAS_POSTS_PATH;
+      case PROFILE:
+        return MediaConfig.USER_MEDIAS_PROFILES_PATH;
+      case CHAT:
+        return MediaConfig.USER_MEDIAS_CHATS_PATH;
+      default:
+        return null;
+    }
+  }
+
   private boolean isValidFile(FileItemStream file) {
-    return MimeUtil.isPhoto(file.getContentType()) && !file.isFormField() && !Strings.isNullOrEmpty(
-        file.getName());
+    return MediaType.parse(file.getContentType()).is(MediaType.ANY_IMAGE_TYPE)
+        && !file.isFormField()
+        && !Strings.isNullOrEmpty(file.getName());
   }
 
   private void setResponse(HttpServletResponse resp) {

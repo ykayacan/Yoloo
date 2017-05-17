@@ -21,15 +21,24 @@ import java.util.Collection;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
-@Api(name = "yolooApi",
+@Api(
+    name = "yolooApi",
     version = "v1",
-    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER,
-        ownerName = Constants.API_OWNER))
-@ApiClass(resource = "groups",
+    namespace =
+    @ApiNamespace(
+        ownerDomain = Constants.API_OWNER,
+        ownerName = Constants.API_OWNER
+    )
+)
+@ApiClass(
+    resource = "groups",
     clientIds = {
-        Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
+        Constants.ANDROID_CLIENT_ID,
+        Constants.IOS_CLIENT_ID,
+        Constants.WEB_CLIENT_ID
     },
-    audiences = { Constants.AUDIENCE_ID })
+    audiences = { Constants.AUDIENCE_ID }
+)
 public class TravelerGroupEndpoint {
 
   private final TravelerGroupController travelerGroupController =

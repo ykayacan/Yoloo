@@ -2,9 +2,11 @@ package com.yoloo.android.ui.widget;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SimpleItemAnimator;
 import android.util.AttributeSet;
 import com.airbnb.epoxy.EpoxyModel;
 import com.airbnb.epoxy.SimpleEpoxyController;
@@ -18,9 +20,12 @@ public class RecommendedGroupsView extends RecyclerView {
 
   public RecommendedGroupsView(Context context, @Nullable AttributeSet attrs) {
     super(context, attrs);
-    setHasFixedSize(true);
 
-    layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
+    setHasFixedSize(true);
+    final SimpleItemAnimator animator = new DefaultItemAnimator();
+    setItemAnimator(animator);
+
+    layoutManager = new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
     setLayoutManager(layoutManager);
 
     setOnFlingListener(null);

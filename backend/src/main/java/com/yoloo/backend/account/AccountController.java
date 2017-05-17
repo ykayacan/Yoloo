@@ -9,6 +9,7 @@ import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.Email;
 import com.google.appengine.api.datastore.Link;
 import com.google.appengine.api.datastore.QueryResultIterator;
+import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -35,6 +36,8 @@ import com.yoloo.backend.media.MediaEntity;
 import com.yoloo.backend.media.MediaService;
 import com.yoloo.backend.media.Size;
 import com.yoloo.backend.media.size.ThumbSize;
+import com.yoloo.backend.notification.NotificationService;
+import com.yoloo.backend.notification.type.Notifiable;
 import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.relationship.Relationship;
 import com.yoloo.backend.travelertype.TravelerTypeEntity;
@@ -196,7 +199,6 @@ public final class AccountController extends Controller {
         .langCode(payload.getLangCode())
         .country(country)
         .preInterestedGroupKeys(groupKeys)
-        .birthDate(new DateTime(payload.getBirthday()))
         .gender(Account.Gender.UNSPECIFIED)
         .shardRefs(Lists.newArrayList(shardMap.keySet()))
         .counts(Account.Counts.builder().build())
@@ -256,6 +258,9 @@ public final class AccountController extends Controller {
       keyBuilder.add(Key.create(mediaId.get()));
     }
 
+    final Key<DeviceRecord> deviceRecordKey = DeviceRecord.createKey(accountKey);
+    keyBuilder.add(deviceRecordKey);
+
     ImmutableSet<Key<?>> batchKeys = keyBuilder.build();
     Map<Key<Object>, Object> fetched = ofy()
         .load()
@@ -266,64 +271,84 @@ public final class AccountController extends Controller {
     Account account = (Account) fetched.get(accountKey);
     //noinspection SuspiciousMethodCalls
     Tracker tracker = (Tracker) fetched.get(trackerKey);
+    //noinspection SuspiciousMethodCalls
+    DeviceRecord record = (DeviceRecord) fetched.get(deviceRecordKey);
 
-    return Ix
-        .just(account)
-        .map(updated -> {
-          if (username.isPresent()) {
-            updated = updated.withUsername(username.get());
-          }
+    ImmutableList.Builder<Object> saveBuilder = ImmutableList.builder();
+    List<Notifiable> notifiables = new ArrayList<>();
 
-          if (realName.isPresent()) {
-            updated = updated.withRealname(realName.get());
-          }
+    if (username.isPresent()) {
+      account = account.withUsername(username.get());
+    }
 
-          if (email.isPresent()) {
-            updated = updated.withEmail(new Email(email.get()));
-          }
+    if (realName.isPresent()) {
+      account = account.withRealname(realName.get());
+    }
 
-          if (mediaId.isPresent()) {
-            MediaEntity mediaEntity = (MediaEntity) fetched.get(Key.create(mediaId.get()));
-            Size size = ThumbSize.of(mediaEntity.getUrl());
-            updated = updated.withAvatarUrl(new Link(size.getUrl()));
-          }
+    if (email.isPresent()) {
+      account = account.withEmail(new Email(email.get()));
+    }
 
-          if (countryCode.isPresent()) {
-            Country country = countryService.getCountry(countryCode.get());
-            updated = updated.withCountry(country);
-          }
+    if (mediaId.isPresent()) {
+      MediaEntity mediaEntity = (MediaEntity) fetched.get(Key.create(mediaId.get()));
+      Size size = ThumbSize.of(mediaEntity.getUrl());
+      account = account.withAvatarUrl(new Link(size.getUrl()));
+    }
 
-          if (visitedCountryCode.isPresent()) {
-            Country country = countryService.getCountry(visitedCountryCode.get());
+    if (countryCode.isPresent()) {
+      Country country = countryService.getCountry(countryCode.get());
+      account = account.withCountry(country);
+    }
 
-            Set<Country> visitedCountries = updated.getVisitedCountries();
-            if (visitedCountries == null) {
-              visitedCountries = new HashSet<>();
-            }
-            visitedCountries.add(country);
+    if (visitedCountryCode.isPresent()) {
+      Country country = countryService.getCountry(visitedCountryCode.get());
 
-            updated = updated.withVisitedCountries(visitedCountries);
-          }
+      Set<Country> visitedCountries = account.getVisitedCountries();
+      if (visitedCountries == null) {
+        visitedCountries = new HashSet<>();
+      }
 
-          if (url.isPresent()) {
-            updated = updated.withWebsiteUrl(new Link(url.get()));
-          }
+      if (!visitedCountries.contains(country)) {
+        GameService gameService = GameService.create();
+        gameService.addVisitedCountryBonus(record, tracker, notifiables::addAll);
 
-          if (bio.isPresent()) {
-            updated = updated.withBio(bio.get());
-          }
+        visitedCountries.add(country);
 
-          if (gender.isPresent()) {
-            updated = updated.withGender(gender.get());
-          }
+        account = account.withVisitedCountries(visitedCountries);
+      }
+    }
 
-          return updated;
-        })
-        .doOnNext(updated -> ofy().transact(() -> ofy().save().entity(updated)))
-        .map(updated -> updated
-            .withCounts(accountShardService.merge(updated).map(this::buildCounter).blockingFirst())
-            .withDetail(buildDetail(tracker)))
-        .single();
+    if (url.isPresent()) {
+      account = account.withWebsiteUrl(new Link(url.get()));
+    }
+
+    if (bio.isPresent()) {
+      account = account.withBio(bio.get());
+    }
+
+    if (gender.isPresent()) {
+      account = account.withGender(gender.get());
+    }
+
+    saveBuilder.add(account);
+    saveBuilder.add(tracker);
+    for (Notifiable notifiable : notifiables) {
+      saveBuilder.addAll(notifiable.getNotifications());
+    }
+
+    ofy().transact(() -> {
+      ofy().save().entities(saveBuilder.build());
+
+      NotificationService notificationService =
+          NotificationService.create(URLFetchServiceFactory.getURLFetchService());
+      for (Notifiable bundle : notifiables) {
+        notificationService.send(bundle);
+      }
+    });
+
+    return account
+        .withCounts(accountShardService.merge(account).map(this::buildCounter).blockingFirst())
+        .withDetail(buildDetail(tracker));
   }
 
   public void deleteAccount(String accountId) {

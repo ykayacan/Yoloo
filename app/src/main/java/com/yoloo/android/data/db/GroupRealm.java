@@ -3,7 +3,9 @@ package com.yoloo.android.data.db;
 import android.content.res.Resources;
 import com.yoloo.android.R;
 import com.yoloo.android.YolooApp;
+import com.yoloo.backend.yolooApi.model.GroupSubscriber;
 import com.yoloo.backend.yolooApi.model.TravelerGroup;
+import io.realm.RealmList;
 import io.realm.RealmObject;
 import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
@@ -18,6 +20,7 @@ public class GroupRealm extends RealmObject implements Chipable {
   private long subscriberCount;
   private double rank;
   private boolean subscribed;
+  private RealmList<GroupTopSubscriber> topSubscribers;
 
   public GroupRealm() {
     // empty constructor
@@ -32,6 +35,13 @@ public class GroupRealm extends RealmObject implements Chipable {
     subscriberCount = group.getSubscriberCount();
     rank = group.getRank();
     subscribed = group.getSubscribed();
+    topSubscribers = new RealmList<>();
+    if (group.getTopSubscribers() != null) {
+      for (GroupSubscriber subscriber : group.getTopSubscribers()) {
+        topSubscribers.add(
+            new GroupTopSubscriber(subscriber.getUserId(), subscriber.getAvatarUrl()));
+      }
+    }
   }
 
   public String getId() {
@@ -74,10 +84,15 @@ public class GroupRealm extends RealmObject implements Chipable {
     this.subscribed = subscribed;
   }
 
-  @Override
-  public boolean equals(Object o) {
+  public RealmList<GroupTopSubscriber> getTopSubscribers() {
+    return topSubscribers;
+  }
+
+  @Override public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof GroupRealm)) return false;
+    if (!(o instanceof GroupRealm)) {
+      return false;
+    }
 
     GroupRealm that = (GroupRealm) o;
 
@@ -87,15 +102,15 @@ public class GroupRealm extends RealmObject implements Chipable {
         && isSubscribed() == that.isSubscribed()
         && (getId() != null ? getId().equals(that.getId()) : that.getId() == null)
         && (getName() != null ? getName().equals(that.getName()) : that.getName() == null)
-        && (getImageWithIconUrl() != null
-        ? getImageWithIconUrl().equals(that.getImageWithIconUrl())
+        && (getImageWithIconUrl() != null ? getImageWithIconUrl().equals(that.getImageWithIconUrl())
         : that.getImageWithIconUrl() == null)
         && (getImageWithoutIconUrl() != null ? getImageWithoutIconUrl().equals(
-        that.getImageWithoutIconUrl()) : that.getImageWithoutIconUrl() == null);
+        that.getImageWithoutIconUrl()) : that.getImageWithoutIconUrl() == null)
+        && (topSubscribers != null ? topSubscribers.equals(that.topSubscribers)
+        : that.topSubscribers == null);
   }
 
-  @Override
-  public int hashCode() {
+  @Override public int hashCode() {
     int result;
     long temp;
     result = getId() != null ? getId().hashCode() : 0;
@@ -108,33 +123,22 @@ public class GroupRealm extends RealmObject implements Chipable {
     temp = Double.doubleToLongBits(getRank());
     result = 31 * result + (int) (temp ^ (temp >>> 32));
     result = 31 * result + (isSubscribed() ? 1 : 0);
+    result = 31 * result + (topSubscribers != null ? topSubscribers.hashCode() : 0);
     return result;
   }
 
-  @Override
-  public String toString() {
-    return "GroupRealm{"
-        + "id='"
-        + id
-        + '\''
-        + ", name='"
-        + name
-        + '\''
-        + ", imageWithIconUrl='"
-        + imageWithIconUrl
-        + '\''
-        + ", imageWithoutIconUrl='"
-        + imageWithoutIconUrl
-        + '\''
-        + ", postCount="
-        + postCount
-        + ", subscriberCount="
-        + subscriberCount
-        + ", rank="
-        + rank
-        + ", subscribed="
-        + subscribed
-        + '}';
+  @Override public String toString() {
+    return "GroupRealm{" +
+        "id='" + id + '\'' +
+        ", name='" + name + '\'' +
+        ", imageWithIconUrl='" + imageWithIconUrl + '\'' +
+        ", imageWithoutIconUrl='" + imageWithoutIconUrl + '\'' +
+        ", postCount=" + postCount +
+        ", subscriberCount=" + subscriberCount +
+        ", rank=" + rank +
+        ", subscribed=" + subscribed +
+        ", topSubscribers=" + topSubscribers +
+        '}';
   }
 
   private String getLocalizedGroupName(String groupName) {

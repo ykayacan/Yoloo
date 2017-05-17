@@ -266,13 +266,13 @@
   <style name="TextAppearance.EditorItemText" parent="android:TextAppearance">
     <item name="fontPath">fonts/OpenSans-Bold.ttf</item>
     <item name="android:textSize">14sp</item>
-    <item name="android:textColor">@color/lucky_point</item>
+    <item name="android:textColor">@color/editor</item>
   </style>
 
   <style name="Widget.Yoloo.SettingsSubText">
     <item name="android:textAppearance">@style/TextAppearance.AppCompat.Body1</item>
-    <item name="android:paddingBottom">16dp</item>
-    <item name="android:paddingTop">16dp</item>
+    <item name="android:paddingBottom">12dp</item>
+    <item name="android:paddingTop">12dp</item>
   </style>
 
 </resources>

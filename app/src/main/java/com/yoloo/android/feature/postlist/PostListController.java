@@ -3,6 +3,7 @@ package com.yoloo.android.feature.postlist;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.LinearLayoutManager;
@@ -34,35 +35,27 @@ import com.yoloo.android.data.sorter.PostSorter;
 import com.yoloo.android.feature.comment.CommentController;
 import com.yoloo.android.feature.editor.editor.PostEditorController;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
-import com.yoloo.android.feature.feed.common.listener.OnBookmarkClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnModelUpdateEvent;
-import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.feature.fullscreenphoto.FullscreenPhotoController;
+import com.yoloo.android.feature.models.post.PostCallbacks;
 import com.yoloo.android.feature.postdetail.PostDetailController;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
-import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
 import com.yoloo.android.ui.widget.StateLayout;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.MenuHelper;
+import com.yoloo.android.util.NetworkUtil;
 import com.yoloo.android.util.ShareUtil;
 import com.yoloo.android.util.ViewUtils;
 import java.util.List;
 import timber.log.Timber;
 
 public class PostListController extends MvpController<PostListView, PostListPresenter>
-    implements PostListView, SwipeRefreshLayout.OnRefreshListener, OnProfileClickListener,
-    OnPostOptionsClickListener, OnItemClickListener<PostRealm>, OnShareClickListener,
-    OnCommentClickListener, OnVoteClickListener, OnContentImageClickListener, OnModelUpdateEvent,
-    OnBookmarkClickListener {
+    implements PostListView, SwipeRefreshLayout.OnRefreshListener, OnModelUpdateEvent,
+    PostCallbacks {
 
   private static final int VIEW_TYPE_GROUP = 0;
   private static final int VIEW_TYPE_TAGS = 1;
@@ -198,7 +191,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
         }
       } else if (viewState == StateLayout.VIEW_STATE_ERROR) {
         View errorActionView = ButterKnife.findById(stateView, R.id.error_view);
-        errorActionView.setOnClickListener(v -> chooseLoadMethod(false));
+        errorActionView.setOnClickListener(v -> chooseLoadMethod(true));
       }
     });
   }
@@ -216,7 +209,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
     }
   }
 
-  @Override public void onLoaded(List<? super FeedItem<?>> value) {
+  @Override public void onLoaded(List<FeedItem<?>> value) {
     if (value.isEmpty()) {
       epoxyController.hideLoader();
     } else {
@@ -265,8 +258,8 @@ public class PostListController extends MvpController<PostListView, PostListPres
     chooseLoadMethod(true);
   }
 
-  @Override public void onAccountLoaded(AccountRealm account) {
-    epoxyController.setUserId(account.getId());
+  @Override public void onAccountLoaded(@NonNull AccountRealm me) {
+    epoxyController.setUserId(me.getId());
   }
 
   @NonNull @Override public PostListPresenter createPresenter() {
@@ -274,67 +267,11 @@ public class PostListController extends MvpController<PostListView, PostListPres
         UserRepositoryProvider.getRepository());
   }
 
-  @Override public void onPostOptionsClick(View v, PostRealm post) {
-    final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
-
-    menu.setOnMenuItemClickListener(item -> {
-      final int itemId = item.getItemId();
-      if (itemId == R.id.action_popup_delete) {
-        deletePost(post);
-        return true;
-      }
-
-      return super.onOptionsItemSelected(item);
-    });
-  }
-
-  @Override public void onCommentClick(View v, PostRealm post) {
-    CommentController controller =
-        CommentController.create(post.getId(), post.getOwnerId(), post.getPostType(),
-            post.getAcceptedCommentId() != null);
-    controller.setModelUpdateEvent(this);
-    startTransaction(controller, new VerticalChangeHandler());
-  }
-
-  @Override public void onContentImageClick(View v, MediaRealm media) {
-    startTransaction(FullscreenPhotoController.create(media.getLargeSizeUrl(), media.getId()),
-        new FadeChangeHandler());
-  }
-
-  @Override public void onProfileClick(View v, String userId) {
-    startTransaction(ProfileController.create(userId), new VerticalChangeHandler());
-  }
-
-  @Override public void onItemClick(View v, PostRealm item) {
-    PostDetailController controller = PostDetailController.create(item.getId());
-    controller.setModelUpdateEvent(this);
-    startTransaction(controller, new HorizontalChangeHandler());
-  }
-
-  @Override public void onShareClick(View v, PostRealm post) {
-    ShareUtil.share(this, null, post.getContent());
-  }
-
-  @Override public void onPostVoteClick(PostRealm post, int direction) {
-    getPresenter().votePost(post.getId(), direction);
-  }
-
-  @Override public void onPostUpdated(PostRealm post) {
+  @Override public void onPostUpdated(@NonNull PostRealm post) {
+    epoxyController.updatePost(post);
     if (modelUpdateEvent != null) {
       modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, post);
     }
-  }
-
-  @Override public void onBookmarkClick(@NonNull PostRealm post, boolean bookmark) {
-    if (post.isBookmarked()) {
-      post.setBookmarked(false);
-      getPresenter().unBookmarkPost(post.getId());
-    } else {
-      post.setBookmarked(true);
-      getPresenter().bookmarkPost(post.getId());
-    }
-
-    epoxyController.updatePost(post);
   }
 
   @Override public void onModelUpdateEvent(@FeedAction int action, @Nullable Object payload) {
@@ -345,14 +282,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
 
   private void setupRecyclerView() {
     epoxyController = new PostListEpoxyController(getActivity());
-    epoxyController.setOnProfileClickListener(this);
-    epoxyController.setOnPostClickListener(this);
-    epoxyController.setOnPostOptionsClickListener(this);
-    epoxyController.setOnContentImageClickListener(this);
-    epoxyController.setOnCommentClickListener(this);
-    epoxyController.setOnShareClickListener(this);
-    epoxyController.setOnVoteClickListener(this);
-    epoxyController.setOnBookmarkClickListener(this);
+    epoxyController.setPostCallbacks(this);
 
     final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
 
@@ -429,22 +359,22 @@ public class PostListController extends MvpController<PostListView, PostListPres
   private void chooseLoadMethod(boolean pullToRefresh) {
     switch (viewType) {
       case VIEW_TYPE_USER:
-        getPresenter().loadPostsByUser(pullToRefresh, userId, 20);
+        getPresenter().loadPostsByUser(pullToRefresh, userId);
         break;
       case VIEW_TYPE_TAGS:
-        getPresenter().loadPostsByTag(pullToRefresh, tagName, PostSorter.NEWEST, 20);
+        getPresenter().loadPostsByTag(pullToRefresh, tagName, PostSorter.NEWEST);
         break;
       case VIEW_TYPE_GROUP:
-        getPresenter().loadPostsByGroup(pullToRefresh, groupId, PostSorter.NEWEST, 20);
+        getPresenter().loadPostsByGroup(pullToRefresh, groupId, PostSorter.NEWEST);
         break;
       case VIEW_TYPE_BOUNTY:
-        getPresenter().loadPostsByBounty(pullToRefresh, 20);
+        getPresenter().loadPostsByBounty(pullToRefresh);
         break;
       case VIEW_TYPE_BOOKMARKED:
-        getPresenter().loadPostsByBookmarked(pullToRefresh, 20);
+        getPresenter().loadPostsByBookmarked(pullToRefresh);
         break;
       case VIEW_TYPE_SORTER:
-        getPresenter().loadPostsByPostSorter(pullToRefresh, postSorter, 20);
+        getPresenter().loadPostsByPostSorter(pullToRefresh, postSorter);
         break;
     }
   }
@@ -452,22 +382,22 @@ public class PostListController extends MvpController<PostListView, PostListPres
   private void chooseLoadMoreMethod() {
     switch (viewType) {
       case VIEW_TYPE_USER:
-        getPresenter().loadMorePostsByUser(userId, 30);
+        getPresenter().loadMorePostsByUser(userId);
         break;
       case VIEW_TYPE_TAGS:
-        getPresenter().loadMorePostsByTag(tagName, PostSorter.NEWEST, 30);
+        getPresenter().loadMorePostsByTag(tagName, PostSorter.NEWEST);
         break;
       case VIEW_TYPE_GROUP:
-        getPresenter().loadMorePostsByGroup(groupId, PostSorter.NEWEST, 30);
+        getPresenter().loadMorePostsByGroup(groupId, PostSorter.NEWEST);
         break;
       case VIEW_TYPE_BOUNTY:
-        getPresenter().loadMorePostsByBounty(30);
+        getPresenter().loadMorePostsByBounty();
         break;
       case VIEW_TYPE_BOOKMARKED:
-        getPresenter().loadMorePostsByBounty(30);
+        getPresenter().loadMorePostsByBounty();
         break;
       case VIEW_TYPE_SORTER:
-        getPresenter().loadMorePostsByPostSorter(postSorter, 30);
+        getPresenter().loadMorePostsByPostSorter(postSorter);
         break;
     }
   }
@@ -489,14 +419,75 @@ public class PostListController extends MvpController<PostListView, PostListPres
   }
 
   private void deletePost(PostRealm post) {
-    getPresenter().deletePost(post.getId());
-    epoxyController.deletePost(post);
-    if (modelUpdateEvent != null) {
-      modelUpdateEvent.onModelUpdateEvent(FeedAction.DELETE, post);
+    if (NetworkUtil.isNetworkAvailable(getActivity())) {
+      getPresenter().deletePost(post.getId());
+      epoxyController.deletePost(post);
+      if (modelUpdateEvent != null) {
+        modelUpdateEvent.onModelUpdateEvent(FeedAction.DELETE, post);
+      }
+    } else {
+      Snackbar.make(getView(), R.string.all_network_required_delete, Snackbar.LENGTH_SHORT).show();
     }
   }
 
   public void setModelUpdateEvent(OnModelUpdateEvent modelUpdateEvent) {
     this.modelUpdateEvent = modelUpdateEvent;
+  }
+
+  @Override public void onPostClickListener(@NonNull PostRealm post) {
+    PostDetailController controller = PostDetailController.create(post.getId());
+    controller.setModelUpdateEvent(this);
+    startTransaction(controller, new HorizontalChangeHandler());
+  }
+
+  @Override public void onPostContentImageClickListener(@NonNull MediaRealm media) {
+    startTransaction(FullscreenPhotoController.create(media.getLargeSizeUrl()),
+        new FadeChangeHandler());
+  }
+
+  @Override public void onPostProfileClickListener(@NonNull String userId) {
+    startTransaction(ProfileController.create(userId), new VerticalChangeHandler());
+  }
+
+  @Override public void onPostBookmarkClickListener(@NonNull PostRealm post) {
+    if (post.isBookmarked()) {
+      getPresenter().unBookmarkPost(post.getId());
+    } else {
+      getPresenter().bookmarkPost(post.getId());
+    }
+  }
+
+  @Override public void onPostOptionsClickListener(View v, @NonNull PostRealm post) {
+    final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
+
+    menu.setOnMenuItemClickListener(item -> {
+      final int itemId = item.getItemId();
+      if (itemId == R.id.action_popup_delete) {
+        deletePost(post);
+        return true;
+      }
+
+      return super.onOptionsItemSelected(item);
+    });
+  }
+
+  @Override public void onPostShareClickListener(@NonNull PostRealm post) {
+    ShareUtil.share(this, null, post.getContent());
+  }
+
+  @Override public void onPostCommentClickListener(@NonNull PostRealm post) {
+    CommentController controller =
+        CommentController.create(post.getId(), post.getOwnerId(), post.getPostType(),
+            post.getAcceptedCommentId() != null);
+    controller.setModelUpdateEvent(this);
+    startTransaction(controller, new VerticalChangeHandler());
+  }
+
+  @Override public void onPostVoteClickListener(@NonNull PostRealm post, int direction) {
+    getPresenter().votePost(post.getId(), direction);
+  }
+
+  @Override public void onPostTagClickListener(@NonNull String tagName) {
+
   }
 }

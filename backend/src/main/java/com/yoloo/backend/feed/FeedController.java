@@ -5,7 +5,6 @@ import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.users.User;
 import com.google.common.base.Optional;
-import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.account.Account;
@@ -15,6 +14,7 @@ import com.yoloo.backend.post.PostShardService;
 import com.yoloo.backend.util.CollectionTransformer;
 import com.yoloo.backend.vote.VoteService;
 import io.reactivex.Observable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import lombok.AllArgsConstructor;
@@ -53,12 +53,10 @@ public class FeedController extends Controller {
 
     final QueryResultIterator<Key<Feed>> qi = query.keys().iterator();
 
-    List<Key<PostEntity>> postKeys = Lists.newArrayListWithCapacity(DEFAULT_LIST_LIMIT);
+    List<Key<PostEntity>> postKeys = new ArrayList<>(DEFAULT_LIST_LIMIT);
 
     while (qi.hasNext()) {
-      final Key<Feed> feedKey = qi.next();
-      final Key<PostEntity> postKey = Feed.getPostKey(feedKey);
-      postKeys.add(postKey);
+      postKeys.add(Feed.getPostKey(qi.next()));
     }
 
     if (postKeys.isEmpty()) {
@@ -66,10 +64,9 @@ public class FeedController extends Controller {
     } else {
       return Observable
           .just(postKeys)
-          .filter(keys -> !keys.isEmpty())
           .flatMap(keys -> Observable.fromCallable(
               () -> ofy().load().group(PostEntity.ShardGroup.class).keys(postKeys).values()))
-          .flatMap(posts -> postShardService.mergeShards(posts))
+          .flatMap(posts -> postShardService.mergeShards(posts, accountKey))
           .flatMap(posts -> voteService.checkPostVote(posts, accountKey))
           .compose(CollectionTransformer.create(qi.getCursor().toWebSafeString()))
           .blockingSingle();
@@ -81,7 +78,6 @@ public class FeedController extends Controller {
 
     Query<Feed> query = ofy().load().type(Feed.class).ancestor(accountKey);
 
-    // Fetch items from beginning from cursor.
     query = cursor.isPresent() ? query.startAt(Cursor.fromWebSafeString(cursor.get())) : query;
 
     query = query.limit(limit.or(DEFAULT_LIST_LIMIT));

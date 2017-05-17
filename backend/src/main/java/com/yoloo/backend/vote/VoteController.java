@@ -9,10 +9,12 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
+import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentShardService;
 import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.post.PostShardService;
 import com.yoloo.backend.shard.Shardable;
+import io.reactivex.Observable;
 import ix.Ix;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,6 +24,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
 
 import static com.yoloo.backend.OfyService.ofy;
+import static com.yoloo.backend.endpointsvalidator.Guard.checkNotFound;
 
 @Log
 @AllArgsConstructor(staticName = "create")
@@ -31,7 +34,43 @@ public final class VoteController extends Controller {
 
   private CommentShardService commentShardService;
 
-  public void vote(String votableId, int dir, User user) {
+  private VoteService voteService;
+
+  public Comment voteComment(@Nonnull String commentId, int dir, @Nonnull User user) {
+    vote(commentId, dir, user);
+
+    return Observable
+        .fromCallable(() -> {
+          Comment comment = ofy().load()
+              .group(Comment.ShardGroup.class)
+              .key(Key.<Comment>create(commentId))
+              .now();
+
+          return checkNotFound(comment, "Comment does not exists!");
+        })
+        .flatMap(commentShardService::mergeShards)
+        .flatMap(comment -> voteService.checkCommentVote(comment, Key.create(user.getUserId())))
+        .blockingSingle();
+  }
+
+  public PostEntity votePost(@Nonnull String postId, int dir, @Nonnull User user) {
+    vote(postId, dir, user);
+
+    return Observable
+        .fromCallable(() -> {
+          PostEntity post = ofy().load()
+              .group(PostEntity.ShardGroup.class)
+              .key(Key.<PostEntity>create(postId))
+              .now();
+
+          return checkNotFound(post, "Post does not exists!");
+        })
+        .flatMap(postShardService::mergeShards)
+        .flatMap(comment -> voteService.checkPostVote(comment, Key.create(user.getUserId())))
+        .blockingSingle();
+  }
+
+  private void vote(String votableId, int dir, User user) {
     Vote.Direction direction = Vote.parse(dir);
 
     final Key<Votable> votableKey = Key.create(votableId);

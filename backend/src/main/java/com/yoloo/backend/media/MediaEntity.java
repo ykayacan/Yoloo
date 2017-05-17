@@ -32,12 +32,18 @@ public class MediaEntity {
 
   public static final String FIELD_CREATED = "created";
 
-  @Id private String id;
+  @Id private Long id;
+
   @Parent private Key<Account> parent;
+
   @Wither private String mime;
+
   @Wither private String url;
+
   @JsonIgnore private String originalPath;
-  @Index private MediaOrigin mediaOrigin;
+
+  @Index(IfNotChatMediaSource.class) private MediaOrigin mediaOrigin;
+
   @Index private DateTime created;
 
   public String getWebsafeId() {
@@ -52,11 +58,20 @@ public class MediaEntity {
     return Key.create(parent, getClass(), id);
   }
 
-  public static MediaOrigin parse(@Nonnull String mediaOrigin) {
-    return mediaOrigin.equals(MediaOrigin.POST.name()) ? MediaOrigin.POST : MediaOrigin.PROFILE;
-  }
-
   public enum MediaOrigin {
-    POST, PROFILE
+    POST, PROFILE, CHAT;
+
+    public static MediaOrigin parse(@Nonnull String mediaOrigin) {
+      switch (mediaOrigin.toLowerCase()) {
+        case "post":
+          return POST;
+        case "profile":
+          return PROFILE;
+        case "chat":
+          return CHAT;
+        default:
+          throw new IllegalArgumentException("Given " + mediaOrigin + " is not a valid type!");
+      }
+    }
   }
 }

@@ -1,20 +1,24 @@
 package com.yoloo.android.data.repository.chat;
 
-import android.support.annotation.NonNull;
 import com.annimon.stream.Stream;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ServerValue;
-import com.yoloo.android.data.chat.Dialog;
-import com.yoloo.android.data.chat.Message;
-import com.yoloo.android.data.chat.User;
+import com.yoloo.android.data.chat.firebase.Chat;
+import com.yoloo.android.data.chat.firebase.ChatBuilder;
+import com.yoloo.android.data.chat.firebase.ChatMessage;
+import com.yoloo.android.data.chat.firebase.ChatMessageBuilder;
+import com.yoloo.android.data.chat.firebase.ChatUser;
+import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.rxfirebase.FirebaseChildEvent;
 import com.yoloo.android.rxfirebase.RxFirebaseDatabase;
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import java.util.HashMap;
 import java.util.Map;
-import timber.log.Timber;
+import javax.annotation.Nonnull;
 
 public class ChatRepository {
 
@@ -29,12 +33,13 @@ public class ChatRepository {
   private RxFirebaseDatabase rxFirebaseDb;
 
   private ChatRepository() {
-    rootRef = FirebaseDatabase.getInstance().getReference();
-    usersRef = rootRef.child("users");
-    chatsRef = rootRef.child("chats");
-    messagesRef = rootRef.child("messages");
-    membersRef = rootRef.child("members");
     rxFirebaseDb = RxFirebaseDatabase.getInstance();
+
+    rootRef = FirebaseDatabase.getInstance().getReference();
+    chatsRef = rootRef.child("chats");
+    membersRef = rootRef.child("members");
+    messagesRef = rootRef.child("messages");
+    usersRef = rootRef.child("users");
   }
 
   public static ChatRepository getInstance() {
@@ -44,202 +49,190 @@ public class ChatRepository {
     return instance;
   }
 
-  public Observable<Dialog> createDialog(@NonNull Dialog dialog) {
-    final String targetUserId = dialog.getUsers().get(1).getId();
+  public static String createOneToOneChatId(@Nonnull String oneId, @Nonnull String otherId) {
+    if (oneId.equals(otherId)) {
+      throw new IllegalArgumentException("Same user");
+    }
 
-    return rxFirebaseDb
-        .observeSingleValue(membersRef.child(dialog.getUsers().get(0).getId()))
-        .flatMapSingle(s -> {
-          if (s.exists()) {
-            Timber.d("Getting existing chat");
-            return Observable
-                .fromIterable(s.getChildren())
-                .filter(snapshot -> targetUserId.equals(snapshot.getKey()))
-                .map(snapshot -> snapshot.getValue(String.class))
-                .flatMap(dialogId -> rxFirebaseDb.observeSingleValue(chatsRef.child(dialogId)))
-                .doOnNext(snapshot -> Timber.d("Snapshot: %s", snapshot))
-                .map(snapshot -> snapshot.getValue(Dialog.class))
-                .firstElement()
-                .toSingle();
-          } else {
-            Timber.d("Creating new chat");
-            return Single.fromCallable(() -> {
-              Map<String, Object> update = new HashMap<>();
-
-              final String dialogId = rootRef.push().getKey();
-
-              Dialog newDialog = dialog.withId(dialogId);
-              // chats/$chatId/meta
-              update.put("chats/" + dialogId + "/meta", newDialog);
-
-              // Only create dialog for admin.
-              // If admin writes something to target user then update the target's chat list.
-              // users/$userId/$chatId
-              for (User user : dialog.getUsers()) {
-                if (user.getRole() == User.ROLE_ADMIN) {
-                  update.put("users/" + user.getId() + "/chats/" + dialogId, user.getRole());
-                }
-              }
-
-              rootRef.updateChildren(update);
-
-              return newDialog;
-            });
-          }
-        });
-
-    /*return rxFirebaseDb
-        .observeSingleValue(membersRef.child(dialog.getUsers().get(0).getId()))
-        .filter(DataSnapshot::exists)
-        .flatMapIterable(DataSnapshot::getChildren)
-        .map(snapshot -> snapshot.getValue(String.class).split(":"))
-        .filter(pair -> targetUserId.equals(pair[0]))
-        .flatMap(pair -> rxFirebaseDb.observeSingleValue(chatsRef.child(pair[1])))
-        .map(snapshot -> snapshot.getValue(Dialog.class))
-        .firstElement()
-        .map(persistentDialog -> {
-          if (persistentDialog == null) {
-            Map<String, Object> update = new HashMap<>();
-
-            final String dialogId = rootRef.push().getKey();
-
-            Dialog newDialog = dialog.withId(dialogId);
-            // chats/$chatId/meta
-            update.put("chats/" + dialogId + "/meta", dialog);
-
-            // Only create dialog for admin.
-            // If admin writes something to target user then update the target's chat list.
-            // users/$userId/$chatId
-            for (User user : dialog.getUsers()) {
-              if (user.getRole() == User.ROLE_ADMIN) {
-                update.put("users/" + user.getId() + "/chats/" + dialogId, user.getRole());
-              }
-            }
-
-            rootRef.updateChildren(update);
-
-            return newDialog;
-          }
-
-          return persistentDialog;
-        })
-        .toSingle();*/
-
-    /*membersRef
-        .child(dialog.getUsers().get(0).getId())
-        .addListenerForSingleValueEvent(new ValueEventListener() {
-          @Override
-          public void onDataChange(DataSnapshot dataSnapshot) {
-
-            for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-              String[] memberPair = snapshot.getValue(String.class).split(":");
-              if (targetUserId.equals(memberPair[0])) {
-                chatsRef
-                    .child(memberPair[1])
-                    .addListenerForSingleValueEvent(new ValueEventListener() {
-                      @Override
-                      public void onDataChange(DataSnapshot dataSnapshot) {
-                        newDialog = dataSnapshot.getValue(Dialog.class);
-                      }
-
-                      @Override
-                      public void onCancelled(DatabaseError databaseError) {
-
-                      }
-                    });
-
-                break;
-              } else {
-
-              }
-            }
-          }
-
-          @Override
-          public void onCancelled(DatabaseError databaseError) {
-
-          }
-        });*/
+    return "chat_" + (oneId.compareToIgnoreCase(otherId) < 0
+        ? oneId + "_" + otherId
+        : otherId + "_" + oneId);
   }
 
-  public void addDialogToTargetUser(@NonNull Dialog dialog) {
-    Map<String, Object> update = new HashMap<>();
-
-    final String targetUserId = Stream
-        .of(dialog.getUsers())
-        .filter(value -> value.getRole() == User.ROLE_MEMBER)
-        .map(User::getId)
-        .single();
-
-    update.put("users/" + targetUserId + "/chats/" + dialog.getId(), User.ROLE_MEMBER);
-    update.put("chats/" + dialog.getId() + "/meta/members/" + targetUserId + "/unreadCount/", 1);
-
-    final String user1Id = dialog.getUsers().get(0).getId();
-    final String user2Id = dialog.getUsers().get(1).getId();
-
-    update.put("members/" + user1Id + "/" + user2Id, dialog.getId());
-    update.put("members/" + user2Id + "/" + user1Id, dialog.getId());
-
-    rootRef.updateChildren(update);
-  }
-
-  public void deleteDialog(@NonNull Dialog dialog) {
-    Map<String, Object> delete = new HashMap<>();
-    delete.put("chats/" + dialog.getId(), null);
-    delete.put("messages/" + dialog.getId(), null);
-
-    Stream.of(dialog.getUsers()).forEach(user -> {
-      delete.put("users/" + user.getId() + "/chats/" + dialog.getId(), null);
-      delete.put("members/" + user.getId(), null);
-    });
-
-    rootRef.updateChildren(delete);
-  }
-
-  public Observable<FirebaseChildEvent> getMessagesByDialogId(@NonNull String senderId,
-      @NonNull String dialogId) {
-    Timber.d("getMessagesByDialogId(): %s", senderId);
-    chatsRef
-        .child(dialogId)
-        .child("meta")
-        .child("members")
-        .child(senderId)
-        .child("unreadCount")
-        .setValue(0);
-    return rxFirebaseDb.observeChildEvent(messagesRef.child(dialogId));
-  }
-
-  public Message sendMessage(@NonNull Dialog dialog, @NonNull String targetUserId,
-      @NonNull Message message) {
-    final String messageId = rootRef.push().getKey();
-    message = message.withId(messageId);
-
-    Map<String, Object> update = new HashMap<>();
-    update.put("messages/" + dialog.getId() + "/" + messageId, message);
-    update.put("chats/" + dialog.getId() + "/meta/lastSenderId", message.getUser().getId());
-    update.put("chats/" + dialog.getId() + "/meta/lastMessageString",
-        getTrimmedText(message.getText()));
-    update.put("chats/" + dialog.getId() + "/meta/updatedTs", ServerValue.TIMESTAMP);
-
-    final User targetUser =
-        Stream.of(dialog.getUsers()).filter(value -> value.getId().equals(targetUserId)).single();
-
-    update.put("chats/" + dialog.getId() + "/meta/members/" + targetUserId + "/unreadCount",
-        targetUser.increaseUnreadCounter());
-
-    rootRef.updateChildren(update);
-
-    return message;
-  }
-
-  public Observable<FirebaseChildEvent> getDialogsByUserId(@NonNull String userId) {
-    return rxFirebaseDb
-        .observeChildEvent(usersRef.child(userId).child("chats"))
-        .map(event -> event.getDataSnapshot().getKey())
-        .flatMap(chatId -> rxFirebaseDb.observeChildEvent(chatsRef.child(chatId)));
-  }
-
-  private String getTrimmedText(String content) {
+  private static String getLastMessage(@Nonnull String content) {
     return content.length() > 38 ? content.substring(0, 38).concat("...") : content;
+  }
+
+  public Single<Chat> getChatById(@Nonnull String oneId, @Nonnull String chatId) {
+    return rxFirebaseDb
+        .observeSingleValue(usersRef.child(oneId).child("chats").child(chatId))
+        .map(snapshot -> snapshot.getValue(Chat.class))
+        .singleOrError();
+  }
+
+  public Maybe<Chat> getChat(@Nonnull String oneId, @Nonnull String otherId) {
+    return rxFirebaseDb
+        .observeSingleValue(
+            usersRef.child(oneId).child("chats").child(createOneToOneChatId(oneId, otherId)))
+        .flatMapMaybe(snapshot -> {
+          if (snapshot.exists()) {
+            return Maybe.just(snapshot.getValue(Chat.class));
+          }
+
+          return Maybe.empty();
+        }).singleElement();
+  }
+
+  public Single<Chat> createChat(@Nonnull AccountRealm one, @Nonnull AccountRealm other) {
+    return createChat(one.getId(), one.getUsername(), one.getAvatarUrl(), other.getId(),
+        other.getUsername(), other.getAvatarUrl());
+  }
+
+  public Single<Chat> createChat(
+      @Nonnull String oneId,
+      @Nonnull String oneUsername,
+      @Nonnull String oneAvatar,
+      @Nonnull String otherId,
+      @Nonnull String otherUsername,
+      @Nonnull String otherAvatar) {
+    return Single.fromCallable(() -> {
+      final String chatId = createOneToOneChatId(oneId, otherId);
+
+      Chat chatOne = new ChatBuilder()
+          .setChatId(chatId)
+          .setChatName(otherUsername)
+          .setChatPhoto(otherAvatar)
+          .setCreatedByUserId(oneId)
+          .setType(Chat.USER)
+          .createChat();
+
+      Chat chatOther = new ChatBuilder()
+          .setChatId(chatId)
+          .setChatName(oneUsername)
+          .setChatPhoto(oneAvatar)
+          .setCreatedByUserId(oneId)
+          .setType(Chat.USER)
+          .createChat();
+
+      Map<String, Integer> members = new HashMap<>();
+      members.put(oneId, ChatUser.ROLE_ADMIN);
+      members.put(otherId, ChatUser.ROLE_MEMBER);
+
+      Map<String, Object> update = new HashMap<>();
+      update.put("users/" + oneId + "/chats/" + chatId, chatOne);
+      update.put("users/" + oneId + "/lastSeen", ServerValue.TIMESTAMP);
+      update.put("users/" + otherId + "/chats/" + chatId, chatOther);
+      update.put("users/" + otherId + "/lastSeen", ServerValue.TIMESTAMP);
+      update.put("members/" + chatId, members);
+
+      rootRef.updateChildren(update);
+
+      return chatOne;
+    });
+  }
+
+  public void leftFromChat(@Nonnull String userId, @Nonnull String chatId) {
+    rxFirebaseDb.observeSingleValue(membersRef.child(chatId))
+        .map(DataSnapshot::getChildren)
+        .flatMap(Observable::fromIterable)
+        .filter(snapshot -> snapshot.getKey().equals(userId))
+        .toList()
+        .subscribe(snapshots -> {
+          Map<String, Object> update = new HashMap<>();
+
+          update.put("users/" + userId + "/chats/" + chatId, null);
+
+          Stream.of(snapshots)
+              .map(DataSnapshot::getKey)
+              .forEach(id -> {
+                // Update other users
+                // Update user has left message
+                update.put("users/" + id + "/chats/" + chatId + "/lastMessage",
+                    "User has left conversation");
+                // Update ts of user left action
+                update.put("users/" + id + "/chats/" + chatId + "/lastMessageTs",
+                    ServerValue.TIMESTAMP);
+              });
+
+          rootRef.updateChildren(update);
+        });
+  }
+
+  public void deleteChat(@Nonnull String chatId) {
+    rxFirebaseDb.observeSingleValue(membersRef.child(chatId))
+        .map(DataSnapshot::getChildren)
+        .subscribe(snapshots -> {
+          Map<String, Object> delete = new HashMap<>();
+
+          Stream.of(snapshots)
+              .map(DataSnapshot::getKey)
+              .forEach(userId -> delete.put("users/" + userId + "/chats/" + chatId, null));
+
+          // Delete all members
+          delete.put("members/" + chatId, null);
+          // Delete all messages
+          delete.put("messages/" + chatId, null);
+
+          rootRef.updateChildren(delete);
+        });
+  }
+
+  public void sendMessage(@Nonnull String chatId, @Nonnull ChatMessage chatMessage) {
+    rxFirebaseDb.observeSingleValue(membersRef.child(chatId))
+        .map(DataSnapshot::getChildren)
+        .subscribe(snapshots -> {
+          Map<String, Object> update = new HashMap<>();
+
+          ChatMessage message = new ChatMessageBuilder()
+              .setMessageId(rootRef.push().getKey())
+              .setMessage(chatMessage.getMessage())
+              .setAttachment(chatMessage.getAttachment())
+              .setSenderId(chatMessage.getSenderId())
+              .createChatMessage();
+
+          // Add message
+          update.put("messages/" + chatId + "/" + message.getMessageId(), message);
+
+          Stream.of(snapshots)
+              .map(DataSnapshot::getKey)
+              .forEach(userId -> {
+                // Update last message
+                update.put("users/" + userId + "/chats/" + chatId + "/lastMessage",
+                    getLastMessage(message.getMessage()));
+                // Update last message ts
+                update.put("users/" + userId + "/chats/" + chatId + "/lastMessageTs",
+                    ServerValue.TIMESTAMP);
+                // Update last sender id
+                update.put("users/" + userId + "/chats/" + chatId + "/lastSenderId",
+                    chatMessage.getSenderId());
+              });
+
+          rootRef.updateChildren(update);
+        });
+  }
+
+  public Observable<FirebaseChildEvent> observeChats(@Nonnull String userId) {
+    return rxFirebaseDb.observeChildEvent(usersRef.child(userId).child("chats"));
+  }
+
+  public Observable<FirebaseChildEvent> getChangedChats(@Nonnull String userId) {
+    return rxFirebaseDb.observeChildChanged(usersRef.child(userId).child("chats"));
+  }
+
+  public Observable<FirebaseChildEvent> getMessages(@Nonnull String chatId) {
+    return rxFirebaseDb.observeChildAdded(messagesRef.child(chatId));
+  }
+
+  public Observable<ChatUser> getChatUser(@Nonnull String userId) {
+    return rxFirebaseDb.observeSingleValue(usersRef.child(userId))
+        .map(snapshot -> snapshot.getValue(ChatUser.class));
+  }
+
+  public void setLastSeen(@Nonnull String userId) {
+    usersRef.child(userId).child("lastSeen").setValue(ServerValue.TIMESTAMP);
+  }
+
+  public Observable<DataSnapshot> getLastSeen(@Nonnull String userId) {
+    return rxFirebaseDb.observeSingleValue(usersRef.child(userId).child("lastSeen"));
   }
 }

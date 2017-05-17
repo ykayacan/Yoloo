@@ -6,7 +6,6 @@ public final class RegisterUserPayload {
   private final String username;
   private final String realname;
   private final String email;
-  private final long birthday;
   private final String countryCode;
   private final String langCode;
   private final String profileImageUrl;
@@ -16,7 +15,6 @@ public final class RegisterUserPayload {
     this.realname = account.getRealname();
     this.username = account.getUsername();
     this.email = account.getEmail();
-    this.birthday = account.getBirthdate().getTime();
     this.countryCode = account.getCountry().getCode();
     this.langCode = account.getLangCode();
     this.profileImageUrl = account.getAvatarUrl();
@@ -33,10 +31,6 @@ public final class RegisterUserPayload {
 
   public String getEmail() {
     return email;
-  }
-
-  public long getBirthday() {
-    return birthday;
   }
 
   public String getCountryCode() {

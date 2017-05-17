@@ -2,7 +2,6 @@ package com.yoloo.android.feature.auth;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import java.util.Date;
 
 public final class InfoBundle implements Parcelable {
   public static final Creator<InfoBundle> CREATOR = new Creator<InfoBundle>() {
@@ -22,16 +21,13 @@ public final class InfoBundle implements Parcelable {
   private final String email;
   private final String username;
   private final String password;
-  private final long birthday;
 
-  public InfoBundle(String name, String surname, String email, String username, String password,
-      long birthday) {
+  public InfoBundle(String name, String surname, String email, String username, String password) {
     this.name = name;
     this.surname = surname;
     this.email = email;
     this.username = username;
     this.password = password;
-    this.birthday = birthday;
   }
 
   private InfoBundle(Parcel in) {
@@ -40,7 +36,6 @@ public final class InfoBundle implements Parcelable {
     email = in.readString();
     username = in.readString();
     password = in.readString();
-    birthday = in.readLong();
   }
 
   public String getName() {
@@ -63,14 +58,6 @@ public final class InfoBundle implements Parcelable {
     return password;
   }
 
-  public long getBirthday() {
-    return birthday;
-  }
-
-  public Date getBirthdayAsDate() {
-    return new Date(birthday);
-  }
-
   public String getFullname() {
     return name + " " + surname;
   }
@@ -82,7 +69,6 @@ public final class InfoBundle implements Parcelable {
     dest.writeString(email);
     dest.writeString(username);
     dest.writeString(password);
-    dest.writeLong(birthday);
   }
 
   @Override
@@ -90,26 +76,13 @@ public final class InfoBundle implements Parcelable {
     return 0;
   }
 
-  @Override
-  public String toString() {
-    return "InfoBundle{"
-        + "name='"
-        + name
-        + '\''
-        + ", surname='"
-        + surname
-        + '\''
-        + ", email='"
-        + email
-        + '\''
-        + ", username='"
-        + username
-        + '\''
-        + ", password='"
-        + password
-        + '\''
-        + ", birthday="
-        + birthday
-        + '}';
+  @Override public String toString() {
+    return "InfoBundle{" +
+        "name='" + name + '\'' +
+        ", surname='" + surname + '\'' +
+        ", email='" + email + '\'' +
+        ", username='" + username + '\'' +
+        ", password='" + password + '\'' +
+        '}';
   }
 }

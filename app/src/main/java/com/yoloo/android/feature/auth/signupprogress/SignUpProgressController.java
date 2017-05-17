@@ -100,9 +100,9 @@ public class SignUpProgressController extends BaseController {
       case R.layout.controller_sign_up_password:
         setPassword();
         break;
-      case R.layout.controller_sign_up_birthday:
+      /*case R.layout.controller_sign_up_birthday:
         setBirthday();
-        break;
+        break;*/
     }
   }
 
@@ -135,7 +135,7 @@ public class SignUpProgressController extends BaseController {
 
     tvContinue.setOnClickListener(v -> {
       InfoBundle bundle =
-          new InfoBundle(fetName.getText(), fetSurname.getText(), null, null, null, 0);
+          new InfoBundle(fetName.getText(), fetSurname.getText(), null, null, null);
 
       startTransaction(SignUpProgressController.create(R.layout.controller_sign_up_email, bundle),
           new HorizontalChangeHandler());
@@ -164,8 +164,8 @@ public class SignUpProgressController extends BaseController {
           InfoBundle bundle = getArgs().getParcelable(KEY_INFO_BUNDLE);
 
           InfoBundle newBundle =
-              new InfoBundle(bundle.getName(), bundle.getSurname(), result.getData(), null, null,
-                  0);
+              new InfoBundle(bundle.getName(), bundle.getSurname(), result.getData(), null, null
+              );
 
           tvContinue.setOnClickListener(v -> startTransaction(
               SignUpProgressController.create(R.layout.controller_sign_up_username, newBundle),
@@ -198,7 +198,7 @@ public class SignUpProgressController extends BaseController {
 
           InfoBundle newBundle =
               new InfoBundle(bundle.getName(), bundle.getSurname(), bundle.getEmail(),
-                  result.getData(), null, 0);
+                  result.getData(), null);
 
           tvContinue.setOnClickListener(v -> startTransaction(
               SignUpProgressController.create(R.layout.controller_sign_up_password, newBundle),
@@ -222,11 +222,11 @@ public class SignUpProgressController extends BaseController {
 
           InfoBundle newBundle =
               new InfoBundle(bundle.getName(), bundle.getSurname(), bundle.getEmail(),
-                  bundle.getUsername(), result.getData(), 0);
+                  bundle.getUsername(), result.getData());
 
-          tvContinue.setOnClickListener(v -> startTransaction(
-              SignUpProgressController.create(R.layout.controller_sign_up_birthday, newBundle),
-              new HorizontalChangeHandler()));
+          tvContinue.setOnClickListener(
+              v -> startTransaction(SignUpDiscoverController.createWithEmail(newBundle),
+                  new HorizontalChangeHandler()));
         });
 
     disposable.add(d);
@@ -243,13 +243,13 @@ public class SignUpProgressController extends BaseController {
         .map(event -> event.editable().toString())
         .subscribe(s -> tvContinue.setVisibility(s.isEmpty() ? View.GONE : View.VISIBLE));
 
+    InfoBundle bundle = getArgs().getParcelable(KEY_INFO_BUNDLE);
+
+    InfoBundle newBundle =
+        new InfoBundle(bundle.getName(), bundle.getSurname(), bundle.getEmail(),
+            bundle.getUsername(), bundle.getPassword());
+
     tvContinue.setOnClickListener(v -> {
-      InfoBundle bundle = getArgs().getParcelable(KEY_INFO_BUNDLE);
-
-      InfoBundle newBundle =
-          new InfoBundle(bundle.getName(), bundle.getSurname(), bundle.getEmail(),
-              bundle.getUsername(), bundle.getPassword(), c.getTimeInMillis());
-
       startTransaction(SignUpDiscoverController.createWithEmail(newBundle),
           new HorizontalChangeHandler());
     });

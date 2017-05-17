@@ -11,7 +11,6 @@ import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.IgnoreSave;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Load;
-import com.googlecode.objectify.annotation.OnLoad;
 import com.googlecode.objectify.annotation.Parent;
 import com.googlecode.objectify.condition.IfFalse;
 import com.googlecode.objectify.condition.IfNotDefault;
@@ -20,6 +19,8 @@ import com.googlecode.objectify.condition.IfNotZero;
 import com.googlecode.objectify.condition.IfNull;
 import com.googlecode.objectify.condition.IfTrue;
 import com.yoloo.backend.account.Account;
+import com.yoloo.backend.algorithm.RankVisitor;
+import com.yoloo.backend.algorithm.Rankable;
 import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.media.MediaEntity;
@@ -50,7 +51,7 @@ import org.joda.time.DateTime;
 @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
 @FieldDefaults(makeFinal = false)
 @ApiTransformer(PostTransformer.class)
-public class PostEntity implements Votable {
+public class PostEntity implements Votable, Rankable {
 
   public static final String FIELD_CREATED = "created";
   public static final String FIELD_TAGS = "tags";
@@ -158,19 +159,22 @@ public class PostEntity implements Votable {
         .title(title)
         .content(content)
         .shardRefs(shardRefs)
+        .acceptedCommentKey(acceptedCommentKey)
+        .bounty(bounty)
+        .hasMedia(hasMedia)
+        .medias(medias)
         .tags(tags)
         .travelerGroup(travelerGroup)
-        .dir(dir)
-        .bounty(bounty)
-        .acceptedCommentKey(acceptedCommentKey)
-        .medias(medias)
-        .commentCount(commentCount)
-        .voteCount(voteCount)
-        .reportCount(reportCount)
         .commented(commented)
-        .bookmarked(bookmarked)
+        .rank(rank)
         .postType(postType)
         .created(created)
+        .dir(dir)
+        .voteCount(voteCount)
+        .commentCount(commentCount)
+        .reportCount(reportCount)
+        .bookmarked(bookmarked)
+        .shardMap(shardMap)
         .build();
   }
 
@@ -179,12 +183,8 @@ public class PostEntity implements Votable {
     return (List<E>) Deref.deref(shardRefs);
   }
 
-  @OnLoad
-  void onLoad() {
-    /*voteCount = 0L;
-    commentCount = 0L;
-    reportCount = 0;
-    dir = Vote.Direction.DEFAULT;*/
+  @Override public void acceptRank(RankVisitor visitor) {
+    visitor.visit(this);
   }
 
   @AllArgsConstructor

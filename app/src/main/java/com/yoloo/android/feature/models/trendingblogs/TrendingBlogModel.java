@@ -23,8 +23,6 @@ import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.yoloo.android.R;
 import com.yoloo.android.data.db.PostRealm;
-import com.yoloo.android.feature.feed.common.listener.OnBookmarkClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.ui.widget.timeview.TimeTextView;
 
@@ -36,12 +34,12 @@ public abstract class TrendingBlogModel
     extends EpoxyModelWithHolder<TrendingBlogModel.TrendingBlogHolder> {
 
   @EpoxyAttribute PostRealm post;
-  @EpoxyAttribute boolean self;
+  @EpoxyAttribute boolean postOwner;
   @EpoxyAttribute({ DoNotHash, NoGetter }) RequestManager glide;
   @EpoxyAttribute(DoNotHash) View.OnClickListener onClickListener;
   @EpoxyAttribute(DoNotHash) Transformation<Bitmap> bitmapTransformation;
-  @EpoxyAttribute(DoNotHash) OnBookmarkClickListener onBookmarkClickListener;
-  @EpoxyAttribute(DoNotHash) OnPostOptionsClickListener onPostOptionsClickListener;
+  @EpoxyAttribute(DoNotHash) View.OnClickListener onBookmarkClickListener;
+  @EpoxyAttribute(DoNotHash) View.OnClickListener onPostOptionsClickListener;
 
   @Override
   public void bind(TrendingBlogHolder holder) {
@@ -81,10 +79,10 @@ public abstract class TrendingBlogModel
     holder.tvBlogContent.setText(post.getContent());
 
     final int drawableIconRes =
-        self ? R.drawable.ic_more_vert_black_24dp : R.drawable.ic_bookmark_black_24dp;
+        postOwner ? R.drawable.ic_more_vert_black_24dp : R.drawable.ic_bookmark_black_24dp;
     holder.ibOptions.setImageDrawable(AppCompatResources.getDrawable(context, drawableIconRes));
 
-    if (!self) {
+    if (!postOwner) {
       final int colorRes =
           post.isBookmarked() ? R.color.primary : android.R.color.secondary_text_dark;
       holder.ibOptions.setColorFilter(ContextCompat.getColor(context, colorRes),
@@ -92,15 +90,14 @@ public abstract class TrendingBlogModel
     }
 
     holder.ibOptions.setOnClickListener(v -> {
-      if (self) {
-        onPostOptionsClickListener.onPostOptionsClick(v, post);
+      if (postOwner) {
+        onPostOptionsClickListener.onClick(v);
       } else {
         final int reversedColorRes =
             post.isBookmarked() ? android.R.color.secondary_text_dark : R.color.primary;
         holder.ibOptions.setColorFilter(ContextCompat.getColor(context, reversedColorRes),
             PorterDuff.Mode.SRC_IN);
-        post.setBookmarked(!post.isBookmarked());
-        onBookmarkClickListener.onBookmarkClick(post, post.isBookmarked());
+        onBookmarkClickListener.onClick(v);
       }
     });
 
@@ -110,10 +107,11 @@ public abstract class TrendingBlogModel
   @Override
   public void unbind(TrendingBlogHolder holder) {
     super.unbind(holder);
-    holder.itemView.setOnClickListener(null);
-    holder.ibOptions.setOnClickListener(null);
     Glide.clear(holder.ivBlogCover);
     holder.ivBlogCover.setImageDrawable(null);
+
+    holder.itemView.setOnClickListener(null);
+    holder.ibOptions.setOnClickListener(null);
   }
 
   static class TrendingBlogHolder extends BaseEpoxyHolder {
@@ -122,8 +120,8 @@ public abstract class TrendingBlogModel
     @BindView(R.id.tv_item_feed_time) TimeTextView tvTime;
     @BindView(R.id.tv_item_feed_bounty) TextView tvBounty;
     @BindView(R.id.ib_item_feed_options) ImageButton ibOptions;
-    @BindView(R.id.iv_item_blog_cover) ImageView ivBlogCover;
-    @BindView(R.id.tv_item_blog_title) TextView tvBlogTitle;
+    @BindView(R.id.iv_item_feed_cover) ImageView ivBlogCover;
+    @BindView(R.id.tv_item_feed_title) TextView tvBlogTitle;
     @BindView(R.id.tv_item_blog_content) TextView tvBlogContent;
   }
 }

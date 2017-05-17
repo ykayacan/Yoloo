@@ -3,6 +3,9 @@ package com.yoloo.android.feature.auth.signin;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.yoloo.android.data.db.FcmRealm;
+import com.yoloo.android.data.repository.notification.NotificationRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.feature.auth.AuthUI;
 import com.yoloo.android.feature.auth.IdpResponse;
@@ -17,9 +20,11 @@ import timber.log.Timber;
 class SignInPresenter extends MvpPresenter<SignInView> {
 
   private final UserRepository userRepository;
+  private final NotificationRepository notificationRepository;
 
-  SignInPresenter(UserRepository userRepository) {
+  SignInPresenter(UserRepository userRepository, NotificationRepository notificationRepository) {
     this.userRepository = userRepository;
+    this.notificationRepository = notificationRepository;
   }
 
   @Override
@@ -60,11 +65,11 @@ class SignInPresenter extends MvpPresenter<SignInView> {
   }
 
   private void loadUser() {
-    Disposable d = userRepository
-        .getMe()
+    Disposable d = notificationRepository
+        .registerFcmToken(new FcmRealm(FirebaseInstanceId.getInstance().getToken()))
+        .andThen(userRepository.getMe())
         .observeOn(AndroidSchedulers.mainThread(), true)
         .subscribe(account -> {
-          Timber.d("Account: %s", account);
           getView().onHideLoading();
           getView().onSignedIn();
         }, throwable -> {

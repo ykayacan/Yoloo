@@ -144,8 +144,10 @@ public class UserEndpoint {
   @ApiMethod(name = "users.listRecommendedUsers",
       path = "users/recommended",
       httpMethod = ApiMethod.HttpMethod.GET)
-  public CollectionResponse<Account> listRecommendedUsers(@Nullable @Named("cursor") String cursor,
-      @Nullable @Named("limit") Integer limit, User user) throws ServiceException {
+  public CollectionResponse<Account> listRecommendedUsers(
+      @Nullable @Named("cursor") String cursor,
+      @Nullable @Named("limit") Integer limit,
+      User user) throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 

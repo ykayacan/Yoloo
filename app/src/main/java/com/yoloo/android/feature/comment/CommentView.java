@@ -6,7 +6,7 @@ import java.util.List;
 
 interface CommentView extends MvpDataView<List<CommentRealm>> {
 
-  void onCommentAccepted(CommentRealm acceptedComment);
+  void onCommentUpdated(CommentRealm acceptedComment);
 
-  void onCommentDeleted();
+  void onMoreLoaded(List<CommentRealm> comments);
 }

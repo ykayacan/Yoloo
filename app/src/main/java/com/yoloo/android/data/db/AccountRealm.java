@@ -44,6 +44,7 @@ public class AccountRealm extends RealmObject {
 
   private boolean pending;
   @Index private Date localSaveDate;
+  @Index boolean recent;
 
   private String idToken;
   private String subscribedGroupIds;
@@ -371,6 +372,15 @@ public class AccountRealm extends RealmObject {
     this.levelTitle = levelTitle;
   }
 
+  public boolean isRecent() {
+    return recent;
+  }
+
+  public AccountRealm setRecent(boolean recent) {
+    this.recent = recent;
+    return this;
+  }
+
   public String toMention() {
     return "@" + username;
   }
@@ -380,8 +390,7 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
-  @Override
-  public boolean equals(Object o) {
+  @Override public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof AccountRealm)) return false;
 
@@ -397,22 +406,20 @@ public class AccountRealm extends RealmObject {
     if (getPointCount() != that.getPointCount()) return false;
     if (getBountyCount() != that.getBountyCount()) return false;
     if (isPending() != that.isPending()) return false;
+    if (isRecent() != that.isRecent()) return false;
     if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) return false;
-    if (getUsername() != null
-        ? !getUsername().equals(that.getUsername())
+    if (getUsername() != null ? !getUsername().equals(that.getUsername())
         : that.getUsername() != null) {
       return false;
     }
-    if (getRealname() != null
-        ? !getRealname().equals(that.getRealname())
+    if (getRealname() != null ? !getRealname().equals(that.getRealname())
         : that.getRealname() != null) {
       return false;
     }
     if (getEmail() != null ? !getEmail().equals(that.getEmail()) : that.getEmail() != null) {
       return false;
     }
-    if (getAvatarUrl() != null
-        ? !getAvatarUrl().equals(that.getAvatarUrl())
+    if (getAvatarUrl() != null ? !getAvatarUrl().equals(that.getAvatarUrl())
         : that.getAvatarUrl() != null) {
       return false;
     }
@@ -420,43 +427,35 @@ public class AccountRealm extends RealmObject {
     if (getGender() != null ? !getGender().equals(that.getGender()) : that.getGender() != null) {
       return false;
     }
-    if (getWebsiteUrl() != null
-        ? !getWebsiteUrl().equals(that.getWebsiteUrl())
+    if (getWebsiteUrl() != null ? !getWebsiteUrl().equals(that.getWebsiteUrl())
         : that.getWebsiteUrl() != null) {
       return false;
     }
-    if (getBirthdate() != null
-        ? !getBirthdate().equals(that.getBirthdate())
+    if (getBirthdate() != null ? !getBirthdate().equals(that.getBirthdate())
         : that.getBirthdate() != null) {
       return false;
     }
-    if (getLangCode() != null
-        ? !getLangCode().equals(that.getLangCode())
+    if (getLangCode() != null ? !getLangCode().equals(that.getLangCode())
         : that.getLangCode() != null) {
       return false;
     }
-    if (getCountry() != null
-        ? !getCountry().equals(that.getCountry())
+    if (getCountry() != null ? !getCountry().equals(that.getCountry())
         : that.getCountry() != null) {
       return false;
     }
-    if (getVisitedCountries() != null
-        ? !getVisitedCountries().equals(that.getVisitedCountries())
+    if (getVisitedCountries() != null ? !getVisitedCountries().equals(that.getVisitedCountries())
         : that.getVisitedCountries() != null) {
       return false;
     }
-    if (getLevelTitle() != null
-        ? !getLevelTitle().equals(that.getLevelTitle())
+    if (getLevelTitle() != null ? !getLevelTitle().equals(that.getLevelTitle())
         : that.getLevelTitle() != null) {
       return false;
     }
-    if (getLocalSaveDate() != null
-        ? !getLocalSaveDate().equals(that.getLocalSaveDate())
+    if (getLocalSaveDate() != null ? !getLocalSaveDate().equals(that.getLocalSaveDate())
         : that.getLocalSaveDate() != null) {
       return false;
     }
-    if (getIdToken() != null
-        ? !getIdToken().equals(that.getIdToken())
+    if (getIdToken() != null ? !getIdToken().equals(that.getIdToken())
         : that.getIdToken() != null) {
       return false;
     }
@@ -464,23 +463,19 @@ public class AccountRealm extends RealmObject {
         that.getSubscribedGroupIds()) : that.getSubscribedGroupIds() != null) {
       return false;
     }
-    if (getPassword() != null
-        ? !getPassword().equals(that.getPassword())
+    if (getPassword() != null ? !getPassword().equals(that.getPassword())
         : that.getPassword() != null) {
       return false;
     }
-    if (getTravelerTypeIds() != null
-        ? !getTravelerTypeIds().equals(that.getTravelerTypeIds())
+    if (getTravelerTypeIds() != null ? !getTravelerTypeIds().equals(that.getTravelerTypeIds())
         : that.getTravelerTypeIds() != null) {
       return false;
     }
-    return getFacebookId() != null
-        ? getFacebookId().equals(that.getFacebookId())
+    return getFacebookId() != null ? getFacebookId().equals(that.getFacebookId())
         : that.getFacebookId() == null;
   }
 
-  @Override
-  public int hashCode() {
+  @Override public int hashCode() {
     int result = getId() != null ? getId().hashCode() : 0;
     result = 31 * result + (isMe() ? 1 : 0);
     result = 31 * result + (getUsername() != null ? getUsername().hashCode() : 0);
@@ -505,6 +500,7 @@ public class AccountRealm extends RealmObject {
     result = 31 * result + getBountyCount();
     result = 31 * result + (isPending() ? 1 : 0);
     result = 31 * result + (getLocalSaveDate() != null ? getLocalSaveDate().hashCode() : 0);
+    result = 31 * result + (isRecent() ? 1 : 0);
     result = 31 * result + (getIdToken() != null ? getIdToken().hashCode() : 0);
     result =
         31 * result + (getSubscribedGroupIds() != null ? getSubscribedGroupIds().hashCode() : 0);
@@ -514,81 +510,38 @@ public class AccountRealm extends RealmObject {
     return result;
   }
 
-  @Override
-  public String toString() {
-    return "AccountRealm{"
-        + "id='"
-        + id
-        + '\''
-        + ", me="
-        + me
-        + ", username='"
-        + username
-        + '\''
-        + ", realname='"
-        + realname
-        + '\''
-        + ", email='"
-        + email
-        + '\''
-        + ", avatarUrl='"
-        + avatarUrl
-        + '\''
-        + ", bio='"
-        + bio
-        + '\''
-        + ", gender='"
-        + gender
-        + '\''
-        + ", websiteUrl='"
-        + websiteUrl
-        + '\''
-        + ", birthdate="
-        + birthdate
-        + ", langCode='"
-        + langCode
-        + '\''
-        + ", country="
-        + country
-        + ", visitedCountries="
-        + visitedCountries
-        + ", following="
-        + following
-        + ", followingCount="
-        + followingCount
-        + ", followerCount="
-        + followerCount
-        + ", postCount="
-        + postCount
-        + ", countryCount="
-        + countryCount
-        + ", levelTitle='"
-        + levelTitle
-        + '\''
-        + ", level="
-        + level
-        + ", pointCount="
-        + pointCount
-        + ", bountyCount="
-        + bountyCount
-        + ", pending="
-        + pending
-        + ", localSaveDate="
-        + localSaveDate
-        + ", idToken='"
-        + idToken
-        + '\''
-        + ", subscribedGroupIds='"
-        + subscribedGroupIds
-        + '\''
-        + ", password='"
-        + password
-        + '\''
-        + ", travelerTypeIds="
-        + travelerTypeIds
-        + ", facebookId='"
-        + facebookId
-        + '\''
-        + '}';
+  @Override public String toString() {
+    return "AccountRealm{" +
+        "id='" + id + '\'' +
+        ", me=" + me +
+        ", username='" + username + '\'' +
+        ", realname='" + realname + '\'' +
+        ", email='" + email + '\'' +
+        ", avatarUrl='" + avatarUrl + '\'' +
+        ", bio='" + bio + '\'' +
+        ", gender='" + gender + '\'' +
+        ", websiteUrl='" + websiteUrl + '\'' +
+        ", birthdate=" + birthdate +
+        ", langCode='" + langCode + '\'' +
+        ", country=" + country +
+        ", visitedCountries=" + visitedCountries +
+        ", following=" + following +
+        ", followingCount=" + followingCount +
+        ", followerCount=" + followerCount +
+        ", postCount=" + postCount +
+        ", countryCount=" + countryCount +
+        ", levelTitle='" + levelTitle + '\'' +
+        ", level=" + level +
+        ", pointCount=" + pointCount +
+        ", bountyCount=" + bountyCount +
+        ", pending=" + pending +
+        ", localSaveDate=" + localSaveDate +
+        ", recent=" + recent +
+        ", idToken='" + idToken + '\'' +
+        ", subscribedGroupIds='" + subscribedGroupIds + '\'' +
+        ", password='" + password + '\'' +
+        ", travelerTypeIds=" + travelerTypeIds +
+        ", facebookId='" + facebookId + '\'' +
+        '}';
   }
 }

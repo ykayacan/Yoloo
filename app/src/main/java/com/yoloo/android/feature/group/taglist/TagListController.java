@@ -2,7 +2,6 @@ package com.yoloo.android.feature.group.taglist;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,16 +11,18 @@ import com.google.android.flexbox.FlexDirection;
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.yoloo.android.R;
+import com.yoloo.android.data.db.TagRealm;
 import com.yoloo.android.data.repository.group.GroupRepository;
 import com.yoloo.android.data.repository.group.GroupRepositoryProvider;
 import com.yoloo.android.feature.base.BaseController;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
+import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.util.BundleBuilder;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import timber.log.Timber;
 
-public class TagListController extends BaseController implements OnItemClickListener<String> {
+public class TagListController extends BaseController implements OnItemClickListener<TagRealm> {
 
   private static final String KEY_GROUP_ID = "GROUP_ID";
 
@@ -73,9 +74,8 @@ public class TagListController extends BaseController implements OnItemClickList
     }
   }
 
-  @Override
-  public void onItemClick(View v, String item) {
-    // TODO: 2.05.2017 Navigate to tag search on click
+  @Override public void onItemClick(View v, TagRealm item) {
+
   }
 
   private void setupRecyclerview() {
@@ -89,7 +89,7 @@ public class TagListController extends BaseController implements OnItemClickList
     layoutManager.setFlexDirection(FlexDirection.ROW);
 
     rvTagList.setLayoutManager(layoutManager);
-    rvTagList.setItemAnimator(new DefaultItemAnimator());
+    rvTagList.setItemAnimator(new SlideInItemAnimator());
     rvTagList.setAdapter(epoxyController.getAdapter());
   }
 }

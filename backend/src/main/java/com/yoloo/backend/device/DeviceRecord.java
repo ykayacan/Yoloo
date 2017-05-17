@@ -3,7 +3,6 @@ package com.yoloo.backend.device;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
-import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.annotation.Parent;
 import com.yoloo.backend.account.Account;
 import lombok.AccessLevel;
@@ -33,7 +32,6 @@ public class DeviceRecord {
   @NonFinal
   private Key<Account> parent;
 
-  @Index
   @NonFinal
   @Wither
   private String regId;

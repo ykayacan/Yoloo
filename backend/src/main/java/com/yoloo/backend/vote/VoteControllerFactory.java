@@ -12,7 +12,8 @@ public class VoteControllerFactory implements ControllerFactory<VoteController> 
   public VoteController create() {
     return VoteController.create(
         PostShardService.create(),
-        CommentShardService.create()
+        CommentShardService.create(),
+        VoteService.create()
     );
   }
 }

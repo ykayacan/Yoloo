@@ -13,7 +13,7 @@
   <include layout="@layout/merge_item_feed_header" />
 
   <ImageView
-    android:id="@+id/iv_item_feed_rich_cover"
+    android:id="@+id/iv_item_feed_cover"
     android:layout_width="0dp"
     android:layout_height="0dp"
     android:layout_marginTop="@dimen/padding_normal"
@@ -23,10 +23,10 @@
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toBottomOf="@+id/iv_item_feed_user_avatar"
-    tools:src="@drawable/profile_bg_1x" />
+    tools:src="@color/background_lightish" />
 
   <com.yoloo.android.ui.widget.BaselineGridTextView
-    android:id="@+id/tv_item_feed_rich_content"
+    android:id="@+id/tv_item_feed_content"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:paddingBottom="@dimen/padding_micro"
@@ -38,10 +38,10 @@
     android:textAppearance="@style/TextAppearance.AppCompat.Body1"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
-    app:layout_constraintTop_toBottomOf="@+id/iv_item_feed_rich_cover"
+    app:layout_constraintTop_toBottomOf="@+id/iv_item_feed_cover"
     tools:text="@string/lorem_ipsum" />
 
-  <com.google.android.flexbox.FlexboxLayout
+  <com.yoloo.android.ui.widget.linkabletextview.LinkableTextView
     android:id="@+id/container_item_feed_tags"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
@@ -50,13 +50,11 @@
     android:paddingLeft="@dimen/padding_normal"
     android:paddingRight="@dimen/padding_normal"
     android:paddingStart="@dimen/padding_normal"
-    android:paddingTop="@dimen/padding_micro"
-    app:dividerDrawable="@drawable/tag_divider"
-    app:flexWrap="wrap"
+    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+    app:enabledUnderlines="false"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
-    app:layout_constraintTop_toBottomOf="@+id/tv_item_feed_rich_content"
-    app:showDivider="end|middle" />
+    app:layout_constraintTop_toBottomOf="@+id/tv_item_feed_content" />
 
   <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_item_feed_share"

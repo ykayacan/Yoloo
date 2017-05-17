@@ -21,6 +21,8 @@ import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.support.RouterPagerAdapter;
 import com.yoloo.android.R;
 import com.yoloo.android.feature.base.BaseController;
+import com.yoloo.android.feature.search.tag.ChildTagSearchController;
+import com.yoloo.android.feature.search.user.ChildUserSearchController;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.Pair;
 import java.util.ArrayList;
@@ -37,10 +39,6 @@ public class SearchController extends BaseController {
   @BindString(R.string.label_search_tags) String searchTagsString;
   @BindString(R.string.label_search_users) String searchUsersString;
 
-  public SearchController() {
-    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
-  }
-
   public static SearchController create() {
     return new SearchController();
   }
@@ -53,10 +51,11 @@ public class SearchController extends BaseController {
   @Override
   protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
 
     List<Pair<String, Controller>> pairs = new ArrayList<>(2);
-    pairs.add(Pair.create(searchTagsString, ChildSearchController.create(SearchType.TAG)));
-    pairs.add(Pair.create(searchUsersString, ChildSearchController.create(SearchType.USER)));
+    pairs.add(Pair.create(searchTagsString, ChildTagSearchController.create()));
+    pairs.add(Pair.create(searchUsersString, ChildUserSearchController.create()));
 
     final RouterPagerAdapter pagerAdapter = new SearchPagerAdapter(this, pairs);
 

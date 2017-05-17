@@ -11,7 +11,7 @@ import com.yoloo.android.data.db.PostRealm;
 
 import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;
 
-@EpoxyModelClass(layout = R.layout.item_recent_media)
+@EpoxyModelClass(layout = R.layout.item_recent_media_small)
 public abstract class RecentMediaModel extends EpoxyModel<ImageView> {
 
   @EpoxyAttribute PostRealm post;

@@ -9,6 +9,10 @@ apply from: "$project.rootDir/tools/quality.gradle"
 apply from: "$project.rootDir/tools/script-git-version.gradle"
 apply plugin: "com.jaredsburrows.license"
 
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
 android {
   compileSdkVersion compileSdk
   buildToolsVersion buildTools
@@ -20,7 +24,6 @@ android {
 
     testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
-    // Enabling multidex support.
     multiDexEnabled true
 
     vectorDrawables.useSupportLibrary = true
@@ -41,20 +44,18 @@ android {
   }
 
   signingConfigs {
-    // You must set up an environment var before release signing
-    // Run: export APP_KEY={password}
     release {
-      storeFile file('../keystore/yoloo.keystore')
-      keyAlias 'yoloo'
-      storePassword "yolooisnewwress"
-      keyPassword "yolooisnewwress"
+      keyAlias keystoreProperties['keyAlias']
+      keyPassword keystoreProperties['keyPassword']
+      storePassword keystoreProperties['storePassword']
+      storeFile file(keystoreProperties['storeFile'])
     }
 
     debug {
-      storeFile file('../keystore/debug.keystore')
       keyAlias 'androiddebugkey'
-      storePassword 'android'
       keyPassword 'android'
+      storePassword 'android'
+      storeFile file('../keystore/debug.keystore')
     }
   }
 
@@ -67,14 +68,6 @@ android {
       // dev utilizes minSDKVersion = 21 to allow the Android gradle plugin
       // to pre-dex each module and produce an APK that can be tested on
       // Android Lollipop without time consuming dex merging processes.
-      minSdkVersion 21
-    }
-
-    dev2 {
-      signingConfig signingConfigs.debug
-      versionCode gitVersionCodeTime
-      versionName gitVersionName
-
       minSdkVersion 21
     }
 
@@ -130,6 +123,14 @@ android {
     sourceCompatibility JavaVersion.VERSION_1_8
     targetCompatibility JavaVersion.VERSION_1_8
   }
+}
+
+project.android.buildTypes.all { buildType ->
+  buildType.javaCompileOptions.annotationProcessorOptions.arguments =
+      [// Validation is disabled in production to remove the runtime overhead
+       validateEpoxyModelUsage     : String.valueOf(buildType.name == 'debug'),
+       requireHashCodeInEpoxyModels: "true",
+       implicitlyAddAutoModels     : "true"]
 }
 
 configurations.all {
@@ -192,8 +193,8 @@ dependencies {
   annotationProcessor "com.jakewharton:butterknife-compiler:$butterKnife_version"
 
   // Network
-  compile 'com.squareup.okhttp3:okhttp:3.7.0'
-  compile 'com.squareup.okhttp3:okhttp-urlconnection:3.7.0'
+  compile 'com.squareup.okhttp3:okhttp:3.8.0'
+  compile 'com.squareup.okhttp3:okhttp-urlconnection:3.8.0'
 
   // Utility
   compile "com.annimon:stream:$annimonStream_version"
@@ -204,7 +205,7 @@ dependencies {
   compile 'com.squareup.moshi:moshi:1.4.0'
   compile 'com.github.jksiezni.permissive:permissive:0.2'
   compile "com.google.android:flexbox:$flexbox_version"
-  compile 'com.airbnb.android:lottie:2.0.0-beta4'
+  compile 'com.airbnb.android:lottie:2.0.0-rc1'
   compile 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
   compile 'com.jakewharton.rxbinding2:rxbinding-design:2.0.0'
 
@@ -225,10 +226,10 @@ dependencies {
   compile 'com.github.florent37:tutoshowcase:1.0.1'
   compile 'com.rafakob:floatingedittext:1.0.5'
 
-  compile 'com.facebook.android:facebook-android-sdk:4.22.0'
+  compile 'com.facebook.android:facebook-android-sdk:4.22.1'
 
-  compile 'org.parceler:parceler-api:1.1.6'
-  annotationProcessor 'org.parceler:parceler:1.1.6'
+  compile 'org.parceler:parceler-api:1.1.8'
+  annotationProcessor 'org.parceler:parceler:1.1.8'
 
   annotationProcessor 'dk.ilios:realmfieldnameshelper:1.1.1'
 

@@ -24,7 +24,6 @@ import com.yoloo.android.util.ViewUtils;
 public class FullscreenPhotoController extends BaseController {
 
   private static final String KEY_PHOTO_URL = "PHOTO_URL";
-  private static final String KEY_MEDIA_ID = "MEDIA_ID";
 
   @BindView(R.id.iv_photo) PhotoView ivPhoto;
   @BindView(R.id.toolbar) Toolbar toolbar;
@@ -37,11 +36,8 @@ public class FullscreenPhotoController extends BaseController {
     super(args);
   }
 
-  public static FullscreenPhotoController create(String photoUrl, String mediaId) {
-    final Bundle bundle = new BundleBuilder()
-        .putString(KEY_PHOTO_URL, photoUrl)
-        .putString(KEY_MEDIA_ID, mediaId)
-        .build();
+  public static FullscreenPhotoController create(String photoUrl) {
+    final Bundle bundle = new BundleBuilder().putString(KEY_PHOTO_URL, photoUrl).build();
 
     return new FullscreenPhotoController(bundle);
   }
@@ -66,10 +62,6 @@ public class FullscreenPhotoController extends BaseController {
     }
 
     setupToolbar();
-
-    if (VersionUtil.hasL()) {
-      ivPhoto.setTransitionName("transition." + getArgs().getString(KEY_MEDIA_ID));
-    }
 
     Glide.with(getActivity()).load(getArgs().getString(KEY_PHOTO_URL)).into(ivPhoto);
   }

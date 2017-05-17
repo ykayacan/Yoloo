@@ -122,7 +122,7 @@ public class TagEndpoint {
       path = "groups/{groupId}/tags",
       httpMethod = ApiMethod.HttpMethod.GET,
       authenticators = {AdminAuthenticator.class, FirebaseAuthenticator.class})
-  public CollectionResponse<WrappedString> listUsedTags(@Named("groupId") String groupId,
+  public CollectionResponse<Tag> listUsedTags(@Named("groupId") String groupId,
       @Nullable @Named("cursor") String cursor, @Nullable @Named("limit") Integer limit, User user)
       throws ServiceException {
 

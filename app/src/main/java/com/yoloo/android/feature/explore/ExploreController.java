@@ -26,12 +26,14 @@ import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.data.repository.group.GroupRepositoryProvider;
 import com.yoloo.android.data.repository.post.PostRepositoryProvider;
 import com.yoloo.android.data.sorter.PostSorter;
+import com.yoloo.android.feature.blog.BlogController;
 import com.yoloo.android.feature.explore.data.ExploreItem;
 import com.yoloo.android.feature.explore.data.GroupItem;
 import com.yoloo.android.feature.group.GroupController;
 import com.yoloo.android.feature.models.recentmedias.RecentMediaListModelGroup;
 import com.yoloo.android.feature.postdetail.PostDetailController;
 import com.yoloo.android.feature.postlist.PostListController;
+import com.yoloo.android.feature.recentmedia.RecentMediaListController;
 import com.yoloo.android.feature.search.SearchController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.DrawableHelper;
@@ -113,13 +115,17 @@ public class ExploreController extends MvpController<ExploreView, ExplorePresent
         new RecentMediaListModelGroup.RecentPhotosModelGroupCallbacks() {
           @Override
           public void onRecentPhotosHeaderClicked() {
-
+            startTransaction(RecentMediaListController.create(), new VerticalChangeHandler());
           }
 
           @Override
           public void onRecentPhotosClicked(PostRealm post) {
-            startTransaction(PostDetailController.create(post.getId()),
-                new VerticalChangeHandler());
+            if (post.isBlogPost()) {
+              startTransaction(BlogController.create(post), new VerticalChangeHandler());
+            } else {
+              startTransaction(PostDetailController.create(post.getId()),
+                  new VerticalChangeHandler());
+            }
           }
         });
 

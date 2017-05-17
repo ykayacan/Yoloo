@@ -39,4 +39,8 @@
     <item>@string/points_overview_tip_3</item>
   </string-array>
 
+  <string-array name="chat_list_options">
+    <item>@string/chat_list_dialog_options_delete</item>
+  </string-array>
+
 </resources>

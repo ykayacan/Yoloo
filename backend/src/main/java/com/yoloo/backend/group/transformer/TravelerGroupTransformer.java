@@ -18,6 +18,7 @@ public class TravelerGroupTransformer implements Transformer<TravelerGroupEntity
         .postCount(in.getPostCount())
         .rank(in.getRank())
         .subscribed(in.isSubscribed())
+        .topSubscribers(in.getTopSubscribers())
         .build();
   }
 

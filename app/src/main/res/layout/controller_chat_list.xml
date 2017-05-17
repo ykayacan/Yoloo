@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
+  android:animateLayoutChanges="true"
   android:background="@color/white"
   android:fitsSystemWindows="true">
 
@@ -12,7 +14,33 @@
     android:id="@+id/dialogsList"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    app:dialogMessageAvatarEnabled="false"
     app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+  <LinearLayout
+    android:id="@+id/empty_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="48dp"
+    android:visibility="gone"
+    tools:visibility="visible">
+
+    <com.yoloo.android.ui.widget.SquareImageView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:scaleType="fitCenter"
+      app:srcCompat="@drawable/chat_bubbles_opt" />
+
+    <com.yoloo.android.ui.widget.BaselineGridTextView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="16dp"
+      android:gravity="center"
+      android:text="@string/chat_list_empty_title" />
+
+  </LinearLayout>
 
   <android.support.design.widget.FloatingActionButton
     android:id="@+id/fab_create_chat"

@@ -64,7 +64,7 @@
 
   <servlet>
     <servlet-name>UpdateCategoryRankServlet</servlet-name>
-    <servlet-class>com.yoloo.backend.group.UpdateCategoryRankServlet</servlet-class>
+    <servlet-class>com.yoloo.backend.group.UpdateGroupRankServlet</servlet-class>
   </servlet>
 
   <servlet-mapping>
@@ -120,6 +120,26 @@
   <servlet-mapping>
     <servlet-name>SendNewPostNotificationServlet</servlet-name>
     <url-pattern>/tasks/send/notification</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>ResetDailyPointsServlet</servlet-name>
+    <servlet-class>com.yoloo.backend.game.ResetDailyPointsServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>UpdateGroupSubscriberCountServlet</servlet-name>
+    <url-pattern>/crons/updateGroupSubscriberCountCron</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>UpdateGroupSubscriberCountServlet</servlet-name>
+    <servlet-class>com.yoloo.backend.group.UpdateGroupSubscriberCountServlet</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>ResetDailyPointsServlet</servlet-name>
+    <url-pattern>/crons/resetDailyCron</url-pattern>
   </servlet-mapping>
 
   <!-- End Servlets -->
@@ -194,8 +214,8 @@
 
   <security-constraint>
     <web-resource-collection>
-      <web-resource-name>UpdateCategoryRankServlet</web-resource-name>
-      <url-pattern>/tasks/update/category/rank</url-pattern>
+      <web-resource-name>tasks</web-resource-name>
+      <url-pattern>/tasks/*</url-pattern>
     </web-resource-collection>
     <auth-constraint>
       <role-name>admin</role-name>
@@ -204,38 +224,8 @@
 
   <security-constraint>
     <web-resource-collection>
-      <web-resource-name>UpdateTagServlet</web-resource-name>
-      <url-pattern>/tasks/update/tag</url-pattern>
-    </web-resource-collection>
-    <auth-constraint>
-      <role-name>admin</role-name>
-    </auth-constraint>
-  </security-constraint>
-
-  <security-constraint>
-    <web-resource-collection>
-      <web-resource-name>UpdateFeedServlet</web-resource-name>
-      <url-pattern>/tasks/update/feed</url-pattern>
-    </web-resource-collection>
-    <auth-constraint>
-      <role-name>admin</role-name>
-    </auth-constraint>
-  </security-constraint>
-
-  <security-constraint>
-    <web-resource-collection>
-      <web-resource-name>CreateUserFeedServlet</web-resource-name>
-      <url-pattern>/tasks/create/feed</url-pattern>
-    </web-resource-collection>
-    <auth-constraint>
-      <role-name>admin</role-name>
-    </auth-constraint>
-  </security-constraint>
-
-  <security-constraint>
-    <web-resource-collection>
-      <web-resource-name>SendNewPostNotificationServlet</web-resource-name>
-      <url-pattern>/tasks/send/notification</url-pattern>
+      <web-resource-name>crons</web-resource-name>
+      <url-pattern>/crons/*</url-pattern>
     </web-resource-collection>
     <auth-constraint>
       <role-name>admin</role-name>

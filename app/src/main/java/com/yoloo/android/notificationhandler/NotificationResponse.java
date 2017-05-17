@@ -14,6 +14,7 @@ public class NotificationResponse {
   public static String KEY_GAME_ACTION = "gameAction";
   public static String KEY_LEVEL = "level";
   public static String KEY_USER_ID = "userId";
+  public static String KEY_CHAT_ID = "chatId";
 
   @Json(name = "action") private String action;
   @Json(name = "sAvatarUrl") private String senderAvatarUrl;

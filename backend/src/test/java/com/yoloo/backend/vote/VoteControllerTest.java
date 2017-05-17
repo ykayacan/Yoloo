@@ -108,7 +108,7 @@ public class VoteControllerTest extends TestBase {
     Comment comment =
         commentController.insertComment(postEntity.getWebsafeId(), "Test comment", user);
 
-    voteController.vote(comment.getWebsafeId(), Vote.Direction.UP.getValue(), user);
+    voteController.voteComment(comment.getWebsafeId(), Vote.Direction.UP.getValue(), user);
 
     CommentShardService shardService = CommentShardService.create();
     VoteService voteService = VoteService.create();
@@ -130,7 +130,7 @@ public class VoteControllerTest extends TestBase {
     Comment comment =
         commentController.insertComment(postEntity.getWebsafeId(), "Test comment", user);
 
-    voteController.vote(comment.getWebsafeId(), Vote.Direction.DOWN.getValue(), user);
+    voteController.voteComment(comment.getWebsafeId(), Vote.Direction.DOWN.getValue(), user);
 
     CommentShardService shardService = CommentShardService.create();
     VoteService voteService = VoteService.create();
@@ -152,7 +152,7 @@ public class VoteControllerTest extends TestBase {
     Comment comment =
         commentController.insertComment(postEntity.getWebsafeId(), "Test comment", user);
 
-    voteController.vote(comment.getWebsafeId(), Vote.Direction.DEFAULT.getValue(), user);
+    voteController.voteComment(comment.getWebsafeId(), Vote.Direction.DEFAULT.getValue(), user);
 
     CommentShardService shardService = CommentShardService.create();
     VoteService voteService = VoteService.create();
@@ -177,7 +177,7 @@ public class VoteControllerTest extends TestBase {
     Comment comment =
         commentController.insertComment(postEntity.getWebsafeId(), "Test comment", user);
 
-    voteController.vote(comment.getWebsafeId(), Vote.Direction.UP.getValue(), user);
+    voteController.voteComment(comment.getWebsafeId(), Vote.Direction.UP.getValue(), user);
 
     comment = shardService
         .mergeShards(comment)
@@ -187,7 +187,7 @@ public class VoteControllerTest extends TestBase {
     assertEquals(Vote.Direction.UP, comment.getDir());
     assertEquals(1L, comment.getVoteCount());
 
-    voteController.vote(comment.getWebsafeId(), Vote.Direction.DEFAULT.getValue(), user);
+    voteController.voteComment(comment.getWebsafeId(), Vote.Direction.DEFAULT.getValue(), user);
 
     comment = shardService
         .mergeShards(comment)
@@ -206,7 +206,7 @@ public class VoteControllerTest extends TestBase {
     Comment comment =
         commentController.insertComment(postEntity.getWebsafeId(), "Test comment", user);
 
-    voteController.vote(comment.getWebsafeId(), Vote.Direction.DEFAULT.getValue(), user);
+    voteController.voteComment(comment.getWebsafeId(), Vote.Direction.DEFAULT.getValue(), user);
 
     CommentShardService shardService = CommentShardService.create();
     VoteService voteService = VoteService.create();
@@ -219,7 +219,7 @@ public class VoteControllerTest extends TestBase {
     assertEquals(Vote.Direction.DEFAULT, comment.getDir());
     assertEquals(0L, comment.getVoteCount());
 
-    voteController.vote(comment.getWebsafeId(), Vote.Direction.UP.getValue(), user);
+    voteController.voteComment(comment.getWebsafeId(), Vote.Direction.UP.getValue(), user);
 
     comment = shardService
         .mergeShards(comment)
@@ -238,7 +238,7 @@ public class VoteControllerTest extends TestBase {
     Comment comment =
         commentController.insertComment(postEntity.getWebsafeId(), "Test comment", user);
 
-    voteController.vote(comment.getWebsafeId(), Vote.Direction.DEFAULT.getValue(), user);
+    voteController.voteComment(comment.getWebsafeId(), Vote.Direction.DEFAULT.getValue(), user);
 
     CommentShardService shardService = CommentShardService.create();
     VoteService voteService = VoteService.create();
@@ -251,7 +251,7 @@ public class VoteControllerTest extends TestBase {
     assertEquals(Vote.Direction.DEFAULT, comment.getDir());
     assertEquals(0L, comment.getVoteCount());
 
-    voteController.vote(comment.getWebsafeId(), Vote.Direction.DOWN.getValue(), user);
+    voteController.voteComment(comment.getWebsafeId(), Vote.Direction.DOWN.getValue(), user);
 
     comment = shardService
         .mergeShards(comment)
@@ -270,7 +270,7 @@ public class VoteControllerTest extends TestBase {
     Comment comment =
         commentController.insertComment(postEntity.getWebsafeId(), "Test comment", user);
 
-    voteController.vote(comment.getWebsafeId(), Vote.Direction.DOWN.getValue(), user);
+    voteController.voteComment(comment.getWebsafeId(), Vote.Direction.DOWN.getValue(), user);
 
     CommentShardService shardService = CommentShardService.create();
     VoteService voteService = VoteService.create();
@@ -283,7 +283,7 @@ public class VoteControllerTest extends TestBase {
     assertEquals(Vote.Direction.DOWN, comment.getDir());
     assertEquals(-1L, comment.getVoteCount());
 
-    voteController.vote(comment.getWebsafeId(), Vote.Direction.DEFAULT.getValue(), user);
+    voteController.voteComment(comment.getWebsafeId(), Vote.Direction.DEFAULT.getValue(), user);
 
     comment = shardService
         .mergeShards(comment)

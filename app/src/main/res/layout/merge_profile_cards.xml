@@ -17,23 +17,24 @@
     android:layout_marginEnd="8dp"
     android:layout_marginRight="8dp"
     android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@android:color/white"
     app:cardUseCompatPadding="true">
 
     <ImageView
-      style="@style/Widget.Yoloo.ProfileCard.Image"
       android:layout_width="match_parent"
       android:layout_height="60dp"
       android:background="@color/primary"
-      app:srcCompat="@drawable/ic_bookmark_star_32dp" />
+      app:srcCompat="@drawable/ic_bookmark_star_32dp"
+      style="@style/Widget.Yoloo.ProfileCard.Image" />
 
     <TextView
       android:id="@+id/tv_profile_point_count"
-      style="@style/Widget.Yoloo.ProfileCard"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:layout_marginTop="60dp"
       android:gravity="center"
-      tools:text="@string/label_profile_points" />
+      tools:text="@string/label_profile_points"
+      style="@style/Widget.Yoloo.ProfileCard" />
 
   </android.support.v7.widget.CardView>
 
@@ -44,23 +45,24 @@
     android:layout_marginEnd="8dp"
     android:layout_marginRight="8dp"
     android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@android:color/white"
     app:cardUseCompatPadding="true">
 
     <ImageView
-      style="@style/Widget.Yoloo.ProfileCard.Image"
       android:layout_width="match_parent"
       android:layout_height="60dp"
       android:background="@color/primary_yellow"
-      app:srcCompat="@drawable/ic_coin_stack_32dp" />
+      app:srcCompat="@drawable/ic_coin_stack_32dp"
+      style="@style/Widget.Yoloo.ProfileCard.Image" />
 
     <TextView
       android:id="@+id/tv_profile_bounty_count"
-      style="@style/Widget.Yoloo.ProfileCard"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:layout_marginTop="60dp"
       android:gravity="center"
-      tools:text="@string/label_profile_bounties" />
+      tools:text="@string/label_profile_bounties"
+      style="@style/Widget.Yoloo.ProfileCard" />
 
   </android.support.v7.widget.CardView>
 
@@ -69,23 +71,24 @@
     android:layout_width="108dp"
     android:layout_height="108dp"
     android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@android:color/white"
     app:cardUseCompatPadding="true">
 
     <ImageView
-      style="@style/Widget.Yoloo.ProfileCard.Image"
       android:layout_width="match_parent"
       android:layout_height="60dp"
       android:background="@color/primary_blue"
-      app:srcCompat="@drawable/ic_flag_black_32dp" />
+      app:srcCompat="@drawable/ic_flag_black_32dp"
+      style="@style/Widget.Yoloo.ProfileCard.Image" />
 
     <TextView
       android:id="@+id/tv_profile_country_count"
-      style="@style/Widget.Yoloo.ProfileCard"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:layout_marginTop="60dp"
       android:gravity="center"
-      tools:text="@string/label_profile_countries" />
+      tools:text="@string/label_profile_countries"
+      style="@style/Widget.Yoloo.ProfileCard" />
 
   </android.support.v7.widget.CardView>
 

@@ -43,11 +43,7 @@ public abstract class UserModel extends EpoxyModelWithHolder<UserModel.UserHolde
 
     holder.btnFollow.setVisibility(showFollowButton ? View.VISIBLE : View.GONE);
 
-    holder.btnFollow.setOnClickListener(v -> {
-      //account.setFollowing(!account.isFollowing());
-
-      onFollowClickListener.onFollowClick(v, account, 1);
-    });
+    holder.btnFollow.setOnClickListener(v -> onFollowClickListener.onFollowClick(v, account, 1));
 
     if (onProfileClickListener != null) {
       holder.itemView.setOnClickListener(

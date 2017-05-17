@@ -15,16 +15,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindView;
-import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.claudiodegio.msv.MaterialSearchView;
 import com.claudiodegio.msv.OnSearchViewListener;
 import com.yoloo.android.R;
 import com.yoloo.android.data.db.AccountRealm;
-import com.yoloo.android.data.chat.Dialog;
-import com.yoloo.android.data.chat.User;
-import com.yoloo.android.data.repository.chat.ChatRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.base.BaseController;
@@ -37,7 +33,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.PublishSubject;
-import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import timber.log.Timber;
 
@@ -54,7 +49,6 @@ public class CreateChatController extends BaseController
 
   private CreateChatEpoxyController epoxyController;
 
-  private ChatRepository chatRepository;
   private UserRepository userRepository;
 
   public static CreateChatController create() {
@@ -69,46 +63,19 @@ public class CreateChatController extends BaseController
   @Override
   protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
     setHasOptionsMenu(true);
     disposable = new CompositeDisposable();
 
     setupToolbar();
-    setupRecyclerview();
+    setupRecyclerView();
 
-    chatRepository = ChatRepository.getInstance();
     userRepository = UserRepositoryProvider.getRepository();
 
     msv.setOnSearchViewListener(this);
 
-    processShowNewUsers();
-
-    processUserSearch();
-  }
-
-  private void processShowNewUsers() {
-    Disposable d = userRepository
-        .listNewUsers(null, 20)
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(response -> epoxyController.setData(response.getData()));
-
-    disposable.add(d);
-  }
-
-  private void processUserSearch() {
-    Disposable d = searchSubject
-        .filter(s -> !TextUtils.isEmpty(s))
-        .debounce(400, TimeUnit.MILLISECONDS)
-        .switchMap(s -> userRepository.searchUser(s, null, 50))
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(response -> epoxyController.setData(response.getData()), Timber::e);
-
-    disposable.add(d);
-  }
-
-  private void setupToolbar() {
-    setSupportActionBar(toolbar);
-    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    getSupportActionBar().setTitle(R.string.create_chat_title);
+    showRecommendedUsers();
+    searchUser();
   }
 
   @Override
@@ -149,7 +116,52 @@ public class CreateChatController extends BaseController
     searchSubject.onNext(s);
   }
 
-  private void setupRecyclerview() {
+  @Override
+  public void onUserClicked(AccountRealm other) {
+    userRepository.getLocalMe()
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(me -> {
+          KeyboardUtil.hideKeyboard(getView());
+
+          if (me.getId().equals(other.getId())) {
+            Snackbar.make(getView(), R.string.create_chat_same_user_error, Snackbar.LENGTH_SHORT)
+                .show();
+          } else {
+            getRouter().pushController(
+                RouterTransaction.with(ChatController.create(me, other))
+                    .pushChangeHandler(new VerticalChangeHandler())
+                    .popChangeHandler(new VerticalChangeHandler()));
+          }
+        });
+  }
+
+  private void showRecommendedUsers() {
+    Disposable d = userRepository
+        .listRecommendedUsers(null, 20)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(response -> epoxyController.setData(response.getData()), Timber::e);
+
+    disposable.add(d);
+  }
+
+  private void searchUser() {
+    Disposable d = searchSubject
+        .filter(query -> !TextUtils.isEmpty(query))
+        .debounce(400, TimeUnit.MILLISECONDS)
+        .switchMap(query -> userRepository.searchUser(query, null, 50))
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(response -> epoxyController.setData(response.getData()), Timber::e);
+
+    disposable.add(d);
+  }
+
+  private void setupToolbar() {
+    setSupportActionBar(toolbar);
+    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    getSupportActionBar().setTitle(R.string.create_chat_title);
+  }
+
+  private void setupRecyclerView() {
     epoxyController =
         new CreateChatEpoxyController(new CropCircleTransformation(getActivity()), this);
 
@@ -159,43 +171,5 @@ public class CreateChatController extends BaseController
     recyclerView.setHasFixedSize(true);
     recyclerView.setItemAnimator(new DefaultItemAnimator());
     recyclerView.setAdapter(epoxyController.getAdapter());
-  }
-
-  @Override
-  public void onUserClicked(AccountRealm account) {
-    userRepository.getLocalMe().observeOn(AndroidSchedulers.mainThread()).subscribe(me -> {
-      if (me.getId().equals(account.getId())) {
-        Snackbar
-            .make(getView(), "You can't create a dialog with yourself", Snackbar.LENGTH_SHORT)
-            .show();
-        return;
-      }
-
-      User currentUser = new User(me.getId(), me.getUsername(), me.getAvatarUrl(), User.ROLE_ADMIN,
-          account.getUsername(), account.getAvatarUrl());
-      User targetUser =
-          new User(account.getId(), account.getUsername(), account.getAvatarUrl(), User.ROLE_MEMBER,
-              me.getUsername(), me.getAvatarUrl());
-
-      KeyboardUtil.hideKeyboard(getView());
-
-      HashMap<String, User> members = new HashMap<>(2);
-      members.put(currentUser.getId(), currentUser);
-      members.put(targetUser.getId(), targetUser);
-
-      chatRepository
-          .createDialog(
-              new Dialog(targetUser.getAvatar(), targetUser.getName(), members, currentUser.getId(),
-                  currentUser::getId))
-          .observeOn(AndroidSchedulers.mainThread())
-          .subscribe(newDialog -> {
-            Controller controller = ChatController.create(me.getId(), newDialog);
-
-            getRouter().pushController(RouterTransaction
-                .with(controller)
-                .pushChangeHandler(new VerticalChangeHandler())
-                .popChangeHandler(new VerticalChangeHandler()));
-          });
-    }, Timber::e);
   }
 }

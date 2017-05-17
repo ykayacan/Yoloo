@@ -28,7 +28,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import butterknife.BindColor;
 import butterknife.BindDimen;
-import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
 import com.airbnb.epoxy.EpoxyModel;
@@ -98,11 +97,11 @@ public class PostEditorController extends MvpController<EditorView, EditorPresen
 
   @BindColor(R.color.primary) int primaryColor;
   @BindColor(R.color.primary_dark) int primaryDarkColor;
-  @BindColor(android.R.color.secondary_text_light) int secondaryTextColor;
+  @BindColor(R.color.editor) int editorIconColor;
 
   @BindDimen(R.dimen.spacing_micro) int microSpaceDimen;
 
-  @BindString(R.string.label_editor_select_group) String selectGroupString;
+  private boolean groupSelected;
 
   private List<Uri> selectedImageUris = new ArrayList<>(5);
   private List<TagRealm> selectedTags = new ArrayList<>(7);
@@ -477,13 +476,10 @@ public class PostEditorController extends MvpController<EditorView, EditorPresen
     etEditorTags.addChipTerminator(';', ChipTerminatorHandler.BEHAVIOR_CHIPIFY_CURRENT_TOKEN);
     etEditorTags.setNachoValidator(new ChipifyingNachoValidator());
     etEditorTags.enableEditChipOnTouch(true, true);
-    etEditorTags.setOnChipClickListener((chip, motionEvent) -> {
-      Timber.d("setOnChipClickListener(): %s", motionEvent);
-      Timber.d("setOnChipClickListener(): %s", chip.getText());
-    });
   }
 
   public void onGroupSelected(GroupRealm group) {
+    groupSelected = true;
     draft.setGroupId(group.getId());
     tvEditorSelectGroup.setText(group.getName());
   }
@@ -495,27 +491,27 @@ public class PostEditorController extends MvpController<EditorView, EditorPresen
   private boolean isValidToSend() {
     if (ivEditorImage.getDrawable() == null) {
       if (etEditorContent.getText().toString().isEmpty()) {
-        showMessage("You must add text or image to post!");
+        showMessage(getResources().getString(R.string.editor_content_empty_error));
         return false;
       }
 
-      if (tvEditorSelectGroup.getText().equals(selectGroupString)) {
-        showMessage("Select a group!");
+      if (!groupSelected) {
+        showMessage(getResources().getString(R.string.editor_group_empty_error));
         return false;
       }
 
       if (etEditorTags.getChipValues().isEmpty()) {
-        showMessage("Tags are empty!");
+        showMessage(getResources().getString(R.string.editor_tags_empty_error));
         return false;
       }
     } else {
-      if (tvEditorSelectGroup.getText().equals(selectGroupString)) {
-        showMessage("Select a group!");
+      if (!groupSelected) {
+        showMessage(getResources().getString(R.string.editor_group_empty_error));
         return false;
       }
 
       if (etEditorTags.getChipValues().isEmpty()) {
-        showMessage("Tags are empty!");
+        showMessage(getResources().getString(R.string.editor_tags_empty_error));
         return false;
       }
     }
@@ -527,19 +523,19 @@ public class PostEditorController extends MvpController<EditorView, EditorPresen
     DrawableHelper
         .create()
         .withDrawable(tvEditorAddMedia.getCompoundDrawables()[0])
-        .withColor(secondaryTextColor)
+        .withColor(editorIconColor)
         .tint();
 
     DrawableHelper
         .create()
         .withDrawable(tvEditorSelectGroup.getCompoundDrawables()[0])
-        .withColor(secondaryTextColor)
+        .withColor(editorIconColor)
         .tint();
 
     DrawableHelper
         .create()
         .withDrawable(etEditorTags.getCompoundDrawables()[0])
-        .withColor(secondaryTextColor)
+        .withColor(editorIconColor)
         .tint();
   }
 }

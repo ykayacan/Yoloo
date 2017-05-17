@@ -23,7 +23,7 @@ public final class Constants {
    * Firebase secret path.
    */
   public static final String FIREBASE_SECRET_JSON_PATH =
-      "/WEB-INF/yoloo-151719-firebase-crashreporting-469q9-dced69ab2a.json";
+      "/WEB-INF/firebase_service_account.json";
 
   /**
    * Android client ID from Google Cloud console.

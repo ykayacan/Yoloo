@@ -56,8 +56,9 @@ public class Comment implements Votable {
 
   @Index private DateTime created;
 
+  @Wither private boolean accepted;
+
   // Extra fields
-  @Ignore @Wither private boolean accepted;
 
   @Ignore @Wither private int dir;
 
@@ -95,6 +96,7 @@ public class Comment implements Votable {
         .dir(dir.getValue())
         .voteCount(voteCount)
         .created(created)
+        .accepted(accepted)
         .build();
   }
 

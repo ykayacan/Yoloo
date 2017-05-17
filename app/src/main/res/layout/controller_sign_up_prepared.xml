@@ -23,19 +23,19 @@
       android:padding="24dp">
 
       <com.yoloo.android.ui.widget.BaselineGridTextView
-        style="@style/TextAppearance.AppCompat.Headline"
-        fontPath="fonts/OpenSans-Bold.ttf"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/sign_up_prepared_title"
-        android:textColor="?attr/colorPrimary" />
+        android:textColor="?attr/colorPrimary"
+        fontPath="fonts/OpenSans-Bold.ttf"
+        style="@style/TextAppearance.AppCompat.Headline" />
 
       <com.yoloo.android.ui.widget.BaselineGridTextView
-        fontPath="fonts/OpenSans-Semibold.ttf"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="@string/sign_up_prepared_info" />
+        android:text="@string/sign_up_prepared_info"
+        fontPath="fonts/OpenSans-Semibold.ttf" />
 
       <com.rafakob.floatingedittext.FloatingEditText
         android:id="@+id/fet_sign_up_fullname"
@@ -69,7 +69,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:hint="@string/sign_up_username"
-        android:imeOptions="actionNext"
+        android:imeOptions="actionDone"
         android:inputType="text"
         android:maxLength="40"
         android:maxLines="1"
@@ -89,6 +89,7 @@
         android:maxLength="40"
         android:maxLines="1"
         android:textSize="20sp"
+        android:visibility="gone"
         app:hintEnabled="true" />
 
     </LinearLayout>
@@ -97,7 +98,6 @@
 
   <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_sign_up_continue"
-    fontPath="fonts/OpenSans-Bold.ttf"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="bottom"
@@ -108,6 +108,7 @@
     android:textAllCaps="true"
     android:textColor="@android:color/white"
     android:visibility="gone"
+    fontPath="fonts/OpenSans-Bold.ttf"
     tools:visibility="visible" />
 
 </android.support.design.widget.CoordinatorLayout>

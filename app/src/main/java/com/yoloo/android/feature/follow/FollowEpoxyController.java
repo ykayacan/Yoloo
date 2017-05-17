@@ -10,9 +10,12 @@ import com.yoloo.android.feature.models.loader.LoaderModel;
 import com.yoloo.android.feature.search.OnFollowClickListener;
 import com.yoloo.android.feature.search.UserModel_;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
+import java.util.ArrayList;
 import java.util.List;
 
-public class FollowEpoxyController extends Typed2EpoxyController<List<AccountRealm>, Boolean> {
+import static com.yoloo.android.util.Preconditions.checkNotNull;
+
+class FollowEpoxyController extends Typed2EpoxyController<List<AccountRealm>, Boolean> {
 
   private final OnProfileClickListener onProfileClickListener;
   private final OnFollowClickListener onFollowClickListener;
@@ -21,12 +24,34 @@ public class FollowEpoxyController extends Typed2EpoxyController<List<AccountRea
 
   @AutoModel LoaderModel loaderModel;
 
-  public FollowEpoxyController(Context context, OnProfileClickListener onProfileClickListener,
+  private List<AccountRealm> items;
+
+  FollowEpoxyController(Context context, OnProfileClickListener onProfileClickListener,
       OnFollowClickListener onFollowClickListener) {
     this.onProfileClickListener = onProfileClickListener;
     this.onFollowClickListener = onFollowClickListener;
 
     this.cropCircleTransformation = new CropCircleTransformation(context);
+    this.items = new ArrayList<>();
+  }
+
+  void showLoader() {
+    setData(items, true);
+  }
+
+  void hideLoader() {
+    setData(items, false);
+  }
+
+  public void setLoadMoreData(List<AccountRealm> items) {
+    this.items.addAll(items);
+    setData(this.items, false);
+  }
+
+  @Override
+  public void setData(List<AccountRealm> items, Boolean loadingMore) {
+    this.items = items;
+    super.setData(items, checkNotNull(loadingMore, "loadingMore cannot be null."));
   }
 
   @Override

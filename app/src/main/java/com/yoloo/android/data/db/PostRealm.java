@@ -11,7 +11,6 @@ import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import org.parceler.Parcel;
 import org.parceler.ParcelPropertyConverter;
 
@@ -53,30 +52,6 @@ public class PostRealm extends RealmObject {
     tags = new RealmList<>();
   }
 
-  public PostRealm(PostRealm post) {
-    this.id = post.getId();
-    this.ownerId = post.getOwnerId();
-    this.avatarUrl = post.getAvatarUrl();
-    this.username = post.getUsername();
-    this.content = post.getContent();
-    this.bounty = post.getBounty();
-    this.medias = post.medias;
-    this.tags = post.getTags();
-    this.acceptedCommentId = post.getAcceptedCommentId();
-    this.created = post.getCreated();
-    this.voteDir = post.voteDir;
-    this.voteCount = post.getVoteCount();
-    this.commentCount = post.getCommentCount();
-    this.groupId = post.getGroupId();
-    this.reportCount = post.getReportCount();
-    this.title = post.getTitle();
-    this.rank = post.getRank();
-    this.feedItem = post.feedItem;
-    this.pending = post.pending;
-    this.postType = post.getPostType();
-    this.bookmarked = post.isBookmarked();
-  }
-
   public PostRealm(Post dto) {
     this();
     id = dto.getId();
@@ -88,6 +63,10 @@ public class PostRealm extends RealmObject {
     if (dto.getMedias() != null) {
       List<MediaRealm> medias = Stream.of(dto.getMedias()).map(MediaRealm::new).toList();
       this.medias = new RealmList<>(medias.toArray(new MediaRealm[medias.size()]));
+    }
+    if (dto.getTags() != null) {
+      List<TagRealm> tags = Stream.of(dto.getTags()).map(TagRealm::new).toList();
+      this.tags = new RealmList<>(tags.toArray(new TagRealm[tags.size()]));
     }
     acceptedCommentId = dto.getAcceptedCommentId();
     created = new Date(dto.getCreated().getValue());
@@ -344,94 +323,115 @@ public class PostRealm extends RealmObject {
     return postType == TYPE_PHOTO;
   }
 
-  @Override
-  public boolean equals(Object o) {
+  @Override public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof PostRealm)) return false;
+
     PostRealm postRealm = (PostRealm) o;
-    return getBounty() == postRealm.getBounty()
-        && getVoteDir() == postRealm.getVoteDir()
-        && getVoteCount() == postRealm.getVoteCount()
-        && getCommentCount() == postRealm.getCommentCount()
-        && getReportCount() == postRealm.getReportCount()
-        && Double.compare(postRealm.getRank(), getRank()) == 0
-        && isFeedItem() == postRealm.isFeedItem()
-        && isPending() == postRealm.isPending()
-        && isBookmarked() == postRealm.isBookmarked()
-        && getPostType() == postRealm.getPostType()
-        && Objects.equals(getId(), postRealm.getId())
-        && Objects.equals(getOwnerId(), postRealm.getOwnerId())
-        && Objects.equals(getAvatarUrl(), postRealm.getAvatarUrl())
-        && Objects.equals(getUsername(), postRealm.getUsername())
-        && Objects.equals(getContent(), postRealm.getContent())
-        && Objects.equals(getMedias(), postRealm.getMedias())
-        && Objects.equals(getTags(), postRealm.getTags())
-        && Objects.equals(getGroupId(), postRealm.getGroupId())
-        && Objects.equals(getAcceptedCommentId(), postRealm.getAcceptedCommentId())
-        && Objects.equals(getCreated(), postRealm.getCreated())
-        && Objects.equals(getTitle(), postRealm.getTitle());
+
+    if (getBounty() != postRealm.getBounty()) return false;
+    if (getVoteDir() != postRealm.getVoteDir()) return false;
+    if (getVoteCount() != postRealm.getVoteCount()) return false;
+    if (getCommentCount() != postRealm.getCommentCount()) return false;
+    if (getReportCount() != postRealm.getReportCount()) return false;
+    if (Double.compare(postRealm.getRank(), getRank()) != 0) return false;
+    if (isFeedItem() != postRealm.isFeedItem()) return false;
+    if (isPending() != postRealm.isPending()) return false;
+    if (isBookmarked() != postRealm.isBookmarked()) return false;
+    if (getPostType() != postRealm.getPostType()) return false;
+    if (getId() != null ? !getId().equals(postRealm.getId()) : postRealm.getId() != null) {
+      return false;
+    }
+    if (getOwnerId() != null ? !getOwnerId().equals(postRealm.getOwnerId())
+        : postRealm.getOwnerId() != null) {
+      return false;
+    }
+    if (getAvatarUrl() != null ? !getAvatarUrl().equals(postRealm.getAvatarUrl())
+        : postRealm.getAvatarUrl() != null) {
+      return false;
+    }
+    if (getUsername() != null ? !getUsername().equals(postRealm.getUsername())
+        : postRealm.getUsername() != null) {
+      return false;
+    }
+    if (getContent() != null ? !getContent().equals(postRealm.getContent())
+        : postRealm.getContent() != null) {
+      return false;
+    }
+    if (getMedias() != null ? !getMedias().equals(postRealm.getMedias())
+        : postRealm.getMedias() != null) {
+      return false;
+    }
+    if (getTags() != null ? !getTags().equals(postRealm.getTags()) : postRealm.getTags() != null) {
+      return false;
+    }
+    if (getGroupId() != null ? !getGroupId().equals(postRealm.getGroupId())
+        : postRealm.getGroupId() != null) {
+      return false;
+    }
+    if (getAcceptedCommentId() != null ? !getAcceptedCommentId().equals(
+        postRealm.getAcceptedCommentId()) : postRealm.getAcceptedCommentId() != null) {
+      return false;
+    }
+    if (getCreated() != null ? !getCreated().equals(postRealm.getCreated())
+        : postRealm.getCreated() != null) {
+      return false;
+    }
+    return getTitle() != null ? getTitle().equals(postRealm.getTitle())
+        : postRealm.getTitle() == null;
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(getId(), getOwnerId(), getAvatarUrl(), getUsername(), getContent(),
-        getBounty(), getMedias(), getTags(), getGroupId(), getAcceptedCommentId(), getCreated(),
-        getVoteDir(), getVoteCount(), getCommentCount(), getReportCount(), getTitle(), getRank(),
-        isFeedItem(), isPending(), isBookmarked(), getPostType());
+  @Override public int hashCode() {
+    int result;
+    long temp;
+    result = getId() != null ? getId().hashCode() : 0;
+    result = 31 * result + (getOwnerId() != null ? getOwnerId().hashCode() : 0);
+    result = 31 * result + (getAvatarUrl() != null ? getAvatarUrl().hashCode() : 0);
+    result = 31 * result + (getUsername() != null ? getUsername().hashCode() : 0);
+    result = 31 * result + (getContent() != null ? getContent().hashCode() : 0);
+    result = 31 * result + getBounty();
+    result = 31 * result + (getMedias() != null ? getMedias().hashCode() : 0);
+    result = 31 * result + (getTags() != null ? getTags().hashCode() : 0);
+    result = 31 * result + (getGroupId() != null ? getGroupId().hashCode() : 0);
+    result = 31 * result + (getAcceptedCommentId() != null ? getAcceptedCommentId().hashCode() : 0);
+    result = 31 * result + (getCreated() != null ? getCreated().hashCode() : 0);
+    result = 31 * result + getVoteDir();
+    result = 31 * result + (int) (getVoteCount() ^ (getVoteCount() >>> 32));
+    result = 31 * result + (int) (getCommentCount() ^ (getCommentCount() >>> 32));
+    result = 31 * result + getReportCount();
+    result = 31 * result + (getTitle() != null ? getTitle().hashCode() : 0);
+    temp = Double.doubleToLongBits(getRank());
+    result = 31 * result + (int) (temp ^ (temp >>> 32));
+    result = 31 * result + (isFeedItem() ? 1 : 0);
+    result = 31 * result + (isPending() ? 1 : 0);
+    result = 31 * result + (isBookmarked() ? 1 : 0);
+    result = 31 * result + getPostType();
+    return result;
   }
 
-  @Override
-  public String toString() {
-    return "PostRealm{"
-        + "id='"
-        + id
-        + '\''
-        + ", ownerId='"
-        + ownerId
-        + '\''
-        + ", avatarUrl='"
-        + avatarUrl
-        + '\''
-        + ", username='"
-        + username
-        + '\''
-        + ", content='"
-        + content
-        + '\''
-        + ", bounty="
-        + bounty
-        + ", medias="
-        + medias
-        + ", tags="
-        + tags
-        + ", groupId="
-        + groupId
-        + ", acceptedCommentId='"
-        + acceptedCommentId
-        + '\''
-        + ", created="
-        + created
-        + ", voteDir="
-        + voteDir
-        + ", voteCount="
-        + voteCount
-        + ", commentCount="
-        + commentCount
-        + ", reportCount="
-        + reportCount
-        + ", postType="
-        + postType
-        + ", title='"
-        + title
-        + '\''
-        + ", rank="
-        + rank
-        + ", feedItem="
-        + feedItem
-        + ", pending="
-        + pending
-        + ", bookmarked="
-        + bookmarked
-        + '}';
+  @Override public String toString() {
+    return "PostRealm{" +
+        "id='" + id + '\'' +
+        ", ownerId='" + ownerId + '\'' +
+        ", avatarUrl='" + avatarUrl + '\'' +
+        ", username='" + username + '\'' +
+        ", content='" + content + '\'' +
+        ", bounty=" + bounty +
+        ", medias=" + medias +
+        ", tags=" + tags +
+        ", groupId='" + groupId + '\'' +
+        ", acceptedCommentId='" + acceptedCommentId + '\'' +
+        ", created=" + created +
+        ", voteDir=" + voteDir +
+        ", voteCount=" + voteCount +
+        ", commentCount=" + commentCount +
+        ", reportCount=" + reportCount +
+        ", title='" + title + '\'' +
+        ", rank=" + rank +
+        ", feedItem=" + feedItem +
+        ", pending=" + pending +
+        ", bookmarked=" + bookmarked +
+        ", postType=" + postType +
+        '}';
   }
 }

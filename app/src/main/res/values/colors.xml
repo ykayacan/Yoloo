@@ -54,4 +54,6 @@
   <color name="colorAccent">#db4437</color>
   <color name="colorWhiteBackground">#95ffffff</color>
 
+  <color name="editor">#424242</color>
+
 </resources>

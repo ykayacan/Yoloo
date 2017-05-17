@@ -4,5 +4,7 @@ import android.app.Notification;
 
 public interface NotificationProvider {
 
+  String TAG = "NotificationProvider";
+
   Notification getNotification();
 }

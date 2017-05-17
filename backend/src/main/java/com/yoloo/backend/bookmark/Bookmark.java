@@ -13,7 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.Value;
-import lombok.experimental.NonFinal;
+import lombok.experimental.FieldDefaults;
 import org.joda.time.DateTime;
 
 @Entity
@@ -21,24 +21,19 @@ import org.joda.time.DateTime;
 @Value
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+@NoArgsConstructor(force = true,
+    access = AccessLevel.PRIVATE)
+@FieldDefaults(makeFinal = false)
 public class Bookmark {
 
   public static final String FIELD_CREATED = "created";
 
-  /**
-   * websafe post id.
-   */
-  @Id
-  private String id;
+  // postId
+  @Id private String id;
 
-  @Parent
-  @NonFinal
-  private Key<Account> parent;
+  @Parent private Key<Account> parent;
 
-  @Index
-  @NonFinal
-  private DateTime created;
+  @Index private DateTime created;
 
   public static Key<Bookmark> createKey(Key<Account> accountKey, Key<PostEntity> postKey) {
     return Key.create(accountKey, Bookmark.class, postKey.toWebSafeString());

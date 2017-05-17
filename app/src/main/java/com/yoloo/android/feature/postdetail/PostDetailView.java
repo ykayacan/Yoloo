@@ -1,6 +1,7 @@
 package com.yoloo.android.feature.postdetail;
 
 import com.yoloo.android.data.db.AccountRealm;
+import com.yoloo.android.data.db.CommentRealm;
 import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.data.feed.FeedItem;
 import com.yoloo.android.framework.MvpDataView;
@@ -14,5 +15,7 @@ interface PostDetailView extends MvpDataView<List<FeedItem<?>>> {
 
   void onPostUpdated(PostRealm post);
 
-  void onCommentAccepted(String commentId);
+  void onCommentUpdated(CommentRealm comment);
+
+  void onMoreLoaded(List<FeedItem<?>> items);
 }

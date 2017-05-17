@@ -1,6 +1,5 @@
 package com.yoloo.backend.tag;
 
-import com.annimon.stream.Stream;
 import com.google.api.server.spi.response.CollectionResponse;
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.QueryResultIterator;
@@ -12,6 +11,7 @@ import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.post.PostEntity;
 import ix.Ix;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -117,32 +117,36 @@ public class TagController extends Controller {
         .build();
   }
 
-  public CollectionResponse<WrappedString> listUsedTags(String groupId, Optional<String> cursor,
+  public CollectionResponse<Tag> listUsedTags(String groupId, Optional<String> cursor,
       Optional<Integer> limit) {
     Query<PostEntity> postQuery = ofy()
         .load()
         .type(PostEntity.class)
         .filter(PostEntity.FIELD_GROUP_KEY + " =", Key.create(groupId));
 
-    postQuery =
-        cursor.isPresent() ? postQuery.startAt(Cursor.fromWebSafeString(cursor.get())) : postQuery;
+    postQuery = cursor.isPresent()
+        ? postQuery.startAt(Cursor.fromWebSafeString(cursor.get()))
+        : postQuery;
 
     postQuery = postQuery.limit(limit.or(DEFAULT_LIST_LIMIT));
 
     final QueryResultIterator<PostEntity> qi = postQuery.iterator();
 
-    List<WrappedString> wrappedStrings = Stream
-        .of(qi)
+    return Ix
+        .just(qi)
+        .filter(Iterator::hasNext)
+        .map(Iterator::next)
         .map(PostEntity::getTags)
+        .flatMap(Ix::from)
         .distinct()
-        .flatMap(Stream::of)
-        .map(WrappedString::new)
-        .toList();
-
-    return CollectionResponse.<WrappedString>builder()
-        .setItems(wrappedStrings)
-        .setNextPageToken(qi.getCursor().toWebSafeString())
-        .build();
+        .map(Tag::createKey)
+        .collectToList()
+        .map(keys -> ofy().load().keys(keys).values())
+        .map(tags -> CollectionResponse.<Tag>builder()
+            .setItems(tags)
+            .setNextPageToken(qi.getCursor().toWebSafeString())
+            .build())
+        .single();
   }
 
   /**

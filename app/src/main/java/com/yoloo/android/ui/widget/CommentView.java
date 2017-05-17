@@ -2,6 +2,7 @@ package com.yoloo.android.ui.widget;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.util.AttributeSet;
@@ -16,6 +17,7 @@ import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.Transformation;
 import com.yoloo.android.R;
 import com.yoloo.android.data.db.CommentRealm;
+import com.yoloo.android.feature.models.comment.CommentCallbacks;
 import com.yoloo.android.ui.widget.linkabletextview.LinkableTextView;
 import com.yoloo.android.ui.widget.timeview.TimeTextView;
 import com.yoloo.android.util.DrawableHelper;
@@ -33,16 +35,17 @@ public class CommentView extends ConstraintLayout {
   @BindDimen(R.dimen.padding_normal) int normalPadding;
   @BindDimen(R.dimen.padding_micro) int microPadding;
 
-  private OnCommentClickListener onCommentClickListener;
+  private CommentCallbacks callbacks;
+
   private CommentRealm comment;
 
   public CommentView(Context context, AttributeSet attrs) {
     super(context, attrs);
     inflate(getContext(), R.layout.layout_commentview, this);
     ButterKnife.bind(this);
+    setBackgroundColor(Color.WHITE);
 
     setPadding(normalPadding, normalPadding, normalPadding, microPadding);
-
 
     DrawableHelper
         .create()
@@ -74,49 +77,32 @@ public class CommentView extends ConstraintLayout {
         .into(ivUserAvatar);
   }
 
-  public void setOnCommentClickListener(OnCommentClickListener onCommentClickListener) {
-    this.onCommentClickListener = onCommentClickListener;
+  public void setCommentCallbacks(CommentCallbacks callbacks) {
+    this.callbacks = callbacks;
 
     setOnLongClickListener(v -> {
-      onCommentClickListener.onCommentLongClick(comment);
+      callbacks.onCommentLongClickListener(comment);
       return comment.isOwner();
     });
 
     tvContent.setOnLinkClickListener((type, value) -> {
       if (type == LinkableTextView.Link.MENTION) {
-        onCommentClickListener.onCommentMentionClick(value);
+        callbacks.onCommentMentionClickListener(value);
       }
     });
 
-
     tvMarkAsAccepted.setOnClickListener(v -> {
-      /*comment.setAccepted(true);
       tvMarkAsAccepted.setVisibility(View.GONE);
-      tvAcceptedIndicator.setVisibility(View.VISIBLE);*/
+      tvAcceptedIndicator.setVisibility(View.VISIBLE);
 
-      onCommentClickListener.onMarkAsAccepted(comment);
+      callbacks.onCommentAcceptRequestClickListener(comment);
     });
 
-    voteView.setOnVoteEventListener(direction -> {
-      //comment.setVoteDir(direction);
-      onCommentClickListener.onCommentVoteClick(comment.getId(), direction);
-    });
+    voteView.setOnVoteEventListener(dir -> callbacks.onCommentVoteClickListener(comment, dir));
   }
 
   @OnClick({ R.id.tv_comment_username, R.id.iv_comment_user_avatar })
   void onProfileClick() {
-    onCommentClickListener.onCommentProfileClick(comment.getOwnerId());
-  }
-
-  public interface OnCommentClickListener {
-    void onCommentLongClick(CommentRealm comment);
-
-    void onCommentProfileClick(String userId);
-
-    void onCommentVoteClick(String commentId, int direction);
-
-    void onCommentMentionClick(String username);
-
-    void onMarkAsAccepted(CommentRealm comment);
+    callbacks.onCommentProfileClickListener(comment.getOwnerId());
   }
 }

@@ -48,13 +48,25 @@
     android:id="@+id/tv_blog_content"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="16dp"
+    android:layout_marginBottom="8dp"
     android:layout_marginEnd="16dp"
     android:layout_marginLeft="16dp"
     android:layout_marginRight="16dp"
     android:layout_marginStart="16dp"
     android:textColor="@color/lucky_point"
     tools:text="@string/lorem_ipsum_long" />
+
+  <com.yoloo.android.ui.widget.linkabletextview.LinkableTextView
+    android:id="@+id/container_item_feed_tags"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="@dimen/padding_micro"
+    android:paddingEnd="@dimen/padding_normal"
+    android:paddingLeft="@dimen/padding_normal"
+    android:paddingRight="@dimen/padding_normal"
+    android:paddingStart="@dimen/padding_normal"
+    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+    app:enabledUnderlines="false" />
 
   <android.support.constraint.ConstraintLayout
     android:layout_width="match_parent"

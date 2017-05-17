@@ -18,13 +18,13 @@ public abstract class CommentModel extends EpoxyModel<CommentView> {
   @EpoxyAttribute boolean showAcceptButton;
   @EpoxyAttribute(DoNotHash) RequestManager glide;
   @EpoxyAttribute(DoNotHash) CropCircleTransformation circleTransformation;
-  @EpoxyAttribute(DoNotHash) CommentView.OnCommentClickListener onCommentClickListener;
+  @EpoxyAttribute(DoNotHash) CommentCallbacks callbacks;
 
   @Override
   public void bind(CommentView view) {
     super.bind(view);
     view.setComment(comment, showAcceptButton);
     view.setUserAvatar(glide, circleTransformation, comment.getAvatarUrl());
-    view.setOnCommentClickListener(onCommentClickListener);
+    view.setCommentCallbacks(callbacks);
   }
 }

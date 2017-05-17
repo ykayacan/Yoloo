@@ -33,4 +33,30 @@ public class CountryRealm extends RealmObject {
   public String getFlagUrl() {
     return flagUrl;
   }
+
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof CountryRealm)) return false;
+
+    CountryRealm that = (CountryRealm) o;
+
+    if (!getCode().equals(that.getCode())) return false;
+    if (!getName().equals(that.getName())) return false;
+    return getFlagUrl().equals(that.getFlagUrl());
+  }
+
+  @Override public int hashCode() {
+    int result = getCode().hashCode();
+    result = 31 * result + getName().hashCode();
+    result = 31 * result + getFlagUrl().hashCode();
+    return result;
+  }
+
+  @Override public String toString() {
+    return "CountryRealm{" +
+        "code='" + code + '\'' +
+        ", name='" + name + '\'' +
+        ", flagUrl='" + flagUrl + '\'' +
+        '}';
+  }
 }

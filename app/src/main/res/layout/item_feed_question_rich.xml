@@ -12,7 +12,7 @@
   <include layout="@layout/merge_item_feed_header" />
 
   <com.yoloo.android.ui.widget.BaselineGridTextView
-    android:id="@+id/tv_item_feed_rich_content"
+    android:id="@+id/tv_item_feed_content"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:paddingBottom="@dimen/padding_micro"
@@ -22,12 +22,12 @@
     android:paddingStart="@dimen/padding_normal"
     android:textAppearance="@style/TextAppearance.AppCompat.Body1"
     app:layout_constraintLeft_toLeftOf="parent"
-    app:layout_constraintRight_toLeftOf="@+id/iv_item_feed_rich_cover"
-    app:layout_constraintTop_toTopOf="@+id/iv_item_feed_rich_cover"
+    app:layout_constraintRight_toLeftOf="@+id/iv_item_feed_cover"
+    app:layout_constraintTop_toTopOf="@+id/iv_item_feed_cover"
     tools:text="@string/lorem_ipsum" />
 
   <ImageView
-    android:id="@+id/iv_item_feed_rich_cover"
+    android:id="@+id/iv_item_feed_cover"
     android:layout_width="64dp"
     android:layout_height="64dp"
     android:layout_marginEnd="16dp"
@@ -50,7 +50,7 @@
     app:layout_constraintHorizontal_bias="0.5"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toLeftOf="@+id/tv_item_feed_comment"
-    app:layout_constraintTop_toBottomOf="@+id/iv_item_feed_rich_cover" />
+    app:layout_constraintTop_toBottomOf="@+id/iv_item_feed_cover" />
 
   <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_item_feed_comment"

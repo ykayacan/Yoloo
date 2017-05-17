@@ -155,7 +155,7 @@ public class PostControllerTest extends TestBase {
     PostEntity original =
         postController.insertQuestionPost("Test content", "visa,passport", europe.getWebsafeId(),
             Optional.absent(), Optional.of(10), user);
-    voteController.vote(original.getWebsafeId(), Vote.Direction.UP.getValue(), user);
+    voteController.votePost(original.getWebsafeId(), Vote.Direction.UP.getValue(), user);
 
     PostEntity fetched = postController.getPost(original.getWebsafeId(), user);
 
@@ -323,7 +323,7 @@ public class PostControllerTest extends TestBase {
     PostEntity p1 = postController.insertQuestionPost("1. post", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
     commentController.insertComment(p1.getWebsafeId(), "Test comment", user);
-    voteController.vote(p1.getWebsafeId(), Vote.Direction.UP.getValue(), user);
+    voteController.votePost(p1.getWebsafeId(), Vote.Direction.UP.getValue(), user);
 
     PostEntity p2 = postController.insertQuestionPost("2. post", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
@@ -331,7 +331,7 @@ public class PostControllerTest extends TestBase {
     PostEntity p3 = postController.insertQuestionPost("3. post", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);
     commentController.insertComment(p3.getWebsafeId(), "Test comment", user);
-    voteController.vote(p3.getWebsafeId(), Vote.Direction.DOWN.getValue(), user);
+    voteController.votePost(p3.getWebsafeId(), Vote.Direction.DOWN.getValue(), user);
 
     PostEntity p4 = postController.insertQuestionPost("4. post", tags, categoryIds, Optional.absent(),
         Optional.absent(), user);

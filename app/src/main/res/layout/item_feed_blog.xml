@@ -12,7 +12,7 @@
   <include layout="@layout/merge_item_feed_header" />
 
   <ImageView
-    android:id="@+id/iv_item_blog_cover"
+    android:id="@+id/iv_item_feed_cover"
     android:layout_width="0dp"
     android:layout_height="0dp"
     android:layout_marginTop="@dimen/padding_normal"
@@ -21,10 +21,10 @@
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toBottomOf="@+id/iv_item_feed_user_avatar"
-    tools:src="@drawable/profile_bg_1x" />
+    tools:src="@color/background_lightish" />
 
   <com.yoloo.android.ui.widget.BaselineGridTextView
-    android:id="@+id/tv_item_blog_title"
+    android:id="@+id/tv_item_feed_title"
     style="@style/TextAppearance.BlogTitle"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
@@ -35,7 +35,7 @@
     android:layout_marginTop="@dimen/padding_normal"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
-    app:layout_constraintTop_toBottomOf="@+id/iv_item_blog_cover"
+    app:layout_constraintTop_toBottomOf="@+id/iv_item_feed_cover"
     tools:text="Test" />
 
   <com.yoloo.android.ui.widget.BaselineGridTextView
@@ -45,9 +45,9 @@
     android:layout_marginTop="8dp"
     android:paddingBottom="@dimen/padding_micro"
     android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-    app:layout_constraintLeft_toLeftOf="@+id/tv_item_blog_title"
-    app:layout_constraintRight_toRightOf="@+id/tv_item_blog_title"
-    app:layout_constraintTop_toBottomOf="@+id/tv_item_blog_title"
+    app:layout_constraintLeft_toLeftOf="@+id/tv_item_feed_title"
+    app:layout_constraintRight_toRightOf="@+id/tv_item_feed_title"
+    app:layout_constraintTop_toBottomOf="@+id/tv_item_feed_title"
     tools:text="Test" />
 
   <com.yoloo.android.ui.widget.BaselineGridTextView

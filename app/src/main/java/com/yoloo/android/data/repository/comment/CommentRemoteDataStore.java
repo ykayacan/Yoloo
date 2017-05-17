@@ -136,19 +136,21 @@ class CommentRemoteDataStore {
                 .setAccepted(true)
                 .setRequestHeaders(setIdTokenHeader(idToken))
                 .execute())
-            .subscribeOn(Schedulers.io()))
-        .map(CommentRealm::new);
+            .map(CommentRealm::new)
+            .subscribeOn(Schedulers.io()));
   }
 
-  Completable vote(@Nonnull String commentId, int direction) {
-    return getIdToken().flatMapCompletable(idToken -> Completable
-        .fromCallable(() -> INSTANCE
-            .getApi()
-            .comments()
-            .vote(commentId, direction)
-            .setRequestHeaders(setIdTokenHeader(idToken))
-            .execute())
-        .subscribeOn(Schedulers.io()));
+  Single<CommentRealm> vote(@Nonnull String commentId, int direction) {
+    return getIdToken()
+        .flatMap(idToken -> Single
+            .fromCallable(() -> INSTANCE
+                .getApi()
+                .comments()
+                .vote(commentId, direction)
+                .setRequestHeaders(setIdTokenHeader(idToken))
+                .execute())
+            .map(CommentRealm::new)
+            .subscribeOn(Schedulers.io()));
   }
 
   private HttpHeaders setIdTokenHeader(@Nonnull String idToken) {

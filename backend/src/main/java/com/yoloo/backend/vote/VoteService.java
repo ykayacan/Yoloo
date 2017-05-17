@@ -40,7 +40,7 @@ public class VoteService {
    * @param accountKey the account key
    * @return the observable
    */
-  public Observable<List<PostEntity>> checkPostVote(List<? extends PostEntity> posts,
+  public Observable<List<PostEntity>> checkPostVote(List<PostEntity> posts,
       Key<Account> accountKey) {
     return getVotesObservable(posts, accountKey)
         .flatMap(voteMap -> mergeVoteDirection(posts, accountKey, voteMap))

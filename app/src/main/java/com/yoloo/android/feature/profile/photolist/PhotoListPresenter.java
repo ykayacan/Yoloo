@@ -26,7 +26,9 @@ class PhotoListPresenter extends MvpPresenter<PhotoListView> {
             getView().onEmpty();
           } else {
             cursor = response.getCursor();
-            getView().onLoaded(response.getData());
+            if (isViewAttached()) {
+              getView().onLoaded(response.getData());
+            }
           }
 
           cursor = response.getCursor();

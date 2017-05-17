@@ -20,7 +20,7 @@
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:fitsSystemWindows="true"
-      app:layout_scrollFlags="scroll|snap"
+      app:layout_scrollFlags="scroll"
       app:titleEnabled="false">
 
       <ImageView
@@ -30,8 +30,7 @@
         android:fitsSystemWindows="true"
         android:foreground="@drawable/shape_top_scrim"
         android:scaleType="centerCrop"
-        app:layout_collapseMode="parallax"
-        app:srcCompat="@drawable/profile_bg_1x" />
+        app:layout_collapseMode="parallax" />
 
       <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar_profile"
@@ -48,12 +47,12 @@
 
         <ImageView
           android:id="@+id/iv_profile_action"
-          style="@style/Widget.AppCompat.Light.ActionButton"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_gravity="end"
           android:tint="@android:color/white"
-          app:srcCompat="@drawable/ic_settings_black_24dp" />
+          app:srcCompat="@drawable/ic_settings_black_24dp"
+          style="@style/Widget.AppCompat.Light.ActionButton" />
 
       </android.support.v7.widget.Toolbar>
 
@@ -73,7 +72,6 @@
 
       <Button
         android:id="@+id/btn_profile_follow"
-        style="@style/Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
         android:layout_marginTop="4dp"
@@ -82,7 +80,8 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Follow"
-        tools:visibility="visible" />
+        tools:visibility="visible"
+        style="@style/Widget.AppCompat.Button.Colored" />
 
       <com.yoloo.android.ui.widget.BaselineGridTextView
         android:id="@+id/tv_profile_realname"
@@ -97,7 +96,6 @@
 
       <com.yoloo.android.ui.widget.BaselineGridTextView
         android:id="@+id/tv_profile_level"
-        style="@style/TextAppearance.AppCompat.Inverse"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -107,7 +105,8 @@
         android:gravity="center"
         android:text="Full Time Traveler"
         app:layout_constraintBaseline_toBaselineOf="@+id/tv_profile_realname"
-        app:layout_constraintLeft_toRightOf="@+id/tv_profile_realname" />
+        app:layout_constraintLeft_toRightOf="@+id/tv_profile_realname"
+        style="@style/TextAppearance.AppCompat.Inverse" />
 
       <com.yoloo.android.ui.widget.BaselineGridTextView
         android:id="@+id/tv_profile_country"
@@ -151,29 +150,28 @@
 
       <com.yoloo.android.ui.widget.BaselineGridTextView
         android:id="@+id/tv_profile_followers_counter"
-        style="@style/TextAppearance.AppCompat.Body1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:textColor="@android:color/black"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_profile_website"
-        tools:text="12K" />
+        tools:text="12K"
+        style="@style/TextAppearance.AppCompat.Body1" />
 
       <com.yoloo.android.ui.widget.BaselineGridTextView
         android:id="@+id/tv_profile_followers_counter_text"
-        style="@style/TextAppearance.AppCompat.Caption"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:text="@string/label_profile_follower_count"
         android:textColor="@android:color/secondary_text_dark"
         app:layout_constraintBaseline_toBaselineOf="@+id/tv_profile_followers_counter"
         app:layout_constraintLeft_toRightOf="@+id/tv_profile_followers_counter"
-        android:layout_marginStart="8dp" />
+        style="@style/TextAppearance.AppCompat.Caption" />
 
       <com.yoloo.android.ui.widget.BaselineGridTextView
         android:id="@+id/tv_profile_following_counter"
-        style="@style/TextAppearance.AppCompat.Body1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
@@ -182,18 +180,19 @@
         android:textColor="@android:color/black"
         app:layout_constraintBaseline_toBaselineOf="@+id/tv_profile_followers_counter_text"
         app:layout_constraintLeft_toRightOf="@id/tv_profile_followers_counter_text"
-        tools:text="1K" />
+        tools:text="1K"
+        style="@style/TextAppearance.AppCompat.Body1" />
 
       <com.yoloo.android.ui.widget.BaselineGridTextView
         android:id="@+id/tv_profile_following_counter_text"
-        style="@style/TextAppearance.AppCompat.Caption"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:text="@string/label_profile_following_count"
         android:textColor="@android:color/secondary_text_dark"
         app:layout_constraintBaseline_toBaselineOf="@+id/tv_profile_following_counter"
         app:layout_constraintLeft_toRightOf="@id/tv_profile_following_counter"
-        android:layout_marginStart="8dp" />
+        style="@style/TextAppearance.AppCompat.Caption" />
 
     </android.support.constraint.ConstraintLayout>
 

@@ -29,6 +29,7 @@ import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.Router;
 import com.bluelinelabs.conductor.RouterTransaction;
+import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bluelinelabs.conductor.support.RouterPagerAdapter;
@@ -40,7 +41,9 @@ import com.yoloo.android.R;
 import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.data.db.CountryRealm;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
+import com.yoloo.android.feature.chat.chat.ChatController;
 import com.yoloo.android.feature.follow.FollowController;
+import com.yoloo.android.feature.fullscreenphoto.FullscreenPhotoController;
 import com.yoloo.android.feature.groupgridoverview.GroupGridOverviewController;
 import com.yoloo.android.feature.postlist.PostListController;
 import com.yoloo.android.feature.profile.photolist.PhotoListController;
@@ -54,6 +57,7 @@ import com.yoloo.android.util.Pair;
 import com.yoloo.android.util.TextViewUtil;
 import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -105,9 +109,10 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   private boolean isAvatarShown = true;
   private int maxScrollSize;
 
+  private boolean reEnter;
+
   public ProfileController(@Nullable Bundle args) {
     super(args);
-    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
   }
 
   public static ProfileController create(@NonNull String userId) {
@@ -124,35 +129,39 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   @Override protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
     setupToolbar();
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
   }
 
   @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
     final String userId = getArgs().getString(KEY_USER_ID);
 
-    List<Pair<String, Controller>> pairs = new ArrayList<>(4);
-    pairs.add(Pair.create(profilePostsTabString, PostListController.ofUser(userId)));
-    pairs.add(Pair.create(profilePhotosTabString, PhotoListController.create(userId)));
-    pairs.add(
-        Pair.create(profileInterestsTabString, GroupGridOverviewController.create(userId, 3)));
+    if (!reEnter) {
+      List<Pair<String, Controller>> pairs = new ArrayList<>(4);
+      pairs.add(Pair.create(profilePostsTabString, PostListController.ofUser(userId)));
+      pairs.add(Pair.create(profilePhotosTabString, PhotoListController.create(userId)));
+      pairs.add(
+          Pair.create(profileInterestsTabString, GroupGridOverviewController.create(userId, 3)));
 
-    final RouterPagerAdapter pagerAdapter = new ProfilePagerAdapter(this, pairs);
+      final RouterPagerAdapter pagerAdapter = new ProfilePagerAdapter(this, pairs);
 
-    viewPager.setAdapter(pagerAdapter);
-    tabLayout.setupWithViewPager(viewPager);
+      viewPager.setAdapter(pagerAdapter);
+      tabLayout.setupWithViewPager(viewPager);
 
-    int randomNum = new Random().nextInt(7) + 1;
+      int randomNum = new Random().nextInt(7) + 1;
 
-    final String backgroundUrl =
-        "https://storage.googleapis.com/yoloo-151719.appspot.com/profile-bg-images/small/p"
-            + randomNum
-            + ".webp";
+      final String backgroundUrl =
+          "https://storage.googleapis.com/yoloo-151719.appspot.com/profile-bg-images/small/p"
+              + randomNum
+              + ".webp";
 
-    Glide.with(getActivity()).load(backgroundUrl).into(ivProfileBg);
+      Glide.with(getActivity()).load(backgroundUrl).into(ivProfileBg);
 
-    animateAvatar();
+      animateAvatar();
 
-    getPresenter().loadUserProfile(userId);
+      getPresenter().loadUserProfile(userId);
+      reEnter = true;
+    }
   }
 
   @Override protected void onDestroyView(@NonNull View view) {
@@ -216,8 +225,17 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     if (account.isMe()) {
       startTransaction(ProfileEditController.create(), new HorizontalChangeHandler());
     } else {
-      //startTransaction(ChatController.create());
+      UserRepositoryProvider.getRepository().getLocalMe()
+          .observeOn(AndroidSchedulers.mainThread())
+          .subscribe(me -> startTransaction(ChatController.create(me, account),
+              new VerticalChangeHandler()));
     }
+  }
+
+  @OnClick(R.id.iv_profile_avatar) void onProfileAvatarClick() {
+    Timber.d("Avatar Url: %s", account.getAvatarUrl());
+    startTransaction(FullscreenPhotoController.create(account.getAvatarUrl()),
+        new FadeChangeHandler());
   }
 
   private void setupToolbar() {
@@ -258,7 +276,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     tvUsername.setText(account.getUsername());
 
     Glide.with(getActivity())
-        .load(account.getAvatarUrl().replace("s96-c", "s96-c-rw"))
+        .load(account.getAvatarUrl().replace("s120-c", "s120-c-rw"))
         .bitmapTransform(new CropCircleTransformation(getActivity()))
         .into(ivProfileAvatar);
 

@@ -34,6 +34,6 @@ public enum UploadManager {
   }
 
   public enum MediaOrigin {
-    POST, PROFILE
+    POST, PROFILE, CHAT
   }
 }

@@ -59,7 +59,7 @@ public class CountryService {
         .map(bytes -> mapper.readValue(bytes, GeognosResponse.class))
         .map(response -> {
           final String filePath =
-              MediaConfig.SERVE_FLAGS_BUCKET + "/" + countryCode.toLowerCase() + ".png";
+              MediaConfig.SERVE_FLAGS + "/" + countryCode.toLowerCase() + ".png";
 
           String flagIconUrl;
           if (ServerConfig.isDev()) {

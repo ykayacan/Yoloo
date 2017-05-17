@@ -27,32 +27,28 @@ class CommentPresenter extends MvpPresenter<CommentView> {
     this.userRepository = userRepository;
   }
 
-  void loadComments(boolean pullToRefresh, @Nonnull String postId, @Nonnull String postOwnerId,
-      boolean hasAcceptedComment) {
+  void loadComments(boolean pullToRefresh,
+      boolean loadingMore,
+      @Nonnull String postId,
+      @Nonnull String postOwnerId,
+      boolean hasAcceptedComment,
+      int postType) {
     shouldResetCursor(pullToRefresh);
 
-    Observable<AccountRealm> meObservable =
-        userRepository.getLocalMe().toObservable().observeOn(AndroidSchedulers.mainThread());
+    Disposable d =
+        Observable.zip(getMeObservable(), getCommentsObservable(postId), Pair::create).map(pair -> {
+          List<CommentRealm> comments =
+              setExtraCommentProperties(postOwnerId, hasAcceptedComment, postType, pair);
 
-    Observable<Response<List<CommentRealm>>> commentsObservable = commentRepository
-        .listComments(postId, cursor, 20)
-        .observeOn(AndroidSchedulers.mainThread())
-        .doOnNext(response -> Timber.d("Comments: %s", response.getData()));
-
-    Disposable d = Observable.zip(meObservable, commentsObservable, Pair::create).map(pair -> {
-      List<CommentRealm> comments = Stream
-          .of(pair.second.getData())
-          .map(comment -> comment
-              .setOwner(pair.first.getId().equals(comment.getOwnerId()))
-              .setPostAccepted(hasAcceptedComment)
-              .setPostOwner(postOwnerId.equals(pair.first.getId())))
-          .toList();
-
-      return Pair.create(pair.first, Response.create(comments, pair.second.getCursor()));
-    }).subscribe(pair -> {
-      cursor = pair.second.getCursor();
-      getView().onLoaded(pair.second.getData());
-    }, this::showError);
+          return Pair.create(pair.first, Response.create(comments, pair.second.getCursor()));
+        }).subscribe(pair -> {
+          cursor = pair.second.getCursor();
+          if (loadingMore) {
+            getView().onMoreLoaded(pair.second.getData());
+          } else {
+            getView().onLoaded(pair.second.getData());
+          }
+        }, this::showError);
 
     getDisposable().add(d);
   }
@@ -61,9 +57,7 @@ class CommentPresenter extends MvpPresenter<CommentView> {
     Disposable d = commentRepository
         .voteComment(commentId, direction)
         .observeOn(AndroidSchedulers.mainThread())
-        .doOnError(this::showError)
-        .subscribe(() -> {
-        }, Timber::e);
+        .subscribe(comment -> getView().onCommentUpdated(comment), Timber::e);
 
     getDisposable().add(d);
   }
@@ -72,7 +66,7 @@ class CommentPresenter extends MvpPresenter<CommentView> {
     Disposable d = commentRepository
         .acceptComment(comment)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(c -> getView().onCommentAccepted(c), this::showError);
+        .subscribe(c -> getView().onCommentUpdated(c), this::showError);
 
     getDisposable().add(d);
   }
@@ -95,5 +89,28 @@ class CommentPresenter extends MvpPresenter<CommentView> {
     if (pullToRefresh) {
       cursor = null;
     }
+  }
+
+  private Observable<Response<List<CommentRealm>>> getCommentsObservable(@Nonnull String postId) {
+    return commentRepository
+        .listComments(postId, cursor, 20)
+        .observeOn(AndroidSchedulers.mainThread());
+  }
+
+  private Observable<AccountRealm> getMeObservable() {
+    return userRepository.getLocalMe().toObservable().observeOn(AndroidSchedulers.mainThread());
+  }
+
+  private List<CommentRealm> setExtraCommentProperties(@Nonnull String postOwnerId,
+      boolean hasAcceptedComment, int postType,
+      Pair<AccountRealm, Response<List<CommentRealm>>> pair) {
+    return Stream
+        .of(pair.second.getData())
+        .map(comment -> comment
+            .setPostType(postType)
+            .setOwner(pair.first.getId().equals(comment.getOwnerId()))
+            .setPostAccepted(hasAcceptedComment)
+            .setPostOwner(postOwnerId.equals(pair.first.getId())))
+        .toList();
   }
 }

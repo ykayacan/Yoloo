@@ -16,7 +16,7 @@ class FollowPresenter extends MvpPresenter<FollowView> {
     this.userRepository = userRepository;
   }
 
-  void loadFollowers(boolean pullToRefresh, @Nonnull String userId) {
+  void loadFollowers(boolean pullToRefresh, boolean loadingMore, @Nonnull String userId) {
     resetCursor(pullToRefresh);
 
     Disposable d = userRepository
@@ -26,23 +26,31 @@ class FollowPresenter extends MvpPresenter<FollowView> {
         .subscribe(response -> {
           cursor = response.getCursor();
 
-          getView().onLoaded(response.getData());
+          if (loadingMore) {
+            getView().onLoadedMore(response.getData());
+          } else {
+            getView().onLoaded(response.getData());
+          }
         }, throwable -> getView().onError(throwable));
 
     getDisposable().add(d);
   }
 
-  void loadFollowings(boolean pullToRefresh, @Nonnull String userId) {
+  void loadFollowings(boolean pullToRefresh, boolean loadingMore, @Nonnull String userId) {
     resetCursor(pullToRefresh);
 
     Disposable d = userRepository
         .listFollowings(userId, cursor, 20)
         .observeOn(AndroidSchedulers.mainThread())
-        .doOnSubscribe(disposable -> getView().onLoading(pullToRefresh))
+        .doOnSubscribe(disposable -> getView().onLoading(loadingMore))
         .subscribe(response -> {
           cursor = response.getCursor();
 
-          getView().onLoaded(response.getData());
+          if (loadingMore) {
+            getView().onLoadedMore(response.getData());
+          } else {
+            getView().onLoaded(response.getData());
+          }
         }, throwable -> getView().onError(throwable));
 
     getDisposable().add(d);

@@ -34,13 +34,7 @@ public class CommentRepository {
 
   public Observable<Optional<CommentRealm>> getComment(@Nonnull String postId,
       @Nonnull String commentId) {
-    return Observable.mergeDelayError(
-        diskDataStore.get(commentId).subscribeOn(Schedulers.io()).toObservable(), remoteDataStore
-            .get(postId, commentId)
-            .doOnSuccess(diskDataStore::add)
-            .map(Optional::of)
-            .toObservable()
-            .subscribeOn(Schedulers.io()));
+    return remoteDataStore.get(postId, commentId).map(Optional::of).toObservable();
   }
 
   public Single<CommentRealm> addComment(@Nonnull CommentRealm comment) {
@@ -62,8 +56,8 @@ public class CommentRepository {
     return remoteDataStore.list(postId, cursor, limit);
   }
 
-  public Completable voteComment(@Nonnull String commentId, int direction) {
-    return remoteDataStore.vote(commentId, direction).subscribeOn(Schedulers.io());
+  public Single<CommentRealm> voteComment(@Nonnull String commentId, int direction) {
+    return remoteDataStore.vote(commentId, direction);
   }
 
   public Single<CommentRealm> acceptComment(@Nonnull CommentRealm comment) {

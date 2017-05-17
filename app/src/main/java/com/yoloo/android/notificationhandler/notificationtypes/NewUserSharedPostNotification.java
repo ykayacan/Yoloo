@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 import com.yoloo.android.R;
 import com.yoloo.android.feature.base.BaseActivity;
 import com.yoloo.android.feature.notification.NotificationProvider;
@@ -32,6 +33,8 @@ public final class NewUserSharedPostNotification implements NotificationProvider
         .getResources()
         .getString(R.string.label_notification_new_post, response.getSenderUsername());
 
+    int primaryColor = ContextCompat.getColor(context, R.color.primary);
+
     return new NotificationCompat.Builder(context)
         .setSmallIcon(R.drawable.ic_yoloo_notification)
         .setContentTitle("Yoloo")
@@ -40,6 +43,7 @@ public final class NewUserSharedPostNotification implements NotificationProvider
         .setDefaults(Notification.DEFAULT_ALL)
         .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
         .setContentIntent(pendingIntent)
+        .setColor(primaryColor)
         .build();
   }
 }

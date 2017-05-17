@@ -2,6 +2,7 @@ package com.yoloo.android.data.feed;
 
 import com.yoloo.android.data.db.PostRealm;
 import java.util.List;
+import java.util.UUID;
 import javax.annotation.Nonnull;
 
 import static com.yoloo.android.util.Preconditions.checkNotNull;
@@ -24,7 +25,7 @@ public final class TrendingBlogListFeedItem implements FeedItem<List<PostRealm>>
   }
 
   @Nonnull @Override public String id() {
-    return getClass().getName();
+    return UUID.randomUUID().toString();
   }
 
   @Nonnull @Override public List<PostRealm> getItem() {

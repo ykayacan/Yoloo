@@ -117,4 +117,18 @@ public class MediaRealm extends RealmObject {
     return Objects.hash(id, ownerId, mime, thumbSizeUrl, miniSizeUrl, lowSizeUrl, mediumSizeUrl,
         largeSizeUrl, tempPath);
   }
+
+  @Override public String toString() {
+    return "MediaRealm{" +
+        "id='" + id + '\'' +
+        ", ownerId='" + ownerId + '\'' +
+        ", mime='" + mime + '\'' +
+        ", thumbSizeUrl='" + thumbSizeUrl + '\'' +
+        ", miniSizeUrl='" + miniSizeUrl + '\'' +
+        ", lowSizeUrl='" + lowSizeUrl + '\'' +
+        ", mediumSizeUrl='" + mediumSizeUrl + '\'' +
+        ", largeSizeUrl='" + largeSizeUrl + '\'' +
+        ", tempPath='" + tempPath + '\'' +
+        '}';
+  }
 }

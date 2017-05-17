@@ -10,6 +10,8 @@ import com.yoloo.android.ui.recyclerview.SelectableAdapter;
 import com.yoloo.android.util.Group;
 import java.util.List;
 
+import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;
+
 class BountySelectAdapter extends SelectableAdapter {
 
   private final OnBountySelectListener onBountySelectListener;
@@ -71,10 +73,10 @@ class BountySelectAdapter extends SelectableAdapter {
   @EpoxyModelClass(layout = R.layout.item_bounty_select)
   abstract static class BountyModel extends EpoxyModel<TextView> {
 
-    @EpoxyAttribute(hash = false) BountySelectAdapter adapter;
+    @EpoxyAttribute(DoNotHash) BountySelectAdapter adapter;
     @EpoxyAttribute String value;
-    @EpoxyAttribute Drawable drawable;
-    @EpoxyAttribute OnBountySelectListener onBountySelectListener;
+    @EpoxyAttribute(DoNotHash) Drawable drawable;
+    @EpoxyAttribute(DoNotHash) OnBountySelectListener onBountySelectListener;
 
     @Override
     public void bind(TextView view) {

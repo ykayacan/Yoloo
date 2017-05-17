@@ -16,7 +16,6 @@ import com.yoloo.android.framework.MvpPresenter;
 import io.reactivex.CompletableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import java.util.Date;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,13 +47,12 @@ class SignUpDiscoverPresenter extends MvpPresenter<SignUpDiscoverView> {
    *
    * @param response the response
    * @param username the username
-   * @param birthday the birthday
    * @param countryCode the country code
    * @param langCode the lang code
    * @param travelerTypeIds the traveler type ids
    */
   void signUpWithProvider(@Nonnull IdpResponse response, @Nonnull String username,
-      @Nonnull Date birthday, @Nonnull String countryCode, @Nonnull String langCode,
+      @Nonnull String countryCode, @Nonnull String langCode,
       @Nonnull List<String> travelerTypeIds) {
     Timber.d("signUpWithProvider()");
     getView().onShowLoading();
@@ -74,7 +72,6 @@ class SignUpDiscoverPresenter extends MvpPresenter<SignUpDiscoverView> {
             .setUsername(username)
             .setAvatarUrl(response.getPictureUrl())
             .setEmail(response.getEmail())
-            .setBirthdate(birthday)
             .setCountry(new CountryRealm(countryCode))
             .setLangCode(langCode)
             .setTravelerTypeIds(travelerTypeIds)
@@ -95,13 +92,12 @@ class SignUpDiscoverPresenter extends MvpPresenter<SignUpDiscoverView> {
    * @param username the username
    * @param email the email
    * @param password the password
-   * @param birthday the birthday
    * @param countryCode the country code
    * @param langCode the lang code
    * @param travelerTypeIds the traveler type ids
    */
   void signUpWithPassword(@Nonnull String realname, @Nonnull String username, @Nonnull String email,
-      @Nonnull String password, @Nonnull Date birthday, @Nonnull String countryCode,
+      @Nonnull String password, @Nonnull String countryCode,
       @Nonnull String langCode, @Nonnull List<String> travelerTypeIds) {
     getView().onShowLoading();
 
@@ -122,7 +118,6 @@ class SignUpDiscoverPresenter extends MvpPresenter<SignUpDiscoverView> {
                 .setPassword(password)
                 .setAvatarUrl(EMPTY_USER_IMAGE)
                 .setEmail(email)
-                .setBirthdate(birthday)
                 .setCountry(new CountryRealm(countryCode))
                 .setLangCode(langCode)
                 .setTravelerTypeIds(travelerTypeIds);
@@ -138,7 +133,7 @@ class SignUpDiscoverPresenter extends MvpPresenter<SignUpDiscoverView> {
   private void registerUserOnServer(AccountRealm newAccount) {
     Disposable d = userRepository
         .registerUser(newAccount)
-        .flatMapCompletable(account -> registerFcmToken())
+        .flatMapCompletable(ignored -> registerFcmToken())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(() -> {
           getView().onHideLoading();
@@ -158,10 +153,8 @@ class SignUpDiscoverPresenter extends MvpPresenter<SignUpDiscoverView> {
   }
 
   private CompletableSource registerFcmToken() {
-    String fcmToken = FirebaseInstanceId.getInstance().getToken();
-    FcmRealm fcm = new FcmRealm();
-    fcm.setToken(fcmToken);
-    return notificationRepository.registerFcmToken(fcm);
+    return notificationRepository.registerFcmToken(
+        new FcmRealm(FirebaseInstanceId.getInstance().getToken()));
   }
 
   @Nullable

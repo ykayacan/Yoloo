@@ -28,20 +28,15 @@ public class TagRepository {
     return instance;
   }
 
-  public Observable<Response<List<TagRealm>>> listTags(String name, String cursor, int limit) {
+  public Observable<Response<List<TagRealm>>> searchTags(String name, String cursor, int limit) {
     return remoteDataStore
         .searchTag(name, cursor, limit)
-        .doOnNext(response -> Observable
-            .fromIterable(response.getData())
-            .map(tag -> tag.setRecent(true))
-            .toList()
-            .toObservable()
-            .subscribe(diskDataStore::addAll))
+        .doOnNext(response -> diskDataStore.addRecentSearchedTags(response.getData()))
         .subscribeOn(Schedulers.io());
   }
 
   public Observable<List<TagRealm>> listRecentTags() {
-    return diskDataStore.listRecent().subscribeOn(Schedulers.io());
+    return diskDataStore.listRecentSearchedTags().subscribeOn(Schedulers.io());
   }
 
   public Observable<List<TagRealm>> listRecommendedTags() {

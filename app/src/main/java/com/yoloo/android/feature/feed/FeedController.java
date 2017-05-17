@@ -1,6 +1,5 @@
 package com.yoloo.android.feature.feed;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -13,7 +12,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -32,7 +30,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 import butterknife.BindColor;
 import butterknife.BindDrawable;
 import butterknife.BindInt;
@@ -52,26 +49,21 @@ import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.claudiodegio.msv.MaterialSearchView;
-import com.claudiodegio.msv.OnSearchViewListener;
 import com.github.florent37.tutoshowcase.TutoShowcase;
-import com.google.android.gms.appinvite.AppInvite;
 import com.google.android.gms.appinvite.AppInviteInvitation;
-import com.google.android.gms.appinvite.AppInviteReferral;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.yoloo.android.R;
-import com.yoloo.android.data.feedtypes.FeedItem;
 import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.data.db.GroupRealm;
 import com.yoloo.android.data.db.MediaRealm;
 import com.yoloo.android.data.db.PostRealm;
+import com.yoloo.android.data.feed.FeedItem;
 import com.yoloo.android.data.repository.group.GroupRepositoryProvider;
 import com.yoloo.android.data.repository.post.PostRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
-import com.yoloo.android.feature.auth.util.GoogleApiHelper;
 import com.yoloo.android.feature.auth.welcome.WelcomeController;
 import com.yoloo.android.feature.blog.BlogController;
 import com.yoloo.android.feature.bloglist.BlogListController;
+import com.yoloo.android.feature.chat.NewChatListenerService;
 import com.yoloo.android.feature.chat.chatlist.ChatListController;
 import com.yoloo.android.feature.comment.CommentController;
 import com.yoloo.android.feature.editor.editor.BlogEditorController;
@@ -79,19 +71,16 @@ import com.yoloo.android.feature.editor.editor.PostEditorController;
 import com.yoloo.android.feature.editor.job.SendPostJob;
 import com.yoloo.android.feature.explore.ExploreController;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
-import com.yoloo.android.feature.feed.common.listener.OnBookmarkClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnModelUpdateEvent;
-import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.feature.fullscreenphoto.FullscreenPhotoController;
 import com.yoloo.android.feature.group.GroupController;
 import com.yoloo.android.feature.groupgridoverview.GroupGridOverviewController;
 import com.yoloo.android.feature.models.newusers.NewUserListModelGroup;
+import com.yoloo.android.feature.models.post.PostCallbacks;
+import com.yoloo.android.feature.models.recommendedgroups.RecommendedGroupListModelGroup;
+import com.yoloo.android.feature.models.trendingblogs.TrendingBlogListModelGroup;
 import com.yoloo.android.feature.notification.NotificationController;
+import com.yoloo.android.feature.notification.NotificationProvider;
 import com.yoloo.android.feature.postdetail.PostDetailController;
 import com.yoloo.android.feature.postlist.PostListController;
 import com.yoloo.android.feature.profile.ProfileController;
@@ -99,7 +88,6 @@ import com.yoloo.android.feature.search.SearchController;
 import com.yoloo.android.feature.settings.SettingsController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
-import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
 import com.yoloo.android.ui.widget.StateLayout;
@@ -108,6 +96,7 @@ import com.yoloo.android.ui.widget.materialbadgetextview.MenuItemBadge;
 import com.yoloo.android.util.DisplayUtil;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.MenuHelper;
+import com.yoloo.android.util.NetworkUtil;
 import com.yoloo.android.util.ShareUtil;
 import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.WeakHandler;
@@ -116,15 +105,13 @@ import java.util.List;
 import org.parceler.Parcels;
 import timber.log.Timber;
 
+import static com.yoloo.android.feature.base.BaseActivity.REQUEST_INVITE;
+
 public class FeedController extends MvpController<FeedView, FeedPresenter>
     implements FeedView, SwipeRefreshLayout.OnRefreshListener,
-    NavigationView.OnNavigationItemSelectedListener, OnProfileClickListener,
-    OnPostOptionsClickListener, OnShareClickListener, OnCommentClickListener, OnVoteClickListener,
-    OnContentImageClickListener, OnModelUpdateEvent, OnBookmarkClickListener,
-    OnItemClickListener<PostRealm>, OnSearchViewListener,
-    GoogleApiClient.OnConnectionFailedListener {
-
-  private static final int REQUEST_INVITE = 0;
+    NavigationView.OnNavigationItemSelectedListener, OnModelUpdateEvent, PostCallbacks,
+    RecommendedGroupListModelGroup.Callbacks, TrendingBlogListModelGroup.Callbacks,
+    NewUserListModelGroup.Callbacks {
 
   private static final String KEY_FEED_SHOWCASE_WELCOME = "SHOWCASE_FEED_WELCOME";
   private static final String KEY_FEED_SHOWCASE_FAB = "SHOWCASE_FEED_FAB";
@@ -141,16 +128,15 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   @BindColor(R.color.primary_blue) int primaryBlueColor;
   @BindColor(R.color.grey_700) int grey700;
 
-  @BindDrawable(R.drawable.ic_email_outline) Drawable emptyNotificationDrawable;
-  @BindDrawable(R.drawable.ic_email_black_24dp) Drawable fullNotificationDrawable;
+  @BindDrawable(R.drawable.ic_email_outline) Drawable emptyMessageDrawable;
+  @BindDrawable(R.drawable.ic_email_black_24dp) Drawable hasMessageDrawable;
+  @BindDrawable(R.drawable.ic_notifications_none_black_24dp) Drawable emptyNotificationDrawable;
 
   @BindString(R.string.label_feed_toolbar_title) String feedToolbarTitleString;
   @BindString(R.string.app_name) String appNameString;
 
   @BindInt(android.R.integer.config_mediumAnimTime) int mediumAnimTime;
   @BindInt(android.R.integer.config_longAnimTime) int longAnimTime;
-
-  private GoogleApiClient googleApiClient;
 
   private FeedEpoxyController epoxyController;
 
@@ -159,9 +145,14 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   private AccountRealm me;
 
   private MenuItem menuItemMessage;
+  private MenuItem menuItemNotification;
 
   private TutoShowcase welcomeShowcase;
   private TutoShowcase fabShowcase;
+
+  private boolean reEnter;
+
+  private int newMessageCount = 0;
 
   private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
 
@@ -170,7 +161,27 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     public void onReceive(Context context, Intent intent) {
       PostRealm post = Parcels.unwrap(intent.getParcelableExtra(SendPostJob.KEY_ADD_POST));
       rvFeed.smoothScrollToPosition(3);
-      handler.postDelayed(() -> epoxyController.addPost(post), 450);
+      handler.postDelayed(() -> epoxyController.addPost(post,
+          epoxyController.getAdapter().getItemCount() > 3 ? 3 : 2), 400);
+    }
+  };
+
+  private BroadcastReceiver newNotificationReceiver = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      MenuItemBadge.getBadgeTextView(menuItemNotification).setHighLightMode();
+    }
+  };
+
+  private BroadcastReceiver newMessageReceiver = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      MenuItemBadge.update(getActivity(), menuItemMessage, new MenuItemBadge.Builder()
+          .iconDrawable(hasMessageDrawable)
+          .textBackgroundColor(Color.parseColor("#36b100"))
+          .iconTintColor(Color.WHITE));
+      newMessageCount++;
+      MenuItemBadge.getBadgeTextView(menuItemMessage).setBadgeCount(newMessageCount);
     }
   };
 
@@ -195,9 +206,14 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     setHasOptionsMenu(true);
     setupRecyclerView();
 
-    msv.setOnSearchViewListener(this);
+    handler = new WeakHandler();
 
     fab.setMainFabOnClickListener(v -> {
+      if (!NetworkUtil.isNetworkAvailable(getActivity())) {
+        Snackbar.make(getView(), R.string.error_network_unavailable, Snackbar.LENGTH_SHORT).show();
+        return;
+      }
+
       if (fab.isOptionsMenuOpened()) {
         fab.closeOptionsMenu();
       }
@@ -216,39 +232,32 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
           break;
       }
     });
-
-    setupGoogleApi();
-
-    // Check for App Invite invitations and launch deep-link activity if possible.
-    // Requires that an Activity is registered in AndroidManifest.xml to handle
-    // deep-link URLs.
-    AppInvite.AppInviteApi
-        .getInvitation(googleApiClient, getActivity(), true)
-        .setResultCallback(result -> {
-          Timber.d("getInvitation:onResult: %s", result.getStatus());
-          if (result.getStatus().isSuccess()) {
-            // Extract information from the intent
-            Intent intent = result.getInvitationIntent();
-            String deepLink = AppInviteReferral.getDeepLink(intent);
-            String invitationId = AppInviteReferral.getInvitationId(intent);
-
-            // Because autoLaunchDeepLink = true we don't have to do anything
-            // here, but we could set that to false and manually choose
-            // an Activity to launch to handle the deep link here.
-          }
-        });
   }
 
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
+
+    if (!reEnter) {
+      getPresenter().loadFeed(false);
+      reEnter = true;
+    }
+
     setupNavigation();
     showWelcomeTutorial();
 
-    handler = new WeakHandler();
     LocalBroadcastManager
         .getInstance(view.getContext())
         .registerReceiver(newPostReceiver, new IntentFilter(SendPostJob.SEND_POST_EVENT));
+
+    LocalBroadcastManager
+        .getInstance(view.getContext())
+        .registerReceiver(newMessageReceiver,
+            new IntentFilter(NewChatListenerService.NEW_MESSAGE_EVENT));
+
+    LocalBroadcastManager
+        .getInstance(view.getContext())
+        .registerReceiver(newNotificationReceiver, new IntentFilter(NotificationProvider.TAG));
 
     rootView.setViewStateListener((stateView, viewState) -> {
       if (viewState == StateLayout.VIEW_STATE_ERROR) {
@@ -262,6 +271,9 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   protected void onDetach(@NonNull View view) {
     super.onDetach(view);
     LocalBroadcastManager.getInstance(view.getContext()).unregisterReceiver(newPostReceiver);
+    LocalBroadcastManager.getInstance(view.getContext())
+        .unregisterReceiver(newNotificationReceiver);
+    LocalBroadcastManager.getInstance(view.getContext()).unregisterReceiver(newMessageReceiver);
   }
 
   @Override
@@ -274,17 +286,19 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   @Override
   public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
     super.onCreateOptionsMenu(menu, inflater);
-    inflater.inflate(R.menu.menu_feed_home, menu);
+    inflater.inflate(R.menu.menu_feed, menu);
 
     DrawableHelper.create().withColor(getActivity(), android.R.color.white).applyTo(menu);
 
     menuItemMessage = menu.findItem(R.id.action_feed_message);
     MenuItemBadge.update(getActivity(), menuItemMessage, new MenuItemBadge.Builder()
-        .iconDrawable(emptyNotificationDrawable)
+        .iconDrawable(emptyMessageDrawable)
         .iconTintColor(Color.WHITE));
 
-    /*MenuItem menuItemSearch = menu.findItem(R.id.action_feed_search);
-    msv.setMenuItem(menuItemSearch);*/
+    menuItemNotification = menu.findItem(R.id.action_feed_notification);
+    MenuItemBadge.update(getActivity(), menuItemNotification, new MenuItemBadge.Builder()
+        .iconDrawable(emptyNotificationDrawable)
+        .iconTintColor(Color.WHITE));
   }
 
   @Override
@@ -293,23 +307,24 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
 
     switch (itemId) {
       case R.id.action_feed_notification:
+        MenuItemBadge.getBadgeTextView(menuItemNotification).clearHighLightMode();
         startTransaction(new NotificationController(), new VerticalChangeHandler());
         return true;
       case R.id.action_feed_search:
         startTransaction(SearchController.create(), new SimpleSwapChangeHandler());
         return true;
       case R.id.action_feed_message:
-        /*MenuItemBadge.update(getActivity(), menuItemMessage, new MenuItemBadge.Builder()
-            .iconDrawable(fullNotificationDrawable)
-            .textBackgroundColor(Color.parseColor("#36b100"))
+        newMessageCount = 0;
+        MenuItemBadge.getBadgeTextView(menuItemMessage).setBadgeCount(newMessageCount, true);
+        MenuItemBadge.update(getActivity(), menuItemMessage, new MenuItemBadge.Builder()
+            .iconDrawable(emptyMessageDrawable)
             .iconTintColor(Color.WHITE));
-        MenuItemBadge.getBadgeTextView(menuItemMessage).setBadgeCount(2, true);*/
 
         getRouter().pushController(RouterTransaction
-            .with(ChatListController.create(me.getId()))
+            .with(ChatListController.create())
             .pushChangeHandler(new VerticalChangeHandler())
             .popChangeHandler(new VerticalChangeHandler())
-            .tag(ChatListController.TAG));
+            .tag(ChatListController.class.getName()));
         return true;
       default:
         return super.onOptionsItemSelected(item);
@@ -317,31 +332,16 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   }
 
   @Override
-  public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-    super.onActivityResult(requestCode, resultCode, data);
-    Timber.d("onActivityResult: resultCode=%s, requestCode=%s", resultCode, requestCode);
-
-    if (requestCode == REQUEST_INVITE) {
-      if (resultCode == Activity.RESULT_OK) {
-        // Get the invitation IDs of all sent messages
-        String[] ids = AppInviteInvitation.getInvitationIds(resultCode, data);
-        for (String id : ids) {
-          Timber.d("onActivityResult: sent invitation: %s", id);
-        }
-      } else {
-        // Sending failed or it was canceled, show failure message to the user
-        Snackbar.make(getView(), R.string.send_failed, Snackbar.LENGTH_SHORT).show();
-      }
-    }
-  }
-
-  @Override
-  public void onMeLoaded(AccountRealm me) {
+  public void onMeLoaded(@NonNull AccountRealm me) {
     this.me = me;
     setupDrawerInfo();
     addUserPhotoToToolbar(me);
 
     epoxyController.setUserId(me.getId());
+  }
+
+  @Override public void onPostUpdated(@NonNull PostRealm post) {
+    epoxyController.updatePost(post);
   }
 
   private void addUserPhotoToToolbar(AccountRealm me) {
@@ -368,12 +368,16 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     }
   }
 
-  @Override
-  public void onLoaded(List<FeedItem> items) {
+  @Override public void onLoaded(List<FeedItem<?>> value) {
+    epoxyController.setData(value, false);
+  }
+
+  @Override public void onMoreLoaded(List<FeedItem<?>> items) {
     if (items.isEmpty()) {
-      epoxyController.hideLoader();
+
+      //epoxyController.hideLoader();
     } else {
-      epoxyController.setData(items, false);
+      epoxyController.setLoadMoreData(items);
     }
   }
 
@@ -389,7 +393,7 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     swipeRefreshLayout.setRefreshing(false);
 
     Timber.e("onError: %s", e);
-    
+
     if (e.getMessage().contains("401")) {
       getRouter().setRoot(RouterTransaction.with(WelcomeController.create()));
     }
@@ -456,11 +460,6 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
       return true;
     }
 
-    if (msv.isOpen()) {
-      msv.closeSearch();
-      return true;
-    }
-
     if (fab.isOptionsMenuOpened()) {
       fab.closeOptionsMenu();
       return true;
@@ -477,71 +476,13 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   }
 
   @Override
-  public void onCommentClick(View v, PostRealm post) {
-    CommentController controller =
-        CommentController.create(post.getId(), post.getOwnerId(), post.getPostType(),
-            post.getAcceptedCommentId() != null);
-    controller.setModelUpdateEvent(this);
-    startTransaction(controller, new VerticalChangeHandler());
-  }
-
-  @Override
-  public void onPostOptionsClick(View v, PostRealm post) {
-    final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
-
-    menu.setOnMenuItemClickListener(item -> {
-      final int itemId = item.getItemId();
-      if (itemId == R.id.action_popup_delete) {
-        getPresenter().deletePost(post.getId());
-        epoxyController.deletePost(post);
-        return true;
-      }
-
-      return super.onOptionsItemSelected(item);
-    });
-  }
-
-  @Override
-  public void onProfileClick(View v, String userId) {
-    startTransaction(ProfileController.create(userId), new VerticalChangeHandler());
-  }
-
-  @Override
-  public void onShareClick(View v, PostRealm post) {
-    ShareUtil.share(this, null, post.getContent());
-  }
-
-  @Override
-  public void onPostVoteClick(PostRealm post, int direction) {
-    getPresenter().votePost(post.getId(), direction);
-  }
-
-  @Override
-  public void onContentImageClick(View v, MediaRealm media) {
-    startTransaction(FullscreenPhotoController.create(media.getLargeSizeUrl(), media.getId()),
-        new FadeChangeHandler());
-  }
-
-  @Override
-  public void onBookmarkClick(@NonNull PostRealm post, boolean bookmark) {
-    if (bookmark) {
-      getPresenter().bookmarkPost(post.getId());
-    } else {
-      getPresenter().unBookmarkPost(post.getId());
-    }
-  }
-
-  @Override
-  public void onItemClick(View v, PostRealm item) {
-    PostDetailController controller = PostDetailController.create(item.getId());
-    controller.setModelUpdateEvent(this);
-    startTransaction(controller, new HorizontalChangeHandler());
-  }
-
-  @Override
   public void onModelUpdateEvent(@FeedAction int action, @Nullable Object payload) {
     if (payload instanceof PostRealm) {
-      //adapter.updatePost(action, (PostRealm) payload);
+      if (action == FeedAction.UPDATE) {
+        epoxyController.updatePost((PostRealm) payload);
+      } else if (action == FeedAction.DELETE) {
+        epoxyController.deletePost((PostRealm) payload);
+      }
     }
   }
 
@@ -599,97 +540,17 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   }
 
   private void setupRecyclerView() {
-    epoxyController = new FeedEpoxyController(Glide.with(getActivity()), getActivity());
-
-    epoxyController.setRecommendedGroupListCallbacks(
-        new FeedEpoxyController.RecommendedGroupListCallbacks() {
-          @Override
-          public void onRecommendedGroupsHeaderClicked() {
-            GroupGridOverviewController controller =
-                GroupGridOverviewController.create(2, true, false);
-            startTransaction(controller, new VerticalChangeHandler());
-          }
-
-          @Override
-          public void onRecommendedGroupClicked(GroupRealm group) {
-            GroupController controller = GroupController.create(group.getId());
-            startTransaction(controller, new VerticalChangeHandler());
-          }
-        });
-
-    epoxyController.setTrendingBlogListCallbacks(
-        new FeedEpoxyController.TrendingBlogListCallbacks() {
-          @Override
-          public void onTrendingBlogHeaderClicked() {
-            startTransaction(BlogListController.create(), new VerticalChangeHandler());
-          }
-
-          @Override
-          public void onTrendingBlogClicked(PostRealm blog) {
-            startTransaction(BlogController.create(blog), new HorizontalChangeHandler());
-          }
-
-          @Override
-          public void onTrendingBlogBookmarkClicked(String postId, boolean bookmark) {
-            if (bookmark) {
-              getPresenter().bookmarkPost(postId);
-            } else {
-              getPresenter().unBookmarkPost(postId);
-            }
-          }
-
-          @Override
-          public void onTrendingBlogOptionsClicked(View v, PostRealm post) {
-            final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
-
-            menu.setOnMenuItemClickListener(item -> {
-              final int itemId = item.getItemId();
-              if (itemId == R.id.action_popup_delete) {
-                getPresenter().deletePost(post.getId());
-                epoxyController.deletePost(post);
-                return true;
-              }
-
-              return false;
-            });
-          }
-        });
-
+    epoxyController = new FeedEpoxyController(getActivity());
+    epoxyController.setPostCallbacks(this);
+    epoxyController.setRecommendedGroupListCallbacks(this);
+    epoxyController.setTrendingBlogListCallbacks(this);
     epoxyController.setOnBountyButtonClickListener(v -> {
-      Timber.d("Bounty button click");
       PostListController controller = PostListController.ofBounty();
       controller.setModelUpdateEvent(this);
       startTransaction(controller, new VerticalChangeHandler());
     });
-
-    epoxyController.setOnPostClickListener(this);
-    epoxyController.setOnProfileClickListener(this);
-    epoxyController.setOnPostOptionsClickListener(this);
-    epoxyController.setOnBookmarkClickListener(this);
-    epoxyController.setOnContentImageClickListener(this);
-    epoxyController.setOnShareClickListener(this);
-    epoxyController.setOnCommentClickListener(this);
-    epoxyController.setOnVoteClickListener(this);
-
-    epoxyController.setNewUserListModelGroupCallbacks(
-        new NewUserListModelGroup.NewUserListModelGroupCallbacks() {
-          @Override
-          public void onNewUserListHeaderClicked() {
-
-          }
-
-          @Override
-          public void onNewUserClicked(AccountRealm account) {
-            startTransaction(ProfileController.create(account.getId()),
-                new VerticalChangeHandler());
-          }
-
-          @Override
-          public void onNewUserFollowClicked(AccountRealm account, int direction) {
-            getPresenter().follow(account.getId(), direction);
-            epoxyController.deleteNewUser(account);
-          }
-        });
+    epoxyController.setNewUserListModelGroupCallbacks(this);
+    epoxyController.setOnNewUserWelcomeClickListener(v -> Timber.d("New User item"));
 
     final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
 
@@ -706,7 +567,11 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(lm) {
       @Override
       public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-        Timber.d("onLoadMore(), totalItemCount: " + totalItemsCount);
+        if (swipeRefreshLayout.isRefreshing()) {
+          endlessRecyclerOnScrollListener.resetState();
+          return;
+        }
+
         getPresenter().loadMorePosts();
         epoxyController.showLoader();
       }
@@ -732,50 +597,16 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
         RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
   }
 
-  @Override
-  public void onSearchViewShown() {
-    Toast.makeText(getActivity(), "onSearchViewShown", Toast.LENGTH_SHORT).show();
-  }
-
-  @Override
-  public void onSearchViewClosed() {
-    Toast.makeText(getActivity(), "onSearchViewClosed", Toast.LENGTH_SHORT).show();
-  }
-
-  @Override
-  public boolean onQueryTextSubmit(String query) {
-    Toast.makeText(getActivity(), "onQueryTextSubmit: " + query, Toast.LENGTH_SHORT).show();
-    return false;
-  }
-
-  @Override
-  public void onQueryTextChange(String s) {
-
-  }
-
   private void onInviteClicked() {
     Resources res = getResources();
 
     Intent intent = new AppInviteInvitation.IntentBuilder(res.getString(R.string.invitation_title))
         .setMessage(res.getString(R.string.invitation_message, me.getUsername()))
-        .setDeepLink(Uri.parse(res.getString(R.string.invitation_deep_link)))
         .setCustomImage(Uri.parse(res.getString(R.string.invitation_custom_image)))
+        .setDeepLink(Uri.parse(res.getString(R.string.invitation_deep_link)))
         .setCallToActionText(res.getString(R.string.invitation_cta))
         .build();
     startActivityForResult(intent, REQUEST_INVITE);
-  }
-
-  private void setupGoogleApi() {
-    googleApiClient = new GoogleApiClient.Builder(getActivity())
-        .addApi(AppInvite.API)
-        .enableAutoManage((FragmentActivity) getActivity(), GoogleApiHelper.getSafeAutoManageId(),
-            this)
-        .build();
-  }
-
-  @Override
-  public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
   }
 
   private void showWelcomeTutorial() {
@@ -802,5 +633,131 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
         .onClick(v -> fabShowcase.dismiss())
         .onClickContentView(R.id.tv_showcase_got_it, v -> fabShowcase.dismiss())
         .showOnce(KEY_FEED_SHOWCASE_FAB);
+  }
+
+  @Override public void onPostClickListener(@NonNull PostRealm post) {
+    if (post.isBlogPost()) {
+      BlogController controller = BlogController.create(post);
+      controller.setModelUpdateEvent(this);
+      startTransaction(controller, new HorizontalChangeHandler());
+    } else {
+      PostDetailController controller = PostDetailController.create(post.getId());
+      controller.setModelUpdateEvent(this);
+      startTransaction(controller, new HorizontalChangeHandler());
+    }
+  }
+
+  @Override public void onPostContentImageClickListener(@NonNull MediaRealm media) {
+    startTransaction(FullscreenPhotoController.create(media.getLargeSizeUrl()),
+        new FadeChangeHandler());
+  }
+
+  @Override public void onPostProfileClickListener(@NonNull String userId) {
+    startTransaction(ProfileController.create(userId), new VerticalChangeHandler());
+  }
+
+  @Override public void onPostBookmarkClickListener(@NonNull PostRealm post) {
+    if (post.isBookmarked()) {
+      getPresenter().unBookmarkPost(post.getId());
+    } else {
+      getPresenter().bookmarkPost(post.getId());
+    }
+  }
+
+  @Override public void onPostOptionsClickListener(View v, @NonNull PostRealm post) {
+    final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
+
+    menu.setOnMenuItemClickListener(item -> {
+      final int itemId = item.getItemId();
+      if (itemId == R.id.action_popup_delete) {
+        if (NetworkUtil.isNetworkAvailable(getActivity())) {
+          getPresenter().deletePost(post.getId());
+          epoxyController.deletePost(post);
+          return true;
+        } else {
+          Snackbar.make(getView(), R.string.all_network_required_delete,
+              Snackbar.LENGTH_SHORT).show();
+          return false;
+        }
+      }
+
+      return super.onOptionsItemSelected(item);
+    });
+  }
+
+  @Override public void onPostShareClickListener(@NonNull PostRealm post) {
+    ShareUtil.share(this, null, post.getContent());
+  }
+
+  @Override public void onPostCommentClickListener(@NonNull PostRealm post) {
+    CommentController controller =
+        CommentController.create(post.getId(), post.getOwnerId(), post.getPostType(),
+            post.getAcceptedCommentId() != null);
+    controller.setModelUpdateEvent(this);
+    startTransaction(controller, new VerticalChangeHandler());
+  }
+
+  @Override public void onPostVoteClickListener(@NonNull PostRealm post, int direction) {
+    getPresenter().votePost(post.getId(), direction);
+  }
+
+  @Override public void onPostTagClickListener(@NonNull String tagName) {
+    Timber.d("Tag name: %s", tagName);
+  }
+
+  @Override public void onRecommendedGroupsHeaderClicked() {
+    GroupGridOverviewController controller =
+        GroupGridOverviewController.create(2, true, false);
+    startTransaction(controller, new VerticalChangeHandler());
+  }
+
+  @Override public void onRecommendedGroupClicked(GroupRealm group) {
+    GroupController controller = GroupController.create(group.getId());
+    startTransaction(controller, new VerticalChangeHandler());
+  }
+
+  @Override public void onTrendingBlogHeaderClicked() {
+    startTransaction(BlogListController.create(), new VerticalChangeHandler());
+  }
+
+  @Override public void onTrendingBlogClicked(@NonNull PostRealm blog) {
+    startTransaction(BlogController.create(blog), new HorizontalChangeHandler());
+  }
+
+  @Override public void onTrendingBlogBookmarkClicked(@NonNull PostRealm post) {
+    if (post.isBookmarked()) {
+      getPresenter().unBookmarkPost(post.getId());
+    } else {
+      getPresenter().bookmarkPost(post.getId());
+    }
+  }
+
+  @Override public void onTrendingBlogOptionsClicked(View v, @NonNull PostRealm post) {
+    final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
+
+    menu.setOnMenuItemClickListener(item -> {
+      final int itemId = item.getItemId();
+      if (itemId == R.id.action_popup_delete) {
+        getPresenter().deletePost(post.getId());
+        epoxyController.deletePost(post);
+        return true;
+      }
+
+      return false;
+    });
+  }
+
+  @Override public void onNewUserListHeaderClicked() {
+
+  }
+
+  @Override public void onNewUserClicked(AccountRealm account) {
+    startTransaction(ProfileController.create(account.getId()),
+        new VerticalChangeHandler());
+  }
+
+  @Override public void onNewUserFollowClicked(AccountRealm account, int direction) {
+    getPresenter().follow(account.getId(), direction);
+    epoxyController.deleteNewUser(account);
   }
 }

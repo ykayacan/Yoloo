@@ -61,22 +61,21 @@
   <android.support.v4.widget.NestedScrollView
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginBottom="48dp"
     android:fillViewport="true"
     android:fitsSystemWindows="true"
+    android:isScrollContainer="true"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-    <LinearLayout
+    <android.support.constraint.ConstraintLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
+      android:layout_marginBottom="48dp"
       android:animateLayoutChanges="true"
       android:orientation="vertical">
 
       <EditText
         android:id="@+id/et_blog_title"
-        style="@style/TextAppearance.AppCompat.Title"
-        fontPath="fonts/OpenSans-Bold.ttf"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:layout_marginEnd="16dp"
@@ -87,23 +86,34 @@
         android:background="@android:color/transparent"
         android:hint="@string/hint_editor_write_title"
         android:inputType="text|textCapSentences"
+        android:isScrollContainer="true"
         android:maxLength="60"
         android:maxLines="2"
         android:textColor="@color/lucky_point"
-        tools:ignore="MissingPrefix" />
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        fontPath="fonts/OpenSans-Bold.ttf"
+        tools:ignore="MissingPrefix"
+        style="@style/TextAppearance.AppCompat.Title" />
 
       <com.yoloo.android.ui.widget.BaselineGridTextView
         android:id="@+id/tv_blog_user_info"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
         android:textColor="@color/primary"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/et_blog_title"
         tools:text="@string/label_blog_user_info" />
 
       <View
+        android:id="@+id/divider1"
         android:layout_width="72dp"
         android:layout_height="1dp"
         android:layout_marginEnd="16dp"
@@ -111,39 +121,49 @@
         android:layout_marginRight="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
-        android:background="@color/primary" />
+        android:background="@color/primary"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_blog_user_info" />
 
       <EditText
         android:id="@+id/et_blog_content"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
         android:background="@android:color/transparent"
         android:hint="@string/hint_editor_blog_content"
         android:inputType="textMultiLine|textCapSentences"
         android:lineSpacingMultiplier="1.1"
-        android:textColor="@color/lucky_point" />
+        android:minHeight="88dp"
+        android:paddingBottom="32dp"
+        android:paddingEnd="16dp"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:paddingStart="16dp"
+        android:paddingTop="32dp"
+        android:textColor="@color/lucky_point"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divider1" />
 
       <View
         android:id="@+id/divider2"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_marginEnd="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginStart="16dp"
-        android:background="@color/divider" />
+        android:background="@color/divider"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/et_blog_content" />
 
       <com.yoloo.android.ui.widget.CompatTextView
         android:id="@+id/tv_editor_post_select_group"
-        style="@style/TextAppearance.EditorItemText"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
@@ -153,11 +173,15 @@
         android:gravity="center_vertical"
         android:padding="16dp"
         android:text="@string/label_editor_select_group"
-        app:drawableStart="@drawable/ic_local_library_black_24dp" />
+        app:drawableStart="@drawable/ic_local_library_black_24dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divider2"
+        style="@style/TextAppearance.EditorItemText" />
 
       <View
         android:id="@+id/divider3"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_marginEnd="16dp"
         android:layout_marginLeft="16dp"
@@ -165,12 +189,14 @@
         android:layout_marginStart="16dp"
         android:background="@color/divider"
         app:layout_constraintEnd_toEndOf="@+id/tv_editor_post_select_group"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintStart_toStartOf="@+id/tv_editor_post_select_group"
         app:layout_constraintTop_toBottomOf="@+id/tv_editor_post_select_group" />
 
       <com.hootsuite.nachos.NachoTextView
         android:id="@+id/et_editor_post_tags"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginLeft="16dp"
@@ -182,15 +208,20 @@
         android:drawableStart="@drawable/ic_local_offer_black_24dp"
         android:hint="@string/hint_editor_tag"
         android:paddingBottom="6dp"
+        android:paddingEnd="16dp"
         android:paddingLeft="16dp"
+        android:paddingRight="16dp"
         android:paddingStart="16dp"
         android:paddingTop="6dp"
         android:textSize="14sp"
-        app:chipTextSize="14sp" />
+        app:chipTextSize="14sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divider3" />
 
-      <TextView
+      <com.yoloo.android.ui.widget.BaselineGridTextView
         android:id="@+id/tv_editor_post_trending_tag_title"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
         android:layout_marginLeft="32dp"
@@ -202,42 +233,54 @@
         android:text="@string/trending_tags"
         android:textAppearance="@style/TextAppearance.GroupTitle"
         android:textColor="@android:color/black"
-        android:textSize="12sp" />
+        android:textSize="12sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/et_editor_post_tags" />
 
       <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="32dp"
+        android:clipToPadding="false"
         android:paddingEnd="32dp"
         android:paddingLeft="32dp"
         android:paddingRight="32dp"
-        android:paddingStart="32dp" />
+        android:paddingStart="32dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_editor_post_trending_tag_title" />
 
       <View
         android:id="@+id/divider4"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="1dp"
         android:layout_marginEnd="16dp"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:background="@color/divider" />
+        android:background="@color/divider"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/recycler_view" />
 
-      <TextView
+      <com.yoloo.android.ui.widget.BaselineGridTextView
         android:id="@+id/tv_bounty_hint"
-        fontPath="fonts/OpenSans-Semibold.ttf"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:padding="8dp"
         android:text="@string/editor_bounty_tip"
         android:textColor="@color/lucky_point"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/divider4"
+        fontPath="fonts/OpenSans-Semibold.ttf"
         tools:ignore="MissingPrefix" />
 
       <com.yoloo.android.ui.widget.CompatTextView
         android:id="@+id/tv_editor_post_add_bounty"
-        style="@style/TextAppearance.BountyText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -251,9 +294,13 @@
         android:paddingStart="64dp"
         android:paddingTop="16dp"
         android:text="@string/action_editor_add_bounty"
-        app:drawableStart="@drawable/ic_bounty_coin_24dp" />
+        app:drawableStart="@drawable/ic_bounty_coin_24dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_bounty_hint"
+        style="@style/TextAppearance.BountyText" />
 
-    </LinearLayout>
+    </android.support.constraint.ConstraintLayout>
 
   </android.support.v4.widget.NestedScrollView>
 

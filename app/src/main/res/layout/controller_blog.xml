@@ -44,13 +44,17 @@
     android:id="@+id/recycler_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginBottom="49dp"
+    android:clipToPadding="false"
+    android:paddingBottom="56dp"
     app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
   <com.yoloo.android.feature.writecommentbox.CommentInput
     android:id="@+id/layout_input"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_gravity="bottom" />
+    android:layout_gravity="bottom"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent" />
 
 </android.support.design.widget.CoordinatorLayout>

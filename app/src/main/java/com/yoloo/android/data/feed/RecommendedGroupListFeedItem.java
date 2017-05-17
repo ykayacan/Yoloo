@@ -24,7 +24,7 @@ public final class RecommendedGroupListFeedItem implements FeedItem<List<GroupRe
   }
 
   @Nonnull @Override public String id() {
-    return getClass().getName();
+    return getClass().getName() + "_" + groups.hashCode();
   }
 
   @Nonnull @Override public List<GroupRealm> getItem() {

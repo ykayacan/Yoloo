@@ -12,4 +12,8 @@
     <name>create-feed-queue</name>
     <rate>50/s</rate>
   </queue>
+  <queue>
+    <name>send-new-post-notification-queue</name>
+    <rate>50/s</rate>
+  </queue>
 </queue-entries>

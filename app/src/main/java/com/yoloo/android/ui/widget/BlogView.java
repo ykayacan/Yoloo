@@ -8,11 +8,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import com.annimon.stream.Collectors;
+import com.annimon.stream.Stream;
 import com.yoloo.android.R;
 import com.yoloo.android.data.db.PostRealm;
-import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
+import com.yoloo.android.feature.models.post.PostCallbacks;
+import com.yoloo.android.ui.widget.linkabletextview.LinkableTextView;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.DrawableHelper;
 
@@ -24,6 +25,7 @@ public class BlogView extends LinearLayout {
   @BindView(R.id.tv_item_feed_share) TextView tvShare;
   @BindView(R.id.tv_item_feed_comment) TextView tvComment;
   @BindView(R.id.tv_item_feed_vote) VoteView voteView;
+  @BindView(R.id.container_item_feed_tags) LinkableTextView tvTags;
 
   public BlogView(Context context, @Nullable AttributeSet attrs) {
     super(context, attrs);
@@ -38,6 +40,11 @@ public class BlogView extends LinearLayout {
     tvComment.setText(CountUtil.formatCount(post.getCommentCount()));
     voteView.setVoteCount(post.getVoteCount());
     voteView.setVoteDirection(post.getVoteDir());
+
+    String tag = Stream.of(post.getTagNames())
+        .map(tagName -> getContext().getString(R.string.label_tag, tagName))
+        .collect(Collectors.joining(" "));
+    tvTags.setText(tag);
   }
 
   public void setBlogTitle(@NonNull String title) {
@@ -49,19 +56,15 @@ public class BlogView extends LinearLayout {
         getResources().getString(R.string.label_blog_username_info, username, levelTitle));
   }
 
-  public void setOnShareClickListener(OnShareClickListener onShareClickListener, PostRealm post) {
-    tvShare.setOnClickListener(v -> onShareClickListener.onShareClick(v, post));
-  }
-
-  public void setOnCommentClickListener(OnCommentClickListener onCommentClickListener,
-      PostRealm post) {
-    tvComment.setOnClickListener(v -> onCommentClickListener.onCommentClick(v, post));
-  }
-
-  public void setOnVoteClickListener(OnVoteClickListener onVoteClickListener, PostRealm post) {
-    voteView.setOnVoteEventListener(direction -> {
-      post.setVoteDir(direction);
-      onVoteClickListener.onPostVoteClick(post, direction);
+  public void setPostCallbacks(PostCallbacks callbacks, PostRealm post) {
+    tvShare.setOnClickListener(v -> callbacks.onPostShareClickListener(post));
+    tvComment.setOnClickListener(v -> callbacks.onPostCommentClickListener(post));
+    voteView.setOnVoteEventListener(
+        direction -> callbacks.onPostVoteClickListener(post, direction));
+    tvTags.setOnLinkClickListener((type, value) -> {
+      if (type == LinkableTextView.Link.HASH_TAG) {
+        callbacks.onPostTagClickListener(value);
+      }
     });
   }
 

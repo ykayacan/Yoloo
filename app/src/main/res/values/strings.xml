@@ -41,7 +41,7 @@
   <string name="label_feed_read_more_news">More</string>
   <string name="label_feed_no_data_1">Oops, we don\'t have posts…</string>
   <string name="label_feed_no_data_2">Take a deep breath and ask a question.</string>
-  <string name="label_feed_read_moreal">%1$s… read more</string>
+  <string name="label_feed_read_more">%1$s… read more</string>
 
   <string name="action_feed_popup_bookmark">Bookmark</string>
   <string name="action_feed_popup_unbookmark">Unbookmark</string>
@@ -77,7 +77,7 @@
   <string name="label_editor_select_media_source_title">Select media</string>
   <string name="label_select_media">Select media</string>
   <string name="label_editor_crop_image_title">Crop Image</string>
-  <string name="label_tag"># %1$s</string>
+  <string name="label_tag">#%1$s</string>
   <string name="label_editor_ensure_bounty">Do you want to add %1$d bounty?</string>
   <string name="label_editor_bounty_description">
     You will increase the chance of getting answered by adding bounty to your post.
@@ -295,7 +295,7 @@
 
   <string name="label_compose_select_group">Select Group</string>
 
-  <string name="hint_sign_up_enter_username">Enter username</string>
+  <string name="hint_sign_up_enter_username">Enter senderId</string>
   <string name="hint_sign_up_enter_password">Enter password</string>
 
   <string name="label_click_add_image">Click to add image</string>
@@ -331,7 +331,7 @@
   <string name="tag_hint">Tag</string>
 
   <string name="label_editor_add_media">Add Media</string>
-  <string name="label_editor_select_group"><![CDATA[Select Group <font color="red">(*)</font>]]></string>
+  <string name="label_editor_select_group"><![CDATA[Select Group <font color="red"> (*)</font>]]></string>
   <string name="hint_editor_tag">Add Tag (up to 7) (*)</string>
 
   <string name="label_explore_recent_medias_title">Recent Photos</string>
@@ -412,7 +412,7 @@
   <string name="sign_up_password_info">Your password must contain at least 6 characters.</string>
   <string name="sign_up_prepared_info">Check your information before continuing</string>
   <string name="sign_up_prepared_title">Is correct?</string>
-  <string name="sing_up_username_title">Create your username</string>
+  <string name="sing_up_username_title">Create your senderId</string>
   <string name="sign_up_name">Name</string>
   <string name="sign_up_surname">Surname</string>
   <string name="sign_up_email">E-mail</string>
@@ -456,10 +456,14 @@
   <string name="trending_posts_empty_title">Oops, we don\'t have post</string>
   <string name="trending_posts_empty_subtitle">It\'s embarrassing for us</string>
 
+  <string name="recent_media_list_empty_title">Oops, we don\'t have post</string>
+
   <string name="notification_empty_title">You don\'t have notifications</string>
 
   <string name="visited_countries_already_added_error">The country is already in your list</string>
   <string name="signup_discover_empty_typeid_error">You must select as least 3 types</string>
+
+  <string name="chat_list_empty_title">You have no open conversations Click + icon to create a new one</string>
 
   <string name="controller_comments_title">Comments</string>
 
@@ -472,4 +476,21 @@
   <string name="points_overview_tip_2">Tip: You can earn more points by commenting questions.</string>
   <string name="points_overview_tip_3">Tip: Adding bounties to your post makes it more visible.</string>
 
+  <string name="all_network_required_delete">Internet connection is required</string>
+  <string name="editor_content_empty_error">You must add text or image to post!</string>
+  <string name="editor_group_empty_error">Select a group!</string>
+  <string name="editor_tags_empty_error">Tags are empty!</string>
+
+  <string name="group_subscriber_count">%1$s subscribers</string>
+  <string name="new_user_welcome">just joined Yoloo, say hi!</string>
+
+  <string name="all_tag_name">#%1$s (%2$s posts)</string>
+
+  <string name="recent_media_list_title">Recent Medias</string>
+  <string name="create_chat_same_user_error">You can\'t create a dialog with yourself</string>
+
+  <string name="chat_hint_enter_a_message">Type a message…</string>
+
+  <string name="chat_list_dialog_title">Options</string>
+  <string name="chat_list_dialog_options_delete">Delete</string>
 </resources>

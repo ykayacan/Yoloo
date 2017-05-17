@@ -56,7 +56,9 @@
     <android.support.v7.widget.RecyclerView
       android:id="@+id/rv_bloglist"
       android:layout_width="match_parent"
-      android:layout_height="match_parent" />
+      android:layout_height="match_parent"
+      android:clipToPadding="false"
+      android:paddingBottom="16dp" />
 
   </com.yoloo.android.ui.widget.StateLayout>
 

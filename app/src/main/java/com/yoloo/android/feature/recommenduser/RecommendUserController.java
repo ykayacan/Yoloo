@@ -1,5 +1,6 @@
 package com.yoloo.android.feature.recommenduser;
 
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,6 +17,7 @@ import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.base.BaseController;
+import com.yoloo.android.feature.chat.NewChatListenerService;
 import com.yoloo.android.feature.feed.FeedController;
 import com.yoloo.android.feature.search.OnFollowClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
@@ -23,6 +25,8 @@ import com.yoloo.android.ui.recyclerview.decoration.InsetDividerDecoration;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import timber.log.Timber;
+
+import static com.yoloo.android.util.ServiceUtil.isMyServiceRunning;
 
 public class RecommendUserController extends BaseController implements OnFollowClickListener {
 
@@ -71,21 +75,24 @@ public class RecommendUserController extends BaseController implements OnFollowC
   public void onFollowClick(View v, AccountRealm account, int direction) {
     userRepository.relationship(account.getId(), direction)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(() -> {
-          epoxyController.remove(account);
-        }, Timber::e);
+        .subscribe(() -> epoxyController.remove(account), Timber::e);
 
     if (epoxyController.getAdapter().getItemCount() == 0) {
-      getRouter().setRoot(RouterTransaction
-          .with(FeedController.create())
+      if (!isMyServiceRunning(NewChatListenerService.class, getActivity())) {
+        getActivity().startService(new Intent(getActivity(), NewChatListenerService.class));
+      }
+
+      getRouter().setRoot(RouterTransaction.with(FeedController.create())
           .pushChangeHandler(new HorizontalChangeHandler()));
     }
   }
 
   @OnClick(R.id.tv_skip)
   void onSkip() {
-    getRouter().setRoot(RouterTransaction
-        .with(FeedController.create())
+    if (!isMyServiceRunning(NewChatListenerService.class, getActivity())) {
+      getActivity().startService(new Intent(getActivity(), NewChatListenerService.class));
+    }
+    getRouter().setRoot(RouterTransaction.with(FeedController.create())
         .pushChangeHandler(new HorizontalChangeHandler()));
   }
 

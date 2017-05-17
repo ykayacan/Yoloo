@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <cronentries>
-  <!--<cron>
-    <url>/tasks/updateQuestion/news/rank</url>
-    <description>Merge news shards in every 1 hour</description>
-    <schedule>every 1 hours</schedule>
-  </cron>-->
+  <cron>
+    <url>/crons/resetDailyCron</url>
+    <description>Resets daily points for every day.</description>
+    <schedule>every 24 hours</schedule>
+  </cron>
+
+  <cron>
+    <url>/crons/updateGroupSubscriberCountCron</url>
+    <description>Updates group subscriber count.</description>
+    <schedule>every 2 hours</schedule>
+  </cron>
 </cronentries>

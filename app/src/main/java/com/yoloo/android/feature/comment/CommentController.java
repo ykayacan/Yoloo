@@ -23,25 +23,21 @@ import com.yoloo.android.data.db.CommentRealm;
 import com.yoloo.android.data.repository.comment.CommentRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
-import com.yoloo.android.feature.feed.common.listener.OnCommentVoteClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnModelUpdateEvent;
-import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
+import com.yoloo.android.feature.models.comment.CommentCallbacks;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.writecommentbox.CommentInput;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
-import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.KeyboardUtil;
+import com.yoloo.android.util.NetworkUtil;
 import java.util.List;
 import timber.log.Timber;
 
 public class CommentController extends MvpController<CommentView, CommentPresenter>
-    implements CommentView, OnProfileClickListener, OnCommentVoteClickListener, OnMentionClickListener,
-    OnMarkAsAcceptedClickListener, OnItemLongClickListener<CommentRealm>,
-    CommentInput.NewCommentListener {
+    implements CommentView, CommentCallbacks, CommentInput.NewCommentListener {
 
   private static final String KEY_POST_ID = "POST_ID";
   private static final String KEY_POST_OWNER_ID = "POST_OWNER_ID";
@@ -67,7 +63,6 @@ public class CommentController extends MvpController<CommentView, CommentPresent
 
   public CommentController(@Nullable Bundle args) {
     super(args);
-    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
   }
 
   public static CommentController create(@NonNull String postId, @NonNull String postOwnerId,
@@ -88,6 +83,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
 
   @Override protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
 
     final Bundle args = getArgs();
     postId = args.getString(KEY_POST_ID);
@@ -105,7 +101,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
   @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
     if (!reEnter) {
-      getPresenter().loadComments(false, postId, postOwnerId, hasAcceptedComment);
+      getPresenter().loadComments(false, false, postId, postOwnerId, hasAcceptedComment, postType);
       reEnter = true;
     }
 
@@ -129,14 +125,18 @@ public class CommentController extends MvpController<CommentView, CommentPresent
   }
 
   @Override public void onLoading(boolean pullToRefresh) {
-
+    // empty
   }
 
   @Override public void onLoaded(List<CommentRealm> comments) {
+    epoxyController.setData(comments, false);
+  }
+
+  @Override public void onMoreLoaded(List<CommentRealm> comments) {
     if (comments.isEmpty()) {
       epoxyController.hideLoader();
     } else {
-      epoxyController.setData(comments, false);
+      epoxyController.setLoadMoreData(comments);
     }
   }
 
@@ -150,16 +150,15 @@ public class CommentController extends MvpController<CommentView, CommentPresent
 
   @Override public void onNewComment(CommentRealm comment) {
     epoxyController.addComment(comment.setOwner(true)
+        .setPostType(postType)
         .setPostAccepted(hasAcceptedComment)
         .setPostOwner(postOwnerId.equals(comment.getOwnerId())));
 
     epoxyController.scrollToEnd(rvComment);
 
-    modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, postId);
-  }
-
-  @Override public void onCommentDeleted() {
-
+    if (modelUpdateEvent != null) {
+      modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, postId);
+    }
   }
 
   @NonNull @Override public CommentPresenter createPresenter() {
@@ -167,58 +166,15 @@ public class CommentController extends MvpController<CommentView, CommentPresent
         UserRepositoryProvider.getRepository());
   }
 
-  @Override public void onMentionClick(String username) {
-    Snackbar.make(getView(), username, Snackbar.LENGTH_SHORT).show();
-  }
-
-  @Override public void onProfileClick(View v, String userId) {
-    KeyboardUtil.hideKeyboard(getView());
-    startTransaction(ProfileController.create(userId), new VerticalChangeHandler());
-  }
-
-  @Override public void onVoteClick(CommentRealm comment, int direction) {
-    getPresenter().voteComment(comment.getId(), direction);
-    comment.setVoteDir(direction);
+  @Override public void onCommentUpdated(CommentRealm comment) {
+    this.hasAcceptedComment = comment.isPostAccepted();
     epoxyController.updateComment(comment);
-  }
-
-  @Override public void onMarkAsAccepted(View v, CommentRealm comment) {
-    if (hasAcceptedComment) {
-      Snackbar.make(getView(), R.string.comments_accepted_error, Snackbar.LENGTH_SHORT).show();
-    } else {
-      Snackbar.make(getView(), R.string.label_comment_accepted_confirm, Snackbar.LENGTH_SHORT)
-          .show();
-      getPresenter().acceptComment(comment);
-      hasAcceptedComment = true;
-    }
-  }
-
-  @Override public void onCommentAccepted(CommentRealm acceptedComment) {
-    modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, postId);
-  }
-
-  @Override public void onItemLongClick(View v, CommentRealm item) {
-    new AlertDialog.Builder(getActivity()).setItems(R.array.action_comment_dialog,
-        (dialog, which) -> {
-          if (which == 0) {
-            getPresenter().deleteComment(item);
-            epoxyController.delete(item);
-          }
-        }).show();
-  }
-
-  public void setModelUpdateEvent(OnModelUpdateEvent modelUpdateEvent) {
-    this.modelUpdateEvent = modelUpdateEvent;
   }
 
   private void setupRecyclerView() {
     epoxyController =
         new CommentEpoxyController(getActivity(), postType, Glide.with(getActivity()));
-    epoxyController.setOnCommentLongClickListener(this);
-    epoxyController.setOnMarkAsAcceptedClickListener(this);
-    epoxyController.setOnMentionClickListener(this);
-    epoxyController.setOnProfileClickListener(this);
-    epoxyController.setOnCommentVoteClickListener(this);
+    epoxyController.setCommentCallbacks(this);
 
     final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
     rvComment.setLayoutManager(lm);
@@ -231,7 +187,8 @@ public class CommentController extends MvpController<CommentView, CommentPresent
     EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener =
         new EndlessRecyclerOnScrollListener(lm) {
           @Override public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-            getPresenter().loadComments(false, postId, postOwnerId, hasAcceptedComment);
+            getPresenter().loadComments(false, true, postId, postOwnerId, hasAcceptedComment,
+                postType);
             epoxyController.showLoader();
           }
         };
@@ -244,11 +201,53 @@ public class CommentController extends MvpController<CommentView, CommentPresent
         RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
   }
 
+  public void setModelUpdateEvent(OnModelUpdateEvent modelUpdateEvent) {
+    this.modelUpdateEvent = modelUpdateEvent;
+  }
+
   private void setupToolbar() {
     setSupportActionBar(toolbar);
 
     final ActionBar ab = getSupportActionBar();
     ab.setDisplayHomeAsUpEnabled(true);
     ab.setTitle(R.string.controller_comments_title);
+  }
+
+  @Override public void onCommentLongClickListener(@NonNull CommentRealm comment) {
+    new AlertDialog.Builder(getActivity())
+        .setItems(R.array.action_comment_dialog, (dialog, which) -> {
+          if (which == 0) {
+            if (NetworkUtil.isNetworkAvailable(getActivity())) {
+              getPresenter().deleteComment(comment);
+              epoxyController.deleteComment(comment);
+            } else {
+              Snackbar.make(getView(), R.string.all_network_required_delete, Snackbar.LENGTH_SHORT)
+                  .show();
+            }
+          }
+        })
+        .show();
+  }
+
+  @Override public void onCommentProfileClickListener(@NonNull String userId) {
+    startTransaction(ProfileController.create(userId), new VerticalChangeHandler());
+  }
+
+  @Override public void onCommentMentionClickListener(@NonNull String username) {
+
+  }
+
+  @Override public void onCommentVoteClickListener(@NonNull CommentRealm comment, int direction) {
+    getPresenter().voteComment(comment.getId(), direction);
+  }
+
+  @Override public void onCommentAcceptRequestClickListener(@NonNull CommentRealm comment) {
+    if (hasAcceptedComment) {
+      Snackbar.make(getView(), R.string.comments_accepted_error, Snackbar.LENGTH_SHORT).show();
+    } else {
+      Snackbar.make(getView(), R.string.label_comment_accepted_confirm, Snackbar.LENGTH_SHORT)
+          .show();
+      getPresenter().acceptComment(comment);
+    }
   }
 }

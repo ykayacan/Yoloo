@@ -303,6 +303,22 @@ public class GameService {
     return post;
   }
 
+  public void addVisitedCountryBonus(DeviceRecord record, Tracker tracker,
+      NewNotificationListener listener) {
+    if (!tracker.isCap()) {
+      List<Notifiable> bundles = new ArrayList<>(2);
+
+      tracker.addPoints(50);
+
+      bundles.add(GameBonusNotifiable.create(record, 50, 0));
+      if (updateLevel(tracker)) {
+        bundles.add(LevelUpNotifiable.create(record, tracker));
+      }
+
+      listener.newNotifications(bundles);
+    }
+  }
+
   /**
    * Add share question bonus.
    *

@@ -1,10 +1,10 @@
 package com.yoloo.android.data.repository.group;
 
-import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.db.GroupRealm;
 import com.yoloo.android.data.db.GroupRealmFields;
 import com.yoloo.android.data.sorter.GroupSorter;
+import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.realm.Realm;
 import io.realm.RealmQuery;
@@ -63,22 +63,35 @@ class GroupDiskDataStore {
     });
   }
 
-  Observable<List<GroupRealm>> list(@Nonnull List<String> categoryIds) {
-    return Observable.fromCallable(() -> {
+  Completable subscribe(@Nonnull String groupId) {
+    return Completable.fromAction(() -> {
       Realm realm = Realm.getDefaultInstance();
+      realm.executeTransaction(tx -> {
+        GroupRealm group =
+            tx.where(GroupRealm.class).equalTo(GroupRealmFields.ID, groupId).findFirst();
 
-      RealmQuery<GroupRealm> query = realm.where(GroupRealm.class);
-
-      Stream.of(categoryIds).forEach(id -> query.equalTo(GroupRealmFields.ID, id));
-
-      RealmResults<GroupRealm> results = query.findAll();
-
-      List<GroupRealm> categories =
-          results.isEmpty() ? Collections.emptyList() : realm.copyFromRealm(results);
-
+        if (group != null) {
+          group.setSubscribed(true);
+          tx.insertOrUpdate(group);
+        }
+      });
       realm.close();
+    });
+  }
 
-      return categories;
+  Completable unsubscribe(@Nonnull String groupId) {
+    return Completable.fromAction(() -> {
+      Realm realm = Realm.getDefaultInstance();
+      realm.executeTransaction(tx -> {
+        GroupRealm group =
+            tx.where(GroupRealm.class).equalTo(GroupRealmFields.ID, groupId).findFirst();
+
+        if (group != null) {
+          group.setSubscribed(false);
+          tx.insertOrUpdate(group);
+        }
+      });
+      realm.close();
     });
   }
 }

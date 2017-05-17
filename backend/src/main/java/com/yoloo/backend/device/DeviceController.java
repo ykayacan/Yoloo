@@ -28,7 +28,6 @@ public class DeviceController extends Controller {
     ofy().transact(() -> {
       try {
         DeviceRecord record = ofy().load().type(DeviceRecord.class)
-            .filter(DeviceRecord.FIELD_REG_ID + " =", regId)
             .ancestor(accountKey).first().safe();
 
         ofy().save().entity(record.withRegId(regId)).now();
@@ -53,7 +52,6 @@ public class DeviceController extends Controller {
   public void unregisterDevice(String regId, User user) {
     ofy().transact(() -> {
       Key<DeviceRecord> recordKey = ofy().load().type(DeviceRecord.class)
-          .filter(DeviceRecord.FIELD_REG_ID + " =", regId)
           .ancestor(Key.<Account>create(user.getUserId()))
           .keys().first().now();
 

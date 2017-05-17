@@ -196,11 +196,10 @@ public class SignUpDiscoverController
 
     if (response == null) {
       getPresenter().signUpWithPassword(bundle.getFullname(), bundle.getUsername(),
-          bundle.getEmail(), bundle.getPassword(), bundle.getBirthdayAsDate(), countryCode, locale,
-          selectedTypeIds);
+          bundle.getEmail(), bundle.getPassword(), countryCode, locale, selectedTypeIds);
     } else {
-      getPresenter().signUpWithProvider(response, bundle.getUsername(), bundle.getBirthdayAsDate(),
-          countryCode, locale, selectedTypeIds);
+      getPresenter().signUpWithProvider(response, bundle.getUsername(), countryCode, locale,
+          selectedTypeIds);
     }
   }
 

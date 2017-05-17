@@ -19,7 +19,7 @@ class GroupUsersListPresenter extends MvpPresenter<GroupUsersListView> {
     this.userRepository = userRepository;
   }
 
-  void loadUsers(@Nonnull String groupId) {
+  void loadUsers(@Nonnull String groupId, boolean loadingMore) {
     Disposable d = groupRepository
         .listGroupUsers(groupId, cursor, 40)
         .observeOn(AndroidSchedulers.mainThread())
@@ -29,7 +29,11 @@ class GroupUsersListPresenter extends MvpPresenter<GroupUsersListView> {
           if (response.getData().isEmpty()) {
             getView().onEmpty();
           } else {
-            getView().onLoaded(response.getData());
+            if (loadingMore) {
+              getView().onMoreDataLoaded(response.getData());
+            } else {
+              getView().onLoaded(response.getData());
+            }
           }
         });
 

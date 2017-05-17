@@ -18,7 +18,7 @@
     <include layout="@layout/merge_item_feed_header" />
 
     <TextView
-      android:id="@+id/tv_item_blog_title"
+      android:id="@+id/tv_item_feed_title"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:layout_marginEnd="@dimen/padding_normal"
@@ -30,7 +30,7 @@
       android:maxLines="2"
       android:textAppearance="@style/TextAppearance.TrendingBlogTitle"
       app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toLeftOf="@+id/iv_item_blog_cover"
+      app:layout_constraintRight_toLeftOf="@+id/iv_item_feed_cover"
       app:layout_constraintTop_toBottomOf="@+id/iv_item_feed_user_avatar"
       tools:text="@string/lorem_ipsum" />
 
@@ -44,20 +44,20 @@
       android:maxLines="2"
       android:paddingBottom="@dimen/padding_micro"
       android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-      app:layout_constraintEnd_toStartOf="@+id/iv_item_blog_cover"
-      app:layout_constraintLeft_toLeftOf="@+id/tv_item_blog_title"
-      app:layout_constraintTop_toBottomOf="@+id/tv_item_blog_title"
+      app:layout_constraintEnd_toStartOf="@+id/iv_item_feed_cover"
+      app:layout_constraintLeft_toLeftOf="@+id/tv_item_feed_title"
+      app:layout_constraintTop_toBottomOf="@+id/tv_item_feed_title"
       tools:text="@string/lorem_ipsum" />
 
     <ImageView
-      android:id="@+id/iv_item_blog_cover"
+      android:id="@+id/iv_item_feed_cover"
       android:layout_width="80dp"
       android:layout_height="80dp"
       android:layout_marginEnd="@dimen/padding_normal"
       android:layout_marginRight="@dimen/padding_normal"
       android:scaleType="centerCrop"
       app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toTopOf="@+id/tv_item_blog_title"
+      app:layout_constraintTop_toTopOf="@+id/tv_item_feed_title"
       tools:src="@drawable/login_bg" />
 
   </android.support.constraint.ConstraintLayout>

@@ -26,7 +26,7 @@ import static com.yoloo.backend.OfyService.ofy;
 
 public class SendNewPostNotificationServlet extends HttpServlet {
 
-  public static final String UPDATE_FEED_QUEUE = "send-new-post-queue";
+  public static final String UPDATE_FEED_QUEUE = "send-new-post-notification-queue";
   private static final String URL = "/tasks/send/notification";
 
   private static final String USER_ID = "userId";
@@ -53,22 +53,20 @@ public class SendNewPostNotificationServlet extends HttpServlet {
         .doOnNext(accountKeys -> {
           List<Key<?>> keyList = new ArrayList<>();
 
-          for (Key<Account> accountKey : accountKeys) {
-            keyList.add(DeviceRecord.createKey(accountKey));
-          }
+          keyList.addAll(Ix.from(accountKeys).map(DeviceRecord::createKey).toList());
 
           Key<PostEntity> postKey = Key.create(postId);
           keyList.add(postKey);
 
-          Map<Key<Object>, Object> map =
+          Map<Key<Object>, Object> fetched =
               ofy().load().keys(accountKeys.toArray(new Key[keyList.size()]));
 
           List<DeviceRecord> deviceRecords = new ArrayList<>();
           for (Key<Account> accountKey : accountKeys) {
-            deviceRecords.add((DeviceRecord) map.get(DeviceRecord.createKey(accountKey)));
+            deviceRecords.add((DeviceRecord) fetched.get(DeviceRecord.createKey(accountKey)));
           }
 
-          PostEntity post = (PostEntity) map.get(postKey);
+          PostEntity post = (PostEntity) fetched.get(postKey);
 
           Notifiable notifiable = NewFriendPostNotification.create(post, deviceRecords);
 

@@ -15,7 +15,6 @@ import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.device.DeviceRecord;
 import com.yoloo.backend.device.DeviceUtil;
-import com.yoloo.backend.endpointsvalidator.Guard;
 import com.yoloo.backend.game.GameService;
 import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.notification.NotificationService;
@@ -28,6 +27,7 @@ import com.yoloo.backend.post.PostShard;
 import com.yoloo.backend.post.PostShardService;
 import com.yoloo.backend.vote.Vote;
 import com.yoloo.backend.vote.VoteService;
+import io.reactivex.Observable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,6 +36,7 @@ import javax.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 
 import static com.yoloo.backend.OfyService.ofy;
+import static com.yoloo.backend.endpointsvalidator.Guard.checkNotFound;
 
 @AllArgsConstructor(staticName = "create")
 public class CommentController extends Controller {
@@ -66,21 +67,19 @@ public class CommentController extends Controller {
    * @param user the user
    * @return the comment
    */
-  public Comment getComment(String commentId, User user) throws NotFoundException {
+  public Comment getComment(@Nonnull String commentId, @Nonnull User user)
+      throws NotFoundException {
+    return Observable
+        .fromCallable(() -> {
+          Comment comment = ofy().load()
+              .group(Comment.ShardGroup.class)
+              .key(Key.<Comment>create(commentId))
+              .now();
 
-    // Create account key from websafe id.
-    final Key<Account> accountKey = Key.create(user.getUserId());
-    // Create comment key from websafe id.
-    final Key<Comment> commentKey = Key.create(commentId);
-
-    // Fetch comment.
-    Comment comment = ofy().load().group(Comment.ShardGroup.class).key(commentKey).now();
-
-    Guard.checkNotFound(comment, "Comment does not exists!");
-
-    return commentShardService
-        .mergeShards(comment)
-        .flatMap(comment1 -> voteService.checkCommentVote(comment1, accountKey))
+          return checkNotFound(comment, "Comment does not exists!");
+        })
+        .flatMap(commentShardService::mergeShards)
+        .flatMap(comment -> voteService.checkCommentVote(comment, Key.create(user.getUserId())))
         .blockingSingle();
   }
 
@@ -288,6 +287,7 @@ public class CommentController extends Controller {
     if (accepted.isPresent()
         && post.getParent().equivalent(accountKey)
         && post.getAcceptedCommentKey() == null) {
+      comment = comment.withAccepted(true);
       post = post.withAcceptedCommentKey(commentKey);
       post = gameService.addAcceptCommentBonus(postOwnerTracker, commenterTracker, postOwnerRecord,
           commenterRecord, post, notifiables::addAll, notifiables::addAll);
@@ -365,23 +365,23 @@ public class CommentController extends Controller {
    */
   public CollectionResponse<Comment> listComments(@Nonnull String postId, Optional<String> cursor,
       Optional<Integer> limit, @Nonnull User user) {
-    final Key<Account> accountKey = Key.create(user.getUserId());
     final Key<PostEntity> postKey = Key.create(postId);
 
     List<Comment> comments = new ArrayList<>(DEFAULT_LIST_LIMIT);
 
-    Optional<Comment> acceptedCommentOptional = Optional.absent();
+    Optional<Long> acceptedCommentId = Optional.absent();
 
     // Add accepted comment to response if no cursor position is given.
     if (!cursor.isPresent()) {
       PostEntity post = ofy().load().key(postKey).now();
-      Comment acceptedComment = null;
       if (post.getAcceptedCommentKey() != null) {
-        acceptedComment = ofy().load().key(post.getAcceptedCommentKey()).now().withAccepted(true);
+        Comment acceptedComment = ofy().load()
+            .group(Comment.ShardGroup.class)
+            .key(post.getAcceptedCommentKey())
+            .now();
         comments.add(acceptedComment);
+        acceptedCommentId = Optional.of(acceptedComment.getId());
       }
-
-      acceptedCommentOptional = Optional.fromNullable(acceptedComment);
     }
 
     Query<Comment> query = ofy()
@@ -392,14 +392,14 @@ public class CommentController extends Controller {
         .order("-" + Comment.FIELD_CREATED);
 
     query = cursor.isPresent() ? query.startAt(Cursor.fromWebSafeString(cursor.get())) : query;
-    query = query.limit(getCommentLimit(cursor, limit, acceptedCommentOptional.isPresent()));
+    query = query.limit(getCommentLimit(cursor, limit, acceptedCommentId.isPresent()));
 
     final QueryResultIterator<Comment> qi = query.iterator();
 
     while (qi.hasNext()) {
       Comment comment = qi.next();
-      if (acceptedCommentOptional.isPresent()) {
-        if (comment.getId() != acceptedCommentOptional.get().getId()) {
+      if (acceptedCommentId.isPresent()) {
+        if (comment.getId() != acceptedCommentId.get()) {
           comments.add(comment);
         }
       } else {
@@ -413,9 +413,9 @@ public class CommentController extends Controller {
 
     return commentShardService
         .mergeShards(comments)
-        .flatMap(__ -> voteService.checkCommentVote(__, accountKey))
+        .flatMap(__ -> voteService.checkCommentVote(__, Key.create(user.getUserId())))
         .map(__ -> CollectionResponse.<Comment>builder()
-            .setItems(comments)
+            .setItems(__)
             .setNextPageToken(qi.getCursor().toWebSafeString())
             .build())
         .blockingFirst();

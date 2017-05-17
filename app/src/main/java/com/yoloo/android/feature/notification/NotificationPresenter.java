@@ -34,6 +34,14 @@ class NotificationPresenter extends MvpPresenter<NotificationView> {
     getDisposable().add(d);
   }
 
+  void loadMoreNotifications(int limit) {
+    Disposable d = notificationRepository.listNotifications(cursor, limit)
+        .observeOn(AndroidSchedulers.mainThread(), true)
+        .subscribe(response -> getView().onMoreDataLoaded(response.getData()), this::showError);
+
+    getDisposable().add(d);
+  }
+
   private void showNotifications(Response<List<NotificationRealm>> response) {
     if (response.getData().isEmpty()) {
       getView().onEmpty();

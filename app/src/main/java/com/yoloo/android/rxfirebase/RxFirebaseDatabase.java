@@ -179,7 +179,7 @@ public class RxFirebaseDatabase {
   }
 
   /**
-   * Creates an observable only for the child changed method
+   * Creates an observable only for the child added method
    *
    * @param firebaseRef {@link Query} this is reference from a Firebase Query
    * @return an {@link Observable} from {@link FirebaseChildEvent} to use

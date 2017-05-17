@@ -27,6 +27,24 @@ public class GameHistoryRealm extends RealmObject {
     return bounties;
   }
 
+  @Override public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof GameHistoryRealm)) return false;
+
+    GameHistoryRealm that = (GameHistoryRealm) o;
+
+    if (getPoints() != that.getPoints()) return false;
+    if (getBounties() != that.getBounties()) return false;
+    return id.equals(that.id);
+  }
+
+  @Override public int hashCode() {
+    int result = id.hashCode();
+    result = 31 * result + getPoints();
+    result = 31 * result + getBounties();
+    return result;
+  }
+
   @Override
   public String toString() {
     return "GameHistoryRealm{"

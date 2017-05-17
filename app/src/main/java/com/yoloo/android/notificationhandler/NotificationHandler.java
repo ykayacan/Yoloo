@@ -40,18 +40,20 @@ public final class NotificationHandler {
     NotificationManager notificationManager =
         (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-    notificationManager.notify(0, getNotification(message, context));
-  }
-
-  private Notification getNotification(RemoteMessage message, Context context) throws IOException {
     Map<String, String> data = message.getData();
 
-    Moshi moshi = new Moshi.Builder().build();
-    NotificationResponse response =
-        moshi.adapter(NotificationResponse.class).fromJson(data.get("values"));
+    NotificationResponse response = new Moshi.Builder()
+        .build()
+        .adapter(NotificationResponse.class)
+        .fromJson(data.get("values"));
 
     Timber.d("Action: %s", response);
 
+    notificationManager.notify(0, getNotification(response, context));
+  }
+
+  private Notification getNotification(NotificationResponse response, Context context)
+      throws IOException {
     switch (response.getAction()) {
       case FOLLOW:
         return new FollowNotification(response, context).getNotification();

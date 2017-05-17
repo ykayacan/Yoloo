@@ -59,8 +59,6 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
     super.onViewBound(view);
     setupToolbar();
     setupRecyclerview();
-
-    Timber.d("Parent view: %s", view.getParent());
   }
 
   @Override

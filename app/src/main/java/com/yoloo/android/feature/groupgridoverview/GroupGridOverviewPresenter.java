@@ -29,7 +29,11 @@ class GroupGridOverviewPresenter extends MvpPresenter<GroupGridOverviewView> {
     Disposable d = groupRepository
         .listSubscribedGroups(userId)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(groups -> getView().onGroupsLoaded(groups),
+        .subscribe(groups -> {
+              if (isViewAttached()) {
+                getView().onGroupsLoaded(groups);
+              }
+            },
             throwable -> getView().onError(throwable));
 
     getDisposable().add(d);

@@ -1,19 +1,18 @@
 package com.yoloo.android.data.repository.user;
 
 import com.annimon.stream.Optional;
+import com.annimon.stream.Stream;
 import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.data.db.AccountRealmFields;
-
-import java.util.Collections;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.realm.Realm;
+import io.realm.RealmResults;
 import io.realm.Sort;
+import java.util.Collections;
+import java.util.List;
+import javax.annotation.Nonnull;
 
 class UserDiskDataStore {
 
@@ -108,13 +107,52 @@ class UserDiskDataStore {
     });
   }
 
+  void addRecentSearchedAccounts(List<AccountRealm> accounts) {
+    Realm realm = Realm.getDefaultInstance();
+
+    realm.executeTransaction(tx -> {
+      long recentCount =
+          tx.where(AccountRealm.class).equalTo(AccountRealmFields.RECENT, true).count();
+
+      if (recentCount < 10) {
+        tx.insertOrUpdate(Stream
+            .of(accounts)
+            .map(account -> account.setRecent(true))
+            .limit(10 - recentCount)
+            .toList());
+      } else {
+        // clear all recents
+        tx.where(AccountRealm.class)
+            .equalTo(AccountRealmFields.RECENT, true)
+            .findAll()
+            .deleteAllFromRealm();
+
+        tx.insertOrUpdate(Stream
+            .of(accounts)
+            .map(account -> account.setRecent(true))
+            .limit(10)
+            .toList());
+      }
+    });
+
+    realm.close();
+  }
+
   Observable<List<AccountRealm>> listRecentSearches() {
-    /*Realm realm = Realm.getDefaultInstance();
+    return Observable.fromCallable(() -> {
+      Realm realm = Realm.getDefaultInstance();
 
-    List<AccountRealm> accounts = realm.copyFromRealm(
-        realm.where(AccountRealm.class).equalTo(AccountRealmFields.RECENT, true).findAll());
+      RealmResults<AccountRealm> results =
+          realm.where(AccountRealm.class).equalTo(AccountRealmFields.RECENT, true).findAll();
 
-    realm.close();*/
-    return Observable.fromCallable(Collections::emptyList);
+      if (results.isEmpty()) {
+        realm.close();
+        return Collections.emptyList();
+      } else {
+        List<AccountRealm> accounts = realm.copyFromRealm(results);
+        realm.close();
+        return accounts;
+      }
+    });
   }
 }

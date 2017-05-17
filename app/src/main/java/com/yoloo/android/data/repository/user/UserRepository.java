@@ -116,7 +116,9 @@ public class UserRepository {
 
   public Observable<Response<List<AccountRealm>>> searchUser(@Nonnull String query,
       @Nullable String cursor, int limit) {
-    return remoteDataStore.searchUser(query, cursor, limit).subscribeOn(Schedulers.io());
+    return remoteDataStore.searchUser(query, cursor, limit)
+        .doOnNext(response -> diskDataStore.addRecentSearchedAccounts(response.getData()))
+        .subscribeOn(Schedulers.io());
   }
 
   public Single<Boolean> checkUsername(@Nonnull String username) {

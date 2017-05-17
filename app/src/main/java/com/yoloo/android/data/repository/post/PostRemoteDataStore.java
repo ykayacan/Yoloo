@@ -5,9 +5,9 @@ import com.google.api.client.http.HttpHeaders;
 import com.squareup.moshi.Moshi;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.UploadManager;
+import com.yoloo.android.data.UploadResponse;
 import com.yoloo.android.data.db.MediaRealm;
 import com.yoloo.android.data.db.PostRealm;
-import com.yoloo.android.data.UploadResponse;
 import com.yoloo.android.data.sorter.PostSorter;
 import io.reactivex.Completable;
 import io.reactivex.Maybe;
@@ -18,7 +18,6 @@ import java.io.File;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import timber.log.Timber;
 
 import static com.yoloo.android.data.ApiManager.INSTANCE;
 import static com.yoloo.android.data.ApiManager.getIdToken;
@@ -114,10 +113,7 @@ class PostRemoteDataStore {
     return UploadManager.INSTANCE
         .upload(post.getOwnerId(), files, UploadManager.MediaOrigin.POST)
         .map(response -> response.body().string())
-        .map(json -> {
-          Moshi moshi = new Moshi.Builder().build();
-          return moshi.adapter(UploadResponse.class).fromJson(json);
-        })
+        .map(json -> new Moshi.Builder().build().adapter(UploadResponse.class).fromJson(json))
         .map(response -> response.getItems().get(0).getId())
         .filter(s -> s != null);
   }
@@ -339,7 +335,8 @@ class PostRemoteDataStore {
    * @param limit the limit
    * @return the observable
    */
-  Observable<Response<List<PostRealm>>> listByTrendingBlogs(@Nullable String cursor, int limit) {
+  Observable<Response<List<PostRealm>>> listByTrendingBlogPosts(@Nullable String cursor,
+      int limit) {
     return getIdToken()
         .flatMapObservable(idToken -> Observable
             .fromCallable(() -> INSTANCE
@@ -362,15 +359,17 @@ class PostRemoteDataStore {
    * @param direction the direction
    * @return the completable
    */
-  Completable vote(@Nonnull String postId, int direction) {
-    return getIdToken().flatMapCompletable(idToken -> Completable
-        .fromCallable(() -> INSTANCE
-            .getApi()
-            .posts()
-            .vote(postId, direction)
-            .setRequestHeaders(setIdTokenHeader(idToken))
-            .execute())
-        .subscribeOn(Schedulers.io()));
+  Single<PostRealm> vote(@Nonnull String postId, int direction) {
+    return getIdToken()
+        .flatMap(idToken -> Single
+            .fromCallable(() -> INSTANCE
+                .getApi()
+                .posts()
+                .vote(postId, direction)
+                .setRequestHeaders(setIdTokenHeader(idToken))
+                .execute())
+            .map(PostRealm::new)
+            .subscribeOn(Schedulers.io()));
   }
 
   /**
@@ -379,14 +378,15 @@ class PostRemoteDataStore {
    * @param postId the post id
    * @return the completable
    */
-  Completable bookmark(@Nonnull String postId) {
-    return getIdToken().flatMapCompletable(idToken -> Completable
+  Single<PostRealm> bookmark(@Nonnull String postId) {
+    return getIdToken().flatMap(idToken -> Single
         .fromCallable(() -> INSTANCE
             .getApi()
             .posts()
             .bookmark(postId)
             .setRequestHeaders(setIdTokenHeader(idToken))
             .execute())
+        .map(PostRealm::new)
         .subscribeOn(Schedulers.io()));
   }
 
@@ -396,19 +396,20 @@ class PostRemoteDataStore {
    * @param postId the post id
    * @return the completable
    */
-  Completable unbookmark(@Nonnull String postId) {
-    return getIdToken().flatMapCompletable(idToken -> Completable
+  Single<PostRealm> unbookmark(@Nonnull String postId) {
+    return getIdToken().flatMap(idToken -> Single
         .fromCallable(() -> INSTANCE
             .getApi()
             .posts()
             .unbookmark(postId)
             .setRequestHeaders(setIdTokenHeader(idToken))
             .execute())
+        .map(PostRealm::new)
         .subscribeOn(Schedulers.io()));
   }
 
   private HttpHeaders setIdTokenHeader(@Nonnull String idToken) {
-    Timber.d("Id Token: %s", idToken);
+    //Timber.d("Id Token: %s", idToken);
     return new HttpHeaders().setAuthorization("Bearer " + idToken);
   }
 }

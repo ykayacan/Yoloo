@@ -34,7 +34,7 @@ public final class SendPostJob extends Job {
 
   public static void scheduleJob() {
     new JobRequest.Builder(SendPostJob.TAG)
-        .setExecutionWindow(3_000L, 4_000L)
+        .setExecutionWindow(2_000L, 4_000L)
         .setRequiredNetworkType(JobRequest.NetworkType.CONNECTED)
         .setBackoffCriteria(5000L, JobRequest.BackoffPolicy.EXPONENTIAL)
         .setPersisted(true)
@@ -71,18 +71,6 @@ public final class SendPostJob extends Job {
     Intent intent = new Intent(SEND_POST_EVENT);
     intent.putExtra(KEY_ADD_POST, Parcels.wrap(post));
     LocalBroadcastManager.getInstance(getContext()).sendBroadcast(intent);
-  }
-
-  private void showSuccessfulNotification() {
-    Notification notification = new Notification.Builder(getContext())
-        .setTicker(getContext().getString(R.string.label_sending_post_successful))
-        .setContentTitle(getContext().getString(R.string.label_sending_post_successful))
-        .setOnlyAlertOnce(true)
-        .setAutoCancel(true)
-        .setSmallIcon(R.drawable.ic_cloud_done_white_24dp)
-        .setLocalOnly(true)
-        .setOngoing(false)
-        .build();
   }
 
   private void showSendingNotification() {

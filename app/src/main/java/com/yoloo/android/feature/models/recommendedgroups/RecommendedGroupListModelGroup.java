@@ -6,30 +6,31 @@ import com.airbnb.epoxy.SimpleEpoxyModel;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
-import com.yoloo.android.data.feedtypes.RecommendedGroupListItem;
-import com.yoloo.android.feature.feed.FeedEpoxyController;
+import com.yoloo.android.data.db.GroupRealm;
+import com.yoloo.android.data.feed.RecommendedGroupListFeedItem;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RecommendedGroupListModelGroup extends EpoxyModelGroup {
 
-  public RecommendedGroupListModelGroup(RecommendedGroupListItem item,
-      FeedEpoxyController.RecommendedGroupListCallbacks callbacks, RequestManager glide) {
+  public RecommendedGroupListModelGroup(RecommendedGroupListFeedItem item,
+      Callbacks callbacks, RequestManager glide) {
     super(R.layout.item_recommended_group_list, buildModels(item, callbacks, glide));
-    id(item.getId());
+    id(item.id());
   }
 
-  private static List<EpoxyModel<?>> buildModels(RecommendedGroupListItem item,
-      FeedEpoxyController.RecommendedGroupListCallbacks callbacks, RequestManager glide) {
+  private static List<EpoxyModel<?>> buildModels(RecommendedGroupListFeedItem item,
+      Callbacks callbacks, RequestManager glide) {
     List<EpoxyModel<?>> models = new ArrayList<>();
 
     models.add(new SimpleEpoxyModel(R.layout.item_recommended_group_header_text));
+
     models.add(new SimpleEpoxyModel(R.layout.item_recommended_group_more_text).onClick(
         v -> callbacks.onRecommendedGroupsHeaderClicked()));
 
     // inner group models
     List<RecommendedGroupModel_> groupModels = Stream
-        .of(item.getGroups())
+        .of(item.getItem())
         .map(group -> new RecommendedGroupModel_()
             .id(group.getId())
             .glide(glide)
@@ -44,5 +45,11 @@ public class RecommendedGroupListModelGroup extends EpoxyModelGroup {
     models.add(new RecommendedGroupListModel_().numItemsExpectedOnDisplay(5).models(groupModels));
 
     return models;
+  }
+
+  public interface Callbacks {
+    void onRecommendedGroupsHeaderClicked();
+
+    void onRecommendedGroupClicked(GroupRealm group);
   }
 }

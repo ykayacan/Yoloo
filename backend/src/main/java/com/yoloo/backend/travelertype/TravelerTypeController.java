@@ -43,7 +43,7 @@ public class TravelerTypeController extends Controller {
       imageServingUrl = Strings.nullToEmpty(imageName);
     } else {
       ServingUrlOptions options = ServingUrlOptions.Builder.withGoogleStorageFileName(
-          MediaConfig.SERVE_TRAVELER_TYPES_BUCKET + "/" + imageName.toLowerCase() + ".webp");
+          MediaConfig.SERVE_TRAVELER_TYPES + "/" + imageName.toLowerCase() + ".webp");
 
       imageServingUrl = imagesService.getServingUrl(options);
     }

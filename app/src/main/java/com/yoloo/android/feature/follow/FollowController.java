@@ -25,7 +25,7 @@ import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.search.OnFollowClickListener;
 import com.yoloo.android.framework.MvpController;
-import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
+import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
 import com.yoloo.android.util.BundleBuilder;
@@ -33,11 +33,10 @@ import com.yoloo.android.util.ViewUtils;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
-import timber.log.Timber;
 
 public class FollowController extends MvpController<FollowView, FollowPresenter>
     implements FollowView, OnProfileClickListener, OnFollowClickListener,
-    SwipeRefreshLayout.OnRefreshListener, EndlessRecyclerViewScrollListener.OnLoadMoreListener {
+    SwipeRefreshLayout.OnRefreshListener {
 
   public static final int TYPE_FOLLOWERS = 0;
   public static final int TYPE_FOLLOWINGS = 1;
@@ -52,9 +51,12 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   @BindColor(R.color.primary) int colorPrimary;
   @BindColor(R.color.primary_dark) int colorPrimaryDark;
 
+  private String userId;
+  private int viewType;
+
   private FollowEpoxyController epoxyController;
 
-  private EndlessRecyclerViewScrollListener endlessRecyclerViewScrollListener;
+  private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
 
   public FollowController(@Nullable Bundle args) {
     super(args);
@@ -86,16 +88,14 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
     super.onAttach(view);
     final Bundle args = getArgs();
 
-    final String userId = args.getString(KEY_USER_ID);
-    final int viewType = args.getInt(KEY_VIEW_TYPE);
+    userId = args.getString(KEY_USER_ID);
+    viewType = args.getInt(KEY_VIEW_TYPE);
 
     if (viewType == TYPE_FOLLOWERS) {
-      getPresenter().loadFollowers(false, userId);
+      getPresenter().loadFollowers(false, false, userId);
     } else {
-      getPresenter().loadFollowings(false, userId);
+      getPresenter().loadFollowings(false, false, userId);
     }
-
-    rvFollow.addOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
   @Override
@@ -103,12 +103,6 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
       @NonNull ControllerChangeType changeType) {
     super.onChangeEnded(changeHandler, changeType);
     ViewUtils.setStatusBarColor(getActivity(), colorPrimaryDark);
-  }
-
-  @Override
-  protected void onDetach(@NonNull View view) {
-    super.onDetach(view);
-    rvFollow.removeOnScrollListener(endlessRecyclerViewScrollListener);
   }
 
   @Override
@@ -134,12 +128,23 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
 
   @Override
   public void onRefresh() {
-    endlessRecyclerViewScrollListener.resetState();
+    endlessRecyclerOnScrollListener.resetState();
+
+    if (viewType == TYPE_FOLLOWERS) {
+      getPresenter().loadFollowers(true, true, userId);
+    } else {
+      getPresenter().loadFollowings(true, true, userId);
+    }
   }
 
-  @Override
-  public void onLoadMore() {
-    Timber.d("onLoadMore");
+  @Override public void onLoadedMore(List<AccountRealm> accounts) {
+    if (accounts.isEmpty()) {
+      epoxyController.hideLoader();
+    } else {
+      epoxyController.setLoadMoreData(accounts);
+    }
+
+    swipeRefreshLayout.setRefreshing(false);
   }
 
   @NonNull
@@ -177,9 +182,9 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   private void setupRecyclerView() {
     epoxyController = new FollowEpoxyController(getActivity(), this, this);
 
-    final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+    final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
 
-    rvFollow.setLayoutManager(layoutManager);
+    rvFollow.setLayoutManager(lm);
     rvFollow.addItemDecoration(new SpaceItemDecoration(8, SpaceItemDecoration.VERTICAL));
 
     final SlideInItemAnimator animator = new SlideInItemAnimator();
@@ -189,7 +194,15 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
     rvFollow.setHasFixedSize(true);
     rvFollow.setAdapter(epoxyController.getAdapter());
 
-    endlessRecyclerViewScrollListener = new EndlessRecyclerViewScrollListener(layoutManager, this);
+    endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(lm) {
+      @Override public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+        if (viewType == TYPE_FOLLOWERS) {
+          getPresenter().loadFollowers(false, true, userId);
+        } else {
+          getPresenter().loadFollowings(false, true, userId);
+        }
+      }
+    };
   }
 
   private void setupPullToRefresh() {

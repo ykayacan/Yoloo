@@ -85,6 +85,7 @@ class ExplorePresenter extends MvpPresenter<ExploreView> {
         .listGroups(GroupSorter.DEFAULT, null, 100)
         .observeOn(AndroidSchedulers.mainThread(), true)
         .flatMap(response -> Observable.fromIterable(response.getData()))
+        .distinct()
         .map(GroupItem::new)
         .toList()
         .toObservable();

@@ -31,11 +31,10 @@ class SelectGroupPresenter extends MvpPresenter<SelectGroupView> {
     Disposable d = userRepository
         .getLocalMe()
         .map(AccountRealm::getId)
-        .flatMapObservable(
-            id -> Observable.mergeDelayError(groupRepository.listSubscribedGroups(id),
-                getAllGroupsObservable()))
+        .flatMapObservable(id -> Observable.merge(groupRepository.listSubscribedGroups(id),
+            getAllGroupsObservable()))
         .flatMap(Observable::fromIterable)
-        .distinct()
+        .distinct(GroupRealm::getId)
         .groupBy(GroupRealm::isSubscribed)
         .flatMap(groupedBySubscribe -> groupedBySubscribe
             .toList()

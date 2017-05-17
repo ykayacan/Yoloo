@@ -32,40 +32,30 @@ import com.yoloo.android.data.feed.FeedItem;
 import com.yoloo.android.data.repository.comment.CommentRepositoryProvider;
 import com.yoloo.android.data.repository.post.PostRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
-import com.yoloo.android.feature.comment.OnMarkAsAcceptedClickListener;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
-import com.yoloo.android.feature.feed.common.listener.OnBookmarkClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnCommentVoteClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnMentionClickListener;
 import com.yoloo.android.feature.feed.common.listener.OnModelUpdateEvent;
-import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
 import com.yoloo.android.feature.fullscreenphoto.FullscreenPhotoController;
+import com.yoloo.android.feature.models.comment.CommentCallbacks;
+import com.yoloo.android.feature.models.post.PostCallbacks;
+import com.yoloo.android.feature.postlist.PostListController;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.writecommentbox.CommentInput;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
-import com.yoloo.android.ui.recyclerview.OnItemLongClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.InsetDividerDecoration;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.MenuHelper;
+import com.yoloo.android.util.NetworkUtil;
 import com.yoloo.android.util.ShareUtil;
 import com.yoloo.android.util.ViewUtils;
 import java.util.List;
 import timber.log.Timber;
 
 public class PostDetailController extends MvpController<PostDetailView, PostDetailPresenter>
-    implements PostDetailView, SwipeRefreshLayout.OnRefreshListener, OnProfileClickListener,
-    OnPostOptionsClickListener, OnShareClickListener, OnCommentClickListener, OnVoteClickListener,
-    OnContentImageClickListener, CommentInput.NewCommentListener,
-    OnMarkAsAcceptedClickListener, OnItemLongClickListener<CommentRealm>, OnMentionClickListener,
-    OnBookmarkClickListener, OnCommentVoteClickListener {
+    implements PostDetailView, SwipeRefreshLayout.OnRefreshListener, PostCallbacks,
+    CommentCallbacks, CommentInput.NewCommentListener {
 
   private static final String KEY_POST_ID = "POST_ID";
 
@@ -91,6 +81,8 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   private KeyboardUtil.SoftKeyboardToggleListener keyboardToggleListener;
 
   private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
+
+  private boolean accepted;
 
   public PostDetailController(@Nullable Bundle args) {
     super(args);
@@ -148,7 +140,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   @Override protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
       @NonNull ControllerChangeType changeType) {
     super.onChangeEnded(changeHandler, changeType);
-    getDrawerLayout().setFitsSystemWindows(false);
+    //getDrawerLayout().setFitsSystemWindows(false);
     ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
@@ -165,34 +157,44 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   @Override
   public void onLoaded(List<FeedItem<?>> value) {
-    if (value.isEmpty()) {
-      epoxyController.hideLoader();
-    } else {
-      epoxyController.setData(value, false);
-    }
+    epoxyController.setData(value, false);
     swipeRefreshLayout.setRefreshing(false);
   }
 
   @Override
   public void onPostLoaded(PostRealm post) {
     this.post = post;
+    this.accepted = post.getAcceptedCommentId() != null;
   }
 
   @Override
   public void onMeLoaded(AccountRealm me) {
-
+    epoxyController.setUserId(me.getId());
   }
 
   @Override
   public void onPostUpdated(PostRealm post) {
+    this.post = post;
+    this.accepted = post.getAcceptedCommentId() != null;
+
+    epoxyController.updatePost(post);
     if (modelUpdateEvent != null) {
       modelUpdateEvent.onModelUpdateEvent(FeedAction.UPDATE, post);
     }
   }
 
   @Override
-  public void onCommentAccepted(String commentId) {
+  public void onCommentUpdated(CommentRealm comment) {
+    this.accepted = comment.isPostAccepted();
+    epoxyController.updateComment(comment);
+  }
 
+  @Override public void onMoreLoaded(List<FeedItem<?>> items) {
+    if (items.isEmpty()) {
+      epoxyController.hideLoader();
+    } else {
+      epoxyController.setLoadMoreData(items);
+    }
   }
 
   @Override
@@ -219,61 +221,12 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
         PostRepositoryProvider.getRepository(), UserRepositoryProvider.getRepository());
   }
 
-  @Override
-  public void onCommentClick(View v, PostRealm post) {
-    input.showKeyboard();
-  }
-
-  @Override
-  public void onPostOptionsClick(View v, PostRealm post) {
-    final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
-
-    menu.setOnMenuItemClickListener(item -> {
-      final int itemId = item.getItemId();
-      if (itemId == R.id.action_popup_delete) {
-        deletePost(post);
-        return true;
-      }
-
-      return super.onOptionsItemSelected(item);
-    });
-  }
-
   private void deletePost(PostRealm post) {
     getPresenter().deletePost(post.getId());
     if (modelUpdateEvent != null) {
       modelUpdateEvent.onModelUpdateEvent(FeedAction.DELETE, post);
     }
     getRouter().handleBack();
-  }
-
-  @Override
-  public void onContentImageClick(View v, MediaRealm media) {
-    startTransaction(FullscreenPhotoController.create(media.getLargeSizeUrl(), media.getId()),
-        new FadeChangeHandler());
-  }
-
-  @Override
-  public void onProfileClick(View v, String userId) {
-    startTransaction(ProfileController.create(userId), new VerticalChangeHandler());
-  }
-
-  @Override
-  public void onShareClick(View v, PostRealm post) {
-    ShareUtil.share(this, null, post.getContent());
-  }
-
-  @Override
-  public void onPostVoteClick(PostRealm post, int direction) {
-    getPresenter().votePost(post.getId(), direction);
-    epoxyController.votePost(post, direction);
-  }
-
-  @Override public void onVoteClick(CommentRealm comment, int direction) {
-    getPresenter().voteComment(comment.getId(), direction);
-    CommentRealm newComment  = new CommentRealm(comment);
-    newComment.setVoteDir(direction);
-    epoxyController.updateComment(newComment);
   }
 
   @Override
@@ -286,65 +239,10 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
     epoxyController.scrollToEnd(recyclerView);
   }
 
-  @Override
-  public void onMarkAsAccepted(View v, CommentRealm comment) {
-    if (post.getAcceptedCommentId() != null) {
-      Snackbar.make(getView(), R.string.comments_accepted_error, Snackbar.LENGTH_SHORT).show();
-    } else {
-      Snackbar.make(getView(), R.string.label_comment_accepted_confirm, Snackbar.LENGTH_SHORT)
-          .show();
-      getPresenter().acceptComment(comment);
-      post.setAcceptedCommentId(comment.getId());
-    }
-  }
-
-  @Override
-  public void onItemLongClick(View v, CommentRealm item) {
-    new AlertDialog.Builder(getActivity())
-        .setItems(R.array.action_comment_dialog, (dialog, which) -> {
-          if (which == 0) {
-            getPresenter().deleteComment(item);
-            epoxyController.deleteComment(item);
-          }
-        })
-        .show();
-  }
-
-  @Override
-  public void onMentionClick(String username) {
-    Timber.d("Mentions: %s", username);
-  }
-
-  @Override public void onBookmarkClick(@NonNull PostRealm post, boolean bookmark) {
-    if (post.isBookmarked()) {
-      post.setBookmarked(false);
-      getPresenter().unBookmarkPost(post.getId());
-    } else {
-      post.setBookmarked(true);
-      getPresenter().bookmarkPost(post.getId());
-    }
-
-    epoxyController.updatePost(post);
-  }
-
   private void setupRecyclerView() {
     epoxyController = new PostDetailEpoxyController(getActivity(), Glide.with(getActivity()));
-    epoxyController.setOnProfileClickListener(this);
-
-    epoxyController.setOnContentImageClickListener(this);
-    epoxyController.setOnPostOptionsClickListener(this);
-
-    epoxyController.setOnPostVoteClickListener(this);
-    epoxyController.setOnShareClickListener(this);
-    epoxyController.setOnCommentClickListener(this);
-
-    epoxyController.setOnCommentLongClickListener(this);
-    epoxyController.setOnMentionClickListener(this);
-    epoxyController.setOnCommentVoteClickListener(this);
-
-    epoxyController.setOnMarkAsAcceptedClickListener(this);
-
-    epoxyController.setOnBookmarkClickListener(this);
+    epoxyController.setPostCallbacks(this);
+    epoxyController.setCommentCallbacks(this);
 
     LinearLayoutManager lm = new LinearLayoutManager(getActivity());
     recyclerView.setLayoutManager(lm);
@@ -388,5 +286,100 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
   public void setModelUpdateEvent(OnModelUpdateEvent modelUpdateEvent) {
     this.modelUpdateEvent = modelUpdateEvent;
+  }
+
+  @Override public void onPostClickListener(@NonNull PostRealm post) {
+    // empty
+  }
+
+  @Override public void onPostContentImageClickListener(@NonNull MediaRealm media) {
+    startTransaction(FullscreenPhotoController.create(media.getLargeSizeUrl()),
+        new FadeChangeHandler());
+  }
+
+  @Override public void onPostProfileClickListener(@NonNull String userId) {
+    startTransaction(ProfileController.create(userId), new VerticalChangeHandler());
+  }
+
+  @Override public void onPostBookmarkClickListener(@NonNull PostRealm post) {
+    if (post.isBookmarked()) {
+      getPresenter().unBookmarkPost(post.getId());
+    } else {
+      getPresenter().bookmarkPost(post.getId());
+    }
+  }
+
+  @Override public void onPostOptionsClickListener(View v, @NonNull PostRealm post) {
+    final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
+
+    menu.setOnMenuItemClickListener(item -> {
+      final int itemId = item.getItemId();
+      if (itemId == R.id.action_popup_delete) {
+        if (NetworkUtil.isNetworkAvailable(getActivity())) {
+          deletePost(post);
+          return true;
+        } else {
+          Snackbar.make(getView(), R.string.all_network_required_delete,
+              Snackbar.LENGTH_SHORT).show();
+          return false;
+        }
+      }
+
+      return super.onOptionsItemSelected(item);
+    });
+  }
+
+  @Override public void onPostShareClickListener(@NonNull PostRealm post) {
+    ShareUtil.share(this, null, post.getContent());
+  }
+
+  @Override public void onPostCommentClickListener(@NonNull PostRealm post) {
+    input.showKeyboard();
+  }
+
+  @Override public void onPostVoteClickListener(@NonNull PostRealm post, int direction) {
+    getPresenter().votePost(post.getId(), direction);
+  }
+
+  @Override public void onPostTagClickListener(@NonNull String tagName) {
+    startTransaction(PostListController.ofTag(tagName), new VerticalChangeHandler());
+  }
+
+  @Override public void onCommentLongClickListener(@NonNull CommentRealm comment) {
+    new AlertDialog.Builder(getActivity())
+        .setItems(R.array.action_comment_dialog, (dialog, which) -> {
+          if (which == 0) {
+            if (NetworkUtil.isNetworkAvailable(getActivity())) {
+              getPresenter().deleteComment(comment);
+              epoxyController.deleteComment(comment);
+            } else {
+              Snackbar.make(getView(), R.string.all_network_required_delete, Snackbar.LENGTH_SHORT)
+                  .show();
+            }
+          }
+        })
+        .show();
+  }
+
+  @Override public void onCommentProfileClickListener(@NonNull String userId) {
+    startTransaction(ProfileController.create(userId), new VerticalChangeHandler());
+  }
+
+  @Override public void onCommentMentionClickListener(@NonNull String username) {
+
+  }
+
+  @Override public void onCommentVoteClickListener(@NonNull CommentRealm comment, int direction) {
+    getPresenter().voteComment(comment.getId(), direction);
+  }
+
+  @Override public void onCommentAcceptRequestClickListener(@NonNull CommentRealm comment) {
+    if (accepted) {
+      Snackbar.make(getView(), R.string.comments_accepted_error, Snackbar.LENGTH_SHORT).show();
+    } else {
+      Snackbar.make(getView(), R.string.label_comment_accepted_confirm, Snackbar.LENGTH_SHORT)
+          .show();
+      getPresenter().acceptComment(comment);
+    }
   }
 }

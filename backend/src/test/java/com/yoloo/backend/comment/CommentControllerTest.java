@@ -224,7 +224,7 @@ public class CommentControllerTest extends TestBase {
 
     Comment comment = commentController.insertComment(postEntity.getWebsafeId(), content, user);
 
-    voteController.vote(comment.getWebsafeId(), Vote.Direction.UP.getValue(), user);
+    voteController.voteComment(comment.getWebsafeId(), Vote.Direction.UP.getValue(), user);
 
     commentController.deleteComment(postEntity.getWebsafeId(), comment.getWebsafeId(), user);
 
@@ -254,10 +254,10 @@ public class CommentControllerTest extends TestBase {
     Comment comment4 =
         commentController.insertComment(postEntity.getWebsafeId(), "Test comment4", user);
 
-    voteController.vote(comment1.getWebsafeId(), Vote.Direction.UP.getValue(), user);
-    voteController.vote(comment2.getWebsafeId(), Vote.Direction.UP.getValue(), user);
-    voteController.vote(comment3.getWebsafeId(), Vote.Direction.UP.getValue(), user);
-    voteController.vote(comment4.getWebsafeId(), Vote.Direction.UP.getValue(), user);
+    voteController.voteComment(comment1.getWebsafeId(), Vote.Direction.UP.getValue(), user);
+    voteController.voteComment(comment2.getWebsafeId(), Vote.Direction.UP.getValue(), user);
+    voteController.voteComment(comment3.getWebsafeId(), Vote.Direction.UP.getValue(), user);
+    voteController.voteComment(comment4.getWebsafeId(), Vote.Direction.UP.getValue(), user);
 
     CollectionResponse<Comment> response =
         commentController.listComments(postEntity.getWebsafeId(), Optional.absent(),

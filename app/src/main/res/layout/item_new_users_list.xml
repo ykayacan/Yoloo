@@ -5,7 +5,9 @@
   android:layout_height="wrap_content"
   android:background="@android:color/white"
   android:clipChildren="false"
-  android:clipToPadding="false">
+  android:clipToPadding="false"
+  android:paddingBottom="16dp"
+  android:elevation="@dimen/cardview_default_elevation">
 
   <android.support.constraint.Guideline
     android:id="@+id/top_guideline"

@@ -88,6 +88,7 @@ public class GroupGridOverviewController
   @Override
   protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
+    setRetainViewMode(RetainViewMode.RETAIN_DETACH);
     spanCount = getArgs().getInt(KEY_SPAN_COUNT, 3);
 
     final boolean enableToolbar = getArgs().getBoolean(KEY_ENABLE_TOOLBAR, false);

@@ -21,7 +21,7 @@ import com.yoloo.android.data.repository.notification.NotificationRepositoryProv
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.framework.MvpController;
-import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
+import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
 import com.yoloo.android.ui.widget.StateLayout;
@@ -29,8 +29,7 @@ import java.util.List;
 import timber.log.Timber;
 
 public class NotificationController extends MvpController<NotificationView, NotificationPresenter>
-    implements NotificationView, EndlessRecyclerViewScrollListener.OnLoadMoreListener,
-    SwipeRefreshLayout.OnRefreshListener, OnProfileClickListener {
+    implements NotificationView, SwipeRefreshLayout.OnRefreshListener, OnProfileClickListener {
 
   @BindView(R.id.root_view) StateLayout rootView;
   @BindView(R.id.recycler_view) RecyclerView rvNotification;
@@ -68,13 +67,21 @@ public class NotificationController extends MvpController<NotificationView, Noti
 
   @Override
   public void onLoaded(List<NotificationRealm> notifications) {
-    epoxyController.setData(notifications);
+    epoxyController.setData(notifications, false);
   }
 
   @Override
   public void showContent() {
     rootView.setState(StateLayout.VIEW_STATE_CONTENT);
     swipeRefreshLayout.setRefreshing(false);
+  }
+
+  @Override public void onMoreDataLoaded(List<NotificationRealm> notifications) {
+    if (notifications.isEmpty()) {
+      epoxyController.hideLoader();
+    } else {
+      epoxyController.setLoadMoreData(notifications);
+    }
   }
 
   @Override
@@ -97,13 +104,8 @@ public class NotificationController extends MvpController<NotificationView, Noti
   }
 
   @Override
-  public void onLoadMore() {
-    Timber.d("onLoadMore");
-  }
-
-  @Override
   public void onRefresh() {
-    getPresenter().loadNotifications(true, 20);
+    getPresenter().loadNotifications(true, 30);
   }
 
   @Override
@@ -117,9 +119,9 @@ public class NotificationController extends MvpController<NotificationView, Noti
   private void setupRecyclerView() {
     epoxyController = new NotificationEpoxyController(getActivity(), this);
 
-    final LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+    final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
 
-    rvNotification.setLayoutManager(layoutManager);
+    rvNotification.setLayoutManager(lm);
     rvNotification.addItemDecoration(new SpaceItemDecoration(8, OrientationHelper.VERTICAL));
 
     final SlideInItemAnimator animator = new SlideInItemAnimator();
@@ -129,7 +131,15 @@ public class NotificationController extends MvpController<NotificationView, Noti
     rvNotification.setHasFixedSize(true);
     rvNotification.setAdapter(epoxyController.getAdapter());
 
-    //endlessRecyclerViewScrollListener = new EndlessRecyclerViewScrollListener(layoutManager, this);
+    EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener =
+        new EndlessRecyclerOnScrollListener(lm) {
+          @Override public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+            getPresenter().loadMoreNotifications(30);
+            epoxyController.showLoader();
+          }
+        };
+
+    rvNotification.addOnScrollListener(endlessRecyclerOnScrollListener);
   }
 
   private void setupPullToRefresh() {

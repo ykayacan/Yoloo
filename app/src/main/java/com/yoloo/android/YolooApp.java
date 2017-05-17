@@ -8,6 +8,8 @@ import android.util.Log;
 import com.evernote.android.job.JobManager;
 import com.google.firebase.crash.FirebaseCrash;
 import com.google.firebase.database.FirebaseDatabase;
+import com.yoloo.android.data.repository.group.GroupUpdateJob;
+import com.yoloo.android.data.repository.post.TrendingBlogPostsUpdateJob;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import java.io.File;
@@ -51,10 +53,12 @@ public class YolooApp extends MultiDexApplication {
     initTimber();
     initRealm();
     //initStetho();
-    FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+    FirebaseDatabase.getInstance().setPersistenceEnabled(false);
     initCalligraphy();
     JobManager.create(this).addJobCreator(new YolooJobCreator());
 
+    GroupUpdateJob.scheduleJob();
+    TrendingBlogPostsUpdateJob.scheduleJob();
     //enabledStrictMode();
   }
 

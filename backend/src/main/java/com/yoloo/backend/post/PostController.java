@@ -19,7 +19,6 @@ import com.yoloo.backend.comment.Comment;
 import com.yoloo.backend.comment.CommentService;
 import com.yoloo.backend.comment.CommentShardService;
 import com.yoloo.backend.device.DeviceRecord;
-import com.yoloo.backend.endpointsvalidator.Guard;
 import com.yoloo.backend.feed.Feed;
 import com.yoloo.backend.game.GameService;
 import com.yoloo.backend.game.Tracker;
@@ -48,6 +47,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;
 
 import static com.yoloo.backend.OfyService.ofy;
+import static com.yoloo.backend.endpointsvalidator.Guard.checkNotFound;
 import static com.yoloo.backend.util.StringUtil.split;
 import static com.yoloo.backend.util.StringUtil.splitToIterable;
 
@@ -89,14 +89,17 @@ public final class PostController extends Controller {
    * @throws NotFoundException the not found exception
    */
   public PostEntity getPost(String postId, User user) throws NotFoundException {
-    PostEntity postEntity =
-        ofy().load().group(PostEntity.ShardGroup.class).key(Key.<PostEntity>create(postId)).now();
+    return Observable
+        .fromCallable(() -> {
+          PostEntity post = ofy().load()
+              .group(PostEntity.ShardGroup.class)
+              .key(Key.<PostEntity>create(postId))
+              .now();
 
-    Guard.checkNotFound(postEntity, "Could not find post with ID: " + postId);
-
-    return postShardService
-        .mergeShards(postEntity, Key.create(user.getUserId()))
-        .flatMap(__ -> voteService.checkPostVote(__, Key.create(user.getUserId())))
+          return checkNotFound(post, "Post does not exists!");
+        })
+        .flatMap(post -> postShardService.mergeShards(post, Key.create(user.getUserId())))
+        .flatMap(comment -> voteService.checkPostVote(comment, Key.create(user.getUserId())))
         .blockingSingle();
   }
 
@@ -444,22 +447,22 @@ public final class PostController extends Controller {
     query = cursor.isPresent() ? query.startAt(Cursor.fromWebSafeString(cursor.get())) : query;
     query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
 
-    List<PostEntity> postEntities = new ArrayList<>(DEFAULT_LIST_LIMIT);
+    List<PostEntity> posts = new ArrayList<>(DEFAULT_LIST_LIMIT);
 
     QueryResultIterator<PostEntity> qi = query.iterator();
 
     while (qi.hasNext()) {
-      postEntities.add(qi.next());
+      posts.add(qi.next());
     }
 
     Key<Account> accountKey = Key.create(user.getUserId());
 
-    if (postEntities.isEmpty()) {
+    if (posts.isEmpty()) {
       return CollectionResponse.<PostEntity>builder().build();
     }
 
     return Observable
-        .just(postEntities)
+        .just(posts)
         .flatMap(__ -> postShardService.mergeShards(__, accountKey))
         .flatMap(__ -> voteService.checkPostVote(__, accountKey))
         .compose(CollectionTransformer.create(qi.getCursor().toWebSafeString()))

@@ -20,18 +20,22 @@ import butterknife.OnClick;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.rafakob.floatingedittext.FloatingEditText;
 import com.yoloo.android.R;
+import com.yoloo.android.data.repository.notification.NotificationRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
 import com.yoloo.android.feature.auth.AuthUI;
 import com.yoloo.android.feature.auth.IdpResponse;
 import com.yoloo.android.feature.auth.provider.FacebookProvider;
 import com.yoloo.android.feature.auth.provider.GoogleProvider;
 import com.yoloo.android.feature.auth.provider.IdpProvider;
+import com.yoloo.android.feature.chat.NewChatListenerService;
 import com.yoloo.android.feature.feed.FeedController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.FormUtil;
 import com.yoloo.android.util.KeyboardUtil;
 import java.net.SocketTimeoutException;
 import timber.log.Timber;
+
+import static com.yoloo.android.util.ServiceUtil.isMyServiceRunning;
 
 public class SignInController extends MvpController<SignInView, SignInPresenter>
     implements SignInView, IdpProvider.IdpCallback {
@@ -80,7 +84,8 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
   @NonNull
   @Override
   public SignInPresenter createPresenter() {
-    return new SignInPresenter(UserRepositoryProvider.getRepository());
+    return new SignInPresenter(UserRepositoryProvider.getRepository(),
+        NotificationRepositoryProvider.getRepository());
   }
 
   @Override
@@ -150,6 +155,10 @@ public class SignInController extends MvpController<SignInView, SignInPresenter>
 
   @Override
   public void onSignedIn() {
+    if (!isMyServiceRunning(NewChatListenerService.class, getActivity())) {
+      getActivity().startService(new Intent(getActivity(), NewChatListenerService.class));
+    }
+
     getRouter().setRoot(RouterTransaction.with(FeedController.create()));
   }
 

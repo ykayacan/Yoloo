@@ -59,7 +59,7 @@ ext {
   butterKnife_version = '8.5.1'
   timber_version = '4.5.1'
   conductor_version = '2.1.3'
-  epoxy_version = '2.0.0'
+  epoxy_version = '2.1.0'
   flexbox_version = '0.3.0-alpha3'
 
   annimonStream_version = '1.1.7'

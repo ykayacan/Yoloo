@@ -1,5 +1,6 @@
 package com.yoloo.android.data.repository.tag;
 
+import com.annimon.stream.Stream;
 import com.yoloo.android.data.db.TagRealm;
 import com.yoloo.android.data.db.TagRealmFields;
 import com.yoloo.android.data.sorter.TagSorter;
@@ -28,6 +29,37 @@ class TagDiskDataStore {
     Realm realm = Realm.getDefaultInstance();
 
     realm.executeTransaction(tx -> tx.insertOrUpdate(tags));
+
+    realm.close();
+  }
+
+  void addRecentSearchedTags(List<TagRealm> tags) {
+    Realm realm = Realm.getDefaultInstance();
+
+    realm.executeTransaction(tx -> {
+      long recentCount =
+          tx.where(TagRealm.class).equalTo(TagRealmFields.RECENT, true).count();
+
+      if (recentCount < 10) {
+        tx.insertOrUpdate(Stream
+            .of(tags)
+            .map(tag -> tag.setRecent(true))
+            .limit(10 - recentCount)
+            .toList());
+      } else {
+        // clear all recents
+        tx.where(TagRealm.class)
+            .equalTo(TagRealmFields.RECENT, true)
+            .findAll()
+            .deleteAllFromRealm();
+
+        tx.insertOrUpdate(Stream
+            .of(tags)
+            .map(tag -> tag.setRecent(true))
+            .limit(10)
+            .toList());
+      }
+    });
 
     realm.close();
   }
@@ -70,7 +102,7 @@ class TagDiskDataStore {
     });
   }
 
-  Observable<List<TagRealm>> listRecent() {
+  Observable<List<TagRealm>> listRecentSearchedTags() {
     return Observable.fromCallable(() -> {
       Realm realm = Realm.getDefaultInstance();
 

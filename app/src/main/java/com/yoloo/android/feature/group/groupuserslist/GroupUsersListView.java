@@ -5,7 +5,10 @@ import com.yoloo.android.framework.MvpDataView;
 import java.util.List;
 
 interface GroupUsersListView extends MvpDataView<List<AccountRealm>> {
+
   void onFollowedSuccessfully();
 
   void onUnfollowedSuccessfully();
+
+  void onMoreDataLoaded(List<AccountRealm> accounts);
 }

@@ -86,12 +86,12 @@ public class TravelerGroupController extends Controller {
       withoutIconUrl = Strings.nullToEmpty(imageName);
     } else {
       ServingUrlOptions withIconOptions = ServingUrlOptions.Builder.withGoogleStorageFileName(
-          MediaConfig.SERVE_GROUP_BUCKET_WITH_ICON + "/" + imageName.toLowerCase() + ".webp");
+          MediaConfig.SERVE_GROUP_WITH_ICON + "/" + imageName.toLowerCase() + ".webp");
 
       withIconUrl = imagesService.getServingUrl(withIconOptions);
 
       ServingUrlOptions withoutIconOptions = ServingUrlOptions.Builder.withGoogleStorageFileName(
-          MediaConfig.SERVE_GROUP_BUCKET_WITHOUT_ICON + "/" + imageName.toLowerCase() + ".webp");
+          MediaConfig.SERVE_GROUP_WITHOUT_ICON + "/" + imageName.toLowerCase() + ".webp");
 
       withoutIconUrl = imagesService.getServingUrl(withoutIconOptions);
     }
@@ -104,6 +104,7 @@ public class TravelerGroupController extends Controller {
         .imageWithoutIconUrl(new Link(withoutIconUrl))
         .rank(0.0D)
         .subscriberCount(0L)
+        .topSubscribers(Collections.emptyList())
         .postCount(0L)
         .build();
 
@@ -222,10 +223,22 @@ public class TravelerGroupController extends Controller {
 
       subscribedGroupKeys.add(groupKey);
 
-      Account updatedAccount = account.withSubscribedGroupKeys(subscribedGroupKeys);
-      TravelerGroupEntity updatedGroup = group.withSubscriberCount(group.getSubscriberCount() + 1);
+      List<TravelerGroupEntity.GroupSubscriber> topSubscribers = group.getTopSubscribers();
+      if (topSubscribers == null) {
+        topSubscribers = new ArrayList<>(4);
+      }
 
-      ofy().save().entities(updatedAccount, updatedGroup).now();
+      if (topSubscribers.size() < 5) {
+        topSubscribers.add(
+            new TravelerGroupEntity.GroupSubscriber(account.getWebsafeId(),
+                account.getAvatarUrl().getValue()));
+      }
+
+      Account updatedAccount = account.withSubscribedGroupKeys(subscribedGroupKeys);
+      TravelerGroupEntity updatedGroup = group.withSubscriberCount(group.getSubscriberCount() + 1)
+          .withTopSubscribers(topSubscribers);
+
+      ofy().save().entities(updatedAccount, updatedGroup);
     });
   }
 
@@ -241,15 +254,30 @@ public class TravelerGroupController extends Controller {
     TravelerGroupEntity group = (TravelerGroupEntity) fetched.get(groupKey);
 
     ofy().transact(() -> {
-      List<Key<TravelerGroupEntity>> updatedKeys = Ix
-          .from(account.getSubscribedGroupKeys())
-          .remove(key -> key.equivalent(groupKey))
-          .toList();
+      TravelerGroupEntity updatedGroup = group;
+      Account updatedAccount = account;
 
-      Account updatedAccount = account.withSubscribedGroupKeys(updatedKeys);
-      TravelerGroupEntity updatedGroup = group.withSubscriberCount(group.getSubscriberCount() - 1);
+      if (updatedAccount.getSubscribedGroupKeys() != null
+          && updatedAccount.getSubscribedGroupKeys().contains(groupKey)) {
 
-      ofy().save().entities(updatedAccount, updatedGroup).now();
+        List<Key<TravelerGroupEntity>> updatedKeys = Ix
+            .from(updatedAccount.getSubscribedGroupKeys())
+            .remove(key -> key.equivalent(groupKey))
+            .toList();
+
+        updatedAccount = updatedAccount.withSubscribedGroupKeys(updatedKeys);
+        updatedGroup = updatedGroup.withSubscriberCount(group.getSubscriberCount() - 1);
+      }
+
+      if (updatedGroup.getTopSubscribers() != null) {
+        List<TravelerGroupEntity.GroupSubscriber> subscribers = Ix.from(group.getTopSubscribers())
+            .remove(subscriber -> subscriber.getUserId().equals(account.getWebsafeId()))
+            .toList();
+
+        updatedGroup = updatedGroup.withTopSubscribers(subscribers);
+      }
+
+      ofy().save().entities(updatedAccount, updatedGroup);
     });
   }
 

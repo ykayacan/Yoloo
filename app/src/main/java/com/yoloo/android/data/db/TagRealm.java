@@ -5,7 +5,6 @@ import io.realm.RealmObject;
 import io.realm.TagRealmRealmProxy;
 import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
-import java.util.Objects;
 import org.parceler.Parcel;
 
 @Parcel(implementations = {TagRealmRealmProxy.class},
@@ -20,6 +19,11 @@ public class TagRealm extends RealmObject implements Chipable {
   @Index boolean recent;
 
   public TagRealm() {
+  }
+
+  public TagRealm(String tagName) {
+    this.id = tagName;
+    this.name = tagName;
   }
 
   public TagRealm(TagDTO dto) {
@@ -73,21 +77,26 @@ public class TagRealm extends RealmObject implements Chipable {
     return this;
   }
 
-  @Override
-  public boolean equals(Object o) {
+  @Override public boolean equals(Object o) {
     if (this == o) return true;
     if (!(o instanceof TagRealm)) return false;
+
     TagRealm tagRealm = (TagRealm) o;
-    return getPostCount() == tagRealm.getPostCount()
-        && isRecommended() == tagRealm.isRecommended()
-        && isRecent() == tagRealm.isRecent()
-        && Objects.equals(getId(), tagRealm.getId())
-        && Objects.equals(getName(), tagRealm.getName());
+
+    if (getPostCount() != tagRealm.getPostCount()) return false;
+    if (isRecommended() != tagRealm.isRecommended()) return false;
+    if (isRecent() != tagRealm.isRecent()) return false;
+    if (!getId().equals(tagRealm.getId())) return false;
+    return getName().equals(tagRealm.getName());
   }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(getId(), getName(), getPostCount(), isRecommended(), isRecent());
+  @Override public int hashCode() {
+    int result = getId().hashCode();
+    result = 31 * result + getName().hashCode();
+    result = 31 * result + (int) (getPostCount() ^ (getPostCount() >>> 32));
+    result = 31 * result + (isRecommended() ? 1 : 0);
+    result = 31 * result + (isRecent() ? 1 : 0);
+    return result;
   }
 
   @Override

@@ -6,28 +6,28 @@ import com.airbnb.epoxy.SimpleEpoxyModel;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
-import com.yoloo.android.data.feedtypes.NewUsersFeedItem;
 import com.yoloo.android.data.db.AccountRealm;
+import com.yoloo.android.data.feed.NewUserListFeedItem;
 import java.util.ArrayList;
 import java.util.List;
 
 public class NewUserListModelGroup extends EpoxyModelGroup {
 
-  public NewUserListModelGroup(NewUsersFeedItem item, NewUserListModelGroupCallbacks callbacks,
+  public NewUserListModelGroup(NewUserListFeedItem item, Callbacks callbacks,
       RequestManager glide) {
     super(R.layout.item_new_users_list, buildModels(item, callbacks, glide));
-    id(item.getClass().getName());
+    id(item.id());
   }
 
-  private static List<EpoxyModel<?>> buildModels(NewUsersFeedItem item,
-      NewUserListModelGroupCallbacks callbacks, RequestManager glide) {
+  private static List<EpoxyModel<?>> buildModels(NewUserListFeedItem item,
+      Callbacks callbacks, RequestManager glide) {
     List<EpoxyModel<?>> models = new ArrayList<>();
 
     models.add(new SimpleEpoxyModel(R.layout.item_new_user_header_text));
 
     // inner group models
     List<NewUserModel_> newUserModels = Stream
-        .of(item.getUsers())
+        .of(item.getItem())
         .map(account -> new NewUserModel_()
             .id(account.getId())
             .account(account)
@@ -43,7 +43,7 @@ public class NewUserListModelGroup extends EpoxyModelGroup {
     return models;
   }
 
-  public interface NewUserListModelGroupCallbacks {
+  public interface Callbacks {
     void onNewUserListHeaderClicked();
 
     void onNewUserClicked(AccountRealm account);

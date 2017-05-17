@@ -5,18 +5,17 @@ import com.google.api.client.http.HttpHeaders;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.data.db.GroupRealm;
+import com.yoloo.android.data.db.TagRealm;
+import com.yoloo.android.data.repository.tag.transformer.TagResponseTransformer;
 import com.yoloo.android.data.repository.user.UserResponseTransformer;
 import com.yoloo.android.data.sorter.GroupSorter;
-import com.yoloo.backend.yolooApi.model.WrappedString;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
-import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import timber.log.Timber;
 
 import static com.yoloo.android.data.ApiManager.INSTANCE;
 import static com.yoloo.android.data.ApiManager.getIdToken;
@@ -100,7 +99,8 @@ class GroupRemoteDataStore {
         .compose(UserResponseTransformer.create());
   }
 
-  Observable<Response<List<String>>> listGroupTags(@Nonnull String groupId, @Nullable String cursor,
+  Observable<Response<List<TagRealm>>> listGroupTags(@Nonnull String groupId,
+      @Nullable String cursor,
       int limit) {
     return getIdToken()
         .flatMapObservable(idToken -> Observable
@@ -113,16 +113,7 @@ class GroupRemoteDataStore {
                 .setRequestHeaders(setIdTokenHeader(idToken))
                 .execute())
             .subscribeOn(Schedulers.io()))
-        .map(response -> {
-          if (response.getItems() == null) {
-            return Response.create(Collections.emptyList(), null);
-          } else {
-            List<String> tagNames =
-                Stream.of(response.getItems()).map(WrappedString::getTagName).toList();
-
-            return Response.create(tagNames, response.getNextPageToken());
-          }
-        });
+        .compose(TagResponseTransformer.create());
   }
 
   /**
@@ -176,7 +167,7 @@ class GroupRemoteDataStore {
   }
 
   private HttpHeaders setIdTokenHeader(@Nonnull String idToken) {
-    Timber.d("Token: %s", idToken);
+    //Timber.d("Token: %s", idToken);
     return new HttpHeaders().setAuthorization("Bearer " + idToken);
   }
 }

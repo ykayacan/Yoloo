@@ -13,16 +13,17 @@ import com.yoloo.backend.config.ShardConfig;
 import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.post.PostShard;
 import com.yoloo.backend.post.PostShardService;
+import com.yoloo.backend.util.CollectionTransformer;
 import com.yoloo.backend.vote.VoteService;
 import io.reactivex.Observable;
 import ix.Ix;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.joda.time.DateTime;
 
 import static com.yoloo.backend.OfyService.ofy;
+import static com.yoloo.backend.endpointsvalidator.Guard.checkNotFound;
 
 @AllArgsConstructor(staticName = "create")
 public class BookmarkController extends Controller {
@@ -42,20 +43,33 @@ public class BookmarkController extends Controller {
    * @param postId the websafe question id
    * @param user the user
    */
-  public void insertBookmark(String postId, User user) {
+  public PostEntity insertBookmark(String postId, User user) {
     // Create user key from user id.
     final Key<Account> authKey = Key.create(user.getUserId());
 
     final Key<PostEntity> postKey = Key.create(postId);
 
-    Bookmark saved = createBookmark(postKey, authKey);
+    Bookmark bookmark = createBookmark(postKey, authKey);
 
     final Key<PostShard> postShardKey = postShardService.getRandomShardKey(postKey);
 
     PostShard shard = ofy().load().key(postShardKey).now();
-    shard.getBookmarkKeys().add(saved.getKey());
+    shard.getBookmarkKeys().add(bookmark.getKey());
 
-    ofy().save().entities(saved, shard);
+    ofy().save().entities(bookmark, shard);
+
+    return Observable
+        .fromCallable(() -> {
+          PostEntity post = ofy().load()
+              .group(PostEntity.ShardGroup.class)
+              .key(Key.<PostEntity>create(postId))
+              .now();
+
+          return checkNotFound(post, "Post does not exists!");
+        })
+        .flatMap(post -> postShardService.mergeShards(post, Key.create(user.getUserId())))
+        .flatMap(comment -> voteService.checkPostVote(comment, Key.create(user.getUserId())))
+        .blockingSingle();
   }
 
   /**
@@ -64,7 +78,7 @@ public class BookmarkController extends Controller {
    * @param postId the websafe question id
    * @param user the user
    */
-  public void deleteBookmark(String postId, User user) {
+  public PostEntity deleteBookmark(String postId, User user) {
     // Create user key from user id.
     final Key<Account> authKey = Key.create(user.getUserId());
     final Key<PostEntity> postKey = Key.create(postId);
@@ -82,6 +96,19 @@ public class BookmarkController extends Controller {
 
     ofy().defer().save().entity(updatedShard);
     ofy().defer().delete().key(bookmarkKey);
+
+    return Observable
+        .fromCallable(() -> {
+          PostEntity post = ofy().load()
+              .group(PostEntity.ShardGroup.class)
+              .key(Key.<PostEntity>create(postId))
+              .now();
+
+          return checkNotFound(post, "Post does not exists!");
+        })
+        .flatMap(post -> postShardService.mergeShards(post, Key.create(user.getUserId())))
+        .flatMap(comment -> voteService.checkPostVote(comment, Key.create(user.getUserId())))
+        .blockingSingle();
   }
 
   /**
@@ -115,25 +142,20 @@ public class BookmarkController extends Controller {
       postKeys.add(qi.next().getSavedPostKey());
     }
 
-    Collection<PostEntity> postEntities = ofy().load().keys(postKeys).values();
-
     return Observable
-        .fromIterable(postEntities)
-        .map(postEntity -> postEntity.withBookmarked(true))
-        .toList()
-        .flatMapObservable(posts -> postShardService.mergeShards(posts))
+        .just(postKeys)
+        .flatMap(keys -> Observable.fromCallable(
+            () -> ofy().load().group(PostEntity.ShardGroup.class).keys(keys).values()))
+        .flatMap(posts -> postShardService.mergeShards(posts, authKey))
         .flatMap(posts -> voteService.checkPostVote(posts, authKey))
-        .map(posts -> CollectionResponse.<PostEntity>builder()
-            .setItems(posts)
-            .setNextPageToken(qi.getCursor().toWebSafeString())
-            .build())
+        .compose(CollectionTransformer.create(qi.getCursor().toWebSafeString()))
         .blockingSingle();
   }
 
-  private Bookmark createBookmark(Key<PostEntity> questionKey, Key<Account> parentKey) {
+  private Bookmark createBookmark(Key<PostEntity> postKey, Key<Account> parentKey) {
     return Bookmark
         .builder()
-        .id(questionKey.toWebSafeString())
+        .id(postKey.toWebSafeString())
         .parent(parentKey)
         .created(DateTime.now())
         .build();

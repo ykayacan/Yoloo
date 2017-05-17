@@ -54,6 +54,9 @@ public class TravelerGroupEntity {
 
   @Index @Wither private double rank;
 
+  @Wither private List<GroupSubscriber> topSubscribers;
+
+  // extra fields
   @Wither @Ignore private boolean subscribed;
 
   public static String extractNameFromKey(Key<TravelerGroupEntity> groupKey) {
@@ -76,6 +79,15 @@ public class TravelerGroupEntity {
     return Deref.deref(shardRefs);
   }
 
-  public static class ShardGroup {
+  public static final class ShardGroup {
+  }
+
+  @Value
+  @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
+  @AllArgsConstructor
+  @FieldDefaults(makeFinal = false)
+  public static final class GroupSubscriber {
+    private String userId;
+    private String avatarUrl;
   }
 }

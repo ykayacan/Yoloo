@@ -2,57 +2,57 @@ package com.yoloo.android.feature.postlist;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintSet;
+import android.view.View;
 import com.airbnb.epoxy.AutoModel;
 import com.airbnb.epoxy.Typed2EpoxyController;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.load.Transformation;
-import com.yoloo.android.R;
 import com.yoloo.android.data.db.PostRealm;
-import com.yoloo.android.data.feed.BlogFeedItem;
+import com.yoloo.android.data.feed.BlogPostFeedItem;
+import com.yoloo.android.data.feed.BountyButtonFeedItem;
 import com.yoloo.android.data.feed.FeedItem;
+import com.yoloo.android.data.feed.NewUserListFeedItem;
+import com.yoloo.android.data.feed.RecommendedGroupListFeedItem;
 import com.yoloo.android.data.feed.RichPostFeedItem;
 import com.yoloo.android.data.feed.TextPostFeedItem;
-import com.yoloo.android.feature.feed.common.listener.OnBookmarkClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnCommentClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnContentImageClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnPostOptionsClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnShareClickListener;
-import com.yoloo.android.feature.feed.common.listener.OnVoteClickListener;
-import com.yoloo.android.feature.feed.component.post.BlogModel_;
-import com.yoloo.android.feature.feed.component.post.RichQuestionModel_;
-import com.yoloo.android.feature.feed.component.post.TextQuestionModel_;
+import com.yoloo.android.data.feed.TrendingBlogListFeedItem;
+import com.yoloo.android.feature.models.BountyButtonModel_;
 import com.yoloo.android.feature.models.loader.LoaderModel;
-import com.yoloo.android.ui.recyclerview.OnItemClickListener;
+import com.yoloo.android.feature.models.newusers.NewUserListModelGroup;
+import com.yoloo.android.feature.models.post.BlogPostModel_;
+import com.yoloo.android.feature.models.post.PostCallbacks;
+import com.yoloo.android.feature.models.post.RichPostModel_;
+import com.yoloo.android.feature.models.post.TextPostModel_;
+import com.yoloo.android.feature.models.recommendedgroups.RecommendedGroupListModelGroup;
+import com.yoloo.android.feature.models.trendingblogs.TrendingBlogListModelGroup;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.yoloo.android.util.Preconditions.checkNotNull;
 
-public class PostListEpoxyController
-    extends Typed2EpoxyController<List<? super FeedItem<?>>, Boolean> {
+public class PostListEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>, Boolean> {
 
-  private final RequestManager glide;
-  private final Transformation<Bitmap> bitmapTransformation;
+  protected final RequestManager glide;
+  protected final Transformation<Bitmap> bitmapTransformation;
   private final ConstraintSet constraintSet;
 
+  protected List<FeedItem<?>> items;
+
+  @AutoModel BountyButtonModel_ bountyButton;
   @AutoModel LoaderModel loader;
 
-  private List<? super FeedItem<?>> items;
   private String userId;
 
-  private OnProfileClickListener onProfileClickListener;
-  private OnPostOptionsClickListener onPostOptionsClickListener;
-  private OnItemClickListener<PostRealm> onPostClickListener;
-  private OnShareClickListener onShareClickListener;
-  private OnCommentClickListener onCommentClickListener;
-  private OnVoteClickListener onVoteClickListener;
-  private OnContentImageClickListener onContentImageClickListener;
-  private OnBookmarkClickListener onBookmarkClickListener;
+  private PostCallbacks postCallbacks;
+  private RecommendedGroupListModelGroup.Callbacks recommendedGroupListCallbacks;
+  private TrendingBlogListModelGroup.Callbacks trendingBlogListCallbacks;
+  private NewUserListModelGroup.Callbacks newUserListModelGroupCallbacks;
+  private View.OnClickListener onBountyButtonClickListener;
 
   public PostListEpoxyController(Context context) {
     this.bitmapTransformation = new CropCircleTransformation(context);
@@ -66,58 +66,46 @@ public class PostListEpoxyController
     this.userId = userId;
   }
 
-  public void setOnProfileClickListener(OnProfileClickListener onProfileClickListener) {
-    this.onProfileClickListener = onProfileClickListener;
+  public void setPostCallbacks(PostCallbacks postCallbacks) {
+    this.postCallbacks = postCallbacks;
   }
 
-  public void setOnPostOptionsClickListener(OnPostOptionsClickListener onPostOptionsClickListener) {
-    this.onPostOptionsClickListener = onPostOptionsClickListener;
+  public void setRecommendedGroupListCallbacks(
+      RecommendedGroupListModelGroup.Callbacks recommendedGroupListCallbacks) {
+    this.recommendedGroupListCallbacks = recommendedGroupListCallbacks;
   }
 
-  public void setOnPostClickListener(OnItemClickListener<PostRealm> onPostClickListener) {
-    this.onPostClickListener = onPostClickListener;
+  public void setTrendingBlogListCallbacks(
+      TrendingBlogListModelGroup.Callbacks trendingBlogListCallbacks) {
+    this.trendingBlogListCallbacks = trendingBlogListCallbacks;
   }
 
-  public void setOnShareClickListener(OnShareClickListener onShareClickListener) {
-    this.onShareClickListener = onShareClickListener;
+  public void setNewUserListModelGroupCallbacks(
+      NewUserListModelGroup.Callbacks newUserListModelGroupCallbacks) {
+    this.newUserListModelGroupCallbacks = newUserListModelGroupCallbacks;
   }
 
-  public void setOnCommentClickListener(OnCommentClickListener onCommentClickListener) {
-    this.onCommentClickListener = onCommentClickListener;
+  public void setOnBountyButtonClickListener(View.OnClickListener onBountyButtonClickListener) {
+    this.onBountyButtonClickListener = onBountyButtonClickListener;
   }
 
-  public void setOnVoteClickListener(OnVoteClickListener onVoteClickListener) {
-    this.onVoteClickListener = onVoteClickListener;
-  }
-
-  public void setOnContentImageClickListener(
-      OnContentImageClickListener onContentImageClickListener) {
-    this.onContentImageClickListener = onContentImageClickListener;
-  }
-
-  public void setOnBookmarkClickListener(OnBookmarkClickListener onBookmarkClickListener) {
-    this.onBookmarkClickListener = onBookmarkClickListener;
-  }
-
-  @Override
-  public void setData(List<? super FeedItem<?>> items, Boolean loadingMore) {
-    this.items = items;
-    super.setData(items, checkNotNull(loadingMore, "loadingMore cannot be null."));
-  }
-
-  public void updatePost(PostRealm post) {
+  public void updatePost(@NonNull PostRealm post) {
     if (post.isTextPost()) {
-      FeedItem<?> item = new TextPostFeedItem(post);
-      final int index = items.indexOf(item);
-      items.add(index, item);
+      updateFeedItem(new TextPostFeedItem(post));
     } else if (post.isRichPost()) {
-      FeedItem<?> item = new RichPostFeedItem(post);
-      final int index = items.indexOf(item);
-      items.add(index, item);
+      updateFeedItem(new RichPostFeedItem(post));
     } else if (post.isBlogPost()) {
-      FeedItem<?> item = new BlogFeedItem(post);
-      final int index = items.indexOf(item);
-      items.add(index, item);
+      updateFeedItem(new BlogPostFeedItem(post));
+    }
+  }
+
+  public void addPost(PostRealm post, int position) {
+    if (post.isTextPost()) {
+      items.add(position, new TextPostFeedItem(post));
+    } else if (post.isRichPost()) {
+      items.add(position, new RichPostFeedItem(post));
+    } else if (post.isBlogPost()) {
+      items.add(position, new BlogPostFeedItem(post));
     }
 
     setData(items, false);
@@ -129,7 +117,7 @@ public class PostListEpoxyController
     } else if (post.isRichPost()) {
       items.remove(new RichPostFeedItem(post));
     } else if (post.isBlogPost()) {
-      items.remove(new BlogFeedItem(post));
+      items.remove(new BlogPostFeedItem(post));
     }
 
     setData(items, false);
@@ -143,74 +131,92 @@ public class PostListEpoxyController
     setData(items, false);
   }
 
-  private void createRichPost(PostRealm post) {
-    new RichQuestionModel_()
-        .id(post.getId())
-        .onProfileClickListener(onProfileClickListener)
-        .onPostOptionsClickListener(onPostOptionsClickListener)
-        .onItemClickListener(onPostClickListener)
-        .onShareClickListener(onShareClickListener)
-        .onCommentClickListener(onCommentClickListener)
-        .onVoteClickListener(onVoteClickListener)
-        .onContentImageClickListener(onContentImageClickListener)
-        .onBookmarkClickListener(onBookmarkClickListener)
-        .layout(R.layout.item_feed_question_rich)
-        .bitmapTransformation(bitmapTransformation)
-        .glide(glide)
-        .set(constraintSet)
-        .post(post)
-        .userId(userId)
-        .addTo(this);
+  public void setLoadMoreData(List<FeedItem<?>> items) {
+    this.items.addAll(items);
+    setData(this.items, false);
   }
 
-  private void createTextPost(PostRealm post) {
-    new TextQuestionModel_()
-        .id(post.getId())
-        .post(post)
-        .onProfileClickListener(onProfileClickListener)
-        .onPostOptionsClickListener(onPostOptionsClickListener)
-        .onItemClickListener(onPostClickListener)
-        .onShareClickListener(onShareClickListener)
-        .onCommentClickListener(onCommentClickListener)
-        .onVoteClickListener(onVoteClickListener)
-        .onBookmarkClickListener(onBookmarkClickListener)
-        .layout(R.layout.item_feed_question_text)
-        .bitmapTransformation(bitmapTransformation)
-        .glide(glide)
-        .userId(userId)
-        .addTo(this);
+  @Override public void setData(List<FeedItem<?>> items, Boolean loadingMore) {
+    this.items = items;
+    super.setData(this.items, checkNotNull(loadingMore, "loadingMore cannot be null."));
   }
 
-  private void createBlog(PostRealm post) {
-    new BlogModel_()
-        .id(post.getId())
-        .post(post)
-        .userId(userId)
-        .layout(R.layout.item_feed_blog)
-        .onProfileClickListener(onProfileClickListener)
-        .onPostOptionsClickListener(onPostOptionsClickListener)
-        .onItemClickListener(onPostClickListener)
-        .onShareClickListener(onShareClickListener)
-        .onCommentClickListener(onCommentClickListener)
-        .onVoteClickListener(onVoteClickListener)
-        .onBookmarkClickListener(onBookmarkClickListener)
-        .bitmapTransformation(bitmapTransformation)
-        .glide(glide)
-        .addTo(this);
-  }
-
-  @Override
-  protected void buildModels(List<? super FeedItem<?>> feedItems, Boolean loadingMore) {
+  @Override protected void buildModels(List<FeedItem<?>> feedItems, Boolean loadingMore) {
     Stream.of(feedItems).forEach(item -> {
-      if (item instanceof TextPostFeedItem) {
+      if (item instanceof RecommendedGroupListFeedItem) {
+        new RecommendedGroupListModelGroup((RecommendedGroupListFeedItem) item,
+            recommendedGroupListCallbacks, glide).addTo(this);
+      } else if (item instanceof TrendingBlogListFeedItem) {
+        new TrendingBlogListModelGroup(userId, ((TrendingBlogListFeedItem) item),
+            trendingBlogListCallbacks, glide, bitmapTransformation).addTo(this);
+      } else if (item instanceof BountyButtonFeedItem) {
+        bountyButton.onClickListener(onBountyButtonClickListener).addTo(this);
+      } else if (item instanceof TextPostFeedItem) {
         createTextPost(((TextPostFeedItem) item).getItem());
       } else if (item instanceof RichPostFeedItem) {
         createRichPost(((RichPostFeedItem) item).getItem());
-      } else if (item instanceof BlogFeedItem) {
-        createBlog(((BlogFeedItem) item).getItem());
+      } else if (item instanceof BlogPostFeedItem) {
+        createBlogPost(((BlogPostFeedItem) item).getItem());
+      } else if (item instanceof NewUserListFeedItem) {
+        new NewUserListModelGroup((NewUserListFeedItem) item, newUserListModelGroupCallbacks,
+            glide).addIf(!((NewUserListFeedItem) item).getItem().isEmpty(), this);
+      } else {
+        onMoreFeedItemType(item);
       }
     });
 
-    loader.addIf(loadingMore, this);
+    //loader.addIf(loadingMore, this);
+  }
+
+  private void createTextPost(PostRealm post) {
+    new TextPostModel_()
+        .id(post.getId())
+        .post(post)
+        .postOwner(post.getOwnerId().equals(userId))
+        .glide(glide)
+        .transformation(bitmapTransformation)
+        .callbacks(postCallbacks)
+        .detailLayout(false)
+        .addTo(this);
+  }
+
+  private void createRichPost(PostRealm post) {
+    new RichPostModel_()
+        .id(post.getId())
+        .post(post)
+        .postOwner(post.getOwnerId().equals(userId))
+        .glide(glide)
+        .transformation(bitmapTransformation)
+        .callbacks(postCallbacks)
+        .detailLayout(false)
+        .set(constraintSet)
+        .addTo(this);
+  }
+
+  private void createBlogPost(PostRealm post) {
+    new BlogPostModel_()
+        .id(post.getId())
+        .post(post)
+        .postOwner(post.getOwnerId().equals(userId))
+        .glide(glide)
+        .transformation(bitmapTransformation)
+        .callbacks(postCallbacks)
+        .detailLayout(false)
+        .addTo(this);
+  }
+
+  protected void onMoreFeedItemType(FeedItem<?> item) {
+  }
+
+  private void updateFeedItem(@NonNull FeedItem<?> item) {
+    final int size = items.size();
+    for (int i = 0; i < size; i++) {
+      if (items.get(i).id().equals(item.id())) {
+        items.set(i, item);
+        break;
+      }
+    }
+
+    setData(items, false);
   }
 }
