@@ -103,8 +103,8 @@ public class PostEditorController extends MvpController<EditorView, EditorPresen
 
   private boolean groupSelected;
 
-  private List<Uri> selectedImageUris = new ArrayList<>(5);
-  private List<TagRealm> selectedTags = new ArrayList<>(7);
+  private List<Uri> selectedImageUris = new ArrayList<>(0);
+  private List<TagRealm> selectedTags = new ArrayList<>(3);
 
   private ChipAdapter<TagRealm> tagAdapter;
   private AutoCompleteTagAdapter tagAutoCompleteAdapter;
@@ -291,7 +291,8 @@ public class PostEditorController extends MvpController<EditorView, EditorPresen
         .map(Chip::getText)
         .map(CharSequence::toString)
         .distinct()
-        .map(tagName -> new TagRealm().setName(tagName))
+        .map(String::toLowerCase)
+        .map(tagName -> new TagRealm().setId(tagName).setName(tagName))
         .forEach(tag -> draft.addTag(tag));
 
     // Set image Uris

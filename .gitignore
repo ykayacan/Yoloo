@@ -55,13 +55,3 @@ google-services.json
 freeline.py
 freeline/
 freeline_project_description.json
-src/main/java/com/yoloo/backend/algorithm/RankVisitor.java
-src/main/java/com/yoloo/backend/algorithm/Rankable.java
-src/main/java/com/yoloo/backend/game/ResetDailyPointsServlet.java
-src/main/java/com/yoloo/backend/group/UpdateGroupSubscriberCountServlet.java
-src/main/java/com/yoloo/backend/media/IfNotChatMediaSource.java
-src/main/java/com/yoloo/backend/post/UpdatePostRankCron.java
-src/main/java/com/yoloo/backend/request/
-src/main/webapp/css/
-src/main/webapp/js/
-src/test/java/com/yoloo/backend/RedditHotRankTest.java

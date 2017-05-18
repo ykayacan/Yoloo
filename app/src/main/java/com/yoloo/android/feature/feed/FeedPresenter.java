@@ -93,7 +93,6 @@ class FeedPresenter extends MvpPresenter<FeedView> {
    * Load more posts.
    */
   void loadMorePosts() {
-    Timber.e("loadMorePosts()");
     Disposable d = getFeedObservable()
         .retry(2, throwable -> throwable instanceof SocketTimeoutException)
         .subscribe(response -> {

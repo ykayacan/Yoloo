@@ -49,7 +49,7 @@ public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
   @NonNull
   @Override
   public Filter getFilter() {
-    return new TagFilter(items, this, subject, nachoTextView);
+    return new TagFilter(items, this, subject);
   }
 
   @NonNull
@@ -95,14 +95,12 @@ public class AutoCompleteTagAdapter extends ArrayAdapter<TagRealm> {
     private final List<TagRealm> items;
     private final AutoCompleteTagAdapter adapter;
     private final PublishSubject<String> subject;
-    private final NachoTextView nachoTextView;
 
     private TagFilter(List<TagRealm> items, AutoCompleteTagAdapter adapter,
-        PublishSubject<String> subject, NachoTextView nachoTextView) {
+        PublishSubject<String> subject) {
       this.items = items;
       this.adapter = adapter;
       this.subject = subject;
-      this.nachoTextView = nachoTextView;
     }
 
     @Override

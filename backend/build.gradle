@@ -11,7 +11,6 @@ buildscript {
     classpath 'com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0-beta9'
     classpath 'me.tatarka:gradle-retrolambda:3.6.1'
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.14.0'
-    classpath "gradle.plugin.de.fuerstenau:BuildConfigPlugin:1.1.8"
   }
 }
 
@@ -29,24 +28,9 @@ apply plugin: 'com.google.cloud.tools.appengine'
 apply plugin: 'com.google.cloud.tools.endpoints-framework-server'
 apply plugin: 'me.tatarka.retrolambda'
 apply plugin: 'com.github.ben-manes.versions'
-apply plugin: "de.fuerstenau.buildconfig"
-apply plugin: 'idea'
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
-
-def backendPropertiesFile = rootProject.file("backend.properties")
-def backendProperties = new Properties()
-backendProperties.load(new FileInputStream(backendPropertiesFile))
-
-buildConfig {
-  buildConfigField 'String', 'ADMIN_EMAIL', backendProperties['adminEmail']
-  buildConfigField 'String', 'ADMIN_USERNAME', backendProperties['adminUsername']
-  buildConfigField 'String', 'FIREBASE_SERVICE_ACCOUT_PATH', backendProperties['firebaseServiceAccountPath']
-  buildConfigField 'String', 'FIREBASE_URL', backendProperties['firebaseUrl']
-  buildConfigField 'String', 'ADNROID_CLIENT_ID', backendProperties['androidClientId']
-  buildConfigField 'String', 'WEB_CLIENT_ID', backendProperties['webClientId']
-}
 
 final APP_ENGINE_VERSION = '1.9.53'
 final JACKSON_VERSION = '2.9.0.pr3'

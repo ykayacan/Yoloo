@@ -274,17 +274,6 @@ public class BlogEditorController extends MvpController<EditorView, EditorPresen
     Snackbar
         .make(getView(), "Adding bounty feature will be available soon", Snackbar.LENGTH_SHORT)
         .show();
-
-    /*if (Connectivity.isConnected(getApplicationContext())) {
-      KeyboardUtil.hideKeyboard(getView());
-
-      getRouter().pushController(RouterTransaction
-          .with(BountySelectController.create())
-          .pushChangeHandler(new VerticalChangeHandler())
-          .popChangeHandler(new VerticalChangeHandler()));
-    } else {
-      Snackbar.make(getView(), R.string.error_bounty_network, Snackbar.LENGTH_LONG).show();
-    }*/
   }
 
   private void setTempDraft() {
@@ -299,7 +288,8 @@ public class BlogEditorController extends MvpController<EditorView, EditorPresen
         .map(Chip::getText)
         .map(CharSequence::toString)
         .distinct()
-        .map(tagName -> new TagRealm().setName(tagName))
+        .map(String::toLowerCase)
+        .map(tagName -> new TagRealm().setId(tagName).setName(tagName))
         .forEach(tag -> draft.addTag(tag));
 
     // Set image Uris

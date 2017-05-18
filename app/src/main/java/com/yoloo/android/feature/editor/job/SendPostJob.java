@@ -60,7 +60,7 @@ public final class SendPostJob extends Job {
 
     Timber.e(throwable);
 
-    return Result.SUCCESS;
+    return throwable == null ? Result.SUCCESS : Result.FAILURE;
   }
 
   private PostRealm prepareDraft(PostRealm draft) {

@@ -87,7 +87,7 @@ public class GroupController extends MvpController<GroupView, GroupPresenter> im
 
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
-    return inflater.inflate(R.layout.controller_group_new, container, false);
+    return inflater.inflate(R.layout.controller_group, container, false);
   }
 
   @Override

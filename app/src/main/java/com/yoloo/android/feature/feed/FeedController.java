@@ -154,15 +154,17 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
 
   private int newMessageCount = 0;
 
+  private boolean isNewPost;
+
   private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
 
   private BroadcastReceiver newPostReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
       PostRealm post = Parcels.unwrap(intent.getParcelableExtra(SendPostJob.KEY_ADD_POST));
-      rvFeed.smoothScrollToPosition(3);
-      handler.postDelayed(() -> epoxyController.addPost(post,
-          epoxyController.getAdapter().getItemCount() > 3 ? 3 : 2), 400);
+      isNewPost = true;
+      epoxyController.addPost(post, epoxyController.getAdapter().getItemCount() > 3 ? 3 : 2);
+      isNewPost = false;
     }
   };
 
@@ -369,10 +371,12 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   }
 
   @Override public void onLoaded(List<FeedItem<?>> value) {
+    Timber.d("onLoaded(): %s", value.size());
     epoxyController.setData(value, false);
   }
 
   @Override public void onMoreLoaded(List<FeedItem<?>> items) {
+    Timber.d("onLoaded(): %s", items.size());
     if (items.isEmpty()) {
 
       //epoxyController.hideLoader();
@@ -567,7 +571,7 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(lm) {
       @Override
       public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-        if (swipeRefreshLayout.isRefreshing()) {
+        if (swipeRefreshLayout.isRefreshing() || isNewPost) {
           endlessRecyclerOnScrollListener.resetState();
           return;
         }
