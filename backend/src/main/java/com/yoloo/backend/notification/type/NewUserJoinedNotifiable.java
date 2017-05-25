@@ -5,18 +5,16 @@ import com.yoloo.backend.notification.Action;
 import com.yoloo.backend.notification.Notification;
 import com.yoloo.backend.notification.PushConstants;
 import com.yoloo.backend.notification.PushMessage;
-import com.yoloo.backend.post.PostEntity;
-import io.reactivex.Observable;
-import java.util.Collection;
+import ix.Ix;
 import java.util.Collections;
 import java.util.List;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
-@AllArgsConstructor(staticName = "create")
-public class NewFriendPostNotification implements Notifiable {
+import static com.yoloo.backend.OfyService.ofy;
 
-  private PostEntity post;
-  private Collection<DeviceRecord> records;
+@NoArgsConstructor(staticName = "create")
+public class NewUserJoinedNotifiable implements Notifiable {
 
   @Override public List<Notification> getNotifications() {
     return Collections.emptyList();
@@ -25,18 +23,18 @@ public class NewFriendPostNotification implements Notifiable {
   @Override public PushMessage getPushMessage() {
     PushMessage.DataBody dataBody = PushMessage.DataBody
         .builder()
-        .value(PushConstants.ACTION, Action.NEW_FRIEND_POST.getValueString())
-        .value(PushConstants.POST_ID, post.getWebsafeId())
-        .value(PushConstants.SENDER_USERNAME, post.getUsername())
+        .value(PushConstants.ACTION, Action.NEW_USER_JOINED.getValueString())
         .build();
 
     return PushMessage.builder()
-        .registrationIds(convertRegistrationIdsToList())
+        .registrationIds(getRegIds())
         .data(dataBody)
         .build();
   }
 
-  private List<String> convertRegistrationIdsToList() {
-    return Observable.fromIterable(records).map(DeviceRecord::getRegId).toList().blockingGet();
+  private List<String> getRegIds() {
+    return Ix.from(ofy().load().type(DeviceRecord.class).list())
+        .map(DeviceRecord::getRegId)
+        .toList();
   }
 }

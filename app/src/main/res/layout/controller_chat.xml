@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
@@ -7,58 +7,44 @@
 
   <include layout="@layout/merge_appbar" />
 
-  <android.support.constraint.ConstraintLayout
+  <com.stfalcon.chatkit.messages.MessagesList
+    android:id="@+id/messagesList"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+    android:layout_above="@+id/divider"
+    android:layout_marginTop="?attr/actionBarSize"
+    app:incomingBubbleDrawable="@drawable/shape_incoming_message"
+    app:incomingDefaultBubbleColor="@android:color/white"
+    app:outcomingBubbleDrawable="@drawable/shape_outcoming_message"
+    app:outcomingDefaultBubbleColor="@color/primary" />
 
-    <com.stfalcon.chatkit.messages.MessagesList
-      android:id="@+id/messagesList"
-      android:layout_width="0dp"
-      android:layout_height="0dp"
-      app:incomingBubbleDrawable="@drawable/shape_incoming_message"
-      app:incomingDefaultBubbleColor="@android:color/white"
-      app:layout_constraintBottom_toBottomOf="@+id/divider"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toTopOf="parent"
-      app:outcomingBubbleDrawable="@drawable/shape_outcoming_message"
-      app:outcomingDefaultBubbleColor="@color/primary" />
+  <View
+    android:id="@+id/divider"
+    android:layout_width="match_parent"
+    android:layout_height="1dp"
+    android:layout_above="@+id/input"
+    android:layout_gravity="bottom"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp"
+    android:background="@color/divider" />
 
-    <View
-      android:id="@+id/divider"
-      android:layout_width="0dp"
-      android:layout_height="1dp"
-      android:layout_above="@+id/input"
-      android:layout_gravity="bottom"
-      android:layout_marginLeft="16dp"
-      android:layout_marginRight="16dp"
-      android:background="@color/divider"
-      app:layout_constraintBottom_toTopOf="@+id/input"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent" />
+  <com.stfalcon.chatkit.messages.MessageInput
+    android:id="@+id/input"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:background="@android:color/white"
+    app:attachmentButtonBackground="?attr/selectableItemBackgroundBorderless"
+    app:attachmentButtonDefaultIconColor="@color/primary"
+    app:attachmentButtonDefaultIconPressedColor="@color/primary_dark"
+    app:attachmentButtonHeight="27dp"
+    app:attachmentButtonWidth="27dp"
+    app:inputButtonDefaultBgColor="@color/primary"
+    app:inputButtonDefaultBgPressedColor="@color/primary_dark"
+    app:inputButtonDefaultIconColor="@android:color/white"
+    app:inputButtonDefaultIconDisabledColor="@color/background_lightish_3"
+    app:inputHint="@string/chat_hint_enter_a_message"
+    app:inputMaxLines="3"
+    app:showAttachmentButton="true" />
 
-    <com.stfalcon.chatkit.messages.MessageInput
-      android:id="@+id/input"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:background="@android:color/white"
-      app:attachmentButtonBackground="?attr/selectableItemBackgroundBorderless"
-      app:attachmentButtonDefaultIconColor="@color/primary"
-      app:attachmentButtonDefaultIconPressedColor="@color/primary_dark"
-      app:attachmentButtonHeight="27dp"
-      app:attachmentButtonWidth="27dp"
-      app:inputButtonDefaultBgColor="@color/primary"
-      app:inputButtonDefaultBgPressedColor="@color/primary_dark"
-      app:inputButtonDefaultIconColor="@android:color/white"
-      app:inputButtonDefaultIconDisabledColor="@color/background_lightish_3"
-      app:inputHint="@string/chat_hint_enter_a_message"
-      app:inputMaxLines="3"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:showAttachmentButton="true" />
-
-  </android.support.constraint.ConstraintLayout>
-
-</android.support.design.widget.CoordinatorLayout>
+</RelativeLayout>

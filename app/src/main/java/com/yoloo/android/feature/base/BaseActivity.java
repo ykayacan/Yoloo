@@ -106,13 +106,13 @@ public class BaseActivity extends AppCompatActivity
         if (user == null) {
           router.setRoot(RouterTransaction.with(WelcomeController.create()));
         } else {
-          UserRepository repository = UserRepositoryProvider.getRepository();
+          /*UserRepository repository = UserRepositoryProvider.getRepository();
           disposable = repository.getLocalMe()
               .observeOn(AndroidSchedulers.mainThread())
               .subscribe(account -> {
                 me = account;
                 setupDrawerInfo();
-              }, Timber::e);
+              }, Timber::e);*/
 
           feedController = FeedController.create();
           router.setRoot(RouterTransaction.with(feedController));
@@ -121,6 +121,19 @@ public class BaseActivity extends AppCompatActivity
     }
 
     setOptionsMenuVisibility();
+
+    FirebaseAuth.getInstance().addAuthStateListener(auth -> {
+      if (auth.getCurrentUser() != null) {
+        Timber.d("State changed");
+        UserRepository repository = UserRepositoryProvider.getRepository();
+        disposable = repository.getLocalMe()
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(account -> {
+              me = account;
+              setupDrawerInfo();
+            }, Timber::e);
+      }
+    });
   }
 
   private void resetAuthSignedInStatus(SharedPreferences prefs) {
@@ -318,6 +331,7 @@ public class BaseActivity extends AppCompatActivity
     final TextView tvUsername = ButterKnife.findById(headerView, R.id.tv_nav_username);
 
     if (me != null) {
+      Timber.d("Me: %s", me);
       Glide
           .with(this)
           .load(me.getAvatarUrl())
