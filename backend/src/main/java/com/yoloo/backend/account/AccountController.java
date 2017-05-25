@@ -47,7 +47,6 @@ import ix.Ix;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -486,18 +485,22 @@ public final class AccountController extends Controller {
             ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
             : query)
         .map(query -> query.limit(limit.or(DEFAULT_LIST_LIMIT)))
-        .flatMapSingle(query -> {
+        .map(query -> {
           QueryResultIterator<Account> it = query.iterator();
-          return Observable.just(it)
-              .filter(Iterator::hasNext)
-              .map(Iterator::next)
-              .filter(account -> !account.getKey().equivalent(accountKey))
-              .filter(account -> !followingKeys.contains(account.getKey()))
-              .toList()
-              .map(accounts -> CollectionResponse.<Account>builder()
-                  .setItems(accounts)
-                  .setNextPageToken(it.getCursor().toWebSafeString())
-                  .build());
+
+          List<Account> accounts = new ArrayList<>(DEFAULT_LIST_LIMIT);
+          while (it.hasNext()) {
+            Account account = it.next();
+            if (!account.getKey().equivalent(accountKey)
+                && !followingKeys.contains(account.getKey())) {
+              accounts.add(account);
+            }
+          }
+
+          return CollectionResponse.<Account>builder()
+              .setItems(accounts)
+              .setNextPageToken(it.getCursor().toWebSafeString())
+              .build();
         }).blockingSingle();
   }
 

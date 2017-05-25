@@ -225,7 +225,6 @@ public class PostControllerTest extends TestBase {
 
     MediaEntity mediaEntity = MediaEntity
         .builder()
-        .id("bucket/test_item")
         .parent(owner.getKey())
         .mime(MediaType.ANY_IMAGE_TYPE.toString())
         .url("test url")
