@@ -4,7 +4,6 @@ import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.Ref;
 import com.yoloo.backend.account.Account;
 import com.yoloo.backend.feed.Feed;
 import com.yoloo.backend.relationship.Relationship;
@@ -70,7 +69,6 @@ public class UpdateFeedServlet extends HttpServlet {
         .builder()
         .id(Feed.createId(postKey))
         .parent(followerKey)
-        .post(Ref.create(postKey))
         .build();
   }
 }

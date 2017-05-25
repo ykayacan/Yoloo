@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">Yoloo</string>
   <string name="nav_profile_title">Profil</string>
   <string name="nav_explore_title">Keşfet</string>
   <string name="label_nav_bookmarks">Kayıtlı Gönderiler</string>

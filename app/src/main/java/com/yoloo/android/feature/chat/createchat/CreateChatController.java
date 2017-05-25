@@ -28,7 +28,6 @@ import com.yoloo.android.feature.chat.chat.ChatController;
 import com.yoloo.android.feature.search.UserModel;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.KeyboardUtil;
-import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -163,7 +162,7 @@ public class CreateChatController extends BaseController
 
   private void setupRecyclerView() {
     epoxyController =
-        new CreateChatEpoxyController(new CropCircleTransformation(getActivity()), this);
+        new CreateChatEpoxyController(this);
 
     recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
     recyclerView.addItemDecoration(

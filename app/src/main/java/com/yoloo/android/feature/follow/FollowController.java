@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -27,7 +28,6 @@ import com.yoloo.android.feature.search.OnFollowClickListener;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
-import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.ViewUtils;
 import java.lang.annotation.Retention;
@@ -180,12 +180,13 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
   }
 
   private void setupRecyclerView() {
-    epoxyController = new FollowEpoxyController(getActivity(), this, this);
+    epoxyController = new FollowEpoxyController(this, this);
 
     final LinearLayoutManager lm = new LinearLayoutManager(getActivity());
 
     rvFollow.setLayoutManager(lm);
-    rvFollow.addItemDecoration(new SpaceItemDecoration(8, SpaceItemDecoration.VERTICAL));
+    rvFollow.addItemDecoration(
+        new DividerItemDecoration(getActivity(), DividerItemDecoration.VERTICAL));
 
     final SlideInItemAnimator animator = new SlideInItemAnimator();
     animator.setSupportsChangeAnimations(false);
@@ -195,7 +196,7 @@ public class FollowController extends MvpController<FollowView, FollowPresenter>
     rvFollow.setAdapter(epoxyController.getAdapter());
 
     endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(lm) {
-      @Override public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+      @Override public void onLoadMore(int totalItemsCount, RecyclerView view) {
         if (viewType == TYPE_FOLLOWERS) {
           getPresenter().loadFollowers(false, true, userId);
         } else {

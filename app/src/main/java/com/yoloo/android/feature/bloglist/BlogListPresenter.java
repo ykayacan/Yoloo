@@ -8,7 +8,6 @@ import com.yoloo.android.data.feed.BlogPostFeedItem;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.framework.MvpPresenter;
-import com.yoloo.android.util.Pair;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -36,12 +35,8 @@ public class BlogListPresenter extends MvpPresenter<BlogListView> {
   void loadTrendingBlogs() {
     getView().onLoading(false);
 
-    Disposable d =
-        Observable.zip(getMeObservable(), getTrendingBlogsObservable(), Pair::create)
-            .subscribe(pair -> {
-              getView().onAccountLoaded(pair.first);
-              Response<List<PostRealm>> response = pair.second;
-
+    Disposable d = getTrendingBlogsObservable()
+            .subscribe(response -> {
               cursor = response.getCursor();
 
               getView().onLoaded(new ArrayList<>(mapPostsToFeedItems(response.getData())));

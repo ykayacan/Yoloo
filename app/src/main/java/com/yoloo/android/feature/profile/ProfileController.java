@@ -26,7 +26,6 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
-import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.Router;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
@@ -134,6 +133,7 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
 
   @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
     final String userId = getArgs().getString(KEY_USER_ID);
 
     if (!reEnter) {
@@ -169,13 +169,6 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
     super.onDestroyView(view);
   }
 
-  @Override protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
-      @NonNull ControllerChangeType changeType) {
-    super.onChangeEnded(changeHandler, changeType);
-    getDrawerLayout().setFitsSystemWindows(false);
-    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
-  }
-
   @NonNull @Override public ProfilePresenter createPresenter() {
     return new ProfilePresenter(UserRepositoryProvider.getRepository());
   }
@@ -199,7 +192,9 @@ public class ProfileController extends MvpController<ProfileView, ProfilePresent
   }
 
   @OnClick(R.id.card_profile_point_count) void openPointScreen() {
-    startTransaction(PointsOverviewController.create(), new VerticalChangeHandler());
+    if (account.isMe()) {
+      startTransaction(PointsOverviewController.create(), new VerticalChangeHandler());
+    }
   }
 
   @OnClick(R.id.card_profile_bounty_count) void openBountyScreen() {

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import lombok.AllArgsConstructor;
+import org.joda.time.DateTime;
 
 import static com.yoloo.backend.OfyService.ofy;
 
@@ -68,6 +69,10 @@ public class FeedController extends Controller {
               () -> ofy().load().group(PostEntity.ShardGroup.class).keys(postKeys).values()))
           .flatMap(posts -> postShardService.mergeShards(posts, accountKey))
           .flatMap(posts -> voteService.checkPostVote(posts, accountKey))
+          .flatMap(posts -> Observable.fromIterable(posts)
+              .map(post -> post.withOwner(post.getWebsafeOwnerId().equals(user.getUserId())))
+              .toList()
+              .toObservable())
           .compose(CollectionTransformer.create(qi.getCursor().toWebSafeString()))
           .blockingSingle();
     }
@@ -76,12 +81,36 @@ public class FeedController extends Controller {
   private Query<Feed> getFeedQuery(Optional<Integer> limit, Optional<String> cursor,
       Key<Account> accountKey) {
 
-    Query<Feed> query = ofy().load().type(Feed.class).ancestor(accountKey);
+    Query<Feed> query =
+        ofy().load().type(Feed.class).ancestor(accountKey).order("-" + Feed.FIELD_CREATED);
 
     query = cursor.isPresent() ? query.startAt(Cursor.fromWebSafeString(cursor.get())) : query;
-
     query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
 
     return query;
+  }
+
+  public void createFeed() {
+    List<Key<PostEntity>> postKeys = ofy().load().type(PostEntity.class).keys().list();
+
+    List<Key<Account>> accountKeys = ofy().load().type(Account.class).keys().list();
+
+    List<Feed> feeds = new ArrayList<>(postKeys.size() * accountKeys.size());
+
+    for (Key<Account> accountKey : accountKeys) {
+      for (Key<PostEntity> postKey : postKeys) {
+        feeds.add(getFeed(accountKey, postKey));
+      }
+    }
+
+    ofy().save().entities(feeds);
+  }
+
+  private Feed getFeed(Key<Account> accountKey, Key<PostEntity> postKey) {
+    return Feed.builder()
+        .id(Feed.createId(postKey))
+        .parent(accountKey)
+        .created(DateTime.now())
+        .build();
   }
 }

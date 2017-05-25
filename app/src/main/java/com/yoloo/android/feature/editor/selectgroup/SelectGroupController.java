@@ -12,8 +12,6 @@ import android.view.ViewGroup;
 import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.OnTextChanged;
-import com.bluelinelabs.conductor.ControllerChangeHandler;
-import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.db.GroupRealm;
@@ -24,7 +22,6 @@ import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.util.EpoxyItem;
 import com.yoloo.android.util.KeyboardUtil;
-import com.yoloo.android.util.ViewUtils;
 import io.reactivex.subjects.PublishSubject;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -75,13 +72,6 @@ public class SelectGroupController extends MvpController<SelectGroupView, Select
         //getPresenter().loadSubscribedGroups();
       }
     });
-  }
-
-  @Override
-  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
-      @NonNull ControllerChangeType changeType) {
-    super.onChangeEnded(changeHandler, changeType);
-    ViewUtils.setStatusBarColor(getActivity(), colorPrimaryDark);
   }
 
   @Override

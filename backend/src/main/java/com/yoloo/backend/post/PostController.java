@@ -100,6 +100,7 @@ public final class PostController extends Controller {
         })
         .flatMap(post -> postShardService.mergeShards(post, Key.create(user.getUserId())))
         .flatMap(comment -> voteService.checkPostVote(comment, Key.create(user.getUserId())))
+        .map(post -> post.withOwner(post.getWebsafeOwnerId().equals(user.getUserId())))
         .blockingSingle();
   }
 
@@ -332,7 +333,8 @@ public final class PostController extends Controller {
         .map(post -> content.isPresent() ? post.withContent(content.get()) : post)
         .map(post -> tags.isPresent() ? post.withTags(
             ImmutableSet.copyOf(splitToIterable(tags.get(), ","))) : post)
-        .map(post -> post.withMedias(Ix.from(medias).map(PostEntity.PostMedia::from).toList()))
+        .map(post -> post.withMedias(Ix.from(medias).map(PostEntity.PostMedia::from).toList())
+            .withOwner(true))
         .doOnSuccess(post -> ofy().transact(() -> ofy().save().entity(post).now()))
         .blockingGet();
   }
@@ -452,7 +454,9 @@ public final class PostController extends Controller {
     QueryResultIterator<PostEntity> qi = query.iterator();
 
     while (qi.hasNext()) {
-      posts.add(qi.next());
+      PostEntity post = qi.next();
+      post = post.withOwner(post.getWebsafeOwnerId().equals(user.getUserId()));
+      posts.add(post);
     }
 
     Key<Account> accountKey = Key.create(user.getUserId());
@@ -487,7 +491,9 @@ public final class PostController extends Controller {
     QueryResultIterator<PostEntity> qi = query.iterator();
 
     while (qi.hasNext()) {
-      posts.add(qi.next());
+      PostEntity post = qi.next();
+      post = post.withOwner(post.getWebsafeOwnerId().equals(user.getUserId()));
+      posts.add(post);
     }
 
     Key<Account> accountKey = Key.create(user.getUserId());

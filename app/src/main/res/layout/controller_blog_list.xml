@@ -2,20 +2,17 @@
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
-  android:layout_height="match_parent"
-  android:fitsSystemWindows="true">
+  android:layout_height="match_parent">
 
   <android.support.design.widget.AppBarLayout
     android:layout_width="match_parent"
     android:layout_height="@dimen/app_bar_height"
-    android:fitsSystemWindows="true"
     android:theme="@style/Yoloo.AppBarOverlay">
 
     <android.support.design.widget.CollapsingToolbarLayout
       android:id="@+id/ctl_bloglist"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:fitsSystemWindows="true"
       app:contentScrim="?attr/colorPrimary"
       app:layout_scrollFlags="scroll|exitUntilCollapsed"
       app:title="@string/label_bloglist_title"
@@ -26,7 +23,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/blog_header_small"
-        android:fitsSystemWindows="true"
         android:foreground="@drawable/shape_bottom_scrim"
         android:scaleType="centerCrop"
         app:layout_collapseMode="parallax" />

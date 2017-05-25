@@ -1,28 +1,20 @@
 package com.yoloo.android.feature.recommenduser;
 
-import android.content.Context;
 import com.airbnb.epoxy.Typed2EpoxyController;
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.feature.search.OnFollowClickListener;
 import com.yoloo.android.feature.search.UserModel_;
-import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RecommendUserEpoxyController extends Typed2EpoxyController<List<AccountRealm>, Void> {
-
-  private final CropCircleTransformation cropCircleTransformation;
+class RecommendUserEpoxyController extends Typed2EpoxyController<List<AccountRealm>, Void> {
 
   private OnFollowClickListener onFollowClickListener;
 
   private List<AccountRealm> models = new ArrayList<>();
 
-  public RecommendUserEpoxyController(Context context) {
-    cropCircleTransformation = new CropCircleTransformation(context);
-  }
-
-  public void setOnFollowClickListener(OnFollowClickListener onFollowClickListener) {
+  void setOnFollowClickListener(OnFollowClickListener onFollowClickListener) {
     this.onFollowClickListener = onFollowClickListener;
   }
 
@@ -43,7 +35,6 @@ public class RecommendUserEpoxyController extends Typed2EpoxyController<List<Acc
         .account(account)
         .showFollowButton(true)
         .onFollowClickListener(onFollowClickListener)
-        .cropCircleTransformation(cropCircleTransformation)
         .addTo(this);
   }
 

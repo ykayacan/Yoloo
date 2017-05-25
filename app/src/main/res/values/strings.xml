@@ -2,13 +2,13 @@
 
   <!-- <WHAT>_<WHERE>_<DESC>_<SIZE> -->
 
-  <string name="app_name">Yoloo</string>
+  <string name="app_name" translatable="false">Yoloo</string>
 
-  <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+  <string name="lorem_ipsum" translatable="false">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
     Morbi sit amet massa pharetra, volutpat risus ac, lobortis ante.
     Ut tempor, ex vitae egestas varius.</string>
 
-  <string name="lorem_ipsum_long">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+  <string name="lorem_ipsum_long" translatable="false">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
     Morbi sit amet massa pharetra, volutpat risus ac, lobortis ante.
     Ut tempor, ex vitae egestas varius. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
     Morbi sit amet massa pharetra, volutpat risus ac, lobortis ante.
@@ -16,8 +16,8 @@
     Morbi sit amet massa pharetra, volutpat risus ac, lobortis ante.
     Ut tempor, ex vitae egestas varius.</string>
 
-  <string name="facebook_app_id">1587185934920884</string>
-  <string name="fb_login_protocol_scheme">fb1587185934920884</string>
+  <string name="facebook_app_id" translatable="false">1587185934920884</string>
+  <string name="fb_login_protocol_scheme" translatable="false">fb1587185934920884</string>
 
   <!-- NAV DRAWER -->
   <string name="nav_profile_title">Profile</string>
@@ -412,7 +412,7 @@
   <string name="sign_up_password_info">Your password must contain at least 6 characters.</string>
   <string name="sign_up_prepared_info">Check your information before continuing</string>
   <string name="sign_up_prepared_title">Is correct?</string>
-  <string name="sing_up_username_title">Create your senderId</string>
+  <string name="sing_up_username_title">Create your username</string>
   <string name="sign_up_name">Name</string>
   <string name="sign_up_surname">Surname</string>
   <string name="sign_up_email">E-mail</string>
@@ -493,4 +493,5 @@
 
   <string name="chat_list_dialog_title">Options</string>
   <string name="chat_list_dialog_options_delete">Delete</string>
+  <string name="feed_item_group_name" translatable="false">• %1$s</string>
 </resources>

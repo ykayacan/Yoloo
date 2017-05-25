@@ -15,8 +15,6 @@ import android.view.ViewGroup;
 import butterknife.BindColor;
 import butterknife.BindString;
 import butterknife.BindView;
-import com.bluelinelabs.conductor.ControllerChangeHandler;
-import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
@@ -30,7 +28,6 @@ import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
 import com.yoloo.android.ui.widget.StateLayout;
 import com.yoloo.android.util.BundleBuilder;
-import com.yoloo.android.util.ViewUtils;
 import java.util.List;
 import timber.log.Timber;
 
@@ -88,12 +85,6 @@ public class GroupUsersListController
       getPresenter().loadUsers(groupId, false);
       reEnter = true;
     }
-  }
-
-  @Override protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
-      @NonNull ControllerChangeType changeType) {
-    super.onChangeEnded(changeHandler, changeType);
-    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @NonNull
@@ -163,7 +154,7 @@ public class GroupUsersListController
   }
 
   private void setupRecyclerview() {
-    epoxyController = new GroupUsersListEpoxyController(getActivity(), this, this);
+    epoxyController = new GroupUsersListEpoxyController(this, this);
 
     LinearLayoutManager lm = new LinearLayoutManager(getActivity());
     rvUsers.setLayoutManager(lm);
@@ -173,7 +164,7 @@ public class GroupUsersListController
 
     EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener =
         new EndlessRecyclerOnScrollListener(lm) {
-          @Override public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+          @Override public void onLoadMore(int totalItemsCount, RecyclerView view) {
             getPresenter().loadUsers(groupId, true);
             epoxyController.showLoader();
           }

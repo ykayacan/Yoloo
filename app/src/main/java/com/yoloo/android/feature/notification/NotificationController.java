@@ -133,7 +133,7 @@ public class NotificationController extends MvpController<NotificationView, Noti
 
     EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener =
         new EndlessRecyclerOnScrollListener(lm) {
-          @Override public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+          @Override public void onLoadMore(int totalItemsCount, RecyclerView view) {
             getPresenter().loadMoreNotifications(30);
             epoxyController.showLoader();
           }

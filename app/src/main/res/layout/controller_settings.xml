@@ -4,16 +4,15 @@
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="@android:color/white"
-  android:fitsSystemWindows="true">
+  android:background="@android:color/white">
 
   <include layout="@layout/merge_appbar" />
 
   <ScrollView
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <android.support.constraint.ConstraintLayout
       android:layout_width="match_parent"
@@ -23,7 +22,6 @@
       <!-- Like us -->
       <TextView
         android:id="@+id/tv_like_us_title"
-        fontPath="fonts/OpenSans-Bold.ttf"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -31,6 +29,7 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        fontPath="fonts/OpenSans-Bold.ttf"
         tools:ignore="MissingPrefix" />
 
       <ImageView
@@ -71,7 +70,6 @@
       <!-- Members -->
       <TextView
         android:id="@+id/tv_honorary_members_title"
-        fontPath="fonts/OpenSans-Bold.ttf"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -79,6 +77,7 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/iv_facebook_icon"
+        fontPath="fonts/OpenSans-Bold.ttf"
         tools:ignore="MissingPrefix" />
 
       <TextView
@@ -96,7 +95,6 @@
       <!-- About -->
       <TextView
         android:id="@+id/tv_about_title"
-        fontPath="fonts/OpenSans-Bold.ttf"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -104,33 +102,33 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_honorary_members"
+        fontPath="fonts/OpenSans-Bold.ttf"
         tools:ignore="MissingPrefix" />
 
       <TextView
         android:id="@+id/tv_terms_of_service"
-        style="@style/Widget.Yoloo.SettingsSubText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="?attr/selectableItemBackground"
         android:text="@string/settings_terms_of_service"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_about_title" />
+        app:layout_constraintTop_toBottomOf="@+id/tv_about_title"
+        style="@style/Widget.Yoloo.SettingsSubText" />
 
       <TextView
         android:id="@+id/tv_privacy_policy"
-        style="@style/Widget.Yoloo.SettingsSubText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="?attr/selectableItemBackground"
         android:text="@string/settings_privacy_policy"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_terms_of_service" />
+        app:layout_constraintTop_toBottomOf="@+id/tv_terms_of_service"
+        style="@style/Widget.Yoloo.SettingsSubText" />
 
       <TextView
         android:id="@+id/tv_log_out"
-        style="@style/Widget.Yoloo.SettingsSubText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="?attr/selectableItemBackground"
@@ -138,11 +136,11 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_privacy_policy" />
+        app:layout_constraintTop_toBottomOf="@+id/tv_privacy_policy"
+        style="@style/Widget.Yoloo.SettingsSubText" />
 
       <TextView
         android:id="@+id/tv_version_title"
-        fontPath="fonts/OpenSans-Bold.ttf"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/settings_version"
@@ -150,6 +148,7 @@
         android:visibility="visible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_log_out"
+        fontPath="fonts/OpenSans-Bold.ttf"
         tools:ignore="MissingPrefix" />
 
       <TextView

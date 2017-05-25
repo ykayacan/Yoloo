@@ -22,7 +22,6 @@ import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
-import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.data.db.MediaRealm;
 import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.data.feed.FeedItem;
@@ -83,11 +82,6 @@ public class BlogListController extends MvpController<BlogListView, BlogListPres
   public BlogListPresenter createPresenter() {
     return new BlogListPresenter(PostRepositoryProvider.getRepository(),
         UserRepositoryProvider.getRepository());
-  }
-
-  @Override
-  public void onAccountLoaded(AccountRealm me) {
-    epoxyController.setUserId(me.getId());
   }
 
   @Override public void onPostUpdated(PostRealm post) {
@@ -165,7 +159,7 @@ public class BlogListController extends MvpController<BlogListView, BlogListPres
 
     EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener =
         new EndlessRecyclerOnScrollListener(lm) {
-          @Override public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+          @Override public void onLoadMore(int totalItemsCount, RecyclerView view) {
             getPresenter().loadTrendingBlogs();
             epoxyController.showLoader();
           }

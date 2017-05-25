@@ -2,14 +2,15 @@
 
 buildscript {
   repositories {
+    maven { url 'https://maven.google.com' }
     jcenter()
   }
   dependencies {
-    classpath 'com.android.tools.build:gradle:2.4.0-alpha7'
+    classpath 'com.android.tools.build:gradle:3.0.0-alpha1'
     classpath 'com.google.gms:google-services:3.0.0'
     classpath 'com.google.firebase:firebase-plugins:1.0.4'
     classpath 'io.realm:realm-gradle-plugin:3.1.4'
-    classpath 'com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0-beta7'
+    classpath 'com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0'
     classpath 'com.google.guava:guava:20.0'
     classpath 'com.jakewharton.hugo:hugo-plugin:1.2.1'
     //classpath 'com.getkeepsafe.dexcount:dexcount-gradle-plugin:0.6.2'
@@ -27,6 +28,7 @@ allprojects {
     maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
     maven { url "https://jitpack.io" }
     maven { url 'https://github.com/uPhyca/stetho-realm/raw/master/maven-repo' }
+    maven { url 'https://maven.google.com' }
   }
 }
 
@@ -34,13 +36,8 @@ task clean(type: Delete) {
   delete rootProject.buildDir
 }
 
-task wrapper(type: Wrapper) {
-  gradleVersion = '3.5'
-  distributionUrl = distributionUrl.replace("bin", "all")
-}
-
 ext {
-  minSdk = 19
+  minSdk = 16
   targetSdk = 25
   compileSdk = 25
   buildTools = '25.0.3'
@@ -50,13 +47,13 @@ ext {
   rxJava2_version = '2.1.0'
   rxJava2Android_version = '2.0.1'
 
-  firebase_version = '10.2.4'
-  playServices_version = '10.2.4'
+  firebase_version = '10.2.6'
+  playServices_version = '10.2.6'
   supportLibs_version = '25.3.1'
   multidex_version = '1.0.1'
   constraintLayout_version = '1.0.2'
 
-  butterKnife_version = '8.5.1'
+  butterKnife_version = '8.6.0'
   timber_version = '4.5.1'
   conductor_version = '2.1.3'
   epoxy_version = '2.1.0'

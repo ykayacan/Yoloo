@@ -11,6 +11,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import butterknife.BindColor;
 import butterknife.BindView;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
@@ -38,6 +39,7 @@ import com.yoloo.android.feature.search.SearchController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.UpdateCallback;
+import com.yoloo.android.util.ViewUtils;
 import java.util.List;
 
 public class ExploreController extends MvpController<ExploreView, ExplorePresenter>
@@ -45,6 +47,8 @@ public class ExploreController extends MvpController<ExploreView, ExplorePresent
 
   @BindView(R.id.recycler_view) RecyclerView rvExplore;
   @BindView(R.id.toolbar) Toolbar toolbar;
+
+  @BindColor(R.color.primary_dark) int primaryDarkColor;
 
   private ExploreEpoxyController epoxyController;
 
@@ -71,6 +75,11 @@ public class ExploreController extends MvpController<ExploreView, ExplorePresent
     setHasOptionsMenu(true);
     setupToolbar();
     setupRecyclerview();
+  }
+
+  @Override protected void onAttach(@NonNull View view) {
+    super.onAttach(view);
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @Override

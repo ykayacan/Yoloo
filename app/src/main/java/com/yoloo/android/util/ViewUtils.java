@@ -1,20 +1,17 @@
 package com.yoloo.android.util;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.Outline;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.RippleDrawable;
 import android.os.Build;
 import android.support.annotation.ColorInt;
-import android.support.annotation.FloatRange;
 import android.support.annotation.NonNull;
 import android.text.TextPaint;
 import android.util.DisplayMetrics;
@@ -22,7 +19,6 @@ import android.util.Property;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.View;
-import android.view.ViewOutlineProvider;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -63,7 +59,7 @@ public final class ViewUtils {
         }
       });
 
-  public static final Property<Drawable, Integer> DRAWABLE_ALPHA =
+  /*public static final Property<Drawable, Integer> DRAWABLE_ALPHA =
       AnimUtils.createIntProperty(new AnimUtils.IntProp<Drawable>("alpha") {
         @Override
         public void set(Drawable drawable, int alpha) {
@@ -74,7 +70,7 @@ public final class ViewUtils {
         public int get(Drawable drawable) {
           return drawable.getAlpha();
         }
-      });
+      });*/
 
   public static final Property<ImageView, Integer> IMAGE_ALPHA =
       AnimUtils.createIntProperty(new AnimUtils.IntProp<ImageView>("imageAlpha") {
@@ -89,13 +85,13 @@ public final class ViewUtils {
         }
       });
 
-  public static final ViewOutlineProvider CIRCULAR_OUTLINE = new ViewOutlineProvider() {
+  /*public static final ViewOutlineProvider CIRCULAR_OUTLINE = new ViewOutlineProvider() {
     @Override
     public void getOutline(View view, Outline outline) {
       outline.setOval(view.getPaddingLeft(), view.getPaddingTop(),
           view.getWidth() - view.getPaddingRight(), view.getHeight() - view.getPaddingBottom());
     }
-  };
+  };*/
 
   private ViewUtils() {
     // empty constructor
@@ -104,11 +100,9 @@ public final class ViewUtils {
   public static void setStatusBarColor(Activity activity, @ColorInt int color) {
     if (VersionUtil.hasL()) {
       // clear FLAG_TRANSLUCENT_STATUS flag:
-      /*activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-      // add FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS flag to the window
-      activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);*/
+      activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
       // finally change the color
-      new WeakHandler().post(() -> activity.getWindow().setStatusBarColor(color));
+      activity.getWindow().setStatusBarColor(color);
     }
   }
 
@@ -137,12 +131,12 @@ public final class ViewUtils {
     return (!canMove || dm.widthPixels < dm.heightPixels);
   }
 
-  public static RippleDrawable createRipple(@ColorInt int color,
+  /*public static RippleDrawable createRipple(@ColorInt int color,
       @FloatRange(from = 0f, to = 1f) float alpha, boolean bounded) {
     color = ColorUtils.modifyAlpha(color, alpha);
     return new RippleDrawable(ColorStateList.valueOf(color), null,
         bounded ? new ColorDrawable(Color.WHITE) : null);
-  }
+  }*/
 
   /*public static RippleDrawable createRipple(@NonNull Palette palette,
       @FloatRange(from = 0f, to = 1f) float darkAlpha,
@@ -235,25 +229,25 @@ public final class ViewUtils {
     return view1Rect.intersect(view2Rect);
   }
 
-  public static void setPaddingStart(View view, int paddingStart) {
+  /*public static void setPaddingStart(View view, int paddingStart) {
     view.setPaddingRelative(paddingStart, view.getPaddingTop(), view.getPaddingEnd(),
         view.getPaddingBottom());
-  }
+  }*/
 
-  public static void setPaddingTop(View view, int paddingTop) {
+  /*public static void setPaddingTop(View view, int paddingTop) {
     view.setPaddingRelative(view.getPaddingStart(), paddingTop, view.getPaddingEnd(),
         view.getPaddingBottom());
-  }
+  }*/
 
-  public static void setPaddingEnd(View view, int paddingEnd) {
+  /*public static void setPaddingEnd(View view, int paddingEnd) {
     view.setPaddingRelative(view.getPaddingStart(), view.getPaddingTop(), paddingEnd,
         view.getPaddingBottom());
-  }
+  }*/
 
-  public static void setPaddingBottom(View view, int paddingBottom) {
+  /*public static void setPaddingBottom(View view, int paddingBottom) {
     view.setPaddingRelative(view.getPaddingStart(), view.getPaddingTop(), view.getPaddingEnd(),
         paddingBottom);
-  }
+  }*/
 
   public static Point getNavigationBarSize(Context context) {
     Point appUsableSize = getAppUsableScreenSize(context);
@@ -281,6 +275,7 @@ public final class ViewUtils {
     return size;
   }
 
+  @TargetApi(Build.VERSION_CODES.KITKAT)
   public static Point getRealScreenSize(Context context) {
     WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
     Display display = windowManager.getDefaultDisplay();

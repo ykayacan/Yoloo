@@ -4,13 +4,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.view.GravityCompat;
@@ -28,8 +25,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 import butterknife.BindColor;
 import butterknife.BindDrawable;
 import butterknife.BindInt;
@@ -38,7 +33,6 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
-import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
@@ -48,15 +42,12 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
-import com.claudiodegio.msv.MaterialSearchView;
 import com.github.florent37.tutoshowcase.TutoShowcase;
-import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.yoloo.android.R;
 import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.data.db.GroupRealm;
 import com.yoloo.android.data.db.MediaRealm;
 import com.yoloo.android.data.db.PostRealm;
-import com.yoloo.android.data.feed.FeedItem;
 import com.yoloo.android.data.repository.group.GroupRepositoryProvider;
 import com.yoloo.android.data.repository.post.PostRepositoryProvider;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
@@ -68,13 +59,12 @@ import com.yoloo.android.feature.chat.chatlist.ChatListController;
 import com.yoloo.android.feature.comment.CommentController;
 import com.yoloo.android.feature.editor.editor.BlogEditorController;
 import com.yoloo.android.feature.editor.editor.PostEditorController;
-import com.yoloo.android.feature.editor.job.SendPostJob;
-import com.yoloo.android.feature.explore.ExploreController;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
 import com.yoloo.android.feature.feed.common.listener.OnModelUpdateEvent;
 import com.yoloo.android.feature.fullscreenphoto.FullscreenPhotoController;
 import com.yoloo.android.feature.group.GroupController;
 import com.yoloo.android.feature.groupgridoverview.GroupGridOverviewController;
+import com.yoloo.android.feature.models.BountyButtonModel;
 import com.yoloo.android.feature.models.newusers.NewUserListModelGroup;
 import com.yoloo.android.feature.models.post.PostCallbacks;
 import com.yoloo.android.feature.models.recommendedgroups.RecommendedGroupListModelGroup;
@@ -85,9 +75,8 @@ import com.yoloo.android.feature.postdetail.PostDetailController;
 import com.yoloo.android.feature.postlist.PostListController;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.search.SearchController;
-import com.yoloo.android.feature.settings.SettingsController;
 import com.yoloo.android.framework.MvpController;
-import com.yoloo.android.ui.recyclerview.EndlessRecyclerOnScrollListener;
+import com.yoloo.android.ui.recyclerview.EndlessRecyclerViewScrollListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
 import com.yoloo.android.ui.widget.StateLayout;
@@ -99,29 +88,23 @@ import com.yoloo.android.util.MenuHelper;
 import com.yoloo.android.util.NetworkUtil;
 import com.yoloo.android.util.ShareUtil;
 import com.yoloo.android.util.ViewUtils;
-import com.yoloo.android.util.WeakHandler;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
-import java.util.List;
-import org.parceler.Parcels;
 import timber.log.Timber;
-
-import static com.yoloo.android.feature.base.BaseActivity.REQUEST_INVITE;
 
 public class FeedController extends MvpController<FeedView, FeedPresenter>
     implements FeedView, SwipeRefreshLayout.OnRefreshListener,
-    NavigationView.OnNavigationItemSelectedListener, OnModelUpdateEvent, PostCallbacks,
-    RecommendedGroupListModelGroup.Callbacks, TrendingBlogListModelGroup.Callbacks,
-    NewUserListModelGroup.Callbacks {
+    OnModelUpdateEvent, PostCallbacks, RecommendedGroupListModelGroup.Callbacks,
+    TrendingBlogListModelGroup.Callbacks, NewUserListModelGroup.Callbacks,
+    BountyButtonModel.OnBountyClickListener {
 
   private static final String KEY_FEED_SHOWCASE_WELCOME = "SHOWCASE_FEED_WELCOME";
   private static final String KEY_FEED_SHOWCASE_FAB = "SHOWCASE_FEED_FAB";
 
   @BindView(R.id.root_view) StateLayout rootView;
   @BindView(R.id.toolbar) Toolbar toolbar;
-  @BindView(R.id.rv_feed) RecyclerView rvFeed;
-  @BindView(R.id.swipe_feed) SwipeRefreshLayout swipeRefreshLayout;
+  @BindView(R.id.recycler_view) RecyclerView rvFeed;
+  @BindView(R.id.swipe) SwipeRefreshLayout swipeRefreshLayout;
   @BindView(R.id.fab_menu) OptionsFabLayout fab;
-  @BindView(R.id.msv) MaterialSearchView msv;
 
   @BindColor(R.color.primary) int primaryColor;
   @BindColor(R.color.primary_dark) int primaryDarkColor;
@@ -140,10 +123,6 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
 
   private FeedEpoxyController epoxyController;
 
-  private WeakHandler handler;
-
-  private AccountRealm me;
-
   private MenuItem menuItemMessage;
   private MenuItem menuItemNotification;
 
@@ -154,19 +133,7 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
 
   private int newMessageCount = 0;
 
-  private boolean isNewPost;
-
-  private EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener;
-
-  private BroadcastReceiver newPostReceiver = new BroadcastReceiver() {
-    @Override
-    public void onReceive(Context context, Intent intent) {
-      PostRealm post = Parcels.unwrap(intent.getParcelableExtra(SendPostJob.KEY_ADD_POST));
-      isNewPost = true;
-      epoxyController.addPost(post, epoxyController.getAdapter().getItemCount() > 3 ? 3 : 2);
-      isNewPost = false;
-    }
-  };
+  private EndlessRecyclerViewScrollListener loadMoreListener;
 
   private BroadcastReceiver newNotificationReceiver = new BroadcastReceiver() {
     @Override
@@ -200,15 +167,14 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     return inflater.inflate(R.layout.controller_feed, container, false);
   }
 
-  @Override
-  protected void onViewBound(@NonNull View view) {
+  @Override protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
     setupToolbar();
     setupPullToRefresh();
     setHasOptionsMenu(true);
     setupRecyclerView();
 
-    handler = new WeakHandler();
+    showWelcomeTutorial();
 
     fab.setMainFabOnClickListener(v -> {
       if (!NetworkUtil.isNetworkAvailable(getActivity())) {
@@ -236,22 +202,29 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     });
   }
 
-  @Override
-  protected void onAttach(@NonNull View view) {
+  @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
 
     if (!reEnter) {
-      getPresenter().loadFeed(false);
+      getPresenter().loadMe();
+      getPresenter().loadFirstPage();
       reEnter = true;
     }
 
     setupNavigation();
-    showWelcomeTutorial();
 
-    LocalBroadcastManager
-        .getInstance(view.getContext())
-        .registerReceiver(newPostReceiver, new IntentFilter(SendPostJob.SEND_POST_EVENT));
+    registerBroadcasts(view);
 
+    rootView.setViewStateListener((stateView, viewState) -> {
+      if (viewState == StateLayout.VIEW_STATE_ERROR) {
+        View errorActionView = ButterKnife.findById(stateView, R.id.error_view);
+        errorActionView.setOnClickListener(v -> getPresenter().loadFirstPage());
+      }
+    });
+  }
+
+  private void registerBroadcasts(@NonNull View view) {
     LocalBroadcastManager
         .getInstance(view.getContext())
         .registerReceiver(newMessageReceiver,
@@ -260,33 +233,16 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     LocalBroadcastManager
         .getInstance(view.getContext())
         .registerReceiver(newNotificationReceiver, new IntentFilter(NotificationProvider.TAG));
-
-    rootView.setViewStateListener((stateView, viewState) -> {
-      if (viewState == StateLayout.VIEW_STATE_ERROR) {
-        View errorActionView = ButterKnife.findById(stateView, R.id.error_view);
-        errorActionView.setOnClickListener(v -> getPresenter().loadFeed(false));
-      }
-    });
   }
 
-  @Override
-  protected void onDetach(@NonNull View view) {
+  @Override protected void onDetach(@NonNull View view) {
     super.onDetach(view);
-    LocalBroadcastManager.getInstance(view.getContext()).unregisterReceiver(newPostReceiver);
     LocalBroadcastManager.getInstance(view.getContext())
         .unregisterReceiver(newNotificationReceiver);
     LocalBroadcastManager.getInstance(view.getContext()).unregisterReceiver(newMessageReceiver);
   }
 
-  @Override
-  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
-      @NonNull ControllerChangeType changeType) {
-    super.onChangeEnded(changeHandler, changeType);
-    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
-  }
-
-  @Override
-  public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+  @Override public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
     super.onCreateOptionsMenu(menu, inflater);
     inflater.inflate(R.menu.menu_feed, menu);
 
@@ -303,8 +259,7 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
         .iconTintColor(Color.WHITE));
   }
 
-  @Override
-  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+  @Override public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     final int itemId = item.getItemId();
 
     switch (itemId) {
@@ -333,17 +288,12 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     }
   }
 
-  @Override
-  public void onMeLoaded(@NonNull AccountRealm me) {
-    this.me = me;
-    setupDrawerInfo();
-    addUserPhotoToToolbar(me);
-
-    epoxyController.setUserId(me.getId());
+  @Override public Context getAppContext() {
+    return getApplicationContext();
   }
 
-  @Override public void onPostUpdated(@NonNull PostRealm post) {
-    epoxyController.updatePost(post);
+  @Override public void onMeLoaded(@NonNull AccountRealm me) {
+    addUserPhotoToToolbar(me);
   }
 
   private void addUserPhotoToToolbar(AccountRealm me) {
@@ -363,36 +313,22 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
         });
   }
 
-  @Override
-  public void onLoading(boolean pullToRefresh) {
+  @Override public void onLoading(boolean pullToRefresh) {
     if (!pullToRefresh) {
       rootView.setState(StateLayout.VIEW_STATE_LOADING);
-    }
-  }
-
-  @Override public void onLoaded(List<FeedItem<?>> value) {
-    Timber.d("onLoaded(): %s", value.size());
-    epoxyController.setData(value, false);
-  }
-
-  @Override public void onMoreLoaded(List<FeedItem<?>> items) {
-    Timber.d("onLoaded(): %s", items.size());
-    if (items.isEmpty()) {
-
-      //epoxyController.hideLoader();
     } else {
-      epoxyController.setLoadMoreData(items);
+      rootView.setState(StateLayout.VIEW_STATE_CONTENT);
     }
   }
 
-  @Override
-  public void showContent() {
-    rootView.setState(StateLayout.VIEW_STATE_CONTENT);
+  @Override public void onLoaded(FeedPresenter.FeedState value) {
+    onLoading(value.isPullToRefresh());
+    epoxyController.setData(value);
+
     swipeRefreshLayout.setRefreshing(false);
   }
 
-  @Override
-  public void onError(Throwable e) {
+  @Override public void onError(Throwable e) {
     rootView.setState(StateLayout.VIEW_STATE_ERROR);
     swipeRefreshLayout.setRefreshing(false);
 
@@ -403,62 +339,18 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     }
   }
 
-  @Override
-  public void onEmpty() {
+  @Override public void onEmpty() {
     rootView.setState(StateLayout.VIEW_STATE_EMPTY);
     swipeRefreshLayout.setRefreshing(false);
   }
 
-  @Override
-  public void onRefresh() {
-    endlessRecyclerOnScrollListener.resetState();
-    getPresenter().loadFeed(true);
+  @Override public void onRefresh() {
+    //endlessRecyclerOnScrollListener.resetState();
+    loadMoreListener.resetState();
+    getPresenter().loadPullToRefresh();
   }
 
-  @Override
-  public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-    switch (item.getItemId()) {
-      case R.id.action_nav_profile:
-        handler.postDelayed(
-            () -> startTransaction(ProfileController.create(me.getId()), new FadeChangeHandler()),
-            400);
-        break;
-      case R.id.action_nav_explore:
-        handler.postDelayed(
-            () -> startTransaction(ExploreController.create(), new FadeChangeHandler()), 400);
-        break;
-      case R.id.action_nav_bookmarks:
-        handler.postDelayed(() -> {
-          PostListController controller = PostListController.ofBookmarked();
-          controller.setModelUpdateEvent(this);
-          startTransaction(controller, new FadeChangeHandler());
-        }, 400);
-        break;
-      case R.id.action_nav_invite_friends:
-        handler.postDelayed(this::onInviteClicked, 400);
-        break;
-      case R.id.action_nav_settings:
-        handler.postDelayed(
-            () -> startTransaction(SettingsController.create(), new FadeChangeHandler()), 400);
-        break;
-      case R.id.action_nav_feedback:
-        handler.postDelayed(() -> {
-          Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
-          emailIntent.setData(Uri.parse("mailto: hello@yolooapp.com"));
-          startActivity(Intent.createChooser(emailIntent, "Send feedback"));
-        }, 400);
-        break;
-      default:
-        break;
-    }
-    // Close the navigation drawer when an item is selected.
-    item.setChecked(false);
-    getDrawerLayout().closeDrawers();
-    return true;
-  }
-
-  @Override
-  public boolean handleBack() {
+  @Override public boolean handleBack() {
     if (getDrawerLayout().isDrawerOpen(GravityCompat.START)) {
       getDrawerLayout().closeDrawer(GravityCompat.START);
       return true;
@@ -472,22 +364,13 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     return super.handleBack();
   }
 
-  @NonNull
-  @Override
-  public FeedPresenter createPresenter() {
+  @NonNull @Override public FeedPresenter createPresenter() {
     return new FeedPresenter(PostRepositoryProvider.getRepository(),
         GroupRepositoryProvider.getRepository(), UserRepositoryProvider.getRepository());
   }
 
-  @Override
-  public void onModelUpdateEvent(@FeedAction int action, @Nullable Object payload) {
-    if (payload instanceof PostRealm) {
-      if (action == FeedAction.UPDATE) {
-        epoxyController.updatePost((PostRealm) payload);
-      } else if (action == FeedAction.DELETE) {
-        epoxyController.deletePost((PostRealm) payload);
-      }
-    }
+  @Override public void onModelUpdateEvent(@FeedAction int action, @Nullable Object payload) {
+    getPresenter().updateEvent(action, payload);
   }
 
   private void setupNavigation() {
@@ -499,48 +382,6 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
 
     drawerLayout.addDrawerListener(toggle);
     toggle.syncState();
-
-    getNavigationView().setNavigationItemSelectedListener(this);
-  }
-
-  private void setupDrawerInfo() {
-    NavigationView navigationView = getNavigationView();
-    DrawerLayout drawerLayout = getDrawerLayout();
-
-    final View headerView = navigationView.getHeaderView(0);
-    final ImageView ivNavAvatar = ButterKnife.findById(headerView, R.id.iv_nav_avatar);
-    final TextView tvRealname = ButterKnife.findById(headerView, R.id.tv_nav_realname);
-    final TextView tvUsername = ButterKnife.findById(headerView, R.id.tv_nav_username);
-
-    if (me != null) {
-      Glide
-          .with(getActivity())
-          .load(me.getAvatarUrl())
-          .bitmapTransform(new CropCircleTransformation(getActivity()))
-          .into(ivNavAvatar);
-
-      tvRealname.setText(me.getRealname());
-      tvUsername.setText(me.getUsername());
-    }
-
-    ivNavAvatar.setOnClickListener(v -> {
-      drawerLayout.closeDrawer(GravityCompat.START);
-      handler.postDelayed(
-          () -> startTransaction(ProfileController.create(me.getId()), new FadeChangeHandler()),
-          400);
-    });
-    tvUsername.setOnClickListener(v -> {
-      drawerLayout.closeDrawer(GravityCompat.START);
-      handler.postDelayed(
-          () -> startTransaction(ProfileController.create(me.getId()), new FadeChangeHandler()),
-          400);
-    });
-    tvRealname.setOnClickListener(v -> {
-      drawerLayout.closeDrawer(GravityCompat.START);
-      handler.postDelayed(
-          () -> startTransaction(ProfileController.create(me.getId()), new FadeChangeHandler()),
-          400);
-    });
   }
 
   private void setupRecyclerView() {
@@ -548,11 +389,7 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     epoxyController.setPostCallbacks(this);
     epoxyController.setRecommendedGroupListCallbacks(this);
     epoxyController.setTrendingBlogListCallbacks(this);
-    epoxyController.setOnBountyButtonClickListener(v -> {
-      PostListController controller = PostListController.ofBounty();
-      controller.setModelUpdateEvent(this);
-      startTransaction(controller, new VerticalChangeHandler());
-    });
+    epoxyController.setOnBountyButtonClickListener(this);
     epoxyController.setNewUserListModelGroupCallbacks(this);
     epoxyController.setOnNewUserWelcomeClickListener(v -> Timber.d("New User item"));
 
@@ -568,20 +405,15 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     rvFeed.setHasFixedSize(true);
     rvFeed.setAdapter(epoxyController.getAdapter());
 
-    endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(lm) {
-      @Override
-      public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-        if (swipeRefreshLayout.isRefreshing() || isNewPost) {
-          endlessRecyclerOnScrollListener.resetState();
-          return;
-        }
-
-        getPresenter().loadMorePosts();
-        epoxyController.showLoader();
+    loadMoreListener = new EndlessRecyclerViewScrollListener(lm, () -> {
+      if (swipeRefreshLayout.isRefreshing()) {
+        return;
       }
-    };
 
-    rvFeed.addOnScrollListener(endlessRecyclerOnScrollListener);
+      getPresenter().loadNextPage();
+    });
+
+    rvFeed.addOnScrollListener(loadMoreListener);
   }
 
   private void setupPullToRefresh() {
@@ -599,18 +431,6 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   private void startTransaction(Controller to, ControllerChangeHandler handler) {
     getRouter().pushController(
         RouterTransaction.with(to).pushChangeHandler(handler).popChangeHandler(handler));
-  }
-
-  private void onInviteClicked() {
-    Resources res = getResources();
-
-    Intent intent = new AppInviteInvitation.IntentBuilder(res.getString(R.string.invitation_title))
-        .setMessage(res.getString(R.string.invitation_message, me.getUsername()))
-        .setCustomImage(Uri.parse(res.getString(R.string.invitation_custom_image)))
-        .setDeepLink(Uri.parse(res.getString(R.string.invitation_deep_link)))
-        .setCallToActionText(res.getString(R.string.invitation_cta))
-        .build();
-    startActivityForResult(intent, REQUEST_INVITE);
   }
 
   private void showWelcomeTutorial() {
@@ -675,8 +495,7 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
       final int itemId = item.getItemId();
       if (itemId == R.id.action_popup_delete) {
         if (NetworkUtil.isNetworkAvailable(getActivity())) {
-          getPresenter().deletePost(post.getId());
-          epoxyController.deletePost(post);
+          getPresenter().deletePost(post);
           return true;
         } else {
           Snackbar.make(getView(), R.string.all_network_required_delete,
@@ -736,21 +555,6 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
     }
   }
 
-  @Override public void onTrendingBlogOptionsClicked(View v, @NonNull PostRealm post) {
-    final PopupMenu menu = MenuHelper.createMenu(getActivity(), v, R.menu.menu_post_popup);
-
-    menu.setOnMenuItemClickListener(item -> {
-      final int itemId = item.getItemId();
-      if (itemId == R.id.action_popup_delete) {
-        getPresenter().deletePost(post.getId());
-        epoxyController.deletePost(post);
-        return true;
-      }
-
-      return false;
-    });
-  }
-
   @Override public void onNewUserListHeaderClicked() {
 
   }
@@ -761,7 +565,12 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
   }
 
   @Override public void onNewUserFollowClicked(AccountRealm account, int direction) {
-    getPresenter().follow(account.getId(), direction);
-    epoxyController.deleteNewUser(account);
+    getPresenter().follow(account, direction);
+  }
+
+  @Override public void onBountyClickListener(View v) {
+    PostListController controller = PostListController.ofBounty();
+    controller.setModelUpdateEvent(this);
+    startTransaction(controller, new VerticalChangeHandler());
   }
 }

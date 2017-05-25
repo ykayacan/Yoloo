@@ -22,7 +22,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.yoloo.android.R;
-import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
 import com.yoloo.android.ui.widget.timeview.TimeTextView;
 
@@ -33,13 +32,20 @@ import static com.airbnb.epoxy.EpoxyAttribute.Option.NoGetter;
 public abstract class TrendingBlogModel
     extends EpoxyModelWithHolder<TrendingBlogModel.TrendingBlogHolder> {
 
-  @EpoxyAttribute PostRealm post;
-  @EpoxyAttribute boolean postOwner;
+  @EpoxyAttribute String avatarUrl;
+  @EpoxyAttribute String username;
+  @EpoxyAttribute long created;
+  @EpoxyAttribute int bountyCount;
+  @EpoxyAttribute String thumbUrl;
+  @EpoxyAttribute String title;
+  @EpoxyAttribute String content;
+  @EpoxyAttribute boolean owner;
+  @EpoxyAttribute boolean bookmarked;
+
   @EpoxyAttribute({ DoNotHash, NoGetter }) RequestManager glide;
   @EpoxyAttribute(DoNotHash) View.OnClickListener onClickListener;
   @EpoxyAttribute(DoNotHash) Transformation<Bitmap> bitmapTransformation;
   @EpoxyAttribute(DoNotHash) View.OnClickListener onBookmarkClickListener;
-  @EpoxyAttribute(DoNotHash) View.OnClickListener onPostOptionsClickListener;
 
   @Override
   public void bind(TrendingBlogHolder holder) {
@@ -48,18 +54,18 @@ public abstract class TrendingBlogModel
 
     //noinspection unchecked
     glide
-        .load(post.getAvatarUrl())
+        .load(avatarUrl)
         .bitmapTransform(bitmapTransformation)
         .placeholder(R.drawable.ic_player_72dp)
         .into(holder.ivUserAvatar);
 
-    holder.tvUsername.setText(post.getUsername());
-    holder.tvTime.setTimeStamp(post.getCreated().getTime() / 1000);
-    holder.tvBounty.setVisibility(post.getBounty() == 0 ? View.GONE : View.VISIBLE);
-    holder.tvBounty.setText(String.valueOf(post.getBounty()));
+    holder.tvUsername.setText(username);
+    holder.tvTime.setTimeStamp(created);
+    holder.tvBounty.setVisibility(bountyCount == 0 ? View.GONE : View.VISIBLE);
+    holder.tvBounty.setText(String.valueOf(bountyCount));
 
     glide
-        .load(post.getMedias().get(0).getThumbSizeUrl())
+        .load(thumbUrl)
         .asBitmap()
         .override(100, 100)
         .diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -75,26 +81,24 @@ public abstract class TrendingBlogModel
           }
         });
 
-    holder.tvBlogTitle.setText(post.getTitle());
-    holder.tvBlogContent.setText(post.getContent());
+    holder.tvBlogTitle.setText(title);
+    holder.tvBlogContent.setText(content);
 
-    final int drawableIconRes =
-        postOwner ? R.drawable.ic_more_vert_black_24dp : R.drawable.ic_bookmark_black_24dp;
-    holder.ibOptions.setImageDrawable(AppCompatResources.getDrawable(context, drawableIconRes));
+    holder.ibOptions.setVisibility(owner ? View.GONE : View.VISIBLE);
 
-    if (!postOwner) {
-      final int colorRes =
-          post.isBookmarked() ? R.color.primary : android.R.color.secondary_text_dark;
+    holder.ibOptions.setImageDrawable(
+        AppCompatResources.getDrawable(context, R.drawable.ic_bookmark_black_24dp));
+
+    if (!owner) {
+      final int colorRes = bookmarked ? R.color.primary : android.R.color.secondary_text_dark;
       holder.ibOptions.setColorFilter(ContextCompat.getColor(context, colorRes),
           PorterDuff.Mode.SRC_IN);
     }
 
     holder.ibOptions.setOnClickListener(v -> {
-      if (postOwner) {
-        onPostOptionsClickListener.onClick(v);
-      } else {
+      if (!owner) {
         final int reversedColorRes =
-            post.isBookmarked() ? android.R.color.secondary_text_dark : R.color.primary;
+            bookmarked ? android.R.color.secondary_text_dark : R.color.primary;
         holder.ibOptions.setColorFilter(ContextCompat.getColor(context, reversedColorRes),
             PorterDuff.Mode.SRC_IN);
         onBookmarkClickListener.onClick(v);
@@ -107,7 +111,9 @@ public abstract class TrendingBlogModel
   @Override
   public void unbind(TrendingBlogHolder holder) {
     super.unbind(holder);
+    Glide.clear(holder.ivUserAvatar);
     Glide.clear(holder.ivBlogCover);
+    holder.ivUserAvatar.setImageDrawable(null);
     holder.ivBlogCover.setImageDrawable(null);
 
     holder.itemView.setOnClickListener(null);

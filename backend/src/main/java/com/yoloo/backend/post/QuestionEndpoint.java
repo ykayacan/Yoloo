@@ -19,12 +19,24 @@ import com.yoloo.backend.post.sort_strategy.PostSorter;
 import javax.annotation.Nullable;
 import javax.inject.Named;
 
-@Api(name = "yolooApi",
+@Api(
+    name = "yolooApi",
     version = "v1",
-    namespace = @ApiNamespace(ownerDomain = Constants.API_OWNER, ownerName = Constants.API_OWNER))
-@ApiClass(resource = "posts", clientIds = {
-    Constants.ANDROID_CLIENT_ID, Constants.IOS_CLIENT_ID, Constants.WEB_CLIENT_ID
-}, audiences = {Constants.AUDIENCE_ID}, authenticators = {FirebaseAuthenticator.class})
+    namespace =
+    @ApiNamespace(
+        ownerDomain = Constants.API_OWNER,
+        ownerName = Constants.API_OWNER
+    ))
+@ApiClass(
+    resource = "posts",
+    clientIds = {
+        Constants.ANDROID_CLIENT_ID,
+        Constants.IOS_CLIENT_ID,
+        Constants.WEB_CLIENT_ID
+    },
+    audiences = { Constants.AUDIENCE_ID },
+    authenticators = { FirebaseAuthenticator.class }
+)
 public class QuestionEndpoint {
 
   private final PostController postController = PostControllerFactory.of().create();

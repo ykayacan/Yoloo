@@ -4,11 +4,8 @@ import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.cmd.Query;
 import com.yoloo.backend.feed.Feed;
-import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.post.PostEntity;
-import com.yoloo.backend.util.KeyUtil;
 import ix.Ix;
 import java.io.IOException;
 import java.util.List;
@@ -17,6 +14,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.java.Log;
+import org.joda.time.DateTime;
 
 import static com.yoloo.backend.OfyService.ofy;
 
@@ -44,11 +42,14 @@ public class CreateUserFeedServlet extends HttpServlet {
   }
 
   private void processRequest(HttpServletRequest req, HttpServletResponse resp) {
-    final String userId = req.getParameter(USER_ID);
+    /*final String userId = req.getParameter(USER_ID);
     final String stringifiedSubscribedIds = req.getParameter(TRAVEL_GROUP_IDS);
 
     List<Key<TravelerGroupEntity>> groupKeys =
         KeyUtil.extractKeysFromIds(stringifiedSubscribedIds, ",");
+
+    List<Key<TravelerGroupEntity>> groupKeys =
+        ofy().load().type(TravelerGroupEntity.class).keys().list();
 
     Query<PostEntity> query = ofy().load().type(PostEntity.class);
 
@@ -61,10 +62,20 @@ public class CreateUserFeedServlet extends HttpServlet {
 
     List<Feed> feeds = Ix.from(postKeys).map(postKey -> getFeed(userId, postKey)).toList();
 
+    ofy().save().entities(feeds);*/
+
+    List<Feed> feeds = Ix.from(ofy().load().type(PostEntity.class).keys().list())
+        .map(postKey -> getFeed(req.getParameter(USER_ID), postKey))
+        .toList();
+
     ofy().save().entities(feeds);
   }
 
   private Feed getFeed(String userId, Key<PostEntity> postKey) {
-    return Feed.builder().id(Feed.createId(postKey)).parent(Key.create(userId)).build();
+    return Feed.builder()
+        .id(Feed.createId(postKey))
+        .parent(Key.create(userId))
+        .created(DateTime.now())
+        .build();
   }
 }

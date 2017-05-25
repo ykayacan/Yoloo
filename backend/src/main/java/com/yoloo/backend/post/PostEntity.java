@@ -116,6 +116,8 @@ public class PostEntity implements Votable, Rankable {
 
   @Wither @Ignore private boolean bookmarked;
 
+  @Wither @Ignore private boolean owner;
+
   // Don't use this
   @Wither @Ignore private Map<Ref<PostShard>, PostShard> shardMap;
 
@@ -174,6 +176,7 @@ public class PostEntity implements Votable, Rankable {
         .commentCount(commentCount)
         .reportCount(reportCount)
         .bookmarked(bookmarked)
+        .owner(owner)
         .shardMap(shardMap)
         .build();
   }

@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -35,8 +34,6 @@ import butterknife.OnClick;
 import com.airbnb.epoxy.EpoxyModel;
 import com.annimon.stream.Stream;
 import com.bluelinelabs.conductor.Controller;
-import com.bluelinelabs.conductor.ControllerChangeHandler;
-import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.github.jksiezni.permissive.Permissive;
@@ -70,7 +67,6 @@ import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.HtmlUtil;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.MediaUtil;
-import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.WeakHandler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import java.io.File;
@@ -151,13 +147,6 @@ public class BlogEditorController extends MvpController<EditorView, EditorPresen
         .debounce(400, TimeUnit.MILLISECONDS)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(s -> getPresenter().searchTag(s));
-  }
-
-  @Override
-  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
-      @NonNull ControllerChangeType changeType) {
-    super.onChangeEnded(changeHandler, changeType);
-    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
   }
 
   @Override

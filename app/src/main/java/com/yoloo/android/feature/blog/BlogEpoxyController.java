@@ -113,7 +113,6 @@ class BlogEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>, Boole
   private void createBlogModel(PostRealm post) {
     new BlogModel_().id(post.getId())
         .post(post)
-        .postOwner(post.getOwnerId().equals(userId))
         .callbacks(postCallbacks)
         .addTo(this);
   }

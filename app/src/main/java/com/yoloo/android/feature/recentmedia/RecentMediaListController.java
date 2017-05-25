@@ -134,7 +134,7 @@ public class RecentMediaListController
     recyclerView.setAdapter(epoxyController.getAdapter());
 
     endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(glm) {
-      @Override public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+      @Override public void onLoadMore(int totalItemsCount, RecyclerView view) {
         getPresenter().loadMoreRecentMedias();
         epoxyController.showLoader();
       }

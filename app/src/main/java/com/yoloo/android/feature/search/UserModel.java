@@ -3,7 +3,6 @@ package com.yoloo.android.feature.search;
 import android.content.Context;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindView;
 import com.airbnb.epoxy.EpoxyAttribute;
@@ -14,7 +13,8 @@ import com.yoloo.android.R;
 import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
-import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
+import com.yoloo.android.ui.widget.AvatarView;
+import com.yoloo.android.util.glide.AvatarTarget;
 
 import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;
 
@@ -26,7 +26,6 @@ public abstract class UserModel extends EpoxyModelWithHolder<UserModel.UserHolde
   @EpoxyAttribute(DoNotHash) OnProfileClickListener onProfileClickListener;
   @EpoxyAttribute(DoNotHash) OnUserClickListener onUserClickListener;
   @EpoxyAttribute(DoNotHash) OnFollowClickListener onFollowClickListener;
-  @EpoxyAttribute(DoNotHash) CropCircleTransformation cropCircleTransformation;
 
   @Override
   public void bind(UserHolder holder) {
@@ -35,11 +34,11 @@ public abstract class UserModel extends EpoxyModelWithHolder<UserModel.UserHolde
     Glide
         .with(context)
         .load(account.getAvatarUrl())
-        .bitmapTransform(cropCircleTransformation)
         .placeholder(R.drawable.ic_player_72dp)
-        .into(holder.ivAvatar);
+        .into(new AvatarTarget(holder.ivAvatar));
 
     holder.tvUsername.setText(account.getUsername());
+    holder.tvFullname.setText(account.getRealname());
 
     holder.btnFollow.setVisibility(showFollowButton ? View.VISIBLE : View.GONE);
 
@@ -69,8 +68,9 @@ public abstract class UserModel extends EpoxyModelWithHolder<UserModel.UserHolde
   }
 
   static class UserHolder extends BaseEpoxyHolder {
-    @BindView(R.id.iv_item_search_avatar) ImageView ivAvatar;
+    @BindView(R.id.iv_item_search_avatar) AvatarView ivAvatar;
     @BindView(R.id.tv_item_search_username) TextView tvUsername;
+    @BindView(R.id.tv_item_search_fullname) TextView tvFullname;
     @BindView(R.id.btn_item_search_follow) Button btnFollow;
   }
 }

@@ -186,7 +186,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
 
     EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener =
         new EndlessRecyclerOnScrollListener(lm) {
-          @Override public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+          @Override public void onLoadMore(int totalItemsCount, RecyclerView view) {
             getPresenter().loadComments(false, true, postId, postOwnerId, hasAcceptedComment,
                 postType);
             epoxyController.showLoader();

@@ -66,7 +66,8 @@ public final class VoteController extends Controller {
           return checkNotFound(post, "Post does not exists!");
         })
         .flatMap(postShardService::mergeShards)
-        .flatMap(comment -> voteService.checkPostVote(comment, Key.create(user.getUserId())))
+        .flatMap(post -> voteService.checkPostVote(post, Key.create(user.getUserId())))
+        .map(post -> post.withOwner(post.getWebsafeOwnerId().equals(user.getUserId())))
         .blockingSingle();
   }
 

@@ -29,8 +29,6 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
 import butterknife.OnTextChanged;
-import com.bluelinelabs.conductor.ControllerChangeHandler;
-import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bumptech.glide.Glide;
 import com.github.jksiezni.permissive.Permissive;
 import com.google.firebase.auth.FirebaseAuth;
@@ -53,7 +51,6 @@ import com.yoloo.android.util.FormUtil;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.MediaUtil;
 import com.yoloo.android.util.TextViewUtil;
-import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -166,12 +163,6 @@ public class ProfileEditController extends MvpController<ProfileEditView, Profil
     if (countryPicker != null && countryPicker.isShowing()) {
       countryPicker.dismiss();
     }
-  }
-
-  @Override protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
-      @NonNull ControllerChangeType changeType) {
-    super.onChangeEnded(changeHandler, changeType);
-    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @Override

@@ -33,8 +33,6 @@ import butterknife.OnClick;
 import com.airbnb.epoxy.EpoxyModel;
 import com.annimon.stream.Stream;
 import com.bluelinelabs.conductor.Controller;
-import com.bluelinelabs.conductor.ControllerChangeHandler;
-import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
@@ -146,13 +144,6 @@ public class PostEditorController extends MvpController<EditorView, EditorPresen
         .debounce(400, TimeUnit.MILLISECONDS)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(s -> getPresenter().searchTag(s));
-  }
-
-  @Override
-  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
-      @NonNull ControllerChangeType changeType) {
-    super.onChangeEnded(changeHandler, changeType);
-    //ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @Override

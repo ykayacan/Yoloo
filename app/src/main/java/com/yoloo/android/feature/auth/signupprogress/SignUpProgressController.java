@@ -16,6 +16,7 @@ import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
+import com.jakewharton.rxbinding2.InitialValueObservable;
 import com.jakewharton.rxbinding2.widget.RxTextView;
 import com.rafakob.floatingedittext.FloatingEditText;
 import com.yoloo.android.R;
@@ -120,15 +121,14 @@ public class SignUpProgressController extends BaseController {
 
   private void setNameAndSurname() {
 
-    Observable<String> nameObservable = RxTextView.afterTextChangeEvents(fetName.getEditText())
-        .map(event -> event.editable().toString());
+    InitialValueObservable<CharSequence> nameObservable =
+        RxTextView.textChanges(fetName.getEditText());
 
-    Observable<String> surnameObservable =
-        RxTextView.afterTextChangeEvents(fetSurname.getEditText())
-            .map(event -> event.editable().toString());
+    InitialValueObservable<CharSequence> surnameObservable =
+        RxTextView.textChanges(fetSurname.getEditText());
 
     Disposable d = Observable.combineLatest(nameObservable, surnameObservable,
-        (s, s2) -> !TextUtils.isEmpty(s) && !TextUtils.isEmpty(s2))
+        (name, surname) -> !TextUtils.isEmpty(name) && !TextUtils.isEmpty(surname))
         .subscribe(enable -> tvContinue.setVisibility(enable ? View.VISIBLE : View.GONE));
 
     disposable.add(d);
@@ -143,9 +143,9 @@ public class SignUpProgressController extends BaseController {
   }
 
   private void setEmail() {
-    Disposable d = RxTextView.afterTextChangeEvents(fetEmail.getEditText())
+    Disposable d = RxTextView.textChanges(fetEmail.getEditText())
         .debounce(400, TimeUnit.MILLISECONDS)
-        .map(event -> event.editable().toString())
+        .map(CharSequence::toString)
         .map(ValidationUtils::isValidEmailAddress)
         .switchMapSingle(result -> {
           if (!result.isValid()) {
@@ -164,8 +164,7 @@ public class SignUpProgressController extends BaseController {
           InfoBundle bundle = getArgs().getParcelable(KEY_INFO_BUNDLE);
 
           InfoBundle newBundle =
-              new InfoBundle(bundle.getName(), bundle.getSurname(), result.getData(), null, null
-              );
+              new InfoBundle(bundle.getName(), bundle.getSurname(), result.getData(), null, null);
 
           tvContinue.setOnClickListener(v -> startTransaction(
               SignUpProgressController.create(R.layout.controller_sign_up_username, newBundle),
@@ -176,9 +175,9 @@ public class SignUpProgressController extends BaseController {
   }
 
   private void setUsername() {
-    Disposable d = RxTextView.afterTextChangeEvents(fetUsername.getEditText())
+    Disposable d = RxTextView.textChanges(fetUsername.getEditText())
         .debounce(400, TimeUnit.MILLISECONDS)
-        .map(event -> event.editable().toString())
+        .map(CharSequence::toString)
         .map(ValidationUtils::isValidUsername)
         .switchMapSingle(result -> {
           if (!result.isValid()) {
@@ -198,7 +197,7 @@ public class SignUpProgressController extends BaseController {
 
           InfoBundle newBundle =
               new InfoBundle(bundle.getName(), bundle.getSurname(), bundle.getEmail(),
-                  result.getData(), null);
+                  result.getData().toLowerCase(), null);
 
           tvContinue.setOnClickListener(v -> startTransaction(
               SignUpProgressController.create(R.layout.controller_sign_up_password, newBundle),
@@ -209,9 +208,9 @@ public class SignUpProgressController extends BaseController {
   }
 
   private void setPassword() {
-    Disposable d = RxTextView.afterTextChangeEvents(fetPassword.getEditText())
+    Disposable d = RxTextView.textChanges(fetPassword.getEditText())
         .debounce(200, TimeUnit.MILLISECONDS)
-        .map(event -> event.editable().toString())
+        .map(CharSequence::toString)
         .map(ValidationUtils::isValidPassword)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(result -> {
@@ -249,10 +248,9 @@ public class SignUpProgressController extends BaseController {
         new InfoBundle(bundle.getName(), bundle.getSurname(), bundle.getEmail(),
             bundle.getUsername(), bundle.getPassword());
 
-    tvContinue.setOnClickListener(v -> {
-      startTransaction(SignUpDiscoverController.createWithEmail(newBundle),
-          new HorizontalChangeHandler());
-    });
+    tvContinue.setOnClickListener(
+        v -> startTransaction(SignUpDiscoverController.createWithEmail(newBundle),
+            new HorizontalChangeHandler()));
   }
 
   private void setupToolbar() {

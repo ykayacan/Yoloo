@@ -1,4 +1,4 @@
-package com.yoloo.backend.post.dto;
+package com.yoloo.backend.post.client;
 
 import com.yoloo.backend.media.dto.Media;
 import java.util.Date;
@@ -13,6 +13,7 @@ import lombok.Value;
 public class Post {
   private String id;
   private String ownerId;
+  private boolean owner;
   private String username;
   private String avatarUrl;
   private String content;

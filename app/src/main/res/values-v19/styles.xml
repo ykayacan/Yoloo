@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-  <style name="Yoloo" parent="Yoloo.Base"> <!-- pre-Lollipop -->
+  <!--<style name="Yoloo" parent="Yoloo.Base"> &lt;!&ndash; pre-Lollipop &ndash;&gt;
     <item name="android:windowTranslucentStatus">true</item>
     <item name="android:windowTranslucentNavigation">true</item>
-  </style>
+  </style>-->
 
 </resources>

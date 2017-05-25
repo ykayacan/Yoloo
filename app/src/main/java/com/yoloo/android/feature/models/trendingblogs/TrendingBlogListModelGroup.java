@@ -2,7 +2,6 @@ package com.yoloo.android.feature.models.trendingblogs;
 
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
-import android.view.View;
 import com.airbnb.epoxy.EpoxyModel;
 import com.airbnb.epoxy.EpoxyModelGroup;
 import com.airbnb.epoxy.SimpleEpoxyModel;
@@ -17,34 +16,37 @@ import java.util.List;
 
 public class TrendingBlogListModelGroup extends EpoxyModelGroup {
 
-  public TrendingBlogListModelGroup(String userId, TrendingBlogListFeedItem item,
-      Callbacks callbacks, RequestManager glide,
-      Transformation<Bitmap> bitmapTransformation) {
-    super(R.layout.item_trending_blogs,
-        buildModels(userId, item, callbacks, glide, bitmapTransformation));
+  public TrendingBlogListModelGroup(TrendingBlogListFeedItem item, Callbacks callbacks,
+      RequestManager glide, Transformation<Bitmap> bitmapTransformation) {
+    super(R.layout.item_trending_blogs, buildModels(item, callbacks, glide, bitmapTransformation));
     id(item.id());
   }
 
-  private static List<EpoxyModel<?>> buildModels(String userId, TrendingBlogListFeedItem item,
-      Callbacks callbacks, RequestManager glide,
-      Transformation<Bitmap> bitmapTransformation) {
+  private static List<EpoxyModel<?>> buildModels(TrendingBlogListFeedItem item, Callbacks callbacks,
+      RequestManager glide, Transformation<Bitmap> bitmapTransformation) {
     List<EpoxyModel<?>> models = new ArrayList<>();
 
     models.add(new SimpleEpoxyModel(R.layout.item_trending_blog_header_text));
 
-    models.add(new SimpleEpoxyModel(R.layout.item_recommended_group_more_text).onClick(
-        v -> callbacks.onTrendingBlogHeaderClicked()));
+    models.add(new SimpleEpoxyModel(R.layout.item_recommended_group_more_text)
+        .onClick(v -> callbacks.onTrendingBlogHeaderClicked()));
 
     // inner group models
     List<TrendingBlogModel_> blogModels = Stream
         .of(item.getItem())
         .map(post -> new TrendingBlogModel_()
             .id("trending_" + post.getId())
-            .post(post)
+            .avatarUrl(post.getAvatarUrl())
+            .username(post.getUsername())
+            .created(post.getCreated().getTime() / 1000)
+            .bountyCount(post.getBounty())
+            .thumbUrl(post.getMedias().get(0).getThumbSizeUrl())
+            .title(post.getTitle())
+            .content(post.getContent())
+            .owner(post.isOwner())
+            .bookmarked(post.isBookmarked())
             .glide(glide)
-            .postOwner(post.getOwnerId().equals(userId))
             .bitmapTransformation(bitmapTransformation)
-            .onPostOptionsClickListener(v -> callbacks.onTrendingBlogOptionsClicked(v, post))
             .onBookmarkClickListener(v -> callbacks.onTrendingBlogBookmarkClicked(post))
             .onClickListener(v -> callbacks.onTrendingBlogClicked(post)))
         .toList();
@@ -61,7 +63,5 @@ public class TrendingBlogListModelGroup extends EpoxyModelGroup {
     void onTrendingBlogClicked(@NonNull PostRealm blog);
 
     void onTrendingBlogBookmarkClicked(@NonNull PostRealm post);
-
-    void onTrendingBlogOptionsClicked(View v, @NonNull PostRealm post);
   }
 }

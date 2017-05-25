@@ -16,6 +16,10 @@
     android:name="android.hardware.camera"
     android:required="false" />
 
+  <uses-sdk
+    android:minSdkVersion="16"
+    tools:overrideLibrary="com.rafakob.floatingedittext" />
+
   <application
     android:name=".YolooApp"
     android:allowBackup="true"

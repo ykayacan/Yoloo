@@ -1,6 +1,5 @@
 package com.yoloo.android.feature.group;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,17 +13,17 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import butterknife.BindColor;
 import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
 import com.bluelinelabs.conductor.Controller;
-import com.bluelinelabs.conductor.ControllerChangeHandler;
-import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.Router;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bluelinelabs.conductor.support.RouterPagerAdapter;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.yoloo.android.R;
 import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.data.db.GroupRealm;
@@ -34,12 +33,13 @@ import com.yoloo.android.feature.group.groupuserslist.GroupUsersListController;
 import com.yoloo.android.feature.group.taglist.TagListController;
 import com.yoloo.android.feature.postlist.PostListController;
 import com.yoloo.android.framework.MvpController;
+import com.yoloo.android.ui.widget.AvatarView;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.Pair;
 import com.yoloo.android.util.UpdateCallback;
 import com.yoloo.android.util.ViewUtils;
-import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
+import com.yoloo.android.util.glide.AvatarTarget;
 import java.util.ArrayList;
 import java.util.List;
 import timber.log.Timber;
@@ -55,10 +55,10 @@ public class GroupController extends MvpController<GroupView, GroupPresenter> im
   @BindView(R.id.iv_group_cover) ImageView ivBackgroundCover;
   @BindView(R.id.tv_group_subscriber_count) TextView tvSubscriberCount;
   @BindView(R.id.btn_group_subscribe) Button btnSubscribe;
-  @BindView(R.id.iv_member_1) ImageView ivMember1;
-  @BindView(R.id.iv_member_2) ImageView ivMember2;
-  @BindView(R.id.iv_member_3) ImageView ivMember3;
-  @BindView(R.id.iv_member_4) ImageView ivMember4;
+  @BindView(R.id.iv_member_1) AvatarView ivMember1;
+  @BindView(R.id.iv_member_2) AvatarView ivMember2;
+  @BindView(R.id.iv_member_3) AvatarView ivMember3;
+  @BindView(R.id.iv_member_4) AvatarView ivMember4;
   @BindView(R.id.tv_member_more) TextView tvMemberMore;
 
   @BindString(R.string.group_subscribe) String subscribeString;
@@ -67,13 +67,13 @@ public class GroupController extends MvpController<GroupView, GroupPresenter> im
   @BindString(R.string.group_tab_posts) String postsTabString;
   @BindString(R.string.group_tab_tags) String tagsTabString;
 
+  @BindColor(R.color.primary_dark) int primaryDarkColor;
+
   private String groupId;
 
   private GroupRealm group;
 
   private boolean reEnter;
-
-  private CropCircleTransformation transformation;
 
   public GroupController(@Nullable Bundle args) {
     super(args);
@@ -97,8 +97,6 @@ public class GroupController extends MvpController<GroupView, GroupPresenter> im
     setupToolbar();
     setHasOptionsMenu(true);
 
-    transformation = new CropCircleTransformation(getActivity());
-
     groupId = getArgs().getString(KEY_GROUP_ID);
 
     List<Pair<String, Controller>> pairs = new ArrayList<>(3);
@@ -114,6 +112,7 @@ public class GroupController extends MvpController<GroupView, GroupPresenter> im
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
 
     if (!reEnter) {
       getPresenter().loadGroupInfoAndPosts(groupId);
@@ -125,13 +124,6 @@ public class GroupController extends MvpController<GroupView, GroupPresenter> im
   protected void onDestroyView(@NonNull View view) {
     viewPager.setAdapter(null);
     super.onDestroyView(view);
-  }
-
-  @Override
-  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
-      @NonNull ControllerChangeType changeType) {
-    super.onChangeEnded(changeHandler, changeType);
-    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
   }
 
   @Override
@@ -223,86 +215,37 @@ public class GroupController extends MvpController<GroupView, GroupPresenter> im
   private void setTopGroupSubscribers(GroupRealm group) {
     final int topSubscriberCount = group.getTopSubscribers().size();
     final String count = "+" + topSubscriberCount;
-    tvSubscriberCount.setText(count);
+
+    ivMember1.setVisibility(topSubscriberCount > 0 ? View.VISIBLE : View.GONE);
+    ivMember2.setVisibility(topSubscriberCount > 1 ? View.VISIBLE : View.GONE);
+    ivMember3.setVisibility(topSubscriberCount > 2 ? View.VISIBLE : View.GONE);
+    ivMember4.setVisibility(topSubscriberCount > 3 ? View.VISIBLE : View.GONE);
     tvMemberMore.setVisibility(topSubscriberCount > 4 ? View.VISIBLE : View.GONE);
+    tvMemberMore.setText(count);
 
-    switch (topSubscriberCount) {
-      case 0:
-        hideAllMemberAvatars();
-        break;
-      case 1:
-        Glide.with(getActivity())
-            .load(group.getTopSubscribers().get(0).getAvatarUrl())
-            .bitmapTransform(transformation)
-            .into(ivMember1);
-        ivMember1.setVisibility(View.VISIBLE);
-        ivMember2.setVisibility(View.GONE);
-        ivMember3.setVisibility(View.GONE);
-        ivMember4.setVisibility(View.GONE);
-        break;
-      case 2:
-        Glide.with(getActivity())
-            .load(group.getTopSubscribers().get(0).getAvatarUrl())
-            .bitmapTransform(transformation)
-            .into(ivMember1);
-        Glide.with(getActivity())
-            .load(group.getTopSubscribers().get(1).getAvatarUrl())
-            .bitmapTransform(transformation)
-            .into(ivMember2);
-        ivMember1.setVisibility(View.VISIBLE);
-        ivMember2.setVisibility(View.VISIBLE);
-        ivMember3.setVisibility(View.GONE);
-        ivMember4.setVisibility(View.GONE);
-        break;
-      case 3:
-        Glide.with(getActivity())
-            .load(group.getTopSubscribers().get(0).getAvatarUrl())
-            .bitmapTransform(transformation)
-            .into(ivMember1);
-        Glide.with(getActivity())
-            .load(group.getTopSubscribers().get(1).getAvatarUrl())
-            .bitmapTransform(transformation)
-            .into(ivMember2);
-        Glide.with(getActivity())
-            .load(group.getTopSubscribers().get(2).getAvatarUrl())
-            .bitmapTransform(transformation)
-            .into(ivMember3);
-        ivMember1.setVisibility(View.VISIBLE);
-        ivMember2.setVisibility(View.VISIBLE);
-        ivMember3.setVisibility(View.VISIBLE);
-        ivMember4.setVisibility(View.GONE);
-        break;
-      case 4:
-        Glide.with(getActivity())
-            .load(group.getTopSubscribers().get(0).getAvatarUrl())
-            .bitmapTransform(transformation)
-            .into(ivMember1);
-        Glide.with(getActivity())
-            .load(group.getTopSubscribers().get(1).getAvatarUrl())
-            .bitmapTransform(transformation)
-            .into(ivMember2);
-        Glide.with(getActivity())
-            .load(group.getTopSubscribers().get(2).getAvatarUrl())
-            .bitmapTransform(transformation)
-            .into(ivMember3);
-        Glide.with(getActivity())
-            .load(group.getTopSubscribers().get(3).getAvatarUrl())
-            .bitmapTransform(transformation)
-            .into(ivMember4);
-        ivMember1.setVisibility(View.VISIBLE);
-        ivMember2.setVisibility(View.VISIBLE);
-        ivMember3.setVisibility(View.VISIBLE);
-        ivMember4.setVisibility(View.VISIBLE);
-        break;
+    RequestManager glide = Glide.with(getActivity());
+
+    if (topSubscriberCount > 0) {
+      glide
+          .load(group.getTopSubscribers().get(0).getAvatarUrl())
+          .into(new AvatarTarget(ivMember1));
     }
-  }
 
-  private void hideAllMemberAvatars() {
-    ivMember1.setVisibility(View.GONE);
-    ivMember2.setVisibility(View.GONE);
-    ivMember3.setVisibility(View.GONE);
-    ivMember4.setVisibility(View.GONE);
-    tvMemberMore.setVisibility(View.GONE);
+    if (topSubscriberCount > 1) {
+      glide
+          .load(group.getTopSubscribers().get(1).getAvatarUrl())
+          .into(new AvatarTarget(ivMember2));
+    }
+
+    if (topSubscriberCount > 2) {
+      glide.load(group.getTopSubscribers().get(2).getAvatarUrl())
+          .into(new AvatarTarget(ivMember3));
+    }
+
+    if (topSubscriberCount > 3) {
+      glide.load(group.getTopSubscribers().get(3).getAvatarUrl())
+          .into(new AvatarTarget(ivMember4));
+    }
   }
 
   private static class GroupPagerAdapter extends RouterPagerAdapter {

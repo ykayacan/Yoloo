@@ -21,6 +21,7 @@ public class BlogView extends LinearLayout {
 
   @BindView(R.id.tv_blog_title) TextView tvBlogTitle;
   @BindView(R.id.tv_blog_user_info) TextView tvBlogUserInfo;
+  @BindView(R.id.tv_item_feed_group_name) TextView tvGroupName;
   @BindView(R.id.tv_blog_content) TextView tvBlogContent;
   @BindView(R.id.tv_item_feed_share) TextView tvShare;
   @BindView(R.id.tv_item_feed_comment) TextView tvComment;
@@ -40,6 +41,7 @@ public class BlogView extends LinearLayout {
     tvComment.setText(CountUtil.formatCount(post.getCommentCount()));
     voteView.setVoteCount(post.getVoteCount());
     voteView.setVoteDirection(post.getVoteDir());
+    tvGroupName.setText(post.getGroupId());
 
     String tag = Stream.of(post.getTagNames())
         .map(tagName -> getContext().getString(R.string.label_tag, tagName))

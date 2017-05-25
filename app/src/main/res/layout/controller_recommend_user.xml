@@ -2,7 +2,8 @@
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
-  android:layout_height="match_parent">
+  android:layout_height="match_parent"
+  android:fitsSystemWindows="true">
 
   <LinearLayout
     android:layout_width="match_parent"
@@ -10,7 +11,6 @@
     android:orientation="vertical">
 
     <com.yoloo.android.ui.widget.BaselineGridTextView
-      fontPath="fonts/OpenSans-Bold.ttf"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_marginTop="48dp"
@@ -19,16 +19,17 @@
       android:text="@string/recommend_users_who_to_follow"
       android:textAppearance="@style/TextAppearance.AppCompat.Headline"
       android:textColor="@color/primary"
+      fontPath="fonts/OpenSans-Bold.ttf"
       tools:ignore="MissingPrefix" />
 
     <com.yoloo.android.ui.widget.BaselineGridTextView
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:gravity="center"
-      fontPath="fonts/OpenSans-Semibold.ttf"
       android:text="@string/recommend_user_sub"
       android:textAppearance="@style/TextAppearance.AppCompat.Subhead.Inverse"
-      android:textColor="@color/lucky_point" />
+      android:textColor="@color/lucky_point"
+      fontPath="fonts/OpenSans-Semibold.ttf" />
 
     <com.yoloo.android.ui.widget.BaselineGridTextView
       android:id="@+id/tv_skip"

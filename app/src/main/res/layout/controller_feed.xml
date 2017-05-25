@@ -4,49 +4,22 @@
   android:id="@+id/root_view"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:fitsSystemWindows="true"
-  app:contentViewId="@+id/swipe_feed"
+  app:contentViewId="@+id/swipe"
   app:emptyLayout="@layout/layout_empty_view"
   app:errorLayout="@layout/layout_error_view"
   app:initialViewState="loading"
   app:loadingLayout="@layout/layout_feed_loading_view">
 
-  <android.support.design.widget.AppBarLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:theme="@style/Yoloo.AppBarOverlay">
-
-    <FrameLayout
-      android:id="@+id/toolbar_container"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content">
-
-      <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
-        app:popupTheme="@style/Yoloo.PopupOverlay" />
-
-      <com.claudiodegio.msv.MaterialSearchView
-        android:id="@+id/msv"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:elevation="5dip"
-        app:msvHint="Search tags.." />
-
-    </FrameLayout>
-
-  </android.support.design.widget.AppBarLayout>
+  <include layout="@layout/merge_appbar" />
 
   <android.support.v4.widget.SwipeRefreshLayout
-    android:id="@+id/swipe_feed"
+    android:id="@+id/swipe"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
     <android.support.v7.widget.RecyclerView
-      android:id="@+id/rv_feed"
+      android:id="@+id/recycler_view"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:clipToPadding="false"

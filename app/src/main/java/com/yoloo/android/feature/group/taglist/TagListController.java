@@ -2,14 +2,12 @@ package com.yoloo.android.feature.group.taglist;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import butterknife.BindView;
-import com.google.android.flexbox.FlexDirection;
-import com.google.android.flexbox.FlexWrap;
-import com.google.android.flexbox.FlexboxLayoutManager;
 import com.yoloo.android.R;
 import com.yoloo.android.data.db.TagRealm;
 import com.yoloo.android.data.repository.group.GroupRepository;
@@ -17,7 +15,9 @@ import com.yoloo.android.data.repository.group.GroupRepositoryProvider;
 import com.yoloo.android.feature.base.BaseController;
 import com.yoloo.android.ui.recyclerview.OnItemClickListener;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
+import com.yoloo.android.ui.recyclerview.decoration.SpaceItemDecoration;
 import com.yoloo.android.util.BundleBuilder;
+import com.yoloo.android.util.DisplayUtil;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import timber.log.Timber;
@@ -84,12 +84,11 @@ public class TagListController extends BaseController implements OnItemClickList
 
     rvTagList.setHasFixedSize(true);
 
-    FlexboxLayoutManager layoutManager = new FlexboxLayoutManager();
-    layoutManager.setFlexWrap(FlexWrap.WRAP);
-    layoutManager.setFlexDirection(FlexDirection.ROW);
-
-    rvTagList.setLayoutManager(layoutManager);
+    LinearLayoutManager lm = new LinearLayoutManager(getActivity());
+    rvTagList.setLayoutManager(lm);
     rvTagList.setItemAnimator(new SlideInItemAnimator());
+    rvTagList.addItemDecoration(
+        new SpaceItemDecoration(DisplayUtil.dpToPx(2), SpaceItemDecoration.VERTICAL));
     rvTagList.setAdapter(epoxyController.getAdapter());
   }
 }

@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -21,8 +20,6 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import butterknife.BindColor;
 import butterknife.BindView;
-import com.bluelinelabs.conductor.ControllerChangeHandler;
-import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.bumptech.glide.Glide;
@@ -57,7 +54,6 @@ import com.yoloo.android.util.ControllerUtil;
 import com.yoloo.android.util.DisplayUtil;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.MediaUtil;
-import com.yoloo.android.util.ViewUtils;
 import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -183,12 +179,6 @@ public class ChatController extends BaseController
 
     messageInput.setInputListener(this);
     messageInput.setAttachmentsListener(this);
-  }
-
-  @Override protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
-      @NonNull ControllerChangeType changeType) {
-    super.onChangeEnded(changeHandler, changeType);
-    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
   }
 
   private void setChatToolbarInfo(Chat chat) {

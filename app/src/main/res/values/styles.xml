@@ -28,8 +28,8 @@
   </style>
 
   <style name="Yoloo.Button.Colored" parent="@style/Widget.AppCompat.Button.Colored">
-    <item name="android:textColor">@android:color/white</item>
     <item name="fontPath">fonts/OpenSans-Bold.ttf</item>
+    <item name="android:textColor">@android:color/white</item>
   </style>
 
   <style name="Yoloo.Button.Colored.Subscribe">
@@ -56,13 +56,13 @@
   </style>
 
   <style name="Yoloo.Button.AccountChooser.GoogleButton">
-    <item name="android:drawableLeft">@drawable/ic_googleg_color_24dp</item>
+    <item name="android:drawableLeft">@drawable/ic_google_color_wrapper_24dp</item>
     <item name="android:background">@drawable/idp_button_background_google</item>
     <item name="android:textColor">#757575</item>
   </style>
 
   <style name="Yoloo.Button.AccountChooser.FacebookButton">
-    <item name="android:drawableLeft">@drawable/ic_facebook_white_22dp</item>
+    <item name="android:drawableLeft">@drawable/ic_facebook_white_wrapper_22dp</item>
     <item name="android:background">@drawable/idp_button_background_facebook</item>
     <item name="android:textColor">@color/com_facebook_button_text_color</item>
   </style>

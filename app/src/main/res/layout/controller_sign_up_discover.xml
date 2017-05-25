@@ -49,7 +49,6 @@
 
   <TextView
     android:id="@+id/btn_sign_up_init_get_started"
-    fontPath="fonts/OpenSans-Bold.ttf"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
     android:background="@color/primary"
@@ -59,19 +58,11 @@
     android:textAllCaps="true"
     android:textColor="@android:color/white"
     android:visibility="invisible"
-    app:layout_constraintBottom_toTopOf="@+id/space_workaround"
-    app:layout_constraintLeft_toLeftOf="parent"
-    app:layout_constraintRight_toRightOf="parent"
-    tools:ignore="MissingPrefix"
-    tools:visibility="visible" />
-
-  <View
-    android:id="@+id/space_workaround"
-    android:layout_width="0dp"
-    android:layout_height="48dp"
-    android:visibility="invisible"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintLeft_toLeftOf="parent"
-    app:layout_constraintRight_toRightOf="parent" />
+    app:layout_constraintRight_toRightOf="parent"
+    fontPath="fonts/OpenSans-Bold.ttf"
+    tools:ignore="MissingPrefix"
+    tools:visibility="visible" />
 
 </android.support.constraint.ConstraintLayout>

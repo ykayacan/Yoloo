@@ -42,6 +42,7 @@ import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.relationship.Relationship;
 import com.yoloo.backend.travelertype.TravelerTypeEntity;
 import com.yoloo.backend.util.StringUtil;
+import io.reactivex.Observable;
 import ix.Ix;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -154,12 +155,19 @@ public final class AccountController extends Controller {
 
       Tracker tracker = gameService.createTracker(account.getKey());
 
+      DeviceRecord record = DeviceRecord.builder()
+          .id(account.getWebsafeId())
+          .parent(account.getKey())
+          .regId("")
+          .build();
+
       ImmutableList<Object> saveList = ImmutableList
           .builder()
           .add(account)
           .addAll(account.getShardMap().values())
           .addAll(updatedGroups)
           .add(tracker)
+          .add(record)
           .build();
 
       return ofy().transact(() -> {
@@ -192,7 +200,7 @@ public final class AccountController extends Controller {
     return Account
         .builder()
         .id(accountKey.getId())
-        .username(payload.getUsername())
+        .username(payload.getUsername().toLowerCase())
         .realname(payload.getRealname())
         .email(new Email(payload.getEmail()))
         .avatarUrl(new Link(payload.getProfileImageUrl()))
@@ -467,32 +475,30 @@ public final class AccountController extends Controller {
 
     Key<Account> accountKey = Key.create(user.getUserId());
 
-    List<Key<Account>> followingKeys = Ix
+    Set<Key<Account>> followingKeys = Ix
         .from(ofy().load().type(Relationship.class).ancestor(accountKey).list())
         .map(Relationship::getFollowingKey)
-        .toList();
+        .toSet();
 
-    Query<Account> query = ofy().load().type(Account.class).order("-" + Account.FIELD_CREATED);
-
-    query = cursor.isPresent() ? query.startAt(Cursor.fromWebSafeString(cursor.get())) : query;
-
-    query = query.limit(limit.or(DEFAULT_LIST_LIMIT));
-
-    final QueryResultIterator<Account> qi = query.iterator();
-
-    return Ix
-        .just(qi)
-        .filter(Iterator::hasNext)
-        .map(Iterator::next)
-        .filter(
-            account -> !account.getWebsafeId().equals(user.getUserId()) && !followingKeys.contains(
-                account.getKey()))
-        .collectToList()
-        .map(accounts -> CollectionResponse.<Account>builder()
-            .setItems(accounts)
-            .setNextPageToken(qi.getCursor().toWebSafeString())
-            .build())
-        .single();
+    return Observable.just(ofy().load().type(Account.class))
+        .map(query -> query.order("-" + Account.FIELD_CREATED))
+        .map(query -> cursor.isPresent()
+            ? query.startAt(Cursor.fromWebSafeString(cursor.get()))
+            : query)
+        .map(query -> query.limit(limit.or(DEFAULT_LIST_LIMIT)))
+        .flatMapSingle(query -> {
+          QueryResultIterator<Account> it = query.iterator();
+          return Observable.just(it)
+              .filter(Iterator::hasNext)
+              .map(Iterator::next)
+              .filter(account -> !account.getKey().equivalent(accountKey))
+              .filter(account -> !followingKeys.contains(account.getKey()))
+              .toList()
+              .map(accounts -> CollectionResponse.<Account>builder()
+                  .setItems(accounts)
+                  .setNextPageToken(it.getCursor().toWebSafeString())
+                  .build());
+        }).blockingSingle();
   }
 
   public WrappedBoolean checkUsername(String username) {

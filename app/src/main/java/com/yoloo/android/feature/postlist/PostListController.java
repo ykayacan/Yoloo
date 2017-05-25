@@ -19,13 +19,11 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
-import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
-import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.data.db.MediaRealm;
 import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.data.feed.FeedItem;
@@ -164,6 +162,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
 
   @Override protected void onAttach(@NonNull View view) {
     super.onAttach(view);
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
 
     if (!reEnter) {
       chooseLoadMethod(false);
@@ -196,13 +195,6 @@ public class PostListController extends MvpController<PostListView, PostListPres
     });
   }
 
-  @Override protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
-      @NonNull ControllerChangeType changeType) {
-    super.onChangeEnded(changeHandler, changeType);
-    getDrawerLayout().setFitsSystemWindows(false);
-    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
-  }
-
   @Override public void onLoading(boolean pullToRefresh) {
     if (!pullToRefresh) {
       rootView.setState(StateLayout.VIEW_STATE_LOADING);
@@ -210,16 +202,16 @@ public class PostListController extends MvpController<PostListView, PostListPres
   }
 
   @Override public void onLoaded(List<FeedItem<?>> value) {
-    if (value.isEmpty()) {
-      epoxyController.hideLoader();
-    } else {
-      epoxyController.setData(value, false);
-    }
+    epoxyController.setData(value, false);
   }
 
   @Override public void showContent() {
     rootView.setState(StateLayout.VIEW_STATE_CONTENT);
     swipeRefreshLayout.setRefreshing(false);
+  }
+
+  @Override public void onMoreLoaded(List<FeedItem<?>> items) {
+    epoxyController.setLoadMoreData(items);
   }
 
   @Override public void onError(Throwable e) {
@@ -258,10 +250,6 @@ public class PostListController extends MvpController<PostListView, PostListPres
     chooseLoadMethod(true);
   }
 
-  @Override public void onAccountLoaded(@NonNull AccountRealm me) {
-    epoxyController.setUserId(me.getId());
-  }
-
   @NonNull @Override public PostListPresenter createPresenter() {
     return new PostListPresenter(PostRepositoryProvider.getRepository(),
         UserRepositoryProvider.getRepository());
@@ -297,7 +285,7 @@ public class PostListController extends MvpController<PostListView, PostListPres
     recyclerView.setAdapter(epoxyController.getAdapter());
 
     endlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(lm) {
-      @Override public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+      @Override public void onLoadMore(int totalItemsCount, RecyclerView view) {
         chooseLoadMoreMethod();
         epoxyController.showLoader();
       }

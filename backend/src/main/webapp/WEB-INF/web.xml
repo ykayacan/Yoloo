@@ -128,6 +128,11 @@
   </servlet>
 
   <servlet-mapping>
+    <servlet-name>ResetDailyPointsServlet</servlet-name>
+    <url-pattern>/crons/resetDailyCron</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
     <servlet-name>UpdateGroupSubscriberCountServlet</servlet-name>
     <url-pattern>/crons/updateGroupSubscriberCountCron</url-pattern>
   </servlet-mapping>
@@ -138,9 +143,14 @@
   </servlet>
 
   <servlet-mapping>
-    <servlet-name>ResetDailyPointsServlet</servlet-name>
-    <url-pattern>/crons/resetDailyCron</url-pattern>
+    <servlet-name>DeleteOrphanFeedCron</servlet-name>
+    <url-pattern>/crons/deleteOrphanFeedKeysCron</url-pattern>
   </servlet-mapping>
+
+  <servlet>
+    <servlet-name>DeleteOrphanFeedCron</servlet-name>
+    <servlet-class>com.yoloo.backend.feed.DeleteOrphanFeedCron</servlet-class>
+  </servlet>
 
   <!-- End Servlets -->
 

@@ -14,7 +14,6 @@ import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;
 public abstract class BlogModel extends EpoxyModel<BlogView> {
 
   @EpoxyAttribute PostRealm post;
-  @EpoxyAttribute boolean postOwner;
   @EpoxyAttribute(DoNotHash) PostCallbacks callbacks;
 
   @Override

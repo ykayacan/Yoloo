@@ -16,6 +16,11 @@ import static com.yoloo.backend.OfyService.ofy;
  */
 public class ResetDailyPointsServlet extends HttpServlet {
 
+  @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+      throws ServletException, IOException {
+    doPost(req, resp);
+  }
+
   @Override
   protected void doPost(HttpServletRequest req, HttpServletResponse resp)
       throws ServletException, IOException {

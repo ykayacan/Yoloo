@@ -5,7 +5,6 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:background="@android:color/white"
-  android:fitsSystemWindows="true"
   app:contentViewId="@+id/swipe_notification"
   app:emptyLayout="@layout/layout_notification_empty_view"
   app:errorLayout="@layout/layout_error_view"

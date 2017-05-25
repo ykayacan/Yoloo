@@ -34,4 +34,6 @@
 
   <dimen name="drag_dismiss_distance">112dp</dimen>
   <dimen name="padding_explore_button">12dp</dimen> <!-- 2 * ?android:actionBarSize -->
+
+  <dimen name="stroke_width_avatar">4dp</dimen>
 </resources>

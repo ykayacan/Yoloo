@@ -12,6 +12,8 @@ import com.yoloo.android.data.repository.group.GroupUpdateJob;
 import com.yoloo.android.data.repository.post.TrendingBlogPostsUpdateJob;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
+import io.realm.RealmMigration;
+import io.realm.RealmSchema;
 import java.io.File;
 import javax.annotation.Nonnull;
 import org.solovyev.android.checkout.Billing;
@@ -33,6 +35,15 @@ public class YolooApp extends MultiDexApplication {
       return BuildConfig.IN_APP_KEY;
     }
   });
+
+  private final RealmMigration migration = (realm, oldVersion, newVersion) -> {
+    RealmSchema schema = realm.getSchema();
+
+    if (oldVersion == 0) {
+      schema.get("PostRealm").addField("owner", boolean.class);
+      ++oldVersion;
+    }
+  };
 
   public static File getCacheDirectory() {
     return appContext.getCacheDir();
@@ -79,8 +90,10 @@ public class YolooApp extends MultiDexApplication {
 
   private void initRealm() {
     Realm.init(this);
-    RealmConfiguration realmConfiguration =
-        new RealmConfiguration.Builder().deleteRealmIfMigrationNeeded().build();
+    RealmConfiguration realmConfiguration = new RealmConfiguration.Builder()
+        .schemaVersion(1)
+        .migration(migration)
+        .build();
     Realm.setDefaultConfiguration(realmConfiguration);
   }
 

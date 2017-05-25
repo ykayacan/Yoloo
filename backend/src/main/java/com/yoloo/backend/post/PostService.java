@@ -59,6 +59,7 @@ public class PostService {
         .postType(type.getType())
         .created(DateTime.now())
         .shardMap(shardMap)
+        .owner(true)
         .build();
   }
 

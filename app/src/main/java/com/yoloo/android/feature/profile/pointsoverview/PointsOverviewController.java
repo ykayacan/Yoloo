@@ -17,8 +17,6 @@ import android.widget.TextView;
 import butterknife.BindArray;
 import butterknife.BindColor;
 import butterknife.BindView;
-import com.bluelinelabs.conductor.ControllerChangeHandler;
-import com.bluelinelabs.conductor.ControllerChangeType;
 import com.yoloo.android.R;
 import com.yoloo.android.data.db.GameInfoRealm;
 import com.yoloo.android.data.repository.user.UserRepositoryProvider;
@@ -65,10 +63,8 @@ public class PointsOverviewController
     tvPointsHint.setText(hintTextArray[new Random().nextInt(3)]);
   }
 
-  @Override
-  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
-      @NonNull ControllerChangeType changeType) {
-    super.onChangeEnded(changeHandler, changeType);
+  @Override protected void onAttach(@NonNull View view) {
+    super.onAttach(view);
     ViewUtils.setStatusBarColor(getActivity(), colorPrimaryBlue);
   }
 

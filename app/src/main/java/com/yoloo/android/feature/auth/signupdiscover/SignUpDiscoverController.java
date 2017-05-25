@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -22,6 +21,7 @@ import android.widget.Toast;
 import butterknife.BindArray;
 import butterknife.BindString;
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
@@ -41,7 +41,6 @@ import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.KeyboardUtil;
 import com.yoloo.android.util.LocaleUtil;
-import com.yoloo.android.util.ViewUtils;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Random;
@@ -54,15 +53,27 @@ public class SignUpDiscoverController
   private static final String KEY_INFO_BUNDLE = "INFO_BUNDLE";
   private static final String KEY_IDP_RESPONSE = "IDP_RESPONSE";
 
+  private static final ButterKnife.Setter<View, Boolean> VISIBLE =
+      (view, value, index) -> view.setVisibility(value ? View.VISIBLE : View.GONE);
+
+  private static final ButterKnife.Setter<View, Boolean> INVISIBLE =
+      (view, value, index) -> view.setVisibility(value ? View.INVISIBLE : View.VISIBLE);
+
   private static final int[] TYPE_DRAWABLE_IDS = {
-      R.drawable.escapist, R.drawable.guidebook_memorizer, R.drawable.know_it_all,
-      R.drawable.no_expense, R.drawable.partier, R.drawable.planner, R.drawable.repeater,
-      R.drawable.solo_traveler, R.drawable.thrill_seeker, R.drawable.travel_mate_seeker
+      R.drawable.escapist,
+      R.drawable.guidebook_memorizer,
+      R.drawable.know_it_all,
+      R.drawable.no_expense,
+      R.drawable.partier,
+      R.drawable.planner,
+      R.drawable.repeater,
+      R.drawable.solo_traveler,
+      R.drawable.thrill_seeker,
+      R.drawable.travel_mate_seeker
   };
 
   @BindView(R.id.bubblepicker) BubblePicker picker;
   @BindView(R.id.btn_sign_up_init_get_started) TextView tvGetStarted;
-  @BindView(R.id.space_workaround) View space;
 
   @BindArray(R.array.colors) int[] colors;
   @BindArray(R.array.traveler_types_titles) String[] travelerTypeTitles;
@@ -100,12 +111,11 @@ public class SignUpDiscoverController
 
   @Override
   protected View inflateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container) {
-    return inflater.inflate(R.layout.controller_select_type, container, false);
+    return inflater.inflate(R.layout.controller_sign_up_discover, container, false);
   }
 
   @Override protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
-    setNavbarHack();
 
     for (int i = 0; i < travelerTypeTitles.length; i++) {
       types.put(travelerTypeTitles[i], travelerTypeIds[i]);
@@ -119,7 +129,6 @@ public class SignUpDiscoverController
       int num = new Random().nextInt(4);
 
       Drawable drawable = ContextCompat.getDrawable(getActivity(), TYPE_DRAWABLE_IDS[i]);
-
       items.add(getPickerItem(drawable, travelerTypeTitles[i], colors[num]));
     }
 
@@ -130,9 +139,7 @@ public class SignUpDiscoverController
         if (types.containsKey(pickerItem.getTitle())) {
           selectedTypeIds.add(types.get(pickerItem.getTitle()));
 
-          if (selectedTypeIds.size() >= 3) {
-            tvGetStarted.setVisibility(View.VISIBLE);
-          }
+          ButterKnife.apply(tvGetStarted, VISIBLE, selectedTypeIds.size() >= 3);
         }
       }
 
@@ -140,9 +147,7 @@ public class SignUpDiscoverController
         if (types.containsKey(pickerItem.getTitle())) {
           selectedTypeIds.remove(types.get(pickerItem.getTitle()));
 
-          if (selectedTypeIds.size() < 3) {
-            tvGetStarted.setVisibility(View.INVISIBLE);
-          }
+          ButterKnife.apply(tvGetStarted, INVISIBLE, selectedTypeIds.size() < 3);
         }
       }
     });
@@ -168,14 +173,6 @@ public class SignUpDiscoverController
 
     return new PickerItem(title, null, true, null, gradient, 0.5F, Typeface.DEFAULT_BOLD,
         Color.WHITE, 45.0F, drawable);
-  }
-
-  private void setNavbarHack() {
-    Point point = ViewUtils.getNavigationBarSize(getActivity());
-
-    if (space != null) {
-      space.setVisibility(point.y > 0 ? View.VISIBLE : View.GONE);
-    }
   }
 
   @OnClick(R.id.btn_sign_up_init_get_started) void showSignUpScreen() {
@@ -204,7 +201,6 @@ public class SignUpDiscoverController
   }
 
   @Override public void onError(Throwable t) {
-    // TODO: 18.04.2017 Check error messages
     Timber.d(t);
 
     if (t instanceof SocketTimeoutException) {

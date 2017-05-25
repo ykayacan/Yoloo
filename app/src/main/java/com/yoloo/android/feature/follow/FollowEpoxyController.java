@@ -1,6 +1,5 @@
 package com.yoloo.android.feature.follow;
 
-import android.content.Context;
 import com.airbnb.epoxy.AutoModel;
 import com.airbnb.epoxy.Typed2EpoxyController;
 import com.annimon.stream.Stream;
@@ -9,7 +8,6 @@ import com.yoloo.android.feature.feed.common.listener.OnProfileClickListener;
 import com.yoloo.android.feature.models.loader.LoaderModel;
 import com.yoloo.android.feature.search.OnFollowClickListener;
 import com.yoloo.android.feature.search.UserModel_;
-import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,18 +18,15 @@ class FollowEpoxyController extends Typed2EpoxyController<List<AccountRealm>, Bo
   private final OnProfileClickListener onProfileClickListener;
   private final OnFollowClickListener onFollowClickListener;
 
-  private final CropCircleTransformation cropCircleTransformation;
-
   @AutoModel LoaderModel loaderModel;
 
   private List<AccountRealm> items;
 
-  FollowEpoxyController(Context context, OnProfileClickListener onProfileClickListener,
+  FollowEpoxyController(OnProfileClickListener onProfileClickListener,
       OnFollowClickListener onFollowClickListener) {
     this.onProfileClickListener = onProfileClickListener;
     this.onFollowClickListener = onFollowClickListener;
 
-    this.cropCircleTransformation = new CropCircleTransformation(context);
     this.items = new ArrayList<>();
   }
 
@@ -43,7 +38,7 @@ class FollowEpoxyController extends Typed2EpoxyController<List<AccountRealm>, Bo
     setData(items, false);
   }
 
-  public void setLoadMoreData(List<AccountRealm> items) {
+  void setLoadMoreData(List<AccountRealm> items) {
     this.items.addAll(items);
     setData(this.items, false);
   }
@@ -65,7 +60,6 @@ class FollowEpoxyController extends Typed2EpoxyController<List<AccountRealm>, Bo
     new UserModel_()
         .id(account.getId())
         .account(account)
-        .cropCircleTransformation(cropCircleTransformation)
         .onProfileClickListener(onProfileClickListener)
         .onFollowClickListener(onFollowClickListener)
         .addTo(this);

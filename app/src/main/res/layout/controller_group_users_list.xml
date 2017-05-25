@@ -4,7 +4,7 @@
   android:id="@+id/root_view"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:fitsSystemWindows="true"
+  android:background="@android:color/white"
   app:contentViewId="@+id/recycler_view"
   app:emptyLayout="@layout/layout_group_users_empty_view"
   app:errorLayout="@layout/layout_error_view"

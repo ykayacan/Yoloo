@@ -97,7 +97,7 @@ public class RecommendUserController extends BaseController implements OnFollowC
   }
 
   private void setupRecyclerview() {
-    epoxyController = new RecommendUserEpoxyController(getActivity());
+    epoxyController = new RecommendUserEpoxyController();
     epoxyController.setOnFollowClickListener(this);
 
     rvRecommendedUsers.setHasFixedSize(true);

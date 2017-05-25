@@ -11,17 +11,11 @@ public abstract class EndlessRecyclerOnScrollListener extends RecyclerView.OnScr
   // before loading more.
   private int visibleThreshold = 5;
 
-  // The current offset index of data you have loaded
-  private int currentPage = 0;
-
   // The total number of items in the dataset after the last load
   private int previousTotalItemCount = 0;
 
   // True if we are still waiting for the last set of data to load.
   private boolean loading = true;
-
-  // Sets the starting page index
-  private int startingPageIndex = 0;
 
   private RecyclerView.LayoutManager layoutManager;
 
@@ -58,17 +52,19 @@ public abstract class EndlessRecyclerOnScrollListener extends RecyclerView.OnScr
   @Override
   public void onScrolled(RecyclerView view, int dx, int dy) {
     int lastVisibleItemPosition = 0;
-    int totalItemCount = layoutManager.getItemCount();
+    int totalItemCount = view.getAdapter().getItemCount() - 1;
 
     if (layoutManager instanceof StaggeredGridLayoutManager) {
       int[] lastVisibleItemPositions =
-          ((StaggeredGridLayoutManager) layoutManager).findLastVisibleItemPositions(null);
+          ((StaggeredGridLayoutManager) layoutManager).findLastCompletelyVisibleItemPositions(null);
       // get maximum element within the list
       lastVisibleItemPosition = getLastVisibleItem(lastVisibleItemPositions);
     } else if (layoutManager instanceof GridLayoutManager) {
-      lastVisibleItemPosition = ((GridLayoutManager) layoutManager).findLastVisibleItemPosition();
+      lastVisibleItemPosition =
+          ((GridLayoutManager) layoutManager).findLastCompletelyVisibleItemPosition();
     } else if (layoutManager instanceof LinearLayoutManager) {
-      lastVisibleItemPosition = ((LinearLayoutManager) layoutManager).findLastVisibleItemPosition();
+      lastVisibleItemPosition =
+          ((LinearLayoutManager) layoutManager).findLastCompletelyVisibleItemPosition();
     }
 
     // If it’s still loading, we check to see if the dataset count has
@@ -84,22 +80,20 @@ public abstract class EndlessRecyclerOnScrollListener extends RecyclerView.OnScr
     // If we do need to reload some more data, we execute onLoadMore to fetch the data.
     // threshold should reflect how many total columns there are too
     if (!loading
-        && (lastVisibleItemPosition + visibleThreshold) > totalItemCount
-        && view.getAdapter().getItemCount()
-        > visibleThreshold) {// This condition will useful when recyclerview has less than visibleThreshold items
-      currentPage++;
-      onLoadMore(currentPage, totalItemCount, view);
+        && dy > 0
+        && (lastVisibleItemPosition + visibleThreshold) >= totalItemCount
+        && view.getAdapter().getItemCount() > visibleThreshold) {
+      onLoadMore(totalItemCount, view);
       loading = true;
     }
   }
 
   // Call whenever performing new searches
   public void resetState() {
-    this.currentPage = startingPageIndex;
     this.previousTotalItemCount = 0;
     this.loading = true;
   }
 
   // Defines the process for actually loading more data based on page
-  public abstract void onLoadMore(int page, int totalItemsCount, RecyclerView view);
+  public abstract void onLoadMore(int totalItemsCount, RecyclerView view);
 }

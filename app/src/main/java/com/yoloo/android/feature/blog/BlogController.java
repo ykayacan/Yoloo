@@ -103,6 +103,7 @@ public class BlogController extends MvpController<BlogView, BlogPresenter>
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
+
     if (!reEnter) {
       getPresenter().loadComments(post);
       reEnter = true;
@@ -203,7 +204,7 @@ public class BlogController extends MvpController<BlogView, BlogPresenter>
 
     EndlessRecyclerOnScrollListener endlessRecyclerOnScrollListener =
         new EndlessRecyclerOnScrollListener(lm) {
-          @Override public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+          @Override public void onLoadMore(int totalItemsCount, RecyclerView view) {
             getPresenter().loadMoreComments();
             epoxyController.showLoader();
           }

@@ -92,7 +92,6 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
         .subscribe(group -> {
           me = group.first;
 
-          getView().onMeLoaded(group.first);
           getView().onPostLoaded(group.second);
           getView().onLoaded(group.third);
 

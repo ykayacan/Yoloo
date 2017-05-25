@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="?attr/listPreferredItemHeight"
@@ -11,26 +12,47 @@
   android:paddingStart="@dimen/padding_large"
   tools:background="@android:color/white">
 
-  <ImageView
+  <com.yoloo.android.ui.widget.AvatarView
     android:id="@+id/iv_item_search_avatar"
     android:layout_width="@dimen/avatar_size"
     android:layout_height="@dimen/avatar_size"
     android:layout_gravity="center_vertical"
+    android:layout_marginBottom="0dp"
+    android:layout_marginStart="8dp"
+    android:layout_marginTop="0dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
     tools:src="@drawable/login_bg" />
 
   <com.yoloo.android.ui.widget.BaselineGridTextView
     android:id="@+id/tv_item_search_username"
-    style="@style/Widget.Yoloo.Username"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center_vertical"
-    android:layout_marginLeft="64dp"
-    android:layout_marginStart="64dp"
-    tools:text="Yoloo" />
+    android:layout_marginLeft="16dp"
+    android:layout_marginStart="16dp"
+    app:layout_constraintBottom_toTopOf="@+id/guideline"
+    app:layout_constraintStart_toEndOf="@+id/iv_item_search_avatar"
+    app:layout_constraintTop_toTopOf="@+id/iv_item_search_avatar"
+    tools:text="username"
+    style="@style/Widget.Yoloo.Username" />
+
+  <com.yoloo.android.ui.widget.BaselineGridTextView
+    android:id="@+id/tv_item_search_fullname"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_vertical"
+    android:layout_marginBottom="0dp"
+    android:layout_marginLeft="16dp"
+    android:layout_marginStart="16dp"
+    app:layout_constraintBottom_toBottomOf="@+id/iv_item_search_avatar"
+    app:layout_constraintStart_toEndOf="@+id/iv_item_search_avatar"
+    app:layout_constraintTop_toTopOf="@+id/guideline"
+    tools:text="fullname" />
 
   <Button
     android:id="@+id/btn_item_search_follow"
-    style="@style/Widget.AppCompat.Button.Colored"
     android:layout_width="wrap_content"
     android:layout_height="@dimen/avatar_size"
     android:layout_gravity="center|end"
@@ -38,7 +60,15 @@
     android:text="@string/action_profile_follow"
     android:textColor="@android:color/white"
     android:visibility="gone"
-    tools:text="Follow" />
+    tools:text="Follow"
+    style="@style/Widget.AppCompat.Button.Colored" />
 
-</FrameLayout>
+  <android.support.constraint.Guideline
+    android:id="@+id/guideline"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    app:layout_constraintGuide_percent="0.5" />
+
+</android.support.constraint.ConstraintLayout>
 

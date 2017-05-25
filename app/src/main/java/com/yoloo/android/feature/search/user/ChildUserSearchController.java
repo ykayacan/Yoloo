@@ -21,8 +21,10 @@ import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.util.KeyboardUtil;
+import io.reactivex.Observable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import timber.log.Timber;
 
 public class ChildUserSearchController
     extends MvpController<ChildUserSearchView, ChildUserSearchPresenter>
@@ -73,9 +75,14 @@ public class ChildUserSearchController
 
       RxTextView.afterTextChangeEvents(etSearch)
           .map(event -> event.editable().toString())
-          .filter(s -> !s.isEmpty())
+          .filter(query -> !query.isEmpty())
           .debounce(400, TimeUnit.MILLISECONDS)
-          .subscribe(query -> getPresenter().searchUsers(query, true));
+          .switchMap(query -> {
+            getPresenter().searchUsers(query, true);
+            return Observable.just(query);
+          })
+          .subscribe(s -> {
+          }, Timber::e);
 
       reEnter = true;
     }
@@ -115,7 +122,7 @@ public class ChildUserSearchController
   }
 
   private void setupRecyclerView() {
-    epoxyController = new SearchUserEpoxyController(getActivity(), this);
+    epoxyController = new SearchUserEpoxyController(this);
 
     recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
     recyclerView.setItemAnimator(new SlideInItemAnimator());

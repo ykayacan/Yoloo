@@ -38,7 +38,7 @@ import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;
 public abstract class BlogPostModel extends EpoxyModelWithHolder<BlogPostModel.PostHolder> {
 
   @EpoxyAttribute PostRealm post;
-  @EpoxyAttribute boolean postOwner;
+  @EpoxyAttribute String groupName;
   @EpoxyAttribute boolean detailLayout;
   @EpoxyAttribute(DoNotHash) PostCallbacks callbacks;
   @EpoxyAttribute(DoNotHash) RequestManager glide;
@@ -58,6 +58,8 @@ public abstract class BlogPostModel extends EpoxyModelWithHolder<BlogPostModel.P
 
     holder.tvUsername.setText(post.getUsername());
     holder.tvTime.setTimeStamp(post.getCreated().getTime() / 1000);
+    holder.tvGroupName.setText(
+        holder.itemView.getResources().getString(R.string.feed_item_group_name, groupName));
 
     holder.tvBounty.setVisibility(post.getBounty() == 0 ? View.GONE : View.VISIBLE);
     holder.tvBounty.setText(String.valueOf(post.getBounty()));
@@ -75,7 +77,7 @@ public abstract class BlogPostModel extends EpoxyModelWithHolder<BlogPostModel.P
     holder.voteView.setVoteDirection(post.getVoteDir());
 
     holder.ibOptions.setImageResource(
-        postOwner ? R.drawable.ic_more_vert_black_24dp : R.drawable.ic_bookmark_black_24dp);
+        post.isOwner() ? R.drawable.ic_more_vert_black_24dp : R.drawable.ic_bookmark_black_24dp);
     int color = ContextCompat.getColor(holder.itemView.getContext(),
         post.isBookmarked() ? R.color.primary : android.R.color.secondary_text_dark);
     holder.ibOptions.setColorFilter(color, PorterDuff.Mode.SRC_IN);
@@ -118,7 +120,7 @@ public abstract class BlogPostModel extends EpoxyModelWithHolder<BlogPostModel.P
     holder.voteView.setOnVoteEventListener(dir -> callbacks.onPostVoteClickListener(post, dir));
 
     holder.ibOptions.setOnClickListener(v -> {
-      if (postOwner) {
+      if (post.isOwner()) {
         callbacks.onPostOptionsClickListener(v, post);
       } else {
         int reversedColor = ContextCompat.getColor(holder.itemView.getContext(),
@@ -164,6 +166,7 @@ public abstract class BlogPostModel extends EpoxyModelWithHolder<BlogPostModel.P
     @BindView(R.id.iv_item_feed_user_avatar) ImageView ivUserAvatar;
     @BindView(R.id.tv_item_feed_username) TextView tvUsername;
     @BindView(R.id.tv_item_feed_time) TimeTextView tvTime;
+    @BindView(R.id.tv_item_feed_group_name) TextView tvGroupName;
     @BindView(R.id.tv_item_feed_bounty) TextView tvBounty;
     @BindView(R.id.tv_item_feed_title) TextView tvTitle;
     @BindView(R.id.ib_item_feed_options) ImageButton ibOptions;

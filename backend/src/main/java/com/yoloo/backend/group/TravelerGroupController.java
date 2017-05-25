@@ -228,7 +228,7 @@ public class TravelerGroupController extends Controller {
         topSubscribers = new ArrayList<>(4);
       }
 
-      if (topSubscribers.size() < 5) {
+      if (topSubscribers.size() < 4) {
         topSubscribers.add(
             new TravelerGroupEntity.GroupSubscriber(account.getWebsafeId(),
                 account.getAvatarUrl().getValue()));

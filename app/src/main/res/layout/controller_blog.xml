@@ -4,20 +4,17 @@
   android:id="@+id/root_view"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="@android:color/white"
-  android:fitsSystemWindows="true">
+  android:background="@android:color/white">
 
   <android.support.design.widget.AppBarLayout
     android:layout_width="match_parent"
     android:layout_height="@dimen/app_bar_height"
-    android:fitsSystemWindows="true"
     android:theme="@style/Yoloo.AppBarOverlay">
 
     <android.support.design.widget.CollapsingToolbarLayout
       android:id="@+id/collapsingToolbarLayout"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:fitsSystemWindows="true"
       app:contentScrim="?attr/colorPrimary"
       app:layout_scrollFlags="scroll|exitUntilCollapsed"
       app:toolbarId="@+id/toolbar">
@@ -26,7 +23,6 @@
         android:id="@+id/slider"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fitsSystemWindows="true"
         app:layout_collapseMode="parallax" />
 
       <android.support.v7.widget.Toolbar

@@ -93,7 +93,7 @@ public final class EndlessRecyclerViewScrollListener extends RecyclerView.OnScro
       return;
     }
 
-    int footerItemCount = footerVisible ? 1 : 0;
+    int footerItemCount = 0;
 
     if (visibleThreshold == -1) {
       visibleThreshold = findLastVisibleItemPosition(recyclerView)
@@ -101,17 +101,18 @@ public final class EndlessRecyclerViewScrollListener extends RecyclerView.OnScro
           - footerItemCount;
     }
 
-    // Subtract header items.
-    visibleItemCount = recyclerView.getChildCount() - footerItemCount - 2;
-    totalItemCount = layoutManager.getItemCount() - footerItemCount - 2;
+    visibleItemCount = recyclerView.getChildCount() - footerItemCount;
+    totalItemCount = layoutManager.getItemCount() - footerItemCount;
     firstVisibleItem = findFirstVisibleItemPosition(recyclerView);
 
     // If it's still loading, we check to see if the dataset count has
     // changed, if so we conclude it has finished loading and updatePost the current page
     // number and total item count.
-    if (loading && (totalItemCount > previousTotal)) {
-      loading = false;
-      previousTotal = totalItemCount;
+    if (loading) {
+      if (totalItemCount > previousTotal) {
+        loading = false;
+        previousTotal = totalItemCount;
+      }
     }
 
     // If it isn't currently loading, we check to see if we have breached

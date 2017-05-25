@@ -13,6 +13,10 @@ def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystoreProperties = new Properties()
 keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
+def secretPropertiesFile = rootProject.file("secret.properties")
+def secretProperties = new Properties()
+secretProperties.load(new FileInputStream(secretPropertiesFile))
+
 android {
   compileSdkVersion compileSdk
   buildToolsVersion buildTools
@@ -36,7 +40,7 @@ android {
 
   splits {
     abi {
-      enable true
+      enable false
       reset()
       include 'x86', 'armeabi', 'armeabi-v7a', 'mips'
       universalApk true
@@ -59,24 +63,27 @@ android {
     }
   }
 
+  flavorDimensions "api"
+
   productFlavors {
-    // Define separate dev and prod product flavors.
     dev {
+      dimension "api"
       signingConfig signingConfigs.debug
       versionCode gitVersionCodeTime
       versionName gitVersionName
       // dev utilizes minSDKVersion = 21 to allow the Android gradle plugin
       // to pre-dex each module and produce an APK that can be tested on
       // Android Lollipop without time consuming dex merging processes.
-      minSdkVersion 21
+      minSdkVersion 16
     }
 
     prod {
+      dimension "api"
       signingConfig signingConfigs.release
       versionCode gitVersionCode
       versionName gitVersionName
       // The actual minSdkVersion for the application.
-      minSdkVersion 19
+      minSdkVersion 16
     }
   }
 
@@ -90,27 +97,18 @@ android {
       signingConfig signingConfigs.release
       buildConfigField "String", "SERVER_URL", '"https://yoloo-151719.appspot.com/_ah/api/"'
       buildConfigField "String", "UPLOAD_URL", '"https://yoloo-151719.appspot.com/upload"'
-      buildConfigField "String", "IN_APP_KEY",
-          '"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArMj5GNkpgcKVRL59mf3naz5NN160Mvb604dasg' +
-              'JPcxy0TUiCqVwtMPa5Ydi8D6+Tdt9WOpMhyawjIYJays+jPCjjxq5sveVFh+XUOBISoC5/rSV1BC6tby' +
-              'QiWgkGB/m+f3G8xh9N/M9ILhI4xvn6pVR56WLNq/g3utj6+9f4RwQXzV25RpDmpE9WwAkvkHSp+I8VSQ' +
-              '98IqL2zwaHF4Y1bw17e05O+BmQaMiaYnqPEBAXEs5NSH2jYPMP2unpP2jJ455vBx49xB4nlYjPitn370' +
-              '2mityq6cwyMeAQBy1XlXHTXpfu2wV0MVEL0wQ4htsPTncFdHOzt+GCbn+FSvQV1QIDAQAB"'
+      buildConfigField "String", "IN_APP_KEY", secretProperties['inAppBillingKey']
     }
 
     debug {
+      debuggable true
       minifyEnabled false
       shrinkResources false
       versionNameSuffix ".debug"
       signingConfig signingConfigs.debug
       buildConfigField "String", "SERVER_URL", '"https://yoloo-151719.appspot.com/_ah/api/"'
       buildConfigField "String", "UPLOAD_URL", '"https://yoloo-151719.appspot.com/upload"'
-      buildConfigField "String", "IN_APP_KEY",
-          '"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArMj5GNkpgcKVRL59mf3naz5NN160Mvb604dasg' +
-              'JPcxy0TUiCqVwtMPa5Ydi8D6+Tdt9WOpMhyawjIYJays+jPCjjxq5sveVFh+XUOBISoC5/rSV1BC6tby' +
-              'QiWgkGB/m+f3G8xh9N/M9ILhI4xvn6pVR56WLNq/g3utj6+9f4RwQXzV25RpDmpE9WwAkvkHSp+I8VSQ' +
-              '98IqL2zwaHF4Y1bw17e05O+BmQaMiaYnqPEBAXEs5NSH2jYPMP2unpP2jJ455vBx49xB4nlYjPitn370' +
-              '2mityq6cwyMeAQBy1XlXHTXpfu2wV0MVEL0wQ4htsPTncFdHOzt+GCbn+FSvQV1QIDAQAB"'
+      buildConfigField "String", "IN_APP_KEY", secretProperties['inAppBillingKey']
     }
   }
 
@@ -127,8 +125,7 @@ android {
 
 project.android.buildTypes.all { buildType ->
   buildType.javaCompileOptions.annotationProcessorOptions.arguments =
-      [// Validation is disabled in production to remove the runtime overhead
-       validateEpoxyModelUsage     : String.valueOf(buildType.name == 'debug'),
+      [validateEpoxyModelUsage     : String.valueOf(buildType.name == 'debug'),
        requireHashCodeInEpoxyModels: "true",
        implicitlyAddAutoModels     : "true"]
 }
@@ -160,11 +157,12 @@ dependencies {
   compile "com.android.support:cardview-v7:$supportLibs_version"
   compile "com.android.support:support-compat:$supportLibs_version"
   compile "com.android.support:customtabs:$supportLibs_version"
+  compile "com.android.support:support-vector-drawable:$supportLibs_version"
   compile "com.android.support.constraint:constraint-layout:$constraintLayout_version"
   compile "com.android.support:multidex:$multidex_version"
 
   // Firebase
-  releaseCompile "com.google.firebase:firebase-core:$firebase_version"
+  implementation "com.google.firebase:firebase-core:$firebase_version"
   compile "com.google.firebase:firebase-auth:$firebase_version"
   compile "com.google.firebase:firebase-messaging:$firebase_version"
   compile "com.google.firebase:firebase-invites:$firebase_version"
@@ -202,7 +200,7 @@ dependencies {
   compile "com.jakewharton.timber:timber:$timber_version"
   compile 'com.github.adhishlal:asdp:1.1'
   compile 'uk.co.chrisjenx:calligraphy:2.2.0'
-  compile 'com.squareup.moshi:moshi:1.4.0'
+  compile 'com.squareup.moshi:moshi:1.5.0'
   compile 'com.github.jksiezni.permissive:permissive:0.2'
   compile "com.google.android:flexbox:$flexbox_version"
   compile 'com.airbnb.android:lottie:2.0.0-rc1'
@@ -234,10 +232,10 @@ dependencies {
   annotationProcessor 'dk.ilios:realmfieldnameshelper:1.1.1'
 
   // Testing
-  debugCompile 'com.facebook.stetho:stetho:1.5.0'
-  debugCompile 'com.uphyca:stetho_realm:2.0.0'
+  implementation 'com.facebook.stetho:stetho:1.5.0'
+  implementation 'com.uphyca:stetho_realm:2.0.0'
 
-  testCompile "junit:junit:$junit_version"
+  implementation "junit:junit:$junit_version"
 
   androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
     exclude group: 'com.android.support', module: 'support-annotations'

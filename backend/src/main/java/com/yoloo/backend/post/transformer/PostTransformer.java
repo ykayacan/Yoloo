@@ -10,7 +10,7 @@ import com.yoloo.backend.media.size.LowSize;
 import com.yoloo.backend.media.size.MediumSize;
 import com.yoloo.backend.media.size.ThumbSize;
 import com.yoloo.backend.post.PostEntity;
-import com.yoloo.backend.post.dto.Post;
+import com.yoloo.backend.post.client.Post;
 import ix.Ix;
 import java.util.Collections;
 
@@ -21,6 +21,7 @@ public class PostTransformer implements Transformer<PostEntity, Post> {
         .builder()
         .id(in.getWebsafeId())
         .ownerId(in.getWebsafeOwnerId())
+        .owner(in.isOwner())
         .username(in.getUsername())
         .avatarUrl(in.getAvatarUrl().getValue())
         .content(in.getContent())

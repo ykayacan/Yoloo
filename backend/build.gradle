@@ -7,8 +7,8 @@ buildscript {
     }
   }
   dependencies {
-    classpath 'com.google.cloud.tools:appengine-gradle-plugin:1.3.1'
-    classpath 'com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0-beta9'
+    classpath 'com.google.cloud.tools:appengine-gradle-plugin:1.3.2'
+    classpath 'com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0'
     classpath 'me.tatarka:gradle-retrolambda:3.6.1'
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.14.0'
   }
@@ -41,14 +41,14 @@ dependencies {
   compile "com.google.appengine:appengine:$APP_ENGINE_VERSION"
   compile "com.google.appengine:appengine-api-labs:$APP_ENGINE_VERSION"
  
-  compile 'com.google.cloud:google-cloud:0.17.2-alpha'
+  compile 'com.google.cloud:google-cloud:0.18.0-alpha'
 
   // Endpoints
   compile 'com.google.endpoints:endpoints-framework:2.0.7'
   compile 'javax.inject:javax.inject:1'
   providedCompile 'javax.servlet:servlet-api:2.5'
 
-  compile 'com.google.firebase:firebase-admin:4.1.7'
+  compile 'com.google.firebase:firebase-admin:5.0.0'
 
   compile 'com.googlecode.objectify:objectify:5.1.17'
   compile 'commons-fileupload:commons-fileupload:1.3.2'
@@ -61,7 +61,7 @@ dependencies {
   compile 'com.twitter:twitter-text:1.14.3'
   compile 'com.google.guava:guava:20.0'
   compile 'com.annimon:stream:1.1.7'
-  compile 'org.easyrules:easyrules-core:2.4.0'
+  compile 'org.easyrules:easyrules-core:2.5.0'
 
   compile("com.google.dagger:dagger:$DAGGER2_VERSION", {
     exclude group: 'com.google.guava', module: 'guava'

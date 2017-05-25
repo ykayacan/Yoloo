@@ -25,8 +25,8 @@ public class RecommendedGroupListModelGroup extends EpoxyModelGroup {
 
     models.add(new SimpleEpoxyModel(R.layout.item_recommended_group_header_text));
 
-    models.add(new SimpleEpoxyModel(R.layout.item_recommended_group_more_text).onClick(
-        v -> callbacks.onRecommendedGroupsHeaderClicked()));
+    models.add(new SimpleEpoxyModel(R.layout.item_recommended_group_more_text)
+        .onClick(v -> callbacks.onRecommendedGroupsHeaderClicked()));
 
     // inner group models
     List<RecommendedGroupModel_> groupModels = Stream

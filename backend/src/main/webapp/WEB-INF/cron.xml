@@ -11,4 +11,10 @@
     <description>Updates group subscriber count.</description>
     <schedule>every 2 hours</schedule>
   </cron>
+
+  <cron>
+    <url>/crons/deleteOrphanFeedKeysCron</url>
+    <description>Deletes orphan feed keys.</description>
+    <schedule>every 48 hours</schedule>
+  </cron>
 </cronentries>

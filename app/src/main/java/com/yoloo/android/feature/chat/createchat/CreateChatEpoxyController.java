@@ -5,17 +5,13 @@ import com.annimon.stream.Stream;
 import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.feature.search.UserModel;
 import com.yoloo.android.feature.search.UserModel_;
-import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.List;
 
-public class CreateChatEpoxyController extends TypedEpoxyController<List<AccountRealm>> {
+class CreateChatEpoxyController extends TypedEpoxyController<List<AccountRealm>> {
 
-  private final CropCircleTransformation cropCircleTransformation;
   private final UserModel.OnUserClickListener onUserClickListener;
 
-  public CreateChatEpoxyController(CropCircleTransformation cropCircleTransformation,
-      UserModel.OnUserClickListener onUserClickListener) {
-    this.cropCircleTransformation = cropCircleTransformation;
+  CreateChatEpoxyController(UserModel.OnUserClickListener onUserClickListener) {
     this.onUserClickListener = onUserClickListener;
   }
 
@@ -26,7 +22,6 @@ public class CreateChatEpoxyController extends TypedEpoxyController<List<Account
         .forEach(account -> new UserModel_()
             .id(account.getId())
             .account(account)
-            .cropCircleTransformation(cropCircleTransformation)
             .onUserClickListener(onUserClickListener)
             .addTo(this));
   }

@@ -34,8 +34,6 @@ class PostDetailEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>,
 
   private List<FeedItem<?>> items;
 
-  private String userId;
-
   private PostCallbacks postCallbacks;
   private CommentCallbacks commentCallbacks;
 
@@ -43,11 +41,6 @@ class PostDetailEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>,
     this.cropCircleTransformation = new CropCircleTransformation(context);
     this.glide = glide;
     this.items = new ArrayList<>();
-    setData(items, false);
-  }
-
-  void setUserId(String userId) {
-    this.userId = userId;
   }
 
   void setPostCallbacks(PostCallbacks postCallbacks) {
@@ -124,7 +117,7 @@ class PostDetailEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>,
     new TextPostModel_()
         .id(post.getId())
         .post(post)
-        .postOwner(post.getOwnerId().equals(userId))
+        .groupName(post.getGroupId())
         .glide(glide)
         .transformation(cropCircleTransformation)
         .callbacks(postCallbacks)
@@ -137,7 +130,7 @@ class PostDetailEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>,
     new RichPostModel_()
         .id(post.getId())
         .post(post)
-        .postOwner(post.getOwnerId().equals(userId))
+        .groupName(post.getGroupId())
         .glide(glide)
         .transformation(cropCircleTransformation)
         .callbacks(postCallbacks)

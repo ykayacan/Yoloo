@@ -2,7 +2,6 @@ package com.yoloo.android.feature.postlist;
 
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
-import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.data.feed.BlogPostFeedItem;
 import com.yoloo.android.data.feed.FeedItem;
@@ -12,8 +11,6 @@ import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
 import com.yoloo.android.data.sorter.PostSorter;
 import com.yoloo.android.framework.MvpPresenter;
-import com.yoloo.android.util.Pair;
-import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import java.util.ArrayList;
@@ -55,13 +52,10 @@ class PostListPresenter extends MvpPresenter<PostListView> {
 
     shouldResetCursor(pullToRefresh);
 
-    Observable<Response<List<PostRealm>>> postsObservable = postRepository
-        .listByGroup(groupId, sorter, cursor, 20)
-        .observeOn(AndroidSchedulers.mainThread(), true);
-
-    Disposable d = Observable
-        .zip(getUserObservable(), postsObservable, Pair::create)
-        .subscribe(this::showData, this::showError);
+    Disposable d = postRepository
+        .listByGroup(groupId, sorter, cursor, 30)
+        .observeOn(AndroidSchedulers.mainThread(), true)
+        .subscribe(response -> showData(response, false), this::showError);
 
     getDisposable().add(d);
   }
@@ -73,13 +67,10 @@ class PostListPresenter extends MvpPresenter<PostListView> {
    * @param sorter the sorter
    */
   void loadMorePostsByGroup(@Nonnull String groupId, @Nonnull PostSorter sorter) {
-    Observable<Response<List<PostRealm>>> postsObservable = postRepository
+    Disposable d = postRepository
         .listByGroup(groupId, sorter, cursor, 30)
-        .observeOn(AndroidSchedulers.mainThread(), true);
-
-    Disposable d = Observable
-        .zip(getUserObservable(), postsObservable, Pair::create)
-        .subscribe(this::showData, this::showError);
+        .observeOn(AndroidSchedulers.mainThread(), true)
+        .subscribe(response -> showData(response, true), this::showError);
 
     getDisposable().add(d);
   }
@@ -96,13 +87,10 @@ class PostListPresenter extends MvpPresenter<PostListView> {
 
     shouldResetCursor(pullToRefresh);
 
-    Observable<Response<List<PostRealm>>> postsObservable = postRepository
+    Disposable d = postRepository
         .listByTags(tagName, sorter, cursor, 20)
-        .observeOn(AndroidSchedulers.mainThread(), true);
-
-    Disposable d = Observable
-        .zip(getUserObservable(), postsObservable, Pair::create)
-        .subscribe(this::showData, this::showError);
+        .observeOn(AndroidSchedulers.mainThread(), true)
+        .subscribe(response -> showData(response, false), this::showError);
 
     getDisposable().add(d);
   }
@@ -114,13 +102,10 @@ class PostListPresenter extends MvpPresenter<PostListView> {
    * @param sorter the sorter
    */
   void loadMorePostsByTag(@Nonnull String tagName, @Nonnull PostSorter sorter) {
-    Observable<Response<List<PostRealm>>> postsObservable = postRepository
-        .listByTags(tagName, sorter, cursor, 30)
-        .observeOn(AndroidSchedulers.mainThread(), true);
-
-    Disposable d = Observable
-        .zip(getUserObservable(), postsObservable, Pair::create)
-        .subscribe(this::showData, this::showError);
+    Disposable d = postRepository
+        .listByTags(tagName, sorter, cursor, 20)
+        .observeOn(AndroidSchedulers.mainThread(), true)
+        .subscribe(response -> showData(response, true), this::showError);
 
     getDisposable().add(d);
   }
@@ -136,13 +121,10 @@ class PostListPresenter extends MvpPresenter<PostListView> {
 
     shouldResetCursor(pullToRefresh);
 
-    Observable<Response<List<PostRealm>>> postsObservable = postRepository
+    Disposable d = postRepository
         .listByUser(userId, cursor, 20)
-        .observeOn(AndroidSchedulers.mainThread(), true);
-
-    Disposable d = Observable
-        .zip(getUserObservable(), postsObservable, Pair::create)
-        .subscribe(this::showData, this::showError);
+        .observeOn(AndroidSchedulers.mainThread(), true)
+        .subscribe(response -> showData(response, false), this::showError);
 
     getDisposable().add(d);
   }
@@ -153,13 +135,10 @@ class PostListPresenter extends MvpPresenter<PostListView> {
    * @param userId the user id
    */
   void loadMorePostsByUser(@Nonnull String userId) {
-    Observable<Response<List<PostRealm>>> postsObservable = postRepository
-        .listByUser(userId, cursor, 30)
-        .observeOn(AndroidSchedulers.mainThread(), true);
-
-    Disposable d = Observable
-        .zip(getUserObservable(), postsObservable, Pair::create)
-        .subscribe(this::showData, this::showError);
+    Disposable d = postRepository
+        .listByUser(userId, cursor, 20)
+        .observeOn(AndroidSchedulers.mainThread(), true)
+        .subscribe(response -> showData(response, true), this::showError);
 
     getDisposable().add(d);
   }
@@ -174,12 +153,10 @@ class PostListPresenter extends MvpPresenter<PostListView> {
 
     shouldResetCursor(pullToRefresh);
 
-    Observable<Response<List<PostRealm>>> postsObservable =
-        postRepository.listByBounty(cursor, 20).observeOn(AndroidSchedulers.mainThread());
-
-    Disposable d = Observable
-        .zip(getUserObservable(), postsObservable, Pair::create)
-        .subscribe(this::showData, this::showError);
+    Disposable d = postRepository
+        .listByBounty(cursor, 20)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(response -> showData(response, false), this::showError);
 
     getDisposable().add(d);
   }
@@ -188,12 +165,10 @@ class PostListPresenter extends MvpPresenter<PostListView> {
    * Load more posts by bounty.
    */
   void loadMorePostsByBounty() {
-    Observable<Response<List<PostRealm>>> postsObservable =
-        postRepository.listByBounty(cursor, 30).observeOn(AndroidSchedulers.mainThread());
-
-    Disposable d = Observable
-        .zip(getUserObservable(), postsObservable, Pair::create)
-        .subscribe(this::showData, this::showError);
+    Disposable d = postRepository
+        .listByBounty(cursor, 20)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(response -> showData(response, true), this::showError);
 
     getDisposable().add(d);
   }
@@ -208,13 +183,10 @@ class PostListPresenter extends MvpPresenter<PostListView> {
 
     shouldResetCursor(pullToRefresh);
 
-    Observable<Response<List<PostRealm>>> postsObservable = postRepository
+    Disposable d = postRepository
         .listByBookmarked(cursor, 20)
-        .observeOn(AndroidSchedulers.mainThread(), true);
-
-    Disposable d = Observable
-        .zip(getUserObservable(), postsObservable, Pair::create)
-        .subscribe(this::showData, this::showError);
+        .observeOn(AndroidSchedulers.mainThread(), true)
+        .subscribe(response -> showData(response, false), this::showError);
 
     getDisposable().add(d);
   }
@@ -225,13 +197,10 @@ class PostListPresenter extends MvpPresenter<PostListView> {
    * @param limit the limit
    */
   void loadMorePostsByBookmarked(int limit) {
-    Observable<Response<List<PostRealm>>> postsObservable = postRepository
-        .listByBookmarked(cursor, limit)
-        .observeOn(AndroidSchedulers.mainThread(), true);
-
-    Disposable d = Observable
-        .zip(getUserObservable(), postsObservable, Pair::create)
-        .subscribe(this::showData, this::showError);
+    Disposable d = postRepository
+        .listByBookmarked(cursor, 20)
+        .observeOn(AndroidSchedulers.mainThread(), true)
+        .subscribe(response -> showData(response, true), this::showError);
 
     getDisposable().add(d);
   }
@@ -247,13 +216,10 @@ class PostListPresenter extends MvpPresenter<PostListView> {
 
     shouldResetCursor(pullToRefresh);
 
-    Observable<Response<List<PostRealm>>> postsObservable = postRepository
+    Disposable d = postRepository
         .listByPostSorter(postSorter, cursor, 20)
-        .observeOn(AndroidSchedulers.mainThread(), true);
-
-    Disposable d = Observable
-        .zip(getUserObservable(), postsObservable, Pair::create)
-        .subscribe(this::showData, this::showError);
+        .observeOn(AndroidSchedulers.mainThread(), true)
+        .subscribe(response -> showData(response, false), this::showError);
 
     getDisposable().add(d);
   }
@@ -264,13 +230,10 @@ class PostListPresenter extends MvpPresenter<PostListView> {
    * @param postSorter the post sorter
    */
   void loadMorePostsByPostSorter(PostSorter postSorter) {
-    Observable<Response<List<PostRealm>>> postsObservable = postRepository
-        .listByPostSorter(postSorter, cursor, 30)
-        .observeOn(AndroidSchedulers.mainThread(), true);
-
-    Disposable d = Observable
-        .zip(getUserObservable(), postsObservable, Pair::create)
-        .subscribe(this::showData, this::showError);
+    Disposable d = postRepository
+        .listByPostSorter(postSorter, cursor, 20)
+        .observeOn(AndroidSchedulers.mainThread(), true)
+        .subscribe(response -> showData(response, true), this::showError);
 
     getDisposable().add(d);
   }
@@ -281,8 +244,10 @@ class PostListPresenter extends MvpPresenter<PostListView> {
    * @param postId the post id
    */
   void deletePost(@Nonnull String postId) {
-    Disposable d =
-        postRepository.deletePost(postId).observeOn(AndroidSchedulers.mainThread()).subscribe();
+    Disposable d = postRepository.deletePost(postId)
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(() -> {
+        }, this::showError);
 
     getDisposable().add(d);
   }
@@ -330,30 +295,28 @@ class PostListPresenter extends MvpPresenter<PostListView> {
     getDisposable().add(d);
   }
 
-  private void showData(Pair<AccountRealm, Response<List<PostRealm>>> pair) {
-    if (pair.second.getData().isEmpty()) {
-      if (isViewAttached()) {
-        getView().onEmpty();
+  private void showData(Response<List<PostRealm>> response, boolean loadingMore) {
+    if (loadingMore) {
+      if (isViewAttached() && !response.getData().isEmpty()) {
+        cursor = response.getCursor();
+        getView().onMoreLoaded(new ArrayList<>(mapPostsToFeedItems(response.getData())));
       }
     } else {
       if (isViewAttached()) {
-        getView().onAccountLoaded(pair.first);
-      }
+        if (response.getData().isEmpty()) {
+          getView().onEmpty();
+        } else {
+          cursor = response.getCursor();
 
-      cursor = pair.second.getCursor();
-      if (isViewAttached()) {
-        getView().onLoaded(new ArrayList<>(mapPostsToFeedItems(pair.second.getData())));
-        getView().showContent();
+          getView().onLoaded(new ArrayList<>(mapPostsToFeedItems(response.getData())));
+          getView().showContent();
+        }
       }
     }
   }
 
   private void showError(Throwable throwable) {
     getView().onError(throwable);
-  }
-
-  private Observable<AccountRealm> getUserObservable() {
-    return userRepository.getLocalMe().toObservable().observeOn(AndroidSchedulers.mainThread());
   }
 
   private void shouldResetCursor(boolean pullToRefresh) {

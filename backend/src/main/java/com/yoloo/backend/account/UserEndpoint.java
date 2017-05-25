@@ -82,6 +82,9 @@ public class UserEndpoint {
     return accountController.insertAccount(request);
   }
 
+  @ApiMethod(name = "admin.users.test.register",
+      path = "admin/users/test",
+      httpMethod = ApiMethod.HttpMethod.POST)
   public Account registerUserTest(@Named("token") String base64Token) throws ServiceException {
     return accountController.insertAccountTest(base64Token);
   }

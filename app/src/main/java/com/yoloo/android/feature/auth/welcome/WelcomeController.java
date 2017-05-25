@@ -2,6 +2,7 @@ package com.yoloo.android.feature.auth.welcome;
 
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.customtabs.CustomTabsIntent;
 import android.view.LayoutInflater;
@@ -68,13 +69,14 @@ public class WelcomeController extends BaseController {
   protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
       @NonNull ControllerChangeType changeType) {
     super.onChangeEnded(changeHandler, changeType);
-    ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
+    //ViewUtils.setStatusBarColor(getActivity(), Color.TRANSPARENT);
   }
 
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
-    hideSystemUI();
+    ViewUtils.setStatusBarColor(getActivity(), Color.BLACK);
+    //hideSystemUI();
     if (position != 0) {
       videoView.seekTo(position);
       videoView.start();
@@ -84,7 +86,7 @@ public class WelcomeController extends BaseController {
   @Override
   protected void onDetach(@NonNull View view) {
     super.onDetach(view);
-    showSystemUI();
+    //showSystemUI();
     videoView.pause();
     position = videoView.getCurrentPosition();
   }
@@ -124,22 +126,33 @@ public class WelcomeController extends BaseController {
 
   // This snippet hides the system bars.
   private void hideSystemUI() {
-    // Set the IMMERSIVE flag.
-    // Set the content to appear under the system bars so that the content
-    // doesn't resize when the system bars hide and show.
-    decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-        | View.SYSTEM_UI_FLAG_FULLSCREEN
-        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+    getDrawerLayout().setFitsSystemWindows(false);
+
+    if (Build.VERSION.SDK_INT >= 19) {
+      // Set the IMMERSIVE flag.
+      // Set the content to appear under the system bars so that the content
+      // doesn't resize when the system bars hide and show.
+      decorView.setSystemUiVisibility(
+          View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+              | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+              | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+              | View.SYSTEM_UI_FLAG_FULLSCREEN
+              | View.SYSTEM_UI_FLAG_IMMERSIVE);
+    } else if (Build.VERSION.SDK_INT >= 16) {
+      decorView.setSystemUiVisibility(
+          View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+              | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+              | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+              | View.SYSTEM_UI_FLAG_FULLSCREEN);
+    }
   }
 
   // This snippet shows the system bars. It does this by removing all the flags
   // except for the ones that make the content appear under the system bars.
   private void showSystemUI() {
+    getDrawerLayout().setFitsSystemWindows(true);
+
     decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
   }
 }

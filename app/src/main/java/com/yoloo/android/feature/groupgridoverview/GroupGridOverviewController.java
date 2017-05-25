@@ -12,8 +12,6 @@ import android.view.ViewGroup;
 import butterknife.BindColor;
 import butterknife.BindView;
 import com.bluelinelabs.conductor.Controller;
-import com.bluelinelabs.conductor.ControllerChangeHandler;
-import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.yoloo.android.R;
@@ -26,7 +24,6 @@ import com.yoloo.android.ui.recyclerview.animator.SlideInItemAnimator;
 import com.yoloo.android.ui.recyclerview.decoration.GridInsetItemDecoration;
 import com.yoloo.android.util.BundleBuilder;
 import com.yoloo.android.util.DisplayUtil;
-import com.yoloo.android.util.ViewUtils;
 import java.util.List;
 import timber.log.Timber;
 
@@ -109,15 +106,6 @@ public class GroupGridOverviewController
       getPresenter().loadGroups();
     } else {
       getPresenter().loadSubscribedGroups(userId);
-    }
-  }
-
-  @Override
-  protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
-      @NonNull ControllerChangeType changeType) {
-    super.onChangeEnded(changeHandler, changeType);
-    if (getParentController() == null) {
-      ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
     }
   }
 

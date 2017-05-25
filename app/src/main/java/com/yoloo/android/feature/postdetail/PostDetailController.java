@@ -18,13 +18,11 @@ import butterknife.BindColor;
 import butterknife.BindView;
 import com.bluelinelabs.conductor.Controller;
 import com.bluelinelabs.conductor.ControllerChangeHandler;
-import com.bluelinelabs.conductor.ControllerChangeType;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
-import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.data.db.CommentRealm;
 import com.yoloo.android.data.db.MediaRealm;
 import com.yoloo.android.data.db.PostRealm;
@@ -118,6 +116,8 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   @Override
   protected void onAttach(@NonNull View view) {
     super.onAttach(view);
+    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
+
     if (!reEnter) {
       getPresenter().loadData(false, postId);
       reEnter = true;
@@ -135,13 +135,6 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   @Override protected void onDestroy() {
     super.onDestroy();
     KeyboardUtil.removeKeyboardToggleListener(keyboardToggleListener);
-  }
-
-  @Override protected void onChangeEnded(@NonNull ControllerChangeHandler changeHandler,
-      @NonNull ControllerChangeType changeType) {
-    super.onChangeEnded(changeHandler, changeType);
-    //getDrawerLayout().setFitsSystemWindows(false);
-    ViewUtils.setStatusBarColor(getActivity(), primaryDarkColor);
   }
 
   @Override
@@ -165,11 +158,6 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   public void onPostLoaded(PostRealm post) {
     this.post = post;
     this.accepted = post.getAcceptedCommentId() != null;
-  }
-
-  @Override
-  public void onMeLoaded(AccountRealm me) {
-    epoxyController.setUserId(me.getId());
   }
 
   @Override
@@ -257,7 +245,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
 
     endlessRecyclerOnScrollListener =
         new EndlessRecyclerOnScrollListener(lm) {
-          @Override public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
+          @Override public void onLoadMore(int totalItemsCount, RecyclerView view) {
             getPresenter().loadMoreComments();
             epoxyController.showLoader();
           }

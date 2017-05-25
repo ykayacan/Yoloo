@@ -69,4 +69,12 @@
     <property name="created" direction="desc" />
   </datastore-index>
 
+  <datastore-index ancestor="true" kind="Feed" source="manual">
+    <property name="created" direction="desc" />
+  </datastore-index>
+
+  <datastore-index ancestor="true" kind="Bookmark" source="manual">
+    <property name="created" direction="desc" />
+  </datastore-index>
+
 </datastore-indexes>
