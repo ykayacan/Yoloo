@@ -54,7 +54,7 @@ public class SignUpDiscoverController
   private static final String KEY_IDP_RESPONSE = "IDP_RESPONSE";
 
   private static final ButterKnife.Setter<View, Boolean> VISIBLE =
-      (view, value, index) -> view.setVisibility(value ? View.VISIBLE : View.GONE);
+      (view, value, index) -> view.setVisibility(value ? View.VISIBLE : View.INVISIBLE);
 
   private static final ButterKnife.Setter<View, Boolean> INVISIBLE =
       (view, value, index) -> view.setVisibility(value ? View.INVISIBLE : View.VISIBLE);
@@ -116,6 +116,8 @@ public class SignUpDiscoverController
 
   @Override protected void onViewBound(@NonNull View view) {
     super.onViewBound(view);
+
+    KeyboardUtil.hideKeyboard(view);
 
     for (int i = 0; i < travelerTypeTitles.length; i++) {
       types.put(travelerTypeTitles[i], travelerTypeIds[i]);
