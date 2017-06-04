@@ -24,7 +24,7 @@ public final class NewUserListFeedItem implements FeedItem<List<AccountRealm>> {
     this.accounts = accounts;
   }
 
-  @Nonnull @Override public String id() {
+  @Nonnull @Override public String getId() {
     return UUID.randomUUID().toString();
   }
 

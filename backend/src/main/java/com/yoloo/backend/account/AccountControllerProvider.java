@@ -9,11 +9,11 @@ import com.yoloo.backend.media.MediaService;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(staticName = "of")
-public class AccountControllerProvider implements ControllerFactory<AccountController> {
+public class AccountControllerProvider implements ControllerFactory<UserController> {
 
   @Override
-  public AccountController create() {
-    return AccountController.create(AccountShardService.create(), GameService.create(),
+  public UserController create() {
+    return UserController.create(AccountShardService.create(), GameService.create(),
         MediaService.create(), new CountryService(URLFetchServiceFactory.getURLFetchService(),
             ImagesServiceFactory.getImagesService()));
   }

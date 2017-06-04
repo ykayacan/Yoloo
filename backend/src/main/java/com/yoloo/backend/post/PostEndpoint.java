@@ -45,7 +45,7 @@ public class PostEndpoint {
         .on(BadRequestValidator.create(postId, "postId is required."))
         .on(AuthValidator.create(user));
 
-    return postController.getPost(postId, user);
+    return postController.getPost(postId, user.getUserId());
   }
 
   /**

@@ -22,7 +22,7 @@ public final class RichPostFeedItem implements FeedItem<PostRealm> {
     this.post = post;
   }
 
-  @Nonnull @Override public String id() {
+  @Nonnull @Override public String getId() {
     return post.getId();
   }
 

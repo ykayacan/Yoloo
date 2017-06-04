@@ -17,10 +17,11 @@ import lombok.extern.java.Log;
 
 @Log
 @NoArgsConstructor(staticName = "create")
-public class PostShardService implements Shardable<PostShard, PostEntity> {
+public class PostShardService implements Shardable<PostEntity.PostShard, PostEntity> {
 
   @Override
-  public Map<Ref<PostShard>, PostShard> createShardMapWithRef(Iterable<Key<PostEntity>> keys) {
+  public Map<Ref<PostEntity.PostShard>, PostEntity.PostShard> createShardMapWithRef(
+      Iterable<Key<PostEntity>> keys) {
     return Observable
         .fromIterable(keys)
         .flatMap(this::createShardsFromPostKey)
@@ -29,7 +30,8 @@ public class PostShardService implements Shardable<PostShard, PostEntity> {
   }
 
   @Override
-  public Map<Key<PostShard>, PostShard> createShardMapWithKey(Iterable<Key<PostEntity>> keys) {
+  public Map<Key<PostEntity.PostShard>, PostEntity.PostShard> createShardMapWithKey(
+      Iterable<Key<PostEntity>> keys) {
     return Observable
         .fromIterable(keys)
         .flatMap(this::createShardsFromPostKey)
@@ -38,19 +40,21 @@ public class PostShardService implements Shardable<PostShard, PostEntity> {
   }
 
   @Override
-  public Map<Ref<PostShard>, PostShard> createShardMapWithRef(Key<PostEntity> key) {
+  public Map<Ref<PostEntity.PostShard>, PostEntity.PostShard> createShardMapWithRef(
+      Key<PostEntity> key) {
     return createShardsFromPostKey(key).toMap(Ref::create).blockingGet();
   }
 
   @Override
-  public Map<Key<PostShard>, PostShard> createShardMapWithKey(Key<PostEntity> key) {
+  public Map<Key<PostEntity.PostShard>, PostEntity.PostShard> createShardMapWithKey(
+      Key<PostEntity> key) {
     return createShardsFromPostKey(key).toMap(Key::create).blockingGet();
   }
 
   @Override
-  public Key<PostShard> getRandomShardKey(Key<PostEntity> entityKey) {
+  public Key<PostEntity.PostShard> getRandomShardKey(Key<PostEntity> entityKey) {
     final int shardNum = new Random().nextInt(ShardConfig.POST_SHARD_COUNTER - 1 + 1) + 1;
-    return PostShard.createKey(entityKey, shardNum);
+    return PostEntity.PostShard.createKey(entityKey, shardNum);
   }
 
   @Override
@@ -75,46 +79,41 @@ public class PostShardService implements Shardable<PostShard, PostEntity> {
   public Observable<PostEntity> mergeShards(PostEntity entity) {
     return Observable
         .fromIterable(entity.getShards())
-        .cast(PostShard.class)
-        .reduce((s1, s2) -> s1.addValues(s2.getComments(), s2.getVotes(), s2.getReports()))
-        .map(s -> entity
-            .withVoteCount(s.getVotes())
-            .withCommentCount(s.getComments())
-            .withReportCount(s.getReports()))
+        .cast(PostEntity.PostShard.class)
+        .reduce(PostEntity.PostShard::mergeWith)
+        .map(s -> entity.withVoteCount(s.getVoteCount()).withCommentCount(s.getCommentCount()))
         .toObservable();
   }
 
   public Observable<PostEntity> mergeShards(PostEntity entity, Key<Account> accountKey) {
     return Observable
         .fromIterable(entity.getShards())
-        .cast(PostShard.class)
+        .cast(PostEntity.PostShard.class)
         .reduce((s1, s2) -> {
-          s1.addValues(s2.getComments(), s2.getVotes(), s2.getReports());
+          s1.mergeWith(s2);
           s1.getBookmarkKeys().addAll(s2.getBookmarkKeys());
           return s1;
         })
         .map(s -> entity
-            .withVoteCount(s.getVotes())
-            .withCommentCount(s.getComments())
-            .withReportCount(s.getReports())
+            .withVoteCount(s.getVoteCount())
+            .withCommentCount(s.getCommentCount())
             .withBookmarked(
                 s.getBookmarkKeys().contains(Bookmark.createKey(accountKey, entity.getKey()))))
         .toObservable();
   }
 
-  private Observable<PostShard> createShardsFromPostKey(Key<PostEntity> postKey) {
+  private Observable<PostEntity.PostShard> createShardsFromPostKey(Key<PostEntity> postKey) {
     return Observable
         .range(1, ShardConfig.POST_SHARD_COUNTER)
         .map(shardNum -> createShard(postKey, shardNum));
   }
 
-  private PostShard createShard(Key<PostEntity> postKey, Integer shardNum) {
-    return PostShard
+  private PostEntity.PostShard createShard(Key<PostEntity> postKey, Integer shardNum) {
+    return PostEntity.PostShard
         .builder()
         .id(ShardUtil.generateShardId(postKey, shardNum))
-        .comments(0L)
-        .votes(0L)
-        .reports(0)
+        .commentCount(0L)
+        .voteCount(0L)
         .build();
   }
 }

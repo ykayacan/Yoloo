@@ -23,10 +23,12 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import com.annimon.stream.Stream;
 import com.bluelinelabs.conductor.RouterTransaction;
 import com.bluelinelabs.conductor.changehandler.HorizontalChangeHandler;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.igalata.bubblepicker.BubblePickerListener;
+import com.igalata.bubblepicker.adapter.BubblePickerAdapter;
 import com.igalata.bubblepicker.model.BubbleGradient;
 import com.igalata.bubblepicker.model.PickerItem;
 import com.igalata.bubblepicker.rendering.BubblePicker;
@@ -44,6 +46,7 @@ import com.yoloo.android.util.LocaleUtil;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Random;
+import org.jetbrains.annotations.NotNull;
 import timber.log.Timber;
 
 public class SignUpDiscoverController
@@ -119,22 +122,27 @@ public class SignUpDiscoverController
 
     KeyboardUtil.hideKeyboard(view);
 
-    for (int i = 0; i < travelerTypeTitles.length; i++) {
-      types.put(travelerTypeTitles[i], travelerTypeIds[i]);
-    }
+    setBubblePicker();
+  }
 
-    ArrayList<PickerItem> items = new ArrayList<>();
+  private void setBubblePicker() {
+    Stream.of(travelerTypeTitles)
+        .forEachIndexed((index, s) -> types.put(travelerTypeTitles[index], travelerTypeIds[index]));
 
     picker.setVisibility(View.VISIBLE);
 
-    for (int i = 0; i < travelerTypeTitles.length; i++) {
-      int num = new Random().nextInt(4);
+    picker.setAdapter(new BubblePickerAdapter() {
+      @Override public int getTotalCount() {
+        return travelerTypeTitles.length;
+      }
 
-      Drawable drawable = ContextCompat.getDrawable(getActivity(), TYPE_DRAWABLE_IDS[i]);
-      items.add(getPickerItem(drawable, travelerTypeTitles[i], colors[num]));
-    }
+      @NotNull @Override public PickerItem getItem(int position) {
+        int num = new Random().nextInt(4);
+        return getPickerItem(getDrawable(TYPE_DRAWABLE_IDS[position]), travelerTypeTitles[position],
+            colors[num]);
+      }
+    });
 
-    picker.setItems(items);
     picker.setBubbleSize(50);
     picker.setListener(new BubblePickerListener() {
       @Override public void onBubbleSelected(@NonNull PickerItem pickerItem) {
@@ -155,6 +163,10 @@ public class SignUpDiscoverController
     });
   }
 
+  private Drawable getDrawable(int typeDrawableId) {
+    return ContextCompat.getDrawable(getActivity(), typeDrawableId);
+  }
+
   @Override protected void onDetach(@NonNull View view) {
     super.onDetach(view);
     tvGetStarted.setVisibility(View.GONE);
@@ -171,10 +183,14 @@ public class SignUpDiscoverController
   }
 
   @NonNull private PickerItem getPickerItem(Drawable drawable, String title, int color) {
-    BubbleGradient gradient = new BubbleGradient(color, color);
-
-    return new PickerItem(title, null, true, null, gradient, 0.5F, Typeface.DEFAULT_BOLD,
-        Color.WHITE, 45.0F, drawable);
+    PickerItem item = new PickerItem();
+    item.setTitle(title);
+    item.setGradient(new BubbleGradient(color, color));
+    item.setTypeface(Typeface.DEFAULT_BOLD);
+    item.setTextColor(Color.WHITE);
+    item.setTextSize(45.0F);
+    item.setBackgroundImage(drawable);
+    return item;
   }
 
   @OnClick(R.id.btn_sign_up_init_get_started) void showSignUpScreen() {

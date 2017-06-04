@@ -11,12 +11,12 @@ import com.yoloo.android.feature.base.BaseActivity;
 import com.yoloo.android.feature.notification.NotificationProvider;
 import com.yoloo.android.notificationhandler.NotificationResponse;
 
-public final class NewUserSharedPostNotification implements NotificationProvider {
+public final class UserPostNotification implements NotificationProvider {
 
   private final NotificationResponse response;
   private final Context context;
 
-  public NewUserSharedPostNotification(NotificationResponse response, Context context) {
+  public UserPostNotification(NotificationResponse response, Context context) {
     this.response = response;
     this.context = context;
   }
@@ -31,7 +31,7 @@ public final class NewUserSharedPostNotification implements NotificationProvider
 
     String content = context
         .getResources()
-        .getString(R.string.label_notification_new_post, response.getSenderUsername());
+        .getString(R.string.label_notification_new_user_post, response.getSenderUsername());
 
     int primaryColor = ContextCompat.getColor(context, R.color.primary);
 

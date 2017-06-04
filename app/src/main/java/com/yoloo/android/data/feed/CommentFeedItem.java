@@ -22,7 +22,7 @@ public final class CommentFeedItem implements FeedItem<CommentRealm> {
     this.comment = comment;
   }
 
-  @Nonnull @Override public String id() {
+  @Nonnull @Override public String getId() {
     return comment.getId();
   }
 

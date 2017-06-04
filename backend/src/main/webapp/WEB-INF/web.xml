@@ -62,6 +62,7 @@
     <url-pattern>/appstats/*</url-pattern>
   </servlet-mapping>
 
+
   <servlet>
     <servlet-name>UpdateCategoryRankServlet</servlet-name>
     <servlet-class>com.yoloo.backend.group.UpdateGroupRankServlet</servlet-class>
@@ -71,6 +72,7 @@
     <servlet-name>UpdateCategoryRankServlet</servlet-name>
     <url-pattern>/tasks/update/travelerGroup/rank</url-pattern>
   </servlet-mapping>
+
 
   <servlet>
     <servlet-name>UpdateTagServlet</servlet-name>
@@ -82,15 +84,17 @@
     <url-pattern>/tasks/update/tag</url-pattern>
   </servlet-mapping>
 
+
   <servlet>
-    <servlet-name>UpdateFeedServlet</servlet-name>
-    <servlet-class>com.yoloo.backend.post.UpdateFeedServlet</servlet-class>
+    <servlet-name>UpdateFeedTask</servlet-name>
+    <servlet-class>com.yoloo.backend.post.tasks.UpdateFeedTask</servlet-class>
   </servlet>
 
   <servlet-mapping>
-    <servlet-name>UpdateFeedServlet</servlet-name>
+    <servlet-name>UpdateFeedTask</servlet-name>
     <url-pattern>/tasks/update/feed</url-pattern>
   </servlet-mapping>
+
 
   <servlet>
     <servlet-name>CreateUserFeedServlet</servlet-name>
@@ -102,6 +106,7 @@
     <url-pattern>/tasks/create/feed</url-pattern>
   </servlet-mapping>
 
+
   <servlet>
     <servlet-name>UploadServlet</servlet-name>
     <servlet-class>com.yoloo.backend.media.UploadServlet</servlet-class>
@@ -112,15 +117,28 @@
     <url-pattern>/upload</url-pattern>
   </servlet-mapping>
 
+
   <servlet>
-    <servlet-name>SendNewPostNotificationServlet</servlet-name>
-    <servlet-class>com.yoloo.backend.notification.SendNewPostNotificationServlet</servlet-class>
+    <servlet-name>FollowerPostNotificationTask</servlet-name>
+    <servlet-class>com.yoloo.backend.post.tasks.FollowerPostNotificationTask</servlet-class>
   </servlet>
 
   <servlet-mapping>
-    <servlet-name>SendNewPostNotificationServlet</servlet-name>
-    <url-pattern>/tasks/send/notification</url-pattern>
+    <servlet-name>FollowerPostNotificationTask</servlet-name>
+    <url-pattern>/tasks/notification</url-pattern>
   </servlet-mapping>
+
+
+  <servlet>
+    <servlet-name>GroupPostNotificationTask</servlet-name>
+    <servlet-class>com.yoloo.backend.post.tasks.GroupPostNotificationTask</servlet-class>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>GroupPostNotificationTask</servlet-name>
+    <url-pattern>/tasks/notification</url-pattern>
+  </servlet-mapping>
+
 
   <servlet>
     <servlet-name>ResetDailyPointsServlet</servlet-name>
@@ -132,6 +150,7 @@
     <url-pattern>/crons/resetDailyCron</url-pattern>
   </servlet-mapping>
 
+  <!-- Update subscriber count cron -->
   <servlet-mapping>
     <servlet-name>UpdateGroupSubscriberCountServlet</servlet-name>
     <url-pattern>/crons/updateGroupSubscriberCountCron</url-pattern>
@@ -142,6 +161,7 @@
     <servlet-class>com.yoloo.backend.group.UpdateGroupSubscriberCountServlet</servlet-class>
   </servlet>
 
+  <!-- Delete orphan feed cron -->
   <servlet-mapping>
     <servlet-name>DeleteOrphanFeedCron</servlet-name>
     <url-pattern>/crons/deleteOrphanFeedKeysCron</url-pattern>

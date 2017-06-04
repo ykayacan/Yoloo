@@ -1,7 +1,6 @@
 package com.yoloo.android.feature.groupgridoverview;
 
 import com.yoloo.android.data.repository.group.GroupRepository;
-import com.yoloo.android.data.sorter.GroupSorter;
 import com.yoloo.android.framework.MvpPresenter;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
@@ -17,7 +16,7 @@ class GroupGridOverviewPresenter extends MvpPresenter<GroupGridOverviewView> {
 
   void loadGroups() {
     Disposable d = groupRepository
-        .listGroups(GroupSorter.DEFAULT, null, 100)
+        .listGroups(null, 100)
         .observeOn(AndroidSchedulers.mainThread(), true)
         .subscribe(response -> getView().onGroupsLoaded(response.getData()),
             throwable -> getView().onError(throwable));

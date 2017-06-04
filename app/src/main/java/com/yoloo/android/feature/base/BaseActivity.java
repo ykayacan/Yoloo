@@ -124,7 +124,6 @@ public class BaseActivity extends AppCompatActivity
 
     FirebaseAuth.getInstance().addAuthStateListener(auth -> {
       if (auth.getCurrentUser() != null) {
-        Timber.d("State changed");
         UserRepository repository = UserRepositoryProvider.getRepository();
         disposable = repository.getLocalMe()
             .observeOn(AndroidSchedulers.mainThread())
@@ -187,7 +186,7 @@ public class BaseActivity extends AppCompatActivity
               PostDetailController.create(intent.getStringExtra(NotificationResponse.KEY_POST_ID)),
               new VerticalChangeHandler());
           break;
-        case NotificationConstants.NEW_POST:
+        case NotificationConstants.NEW_FOLLOWER_POST:
           startTransaction(
               PostDetailController.create(intent.getStringExtra(NotificationResponse.KEY_POST_ID)),
               new VerticalChangeHandler());
@@ -331,7 +330,6 @@ public class BaseActivity extends AppCompatActivity
     final TextView tvUsername = ButterKnife.findById(headerView, R.id.tv_nav_username);
 
     if (me != null) {
-      Timber.d("Me: %s", me);
       Glide
           .with(this)
           .load(me.getAvatarUrl())

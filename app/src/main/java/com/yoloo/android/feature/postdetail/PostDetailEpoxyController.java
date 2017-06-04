@@ -1,6 +1,5 @@
 package com.yoloo.android.feature.postdetail;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import com.airbnb.epoxy.AutoModel;
@@ -21,13 +20,11 @@ import com.yoloo.android.feature.models.loader.LoaderModel;
 import com.yoloo.android.feature.models.post.PostCallbacks;
 import com.yoloo.android.feature.models.post.RichPostModel_;
 import com.yoloo.android.feature.models.post.TextPostModel_;
-import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.ArrayList;
 import java.util.List;
 
-class PostDetailEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>, Boolean> {
+public class PostDetailEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>, Boolean> {
 
-  private final CropCircleTransformation cropCircleTransformation;
   private final RequestManager glide;
 
   @AutoModel LoaderModel loaderModel;
@@ -37,21 +34,20 @@ class PostDetailEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>,
   private PostCallbacks postCallbacks;
   private CommentCallbacks commentCallbacks;
 
-  PostDetailEpoxyController(Context context, RequestManager glide) {
-    this.cropCircleTransformation = new CropCircleTransformation(context);
+  public PostDetailEpoxyController(RequestManager glide) {
     this.glide = glide;
     this.items = new ArrayList<>();
   }
 
-  void setPostCallbacks(PostCallbacks postCallbacks) {
+  public void setPostCallbacks(PostCallbacks postCallbacks) {
     this.postCallbacks = postCallbacks;
   }
 
-  void setCommentCallbacks(CommentCallbacks commentCallbacks) {
+  public void setCommentCallbacks(CommentCallbacks commentCallbacks) {
     this.commentCallbacks = commentCallbacks;
   }
 
-  void updatePost(@NonNull PostRealm post) {
+  public void updatePost(@NonNull PostRealm post) {
     if (post.isTextPost()) {
       updateFeedItem(new TextPostFeedItem(post));
     } else if (post.isRichPost()) {
@@ -61,29 +57,29 @@ class PostDetailEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>,
     }
   }
 
-  void addComment(CommentRealm comment) {
+  public void addComment(CommentRealm comment) {
     items.add(new CommentFeedItem(comment));
     setData(items, false);
   }
 
-  void updateComment(@NonNull CommentRealm comment) {
+  public void updateComment(@NonNull CommentRealm comment) {
     updateFeedItem(new CommentFeedItem(comment));
   }
 
-  void deleteComment(CommentRealm comment) {
+  public void deleteComment(CommentRealm comment) {
     items.remove(new CommentFeedItem(comment));
     setData(items, false);
   }
 
-  void scrollToEnd(RecyclerView recyclerView) {
+  public void scrollToEnd(RecyclerView recyclerView) {
     recyclerView.smoothScrollToPosition(getAdapter().getItemCount());
   }
 
-  void showLoader() {
+  public void showLoader() {
     setData(items, true);
   }
 
-  void hideLoader() {
+  public void hideLoader() {
     setData(items, false);
   }
 
@@ -117,9 +113,7 @@ class PostDetailEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>,
     new TextPostModel_()
         .id(post.getId())
         .post(post)
-        .groupName(post.getGroupId())
         .glide(glide)
-        .transformation(cropCircleTransformation)
         .callbacks(postCallbacks)
         .layout(R.layout.item_feed_question_text_detail)
         .detailLayout(true)
@@ -130,9 +124,7 @@ class PostDetailEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>,
     new RichPostModel_()
         .id(post.getId())
         .post(post)
-        .groupName(post.getGroupId())
         .glide(glide)
-        .transformation(cropCircleTransformation)
         .callbacks(postCallbacks)
         .layout(R.layout.item_feed_question_rich_detail)
         .detailLayout(true)
@@ -144,8 +136,6 @@ class PostDetailEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>,
         .id(comment.getId())
         .comment(comment)
         .glide(glide)
-        .showAcceptButton(shouldShowAcceptButton(comment))
-        .circleTransformation(cropCircleTransformation)
         .callbacks(commentCallbacks)
         .addTo(this);
   }
@@ -153,16 +143,12 @@ class PostDetailEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>,
   private void updateFeedItem(@NonNull FeedItem<?> item) {
     final int size = items.size();
     for (int i = 0; i < size; i++) {
-      if (items.get(i).id().equals(item.id())) {
+      if (items.get(i).getId().equals(item.getId())) {
         items.set(i, item);
         break;
       }
     }
 
     setData(items, false);
-  }
-
-  private boolean shouldShowAcceptButton(CommentRealm comment) {
-    return !comment.isOwner() && comment.isPostOwner() && !comment.isPostAccepted();
   }
 }

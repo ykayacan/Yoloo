@@ -49,17 +49,16 @@ public class PostRepository {
    * @param postId the post id
    * @return the post
    */
-  public Observable<Optional<PostRealm>> getPost(@Nonnull String postId) {
-    Observable<Optional<PostRealm>> remoteObservable = remoteDataStore.get(postId)
-        .doOnSuccess(diskDataStore::add)
-        .map(Optional::of)
-        .toObservable()
-        .subscribeOn(Schedulers.io());
+  public Single<PostRealm> getPost(@Nonnull String postId) {
+    Single<PostRealm> remoteObservable =
+        remoteDataStore.get(postId).doOnSuccess(diskDataStore::add).subscribeOn(Schedulers.io());
 
-    Observable<Optional<PostRealm>> diskObservable =
-        diskDataStore.get(postId).subscribeOn(Schedulers.io()).toObservable();
+    Single<Optional<PostRealm>> diskObservable =
+        diskDataStore.get(postId).subscribeOn(Schedulers.io());
 
-    return Observable.mergeDelayError(diskObservable, remoteObservable);
+    return diskObservable.flatMap(
+        postOptional -> postOptional.isPresent() ? Single.just(postOptional.get())
+            : remoteObservable);
   }
 
   /**
@@ -79,8 +78,7 @@ public class PostRepository {
    * @return the completable
    */
   public Completable deletePost(@Nonnull String postId) {
-    return remoteDataStore
-        .delete(postId)
+    return remoteDataStore.delete(postId)
         .andThen(diskDataStore.delete(postId))
         .subscribeOn(Schedulers.io());
   }
@@ -91,8 +89,7 @@ public class PostRepository {
    * @return the draft
    */
   public Single<PostRealm> getDraft() {
-    return diskDataStore
-        .get("draft")
+    return diskDataStore.get("draft")
         .subscribeOn(Schedulers.io())
         .filter(Optional::isPresent)
         .map(Optional::get)
@@ -126,10 +123,10 @@ public class PostRepository {
    * @return the observable
    */
   public Observable<Response<List<PostRealm>>> listByFeed(@Nullable String cursor, int limit) {
-    Observable<Response<List<PostRealm>>> remoteObservable = remoteDataStore
-        .listByFeed(cursor, limit)
-        .doOnNext(response -> diskDataStore.addAll(response.getData()))
-        .subscribeOn(Schedulers.io());
+    Observable<Response<List<PostRealm>>> remoteObservable =
+        remoteDataStore.listByFeed(cursor, limit)
+            .doOnNext(response -> diskDataStore.addAll(response.getData()))
+            .subscribeOn(Schedulers.io());
 
     Observable<Response<List<PostRealm>>> diskObservable =
         diskDataStore.listByFeed().subscribeOn(Schedulers.io());
@@ -160,8 +157,7 @@ public class PostRepository {
    */
   public Observable<Response<List<PostRealm>>> listByGroup(@Nonnull String groupId,
       @Nonnull PostSorter sorter, @Nullable String cursor, int limit) {
-    return remoteDataStore
-        .listByGroup(groupId, sorter, cursor, limit)
+    return remoteDataStore.listByGroup(groupId, sorter, cursor, limit)
         .subscribeOn(Schedulers.io())
         .retry(throwable -> throwable instanceof SocketTimeoutException);
   }
@@ -203,11 +199,12 @@ public class PostRepository {
   public Observable<Response<List<PostRealm>>> listByBookmarked(@Nullable String cursor,
       int limit) {
 
-    Observable<Response<List<PostRealm>>> remoteObservable = remoteDataStore
-        .listByBookmarked(cursor, limit)
-        .doOnNext(response -> diskDataStore.addAll(
-            Stream.of(response.getData()).map(postRealm -> postRealm.setBookmarked(true)).toList()))
-        .subscribeOn(Schedulers.io());
+    Observable<Response<List<PostRealm>>> remoteObservable =
+        remoteDataStore.listByBookmarked(cursor, limit)
+            .doOnNext(response -> diskDataStore.addAll(Stream.of(response.getData())
+                .map(postRealm -> postRealm.setBookmarked(true))
+                .toList()))
+            .subscribeOn(Schedulers.io());
 
     Observable<Response<List<PostRealm>>> diskObservable = diskDataStore.listByBookmarkedPosts();
 
@@ -261,8 +258,7 @@ public class PostRepository {
    * @return the completable
    */
   public Single<PostRealm> votePost(@Nonnull String postId, int direction) {
-    return remoteDataStore
-        .vote(postId, direction)
+    return remoteDataStore.vote(postId, direction)
         .doOnSuccess(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }
@@ -274,8 +270,7 @@ public class PostRepository {
    * @return the completable
    */
   public Single<PostRealm> bookmarkPost(@Nonnull String postId) {
-    return remoteDataStore
-        .bookmark(postId)
+    return remoteDataStore.bookmark(postId)
         .doOnSuccess(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }
@@ -287,8 +282,7 @@ public class PostRepository {
    * @return the completable
    */
   public Single<PostRealm> unBookmarkPost(@Nonnull String postId) {
-    return remoteDataStore
-        .unbookmark(postId)
+    return remoteDataStore.unbookmark(postId)
         .doOnSuccess(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }

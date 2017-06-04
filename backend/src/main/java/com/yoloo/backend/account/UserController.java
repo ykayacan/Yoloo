@@ -62,7 +62,7 @@ import static com.yoloo.backend.account.AccountUtil.isUserRegistered;
 
 @Log
 @AllArgsConstructor(staticName = "create")
-public final class AccountController extends Controller {
+public final class UserController extends Controller {
 
   private static final int DEFAULT_LIST_LIMIT = 20;
 

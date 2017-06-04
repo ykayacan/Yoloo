@@ -1,6 +1,5 @@
 package com.yoloo.android.feature.blog;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import com.airbnb.epoxy.AutoModel;
@@ -17,32 +16,23 @@ import com.yoloo.android.feature.models.comment.CommentCallbacks;
 import com.yoloo.android.feature.models.comment.CommentModel_;
 import com.yoloo.android.feature.models.loader.LoaderModel;
 import com.yoloo.android.feature.models.post.PostCallbacks;
-import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.ArrayList;
 import java.util.List;
 
 class BlogEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>, Boolean> {
 
-  private final CropCircleTransformation cropCircleTransformation;
   private final RequestManager glide;
 
   @AutoModel LoaderModel loaderModel;
 
   private List<FeedItem<?>> items;
 
-  private String userId;
-
   private PostCallbacks postCallbacks;
   private CommentCallbacks commentCallbacks;
 
-  BlogEpoxyController(Context context, RequestManager glide) {
+  BlogEpoxyController(RequestManager glide) {
     this.glide = glide;
-    this.cropCircleTransformation = new CropCircleTransformation(context);
     this.items = new ArrayList<>();
-  }
-
-  void setUserId(String userId) {
-    this.userId = userId;
   }
 
   void setPostCallbacks(PostCallbacks postCallbacks) {
@@ -87,7 +77,7 @@ class BlogEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>, Boole
     setData(items, false);
   }
 
-  public void scrollToEnd(RecyclerView recyclerView) {
+  void scrollToEnd(RecyclerView recyclerView) {
     recyclerView.smoothScrollToPosition(getAdapter().getItemCount());
   }
 
@@ -122,8 +112,6 @@ class BlogEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>, Boole
         .id(comment.getId())
         .comment(comment)
         .glide(glide)
-        .showAcceptButton(false)
-        .circleTransformation(cropCircleTransformation)
         .callbacks(commentCallbacks)
         .addTo(this);
   }
@@ -131,7 +119,7 @@ class BlogEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>, Boole
   private void updateFeedItem(@NonNull FeedItem<?> item) {
     final int size = items.size();
     for (int i = 0; i < size; i++) {
-      if (items.get(i).id().equals(item.id())) {
+      if (items.get(i).getId().equals(item.getId())) {
         items.set(i, item);
         break;
       }

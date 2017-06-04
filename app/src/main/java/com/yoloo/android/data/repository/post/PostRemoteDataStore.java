@@ -48,16 +48,11 @@ class PostRemoteDataStore {
    * @return the single
    */
   Single<PostRealm> get(@Nonnull String postId) {
-    return getIdToken()
-        .flatMap(idToken -> Single
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .posts()
-                .get(postId)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .map(PostRealm::new);
+    return getIdToken().flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+        .posts()
+        .get(postId)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).map(PostRealm::new);
   }
 
   /**
@@ -70,36 +65,29 @@ class PostRemoteDataStore {
     return getIdToken().flatMap(idToken -> {
       if (post.isTextPost() || post.isRichPost()) {
         if (post.getMedias().isEmpty()) {
-          return Single
-              .fromCallable(() -> INSTANCE
-                  .getApi()
-                  .questions()
-                  .insert(post.getContent(), post.getGroupId(), post.getTagNamesAsString())
-                  .setRequestHeaders(setIdTokenHeader(idToken))
-                  .execute())
-              .subscribeOn(Schedulers.io());
+          return Single.fromCallable(() -> INSTANCE.getApi()
+              .questions()
+              .insert(post.getContent(), post.getGroupId(), post.getTagNamesAsString())
+              .setRequestHeaders(setIdTokenHeader(idToken))
+              .execute()).subscribeOn(Schedulers.io());
         } else {
-          return uploadMedia(post)
-              .flatMapSingle(mediaId -> Single.fromCallable(() -> INSTANCE
-                  .getApi()
+          return uploadMedia(post).flatMapSingle(mediaId -> Single.fromCallable(
+              () -> INSTANCE.getApi()
                   .questions()
                   .insert(post.getContent(), post.getGroupId(), post.getTagNamesAsString())
                   .setMediaId(mediaId)
                   .setRequestHeaders(setIdTokenHeader(idToken))
-                  .execute()))
-              .subscribeOn(Schedulers.io());
+                  .execute())).subscribeOn(Schedulers.io());
         }
       } else if (post.isBlogPost()) {
-        return uploadMedia(post)
-            .flatMapSingle(mediaId -> Single.fromCallable(() -> INSTANCE
-                .getApi()
+        return uploadMedia(post).flatMapSingle(mediaId -> Single.fromCallable(
+            () -> INSTANCE.getApi()
                 .blogs()
                 .insert(post.getTagNamesAsString(), post.getTitle(), post.getContent(),
                     post.getGroupId())
                 .setMediaIds(mediaId)
                 .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute()))
-            .subscribeOn(Schedulers.io());
+                .execute())).subscribeOn(Schedulers.io());
       }
 
       throw new IllegalArgumentException("postType is not valid.");
@@ -110,8 +98,7 @@ class PostRemoteDataStore {
     List<File> files =
         Stream.of(post.getMedias()).map(MediaRealm::getTempPath).map(File::new).toList();
 
-    return UploadManager.INSTANCE
-        .upload(post.getOwnerId(), files, UploadManager.MediaOrigin.POST)
+    return UploadManager.INSTANCE.upload(post.getOwnerId(), files, UploadManager.MediaOrigin.POST)
         .map(response -> response.body().string())
         .map(json -> new Moshi.Builder().build().adapter(UploadResponse.class).fromJson(json))
         .map(response -> response.getItems().get(0).getId())
@@ -125,14 +112,11 @@ class PostRemoteDataStore {
    * @return the completable
    */
   Completable delete(@Nonnull String postId) {
-    return getIdToken().flatMapCompletable(idToken -> Completable
-        .fromAction(() -> INSTANCE
-            .getApi()
-            .posts()
-            .delete(postId)
-            .setRequestHeaders(setIdTokenHeader(idToken))
-            .execute())
-        .subscribeOn(Schedulers.io()));
+    return getIdToken().flatMapCompletable(idToken -> Completable.fromAction(() -> INSTANCE.getApi()
+        .posts()
+        .delete(postId)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io()));
   }
 
   /**
@@ -143,18 +127,14 @@ class PostRemoteDataStore {
    * @return the observable
    */
   Observable<Response<List<PostRealm>>> listByFeed(@Nullable String cursor, int limit) {
-    return getIdToken().flatMapObservable(idToken -> Observable
-        .fromCallable(() -> INSTANCE
-            .getApi()
-            .users()
-            .me()
-            .feed()
-            .setCursor(cursor)
-            .setLimit(limit)
-            .setRequestHeaders(setIdTokenHeader(idToken))
-            .execute())
-        .subscribeOn(Schedulers.io())
-        .compose(PostResponseTransformer.create()));
+    return getIdToken().flatMapObservable(idToken -> Observable.fromCallable(() -> INSTANCE.getApi()
+        .users()
+        .me()
+        .feed()
+        .setCursor(cursor)
+        .setLimit(limit)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io()).compose(PostResponseTransformer.create()));
   }
 
   /**
@@ -165,19 +145,14 @@ class PostRemoteDataStore {
    * @return the observable
    */
   Observable<Response<List<PostRealm>>> listByBounty(@Nullable String cursor, int limit) {
-    return getIdToken()
-        .flatMapObservable(idToken -> Observable
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .posts()
-                .list()
-                .setSort("BOUNTY")
-                .setCursor(cursor)
-                .setLimit(limit)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .compose(PostResponseTransformer.create());
+    return getIdToken().flatMapObservable(idToken -> Observable.fromCallable(() -> INSTANCE.getApi()
+        .posts()
+        .list()
+        .setSort("BOUNTY")
+        .setCursor(cursor)
+        .setLimit(limit)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).compose(PostResponseTransformer.create());
   }
 
   /**
@@ -191,19 +166,14 @@ class PostRemoteDataStore {
    */
   Observable<Response<List<PostRealm>>> listByGroup(@Nonnull String groupId,
       @Nonnull PostSorter sorter, @Nullable String cursor, int limit) {
-    return getIdToken()
-        .flatMapObservable(idToken -> Observable
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .posts()
-                .list()
-                .setGroupId(groupId)
-                .setCursor(cursor)
-                .setLimit(limit)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .compose(PostResponseTransformer.create());
+    return getIdToken().flatMapObservable(idToken -> Observable.fromCallable(() -> INSTANCE.getApi()
+        .posts()
+        .list()
+        .setGroupId(groupId)
+        .setCursor(cursor)
+        .setLimit(limit)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).compose(PostResponseTransformer.create());
   }
 
   /**
@@ -217,20 +187,15 @@ class PostRemoteDataStore {
    */
   Observable<Response<List<PostRealm>>> listByTags(@Nonnull String tagNames,
       @Nonnull PostSorter sorter, @Nullable String cursor, int limit) {
-    return getIdToken()
-        .flatMapObservable(idToken -> Observable
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .posts()
-                .list()
-                .setTags(tagNames)
-                .setSort(sorter.name())
-                .setCursor(cursor)
-                .setLimit(limit)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .compose(PostResponseTransformer.create());
+    return getIdToken().flatMapObservable(idToken -> Observable.fromCallable(() -> INSTANCE.getApi()
+        .posts()
+        .list()
+        .setTags(tagNames)
+        .setSort(sorter.name())
+        .setCursor(cursor)
+        .setLimit(limit)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).compose(PostResponseTransformer.create());
   }
 
   /**
@@ -241,19 +206,14 @@ class PostRemoteDataStore {
    * @return the observable
    */
   Observable<Response<List<PostRealm>>> listByBookmarked(@Nullable String cursor, int limit) {
-    return getIdToken()
-        .flatMapObservable(idToken -> Observable
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .posts()
-                .bookmarkPost()
-                .list()
-                .setCursor(cursor)
-                .setLimit(limit)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .compose(PostResponseTransformer.create());
+    return getIdToken().flatMapObservable(idToken -> Observable.fromCallable(() -> INSTANCE.getApi()
+        .posts()
+        .bookmarkPost()
+        .list()
+        .setCursor(cursor)
+        .setLimit(limit)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).compose(PostResponseTransformer.create());
   }
 
   /**
@@ -266,19 +226,14 @@ class PostRemoteDataStore {
    */
   Observable<Response<List<PostRealm>>> listByPostSorter(@Nonnull PostSorter sorter,
       @Nullable String cursor, int limit) {
-    return getIdToken()
-        .flatMapObservable(idToken -> Observable
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .posts()
-                .list()
-                .setSort(sorter.getName().toUpperCase())
-                .setCursor(cursor)
-                .setLimit(limit)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .compose(PostResponseTransformer.create());
+    return getIdToken().flatMapObservable(idToken -> Observable.fromCallable(() -> INSTANCE.getApi()
+        .posts()
+        .list()
+        .setSort(sorter.getName().toUpperCase())
+        .setCursor(cursor)
+        .setLimit(limit)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).compose(PostResponseTransformer.create());
   }
 
   /**
@@ -291,19 +246,14 @@ class PostRemoteDataStore {
    */
   Observable<Response<List<PostRealm>>> listByUser(@Nullable String userId, @Nullable String cursor,
       int limit) {
-    return getIdToken()
-        .flatMapObservable(idToken -> Observable
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .posts()
-                .list()
-                .setUserId(userId)
-                .setCursor(cursor)
-                .setLimit(limit)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .compose(PostResponseTransformer.create());
+    return getIdToken().flatMapObservable(idToken -> Observable.fromCallable(() -> INSTANCE.getApi()
+        .posts()
+        .list()
+        .setUserId(userId)
+        .setCursor(cursor)
+        .setLimit(limit)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).compose(PostResponseTransformer.create());
   }
 
   /**
@@ -314,18 +264,13 @@ class PostRemoteDataStore {
    * @return the observable
    */
   Observable<Response<List<PostRealm>>> listByMediaPosts(@Nullable String cursor, int limit) {
-    return getIdToken()
-        .flatMapObservable(idToken -> Observable
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .posts()
-                .listMediaPosts()
-                .setCursor(cursor)
-                .setLimit(limit)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .compose(PostResponseTransformer.create());
+    return getIdToken().flatMapObservable(idToken -> Observable.fromCallable(() -> INSTANCE.getApi()
+        .posts()
+        .listMediaPosts()
+        .setCursor(cursor)
+        .setLimit(limit)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).compose(PostResponseTransformer.create());
   }
 
   /**
@@ -337,19 +282,14 @@ class PostRemoteDataStore {
    */
   Observable<Response<List<PostRealm>>> listByTrendingBlogPosts(@Nullable String cursor,
       int limit) {
-    return getIdToken()
-        .flatMapObservable(idToken -> Observable
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .blogs()
-                .list()
-                .setSort("NEWEST")
-                .setCursor(cursor)
-                .setLimit(limit)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .compose(PostResponseTransformer.create());
+    return getIdToken().flatMapObservable(idToken -> Observable.fromCallable(() -> INSTANCE.getApi()
+        .blogs()
+        .list()
+        .setSort("NEWEST")
+        .setCursor(cursor)
+        .setLimit(limit)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).compose(PostResponseTransformer.create());
   }
 
   /**
@@ -360,16 +300,11 @@ class PostRemoteDataStore {
    * @return the completable
    */
   Single<PostRealm> vote(@Nonnull String postId, int direction) {
-    return getIdToken()
-        .flatMap(idToken -> Single
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .posts()
-                .vote(postId, direction)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .map(PostRealm::new)
-            .subscribeOn(Schedulers.io()));
+    return getIdToken().flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+        .posts()
+        .vote(postId, direction)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).map(PostRealm::new).subscribeOn(Schedulers.io()));
   }
 
   /**
@@ -379,15 +314,11 @@ class PostRemoteDataStore {
    * @return the completable
    */
   Single<PostRealm> bookmark(@Nonnull String postId) {
-    return getIdToken().flatMap(idToken -> Single
-        .fromCallable(() -> INSTANCE
-            .getApi()
-            .posts()
-            .bookmark(postId)
-            .setRequestHeaders(setIdTokenHeader(idToken))
-            .execute())
-        .map(PostRealm::new)
-        .subscribeOn(Schedulers.io()));
+    return getIdToken().flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+        .posts()
+        .bookmark(postId)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).map(PostRealm::new).subscribeOn(Schedulers.io()));
   }
 
   /**
@@ -397,15 +328,11 @@ class PostRemoteDataStore {
    * @return the completable
    */
   Single<PostRealm> unbookmark(@Nonnull String postId) {
-    return getIdToken().flatMap(idToken -> Single
-        .fromCallable(() -> INSTANCE
-            .getApi()
-            .posts()
-            .unbookmark(postId)
-            .setRequestHeaders(setIdTokenHeader(idToken))
-            .execute())
-        .map(PostRealm::new)
-        .subscribeOn(Schedulers.io()));
+    return getIdToken().flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+        .posts()
+        .unbookmark(postId)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).map(PostRealm::new).subscribeOn(Schedulers.io()));
   }
 
   private HttpHeaders setIdTokenHeader(@Nonnull String idToken) {

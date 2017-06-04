@@ -6,7 +6,6 @@ import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.data.db.GroupRealm;
 import com.yoloo.android.data.repository.group.GroupRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
-import com.yoloo.android.data.sorter.GroupSorter;
 import com.yoloo.android.framework.MvpPresenter;
 import com.yoloo.android.util.EpoxyItem;
 import io.reactivex.Observable;
@@ -80,7 +79,7 @@ class SelectGroupPresenter extends MvpPresenter<SelectGroupView> {
     Disposable d = groupRepository
         .subscribe(groupId)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(() -> {
+        .subscribe(group -> {
         }, Timber::e);
 
     getDisposable().add(d);
@@ -90,14 +89,14 @@ class SelectGroupPresenter extends MvpPresenter<SelectGroupView> {
     Disposable d = groupRepository
         .unsubscribe(groupId)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(() -> {
+        .subscribe(group -> {
         }, Timber::e);
 
     getDisposable().add(d);
   }
 
   private Observable<List<GroupRealm>> getAllGroupsObservable() {
-    return groupRepository.listGroups(GroupSorter.DEFAULT, null, 20).map(Response::getData);
+    return groupRepository.listGroups(null, 20).map(Response::getData);
   }
 
   static class SubscribedHeader implements EpoxyItem<Void> {

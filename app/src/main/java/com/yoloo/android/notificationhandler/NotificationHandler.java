@@ -9,8 +9,9 @@ import com.yoloo.android.notificationhandler.notificationtypes.AcceptNotificatio
 import com.yoloo.android.notificationhandler.notificationtypes.CommentNotification;
 import com.yoloo.android.notificationhandler.notificationtypes.FollowNotification;
 import com.yoloo.android.notificationhandler.notificationtypes.GameNotification;
+import com.yoloo.android.notificationhandler.notificationtypes.GroupPostNotification;
 import com.yoloo.android.notificationhandler.notificationtypes.MentionNotification;
-import com.yoloo.android.notificationhandler.notificationtypes.NewUserSharedPostNotification;
+import com.yoloo.android.notificationhandler.notificationtypes.UserPostNotification;
 import java.io.IOException;
 import java.util.Map;
 import timber.log.Timber;
@@ -20,7 +21,8 @@ import static com.yoloo.android.notificationhandler.NotificationConstants.COMMEN
 import static com.yoloo.android.notificationhandler.NotificationConstants.FOLLOW;
 import static com.yoloo.android.notificationhandler.NotificationConstants.GAME;
 import static com.yoloo.android.notificationhandler.NotificationConstants.MENTION;
-import static com.yoloo.android.notificationhandler.NotificationConstants.NEW_POST;
+import static com.yoloo.android.notificationhandler.NotificationConstants.NEW_FOLLOWER_POST;
+import static com.yoloo.android.notificationhandler.NotificationConstants.NEW_GROUP_POST;
 
 public final class NotificationHandler {
 
@@ -65,8 +67,10 @@ public final class NotificationHandler {
         return new GameNotification(response, context).getNotification();
       case ACCEPT:
         return new AcceptNotification(response, context).getNotification();
-      case NEW_POST:
-        return new NewUserSharedPostNotification(response, context).getNotification();
+      case NEW_FOLLOWER_POST:
+        return new UserPostNotification(response, context).getNotification();
+      case NEW_GROUP_POST:
+        return new GroupPostNotification(response, context).getNotification();
       default:
         return null;
     }

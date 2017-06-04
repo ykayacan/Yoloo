@@ -25,10 +25,12 @@ import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.media.MediaEntity;
 import com.yoloo.backend.media.MediaService;
+import com.yoloo.backend.post.tasks.FollowerPostNotificationTask;
 import com.yoloo.backend.notification.NotificationService;
-import com.yoloo.backend.notification.SendNewPostNotificationServlet;
 import com.yoloo.backend.notification.type.Notifiable;
 import com.yoloo.backend.post.sort_strategy.PostSorter;
+import com.yoloo.backend.post.tasks.GroupPostNotificationTask;
+import com.yoloo.backend.post.tasks.UpdateFeedTask;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagService;
 import com.yoloo.backend.util.CollectionTransformer;
@@ -84,11 +86,11 @@ public final class PostController extends Controller {
    * Get question.
    *
    * @param postId the websafe post id
-   * @param user the user
+   * @param userId the user
    * @return the question
    * @throws NotFoundException the not found exception
    */
-  public PostEntity getPost(String postId, User user) throws NotFoundException {
+  public PostEntity getPost(String postId, String userId) throws NotFoundException {
     return Observable
         .fromCallable(() -> {
           PostEntity post = ofy().load()
@@ -98,9 +100,9 @@ public final class PostController extends Controller {
 
           return checkNotFound(post, "Post does not exists!");
         })
-        .flatMap(post -> postShardService.mergeShards(post, Key.create(user.getUserId())))
-        .flatMap(comment -> voteService.checkPostVote(comment, Key.create(user.getUserId())))
-        .map(post -> post.withOwner(post.getWebsafeOwnerId().equals(user.getUserId())))
+        .flatMap(post -> postShardService.mergeShards(post, Key.create(userId)))
+        .flatMap(comment -> voteService.checkPostVote(comment, Key.create(userId)))
+        .map(post -> post.withOwner(post.getWebsafeOwnerId().equals(userId)))
         .blockingSingle();
   }
 
@@ -140,24 +142,7 @@ public final class PostController extends Controller {
       Optional<String> mediaIds, Optional<Integer> bounty, User user) {
 
     return insertPost(Optional.of(content), tags, groupId, Optional.of(title), mediaIds, bounty,
-        PostEntity.Type.BLOG, user);
-  }
-
-  /**
-   * Insert image post post entity.
-   *
-   * @param tags the tags
-   * @param groupId the group id
-   * @param mediaIds the media ids
-   * @param bounty the bounty
-   * @param user the user
-   * @return the post entity
-   */
-  public PostEntity insertImagePost(String tags, String groupId, Optional<String> mediaIds,
-      Optional<Integer> bounty, User user) {
-
-    return insertPost(Optional.absent(), tags, groupId, Optional.absent(), mediaIds, bounty,
-        PostEntity.Type.IMAGE_POST, user);
+        PostEntity.Type.BLOG_POST, user);
   }
 
   private PostEntity insertPost(Optional<String> content, String tags, String groupId,
@@ -217,7 +202,7 @@ public final class PostController extends Controller {
           .toList();
     }
 
-    // Create a new question from given inputs.
+    // Create a new post from given inputs.
     PostEntity post =
         postService.createPost(account, content, tags, group, title, bounty, medias, tracker, type);
 
@@ -254,7 +239,7 @@ public final class PostController extends Controller {
     }
 
     ofy().transact(() -> {
-      ofy().save().entities(saveBuilder.build()).now();
+      ofy().save().entities(saveBuilder.build());
 
       for (Notifiable bundle : notifiables) {
         notificationService.send(bundle);
@@ -262,8 +247,12 @@ public final class PostController extends Controller {
     });
 
     if (!ServerConfig.isTest()) {
-      UpdateFeedServlet.addToQueue(user.getUserId(), post.getWebsafeId());
-      SendNewPostNotificationServlet.addToQueue(user.getUserId(), post.getWebsafeId());
+      UpdateFeedTask.addToQueue(user.getUserId(), post.getWebsafeId(),
+          TravelerGroupEntity.extractNameFromKey(post.getTravelerGroupKey()));
+      FollowerPostNotificationTask.addToQueue(user.getUserId(), post.getWebsafeId(),
+          post.getOwnerUsername());
+      GroupPostNotificationTask.addToQueue(post.getWebsafeId(),
+          post.getTravelerGroupKey().toWebSafeString());
     }
 
     return post;
@@ -380,10 +369,10 @@ public final class PostController extends Controller {
         ofy().load().type(Feed.class).filter(Feed.FIELD_POST + "=", postKey).keys().list();
 
     Set<Key<Bookmark>> bookmarkKeys =
-        Ix.from(postEntity.<PostShard>getShards()).reduce((s1, s2) -> {
+        Ix.from(postEntity.<PostEntity.PostShard>getShards()).reduce((s1, s2) -> {
           s2.getBookmarkKeys().addAll(s1.getBookmarkKeys());
           return s2;
-        }).map(PostShard::getBookmarkKeys).single();
+        }).map(PostEntity.PostShard::getBookmarkKeys).single();
 
     deleteList
         .addAll(commentShardService.createShardMapWithKey(commentKeys).keySet())
@@ -513,9 +502,6 @@ public final class PostController extends Controller {
    * @param user the user
    */
   public void reportPost(String postId, User user) throws NotFoundException {
-    PostEntity postEntity = ofy().load().key(Key.<PostEntity>create(postId)).now();
-    postEntity.toBuilder().reportedByKey(Key.create(user.getUserId())).build();
-
-    ofy().save().entity(postEntity);
+    // TODO: 30.05.2017 Implement reporting
   }
 }

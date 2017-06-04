@@ -1,18 +1,20 @@
 package com.yoloo.android.feature.explore;
 
+import android.support.annotation.NonNull;
+import android.support.v4.util.ArrayMap;
+import com.annimon.stream.Stream;
+import com.yoloo.android.data.feed.FeedItem;
 import com.yoloo.android.data.repository.group.GroupRepository;
 import com.yoloo.android.data.repository.post.PostRepository;
-import com.yoloo.android.data.sorter.GroupSorter;
 import com.yoloo.android.feature.explore.data.ButtonItem;
-import com.yoloo.android.feature.explore.data.ExploreItem;
 import com.yoloo.android.feature.explore.data.GroupItem;
 import com.yoloo.android.feature.explore.data.RecentMediaListItem;
 import com.yoloo.android.framework.MvpPresenter;
-import com.yoloo.android.util.Group;
+import com.yoloo.android.util.NetworkUtil;
+import com.yoloo.android.util.Pair;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nonnull;
@@ -23,38 +25,45 @@ class ExplorePresenter extends MvpPresenter<ExploreView> {
   private final PostRepository postRepository;
   private final GroupRepository groupRepository;
 
+  private final ArrayMap<String, FeedItem<?>> items = new ArrayMap<>(20);
+
   ExplorePresenter(PostRepository postRepository, GroupRepository groupRepository) {
     this.postRepository = postRepository;
     this.groupRepository = groupRepository;
   }
 
-  @Override
-  public void onAttachView(ExploreView view) {
+  @Override public void onAttachView(ExploreView view) {
     super.onAttachView(view);
     loadExploreScreen();
   }
 
   private void loadExploreScreen() {
-    Observable.zip(getRecentMediaPostsObservable(), getButtonObservable(), getGroupsObservable(),
-        Group.Of3::create)
-        .retry(2, throwable -> throwable instanceof SocketTimeoutException)
-        .subscribe(group -> {
-          List<ExploreItem<?>> items = new ArrayList<>();
-
-          items.add(group.first);
-          items.add(group.second);
-          items.addAll(group.third);
-
+    Disposable d = Observable
+        .zip(
+            getRecentMediaPostsObservable(),
+            getGroupsObservable(),
+            Pair::create)
+        .retry(1, NetworkUtil::isKnownException)
+        .map(pair -> {
+          List<FeedItem<?>> items = new ArrayList<>(3);
+          items.add(pair.first);
+          items.add(new ButtonItem());
+          items.addAll(pair.second);
+          return items;
+        })
+        .subscribe(items -> {
+          Stream.of(items).forEach(feedItem -> this.items.put(feedItem.getId(), feedItem));
           getView().onDataLoaded(items);
         }, Timber::e);
+
+    getDisposable().add(d);
   }
 
   void subscribe(@Nonnull String groupId) {
     Disposable d = groupRepository
         .subscribe(groupId)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(() -> {
-        }, Timber::e);
+        .subscribe(group -> updateItem(new GroupItem(group)), Timber::e);
 
     getDisposable().add(d);
   }
@@ -63,10 +72,14 @@ class ExplorePresenter extends MvpPresenter<ExploreView> {
     Disposable d = groupRepository
         .unsubscribe(groupId)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(() -> {
-        }, Timber::e);
+        .subscribe(group -> updateItem(new GroupItem(group)), Timber::e);
 
     getDisposable().add(d);
+  }
+
+  void updateItem(@NonNull FeedItem<?> item) {
+    items.put(item.getId(), item);
+    getView().onDataLoaded(items.values());
   }
 
   private Observable<RecentMediaListItem> getRecentMediaPostsObservable() {
@@ -76,13 +89,9 @@ class ExplorePresenter extends MvpPresenter<ExploreView> {
         .map(response -> new RecentMediaListItem(response.getData()));
   }
 
-  private Observable<ButtonItem> getButtonObservable() {
-    return Observable.just(new ButtonItem());
-  }
-
   private Observable<List<GroupItem>> getGroupsObservable() {
     return groupRepository
-        .listGroups(GroupSorter.DEFAULT, null, 100)
+        .listGroups(null, 100)
         .observeOn(AndroidSchedulers.mainThread(), true)
         .flatMap(response -> Observable.fromIterable(response.getData()))
         .distinct()

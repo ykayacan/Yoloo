@@ -67,7 +67,6 @@ class BlogPresenter extends MvpPresenter<BlogView> {
           this.me = group.first;
           this.post = post;
 
-          getView().onMeLoaded(group.first);
           getView().onLoaded(group.second);
 
           cursor = group.third;

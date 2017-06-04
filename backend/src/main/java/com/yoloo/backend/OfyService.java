@@ -19,7 +19,6 @@ import com.yoloo.backend.relationship.Relationship;
 import com.yoloo.backend.game.Tracker;
 import com.yoloo.backend.notification.Notification;
 import com.yoloo.backend.post.PostEntity;
-import com.yoloo.backend.post.PostShard;
 import com.yoloo.backend.tag.Tag;
 import com.yoloo.backend.tag.TagShard;
 import com.yoloo.backend.group.TravelerGroupShard;
@@ -39,7 +38,7 @@ public final class OfyService {
 
     factory().register(Feed.class);
     factory().register(PostEntity.class);
-    factory().register(PostShard.class);
+    factory().register(PostEntity.PostShard.class);
 
     factory().register(Tag.class);
     factory().register(TagShard.class);

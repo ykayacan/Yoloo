@@ -26,7 +26,6 @@ import com.yoloo.android.data.feed.TrendingBlogListFeedItem;
 import com.yoloo.android.data.repository.group.GroupRepository;
 import com.yoloo.android.data.repository.post.PostRepository;
 import com.yoloo.android.data.repository.user.UserRepository;
-import com.yoloo.android.data.sorter.GroupSorter;
 import com.yoloo.android.feature.editor.job.SendPostJob;
 import com.yoloo.android.feature.feed.common.annotation.FeedAction;
 import com.yoloo.android.framework.MvpPresenter;
@@ -100,20 +99,19 @@ class FeedPresenter extends MvpPresenter<FeedView> {
   }
 
   void loadFirstPage() {
-    Disposable d = Observable.zip(
-        getRecommendedGroupsObservable(),
-        getTrendingBlogsObservable(),
-        getFeedObservable(),
-        getNewUsersObservable(),
-        Group.Of4::create)
-        .doOnNext(group -> {
-          this.cursor = group.third.getCursor();
-        })
+    Disposable d = Observable
+        .zip(
+            getRecommendedGroupsObservable(),
+            getTrendingBlogsObservable(),
+            getPostsObservable(),
+            getNewUsersObservable(),
+            Group.Of4::create)
+        .doOnNext(group -> cursor = group.third.getCursor())
         .retry(1, NetworkUtil::isKnownException)
         .map(this::mapGroupsToFeedItems)
         .map(feedItems -> new FeedState(true, false, feedItems))
         .startWith(new FeedState(false, false, items))
-        .doOnNext(state -> this.items = state.getData())
+        .doOnNext(state -> items = state.getData())
         .subscribe(state -> {
           if (isViewAttached()) {
             getView().onLoaded(state);
@@ -125,7 +123,7 @@ class FeedPresenter extends MvpPresenter<FeedView> {
 
   void loadNextPage() {
     Timber.d("loadNextPage()");
-    Disposable d = getFeedObservable()
+    Disposable d = getPostsObservable()
         .retry(1, NetworkUtil::isKnownException)
         .doOnNext(response -> cursor = response.getCursor())
         .doOnNext(response -> items.addAll(mapPostsToFeedItems(response.getData())))
@@ -143,7 +141,7 @@ class FeedPresenter extends MvpPresenter<FeedView> {
   void loadPullToRefresh() {
     this.cursor = null;
 
-    Disposable d = getFeedObservable()
+    Disposable d = getPostsObservable()
         .retry(1, NetworkUtil::isKnownException)
         .doOnNext(response -> {
           this.items.subList(3, this.items.size()).clear();
@@ -279,13 +277,13 @@ class FeedPresenter extends MvpPresenter<FeedView> {
         .observeOn(AndroidSchedulers.mainThread());
   }
 
-  private Observable<Response<List<PostRealm>>> getFeedObservable() {
+  private Observable<Response<List<PostRealm>>> getPostsObservable() {
     return postRepository.listByFeed(cursor, 20).observeOn(AndroidSchedulers.mainThread());
   }
 
   private Observable<List<GroupRealm>> getRecommendedGroupsObservable() {
     return groupRepository
-        .listGroups(GroupSorter.DEFAULT, null, 7)
+        .listRecommendedGroups()
         .map(Response::getData)
         .observeOn(AndroidSchedulers.mainThread());
   }
@@ -344,7 +342,7 @@ class FeedPresenter extends MvpPresenter<FeedView> {
   private void updateFeedItem(@NonNull FeedItem<?> item) {
     final int size = items.size();
     for (int i = 0; i < size; i++) {
-      if (items.get(i).id().equals(item.id())) {
+      if (items.get(i).getId().equals(item.getId())) {
         items.set(i, item);
         getView().onLoaded(new FeedState(true, false, items));
         break;

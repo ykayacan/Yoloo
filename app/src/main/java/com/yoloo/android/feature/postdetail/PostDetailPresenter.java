@@ -1,6 +1,5 @@
 package com.yoloo.android.feature.postdetail;
 
-import com.annimon.stream.Optional;
 import com.annimon.stream.Stream;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.db.AccountRealm;
@@ -64,32 +63,20 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
 
     shouldResetCursor(pullToRefresh);
 
-    Disposable d = Observable
-        .zip(getMeObservable(), getPostObservable(postId), getCommentsObservable(postId),
-            Group.Of3::create)
-        .map(group -> {
+    Disposable d =
+        Observable.zip(getMeObservable(), getPostObservable(postId), getCommentsObservable(postId),
+            Group.Of3::create).map(group -> {
           List<FeedItem<?>> items = new ArrayList<>();
 
-          PostRealm post = group.second;
-          if (post.isTextPost()) {
-            items.add(new TextPostFeedItem(post));
-          } else if (post.isRichPost()) {
-            items.add(new RichPostFeedItem(post));
-          } else if (post.isBlogPost()) {
-            items.add(new BlogPostFeedItem(post));
-          }
+          items.add(mapToPostFeedItem(post));
 
-          List<CommentFeedItem> comments = Stream
-              .of(group.third.getData())
+          Stream.of(group.third.getData())
               .map(comment -> processComment(group, comment))
               .map(CommentFeedItem::new)
-              .toList();
-
-          items.addAll(comments);
+              .forEach(items::add);
 
           return Group.Of4.create(group.first, group.second, items, group.third.getCursor());
-        })
-        .subscribe(group -> {
+        }).subscribe(group -> {
           me = group.first;
 
           getView().onPostLoaded(group.second);
@@ -112,10 +99,8 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
         getCommentsObservable(post.getId());
 
     Disposable d = Observable.zip(meObservable, commentsObservable, Pair::create).map(pair -> {
-      List<CommentFeedItem> comments = Stream
-          .of(pair.second.getData())
-          .map(comment -> comment
-              .setOwner(pair.first.getId().equals(comment.getOwnerId()))
+      List<CommentFeedItem> comments = Stream.of(pair.second.getData())
+          .map(comment -> comment.setOwner(pair.first.getId().equals(comment.getOwnerId()))
               .setPostAccepted(post.getAcceptedCommentId() != null)
               .setPostOwner(post.getOwnerId().equals(pair.first.getId())))
           .map(CommentFeedItem::new)
@@ -149,8 +134,7 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
    * @param comment the comment
    */
   void acceptComment(@Nonnull CommentRealm comment) {
-    Disposable d = commentRepository
-        .acceptComment(comment)
+    Disposable d = commentRepository.acceptComment(comment)
         .map(this::setExtraCommentProperties)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(updated -> getView().onCommentUpdated(updated), this::showError);
@@ -164,8 +148,7 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
    * @param comment the comment
    */
   void deleteComment(@Nonnull CommentRealm comment) {
-    Disposable d = commentRepository
-        .deleteComment(comment)
+    Disposable d = commentRepository.deleteComment(comment)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe();
 
@@ -179,8 +162,7 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
    * @param direction the direction
    */
   void votePost(@Nonnull String postId, int direction) {
-    Disposable d = postRepository
-        .votePost(postId, direction)
+    Disposable d = postRepository.votePost(postId, direction)
         .observeOn(AndroidSchedulers.mainThread())
         .doOnSuccess(postRealm -> Timber.d("Updated post: %s", postRealm))
         .subscribe(post -> getView().onPostUpdated(post), this::showError);
@@ -195,8 +177,7 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
    * @param direction the direction
    */
   void voteComment(@Nonnull String commentId, int direction) {
-    Disposable d = commentRepository
-        .voteComment(commentId, direction)
+    Disposable d = commentRepository.voteComment(commentId, direction)
         .map(this::setExtraCommentProperties)
         .observeOn(AndroidSchedulers.mainThread())
         .doOnSuccess(comment -> Timber.d("Updated comment: %s", comment))
@@ -212,8 +193,7 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
    * @param postId the post id
    */
   void bookmarkPost(String postId) {
-    Disposable d = postRepository
-        .bookmarkPost(postId)
+    Disposable d = postRepository.bookmarkPost(postId)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(post -> getView().onPostUpdated(post), Timber::e);
 
@@ -226,8 +206,7 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
    * @param postId the post id
    */
   void unBookmarkPost(String postId) {
-    Disposable d = postRepository
-        .unBookmarkPost(postId)
+    Disposable d = postRepository.unBookmarkPost(postId)
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(post -> getView().onPostUpdated(post), Timber::e);
 
@@ -249,24 +228,18 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
   }
 
   private Observable<Response<List<CommentRealm>>> getCommentsObservable(@Nonnull String postId) {
-    return commentRepository
-        .listComments(postId, cursor, 20)
+    return commentRepository.listComments(postId, cursor, 20)
         .observeOn(AndroidSchedulers.mainThread());
   }
 
   private Observable<PostRealm> getPostObservable(@Nonnull String postId) {
-    return postRepository
-        .getPost(postId)
-        .observeOn(AndroidSchedulers.mainThread(), true)
-        .filter(Optional::isPresent)
-        .map(Optional::get);
+    return postRepository.getPost(postId).observeOn(AndroidSchedulers.mainThread()).toObservable();
   }
 
   private CommentRealm processComment(
       Group.Of3<AccountRealm, PostRealm, Response<List<CommentRealm>>> group,
       CommentRealm comment) {
-    return comment
-        .setPostType(group.second.getPostType())
+    return comment.setPostType(group.second.getPostType())
         .setOwner(group.first.getId().equals(comment.getOwnerId()))
         .setPostAccepted(group.second.getAcceptedCommentId() != null)
         .setPostOwner(group.second.getOwnerId().equals(group.first.getId()));
@@ -277,5 +250,17 @@ class PostDetailPresenter extends MvpPresenter<PostDetailView> {
         .setPostType(post.getPostType())
         .setPostAccepted(post.getAcceptedCommentId() != null)
         .setPostOwner(post.getOwnerId().equals(comment.getOwnerId()));
+  }
+
+  private FeedItem<PostRealm> mapToPostFeedItem(PostRealm post) {
+    if (post.isTextPost()) {
+      return new TextPostFeedItem(post);
+    } else if (post.isRichPost()) {
+      return new RichPostFeedItem(post);
+    } else if (post.isBlogPost()) {
+      return new BlogPostFeedItem(post);
+    } else {
+      return null;
+    }
   }
 }

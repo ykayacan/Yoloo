@@ -1,10 +1,10 @@
 package com.yoloo.android.feature.explore;
 
-import com.yoloo.android.feature.explore.data.ExploreItem;
+import com.yoloo.android.data.feed.FeedItem;
 import com.yoloo.android.framework.MvpView;
-import java.util.List;
+import java.util.Collection;
 
 interface ExploreView extends MvpView {
 
-  void onDataLoaded(List<ExploreItem<?>> items);
+  void onDataLoaded(Collection<FeedItem<?>> items);
 }

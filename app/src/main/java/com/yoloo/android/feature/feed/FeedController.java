@@ -71,7 +71,7 @@ import com.yoloo.android.feature.models.recommendedgroups.RecommendedGroupListMo
 import com.yoloo.android.feature.models.trendingblogs.TrendingBlogListModelGroup;
 import com.yoloo.android.feature.notification.NotificationController;
 import com.yoloo.android.feature.notification.NotificationProvider;
-import com.yoloo.android.feature.postdetail.PostDetailController;
+import com.yoloo.android.feature.postdetail.mvi.PostDetailMviController;
 import com.yoloo.android.feature.postlist.PostListController;
 import com.yoloo.android.feature.profile.ProfileController;
 import com.yoloo.android.feature.search.SearchController;
@@ -465,7 +465,7 @@ public class FeedController extends MvpController<FeedView, FeedPresenter>
       controller.setModelUpdateEvent(this);
       startTransaction(controller, new HorizontalChangeHandler());
     } else {
-      PostDetailController controller = PostDetailController.create(post.getId());
+      PostDetailMviController controller = PostDetailMviController.create(post.getId());
       controller.setModelUpdateEvent(this);
       startTransaction(controller, new HorizontalChangeHandler());
     }

@@ -24,8 +24,9 @@ public class RecentMediaListModelGroup extends EpoxyModelGroup {
     List<EpoxyModel<?>> models = new ArrayList<>();
 
     models.add(new SimpleEpoxyModel(R.layout.item_recent_medias_header_text));
-    models.add(new SimpleEpoxyModel(R.layout.item_recommended_group_more_text).onClick(
-        v -> callbacks.onRecentPhotosHeaderClicked()));
+
+    models.add(new SimpleEpoxyModel(R.layout.item_recommended_group_more_text)
+        .onClick(v -> callbacks.onRecentPhotosHeaderClicked()));
 
     // inner group models
     List<RecentMediaModel_> recentPhotoModels = Stream

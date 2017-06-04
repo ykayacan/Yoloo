@@ -23,7 +23,7 @@ public class NewUserWelcomeFeedItem implements FeedItem<AccountRealm> {
     this.account = account;
   }
 
-  @Nonnull @Override public String id() {
+  @Nonnull @Override public String getId() {
     return UUID.randomUUID().toString();
   }
 

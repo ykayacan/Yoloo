@@ -12,7 +12,7 @@ import org.junit.Test;
 import static com.yoloo.backend.util.TestObjectifyService.ofy;
 import static org.junit.Assert.assertEquals;
 
-public class AccountControllerTest extends TestBase {
+public class UserControllerTest extends TestBase {
 
   @Test public void returnThreeNewUsersForGivenUser() throws ServiceException {
     Account me = Account.builder().id(1).created(DateTime.now()).build();
@@ -22,7 +22,7 @@ public class AccountControllerTest extends TestBase {
 
     ofy().save().entities(me, user1, user2, user3).now();
 
-    AccountController controller = AccountControllerProvider.of().create();
+    UserController controller = AccountControllerProvider.of().create();
 
     CollectionResponse<Account> users = controller.listNewUsers(
         Optional.absent(), Optional.absent(), new User("", "", me.getWebsafeId()));
@@ -41,7 +41,7 @@ public class AccountControllerTest extends TestBase {
 
     ofy().save().entities(me, user1, user2, user3, relationship).now();
 
-    AccountController controller = AccountControllerProvider.of().create();
+    UserController controller = AccountControllerProvider.of().create();
 
     CollectionResponse<Account> users = controller.listNewUsers(
         Optional.absent(), Optional.absent(), new User("", "", me.getWebsafeId()));

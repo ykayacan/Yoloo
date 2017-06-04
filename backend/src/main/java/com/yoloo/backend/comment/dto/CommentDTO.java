@@ -17,4 +17,5 @@ public class CommentDTO {
   private int direction;
   private long voteCount;
   private Date created;
+  private boolean owner;
 }

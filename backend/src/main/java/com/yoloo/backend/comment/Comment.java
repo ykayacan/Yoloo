@@ -21,19 +21,17 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Value;
-import lombok.experimental.FieldDefaults;
 import lombok.experimental.Wither;
 import org.joda.time.DateTime;
 
 @Entity
 @Cache
-@Value
+@Data
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
-@FieldDefaults(makeFinal = false)
 @ApiTransformer(CommentTransformer.class)
 public class Comment implements Votable {
 
@@ -63,6 +61,8 @@ public class Comment implements Votable {
   @Ignore @Wither private int dir;
 
   @Ignore @Wither private long voteCount;
+
+  @Wither @Ignore private boolean owner;
 
   public Key<Comment> getKey() {
     return Key.create(parent, Comment.class, id);
@@ -97,6 +97,7 @@ public class Comment implements Votable {
         .voteCount(voteCount)
         .created(created)
         .accepted(accepted)
+        .owner(owner)
         .build();
   }
 

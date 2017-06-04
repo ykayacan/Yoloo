@@ -38,15 +38,13 @@ public class CommentRepository {
   }
 
   public Single<CommentRealm> addComment(@Nonnull CommentRealm comment) {
-    return remoteDataStore
-        .add(comment)
+    return remoteDataStore.add(comment)
         .doOnSuccess(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }
 
   public Completable deleteComment(@Nonnull CommentRealm comment) {
-    return remoteDataStore
-        .delete(comment)
+    return remoteDataStore.delete(comment)
         .andThen(diskDataStore.delete(comment))
         .subscribeOn(Schedulers.io());
   }
@@ -61,8 +59,7 @@ public class CommentRepository {
   }
 
   public Single<CommentRealm> acceptComment(@Nonnull CommentRealm comment) {
-    return remoteDataStore
-        .accept(comment)
+    return remoteDataStore.accept(comment)
         .doOnSuccess(diskDataStore::accept)
         .subscribeOn(Schedulers.io());
   }

@@ -17,6 +17,7 @@ public class CommentTransformer implements Transformer<Comment, CommentDTO> {
         .direction(in.getDir())
         .voteCount(in.getVoteCount())
         .created(in.getCreated().toDate())
+        .owner(in.isOwner())
         .build();
   }
 

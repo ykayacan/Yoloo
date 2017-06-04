@@ -11,7 +11,6 @@ import com.yoloo.backend.account.Account;
 import com.yoloo.backend.base.Controller;
 import com.yoloo.backend.config.ShardConfig;
 import com.yoloo.backend.post.PostEntity;
-import com.yoloo.backend.post.PostShard;
 import com.yoloo.backend.post.PostShardService;
 import com.yoloo.backend.util.CollectionTransformer;
 import com.yoloo.backend.vote.VoteService;
@@ -51,9 +50,9 @@ public class BookmarkController extends Controller {
 
     Bookmark bookmark = createBookmark(postKey, authKey);
 
-    final Key<PostShard> postShardKey = postShardService.getRandomShardKey(postKey);
+    final Key<PostEntity.PostShard> postShardKey = postShardService.getRandomShardKey(postKey);
 
-    PostShard shard = ofy().load().key(postShardKey).now();
+    PostEntity.PostShard shard = ofy().load().key(postShardKey).now();
     shard.getBookmarkKeys().add(bookmark.getKey());
 
     ofy().save().entities(bookmark, shard);
@@ -85,9 +84,9 @@ public class BookmarkController extends Controller {
 
     final Key<Bookmark> bookmarkKey = Key.create(authKey, Bookmark.class, postId);
 
-    PostShard updatedShard = Ix
+    PostEntity.PostShard updatedShard = Ix
         .range(1, ShardConfig.POST_SHARD_COUNTER)
-        .map(integer -> PostShard.createKey(postKey, integer))
+        .map(integer -> PostEntity.PostShard.createKey(postKey, integer))
         .collectToList()
         .flatMap(keys -> Ix.from(ofy().load().keys(keys).values()))
         .filter(postShard -> postShard.getBookmarkKeys().contains(bookmarkKey))

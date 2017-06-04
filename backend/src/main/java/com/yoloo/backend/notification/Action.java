@@ -11,8 +11,9 @@ public enum Action {
   MENTION(3),
   GAME(4),
   ACCEPT(5),
-  NEW_FRIEND_POST(6),
-  NEW_USER_JOINED(7);
+  FOLLOWER_POST(6),
+  USER_JOINED(7),
+  GROUP_POST(8);
 
   int value;
 

@@ -24,11 +24,11 @@ import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
 import com.yoloo.android.data.db.GroupRealm;
 import com.yoloo.android.data.db.PostRealm;
+import com.yoloo.android.data.feed.FeedItem;
 import com.yoloo.android.data.repository.group.GroupRepositoryProvider;
 import com.yoloo.android.data.repository.post.PostRepositoryProvider;
 import com.yoloo.android.data.sorter.PostSorter;
 import com.yoloo.android.feature.blog.BlogController;
-import com.yoloo.android.feature.explore.data.ExploreItem;
 import com.yoloo.android.feature.explore.data.GroupItem;
 import com.yoloo.android.feature.group.GroupController;
 import com.yoloo.android.feature.models.recentmedias.RecentMediaListModelGroup;
@@ -40,7 +40,7 @@ import com.yoloo.android.framework.MvpController;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.UpdateCallback;
 import com.yoloo.android.util.ViewUtils;
-import java.util.List;
+import java.util.Collection;
 
 public class ExploreController extends MvpController<ExploreView, ExplorePresenter>
     implements ExploreView, UpdateCallback<GroupRealm> {
@@ -102,13 +102,13 @@ public class ExploreController extends MvpController<ExploreView, ExplorePresent
   }
 
   @Override
-  public void onDataLoaded(List<ExploreItem<?>> items) {
-    epoxyController.setData(items, null);
+  public void onDataLoaded(Collection<FeedItem<?>> items) {
+    epoxyController.setData(items);
   }
 
   @Override
   public void onModelUpdated(GroupRealm item) {
-    epoxyController.updateItem(new GroupItem(item));
+    getPresenter().updateItem(new GroupItem(item));
   }
 
   private void setupToolbar() {

@@ -16,7 +16,7 @@ public class NewUserListModelGroup extends EpoxyModelGroup {
   public NewUserListModelGroup(NewUserListFeedItem item, Callbacks callbacks,
       RequestManager glide) {
     super(R.layout.item_new_users_list, buildModels(item, callbacks, glide));
-    id(item.id());
+    id(item.getId());
   }
 
   private static List<EpoxyModel<?>> buildModels(NewUserListFeedItem item,

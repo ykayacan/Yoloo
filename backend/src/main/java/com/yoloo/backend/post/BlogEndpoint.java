@@ -56,7 +56,7 @@ public class BlogEndpoint {
         .on(BadRequestValidator.create(blogId, "blogId is required."))
         .on(AuthValidator.create(user));
 
-    return postController.getPost(blogId, user);
+    return postController.getPost(blogId, user.getUserId());
   }
 
   /**
@@ -163,6 +163,6 @@ public class BlogEndpoint {
 
     return postController.listPosts(Optional.fromNullable(userId), Optional.fromNullable(sorter),
         Optional.fromNullable(groupId), Optional.fromNullable(tags), Optional.fromNullable(limit),
-        Optional.fromNullable(cursor), Optional.of(PostEntity.Type.BLOG), user);
+        Optional.fromNullable(cursor), Optional.of(PostEntity.Type.BLOG_POST), user);
   }
 }

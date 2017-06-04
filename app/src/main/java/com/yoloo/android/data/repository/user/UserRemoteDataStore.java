@@ -7,10 +7,10 @@ import com.google.firebase.auth.FirebaseUser;
 import com.squareup.moshi.Moshi;
 import com.yoloo.android.data.Response;
 import com.yoloo.android.data.UploadManager;
+import com.yoloo.android.data.UploadResponse;
 import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.data.db.CountryRealm;
 import com.yoloo.android.data.db.GameInfoRealm;
-import com.yoloo.android.data.UploadResponse;
 import com.yoloo.android.util.StringUtil;
 import com.yoloo.backend.yolooApi.YolooApi;
 import com.yoloo.backend.yolooApi.model.AccountDTO;
@@ -55,16 +55,12 @@ class UserRemoteDataStore {
    * @return the me
    */
   Single<AccountRealm> getMe() {
-    return getIdToken()
-        .flatMap(idToken -> Single
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .users()
-                .me()
-                .get()
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
+    return getIdToken().flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+        .users()
+        .me()
+        .get()
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io()))
         .map(AccountRealm::new)
         .map(account -> account.setMe(true));
   }
@@ -76,16 +72,11 @@ class UserRemoteDataStore {
    * @return the single
    */
   Single<AccountRealm> get(@Nonnull String userId) {
-    return getIdToken()
-        .flatMap(idToken -> Single
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .users()
-                .get(userId)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .map(AccountRealm::new);
+    return getIdToken().flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+        .users()
+        .get(userId)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).map(AccountRealm::new);
   }
 
   /**
@@ -95,16 +86,11 @@ class UserRemoteDataStore {
    * @return the single
    */
   Single<AccountRealm> add(@Nonnull String base64Payload) {
-    return Single
-        .fromCallable(() -> INSTANCE
-            .getApi()
-            .users()
-            .register()
-            .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + base64Payload))
-            .execute())
-        .subscribeOn(Schedulers.io())
-        .map(AccountRealm::new)
-        .map(__ -> __.setMe(true));
+    return Single.fromCallable(() -> INSTANCE.getApi()
+        .users()
+        .register()
+        .setRequestHeaders(new HttpHeaders().setAuthorization("Bearer " + base64Payload))
+        .execute()).subscribeOn(Schedulers.io()).map(AccountRealm::new).map(__ -> __.setMe(true));
   }
 
   /**
@@ -114,29 +100,24 @@ class UserRemoteDataStore {
    * @return the single
    */
   Single<AccountRealm> update(@Nonnull AccountRealm account) {
-    return getIdToken()
-        .flatMap(idToken -> {
-          String avatarUrl = account.getAvatarUrl();
-          if (!StringUtil.isNullOrEmpty(avatarUrl)) {
-            List<File> files = Collections.singletonList(new File(avatarUrl));
+    return getIdToken().flatMap(idToken -> {
+      String avatarUrl = account.getAvatarUrl();
+      if (!StringUtil.isNullOrEmpty(avatarUrl)) {
+        List<File> files = Collections.singletonList(new File(avatarUrl));
 
-            return UploadManager.INSTANCE
-                .upload(account.getId(), files, UploadManager.MediaOrigin.PROFILE)
-                .map(response -> response.body().string())
-                .doOnSuccess(s -> Timber.d("Response: %s", s))
-                .map(json -> new Moshi.Builder().build()
-                    .adapter(UploadResponse.class)
-                    .fromJson(json))
-                .map(response -> account.setAvatarUrl(response.getItems().get(0).getId()))
-                .flatMap(updated -> Single.fromCallable(() -> updateUser(updated, idToken))
-                    .subscribeOn(Schedulers.io()))
-                .subscribeOn(Schedulers.io());
-          }
+        return UploadManager.INSTANCE.upload(account.getId(), files,
+            UploadManager.MediaOrigin.PROFILE)
+            .map(response -> response.body().string())
+            .doOnSuccess(s -> Timber.d("Response: %s", s))
+            .map(json -> new Moshi.Builder().build().adapter(UploadResponse.class).fromJson(json))
+            .map(response -> account.setAvatarUrl(response.getItems().get(0).getId()))
+            .flatMap(updated -> Single.fromCallable(() -> updateUser(updated, idToken))
+                .subscribeOn(Schedulers.io()))
+            .subscribeOn(Schedulers.io());
+      }
 
-          return Single
-              .fromCallable(() -> updateUser(account, idToken))
-              .subscribeOn(Schedulers.io());
-        })
+      return Single.fromCallable(() -> updateUser(account, idToken)).subscribeOn(Schedulers.io());
+    })
         .map(AccountRealm::new)
         .doOnSuccess(accountRealm -> Timber.d("Updated: %s", accountRealm))
         .map(__ -> __.setMe(account.isMe()))
@@ -152,20 +133,14 @@ class UserRemoteDataStore {
    * @return the observable
    */
   Observable<Response<List<AccountRealm>>> searchUser(@Nonnull String query,
-      @Nullable String cursor,
-      int limit) {
-    return getIdToken()
-        .flatMapObservable(idToken -> Observable
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .users()
-                .search(query)
-                .setCursor(cursor)
-                .setLimit(limit)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .compose(UserResponseTransformer.create());
+      @Nullable String cursor, int limit) {
+    return getIdToken().flatMapObservable(idToken -> Observable.fromCallable(() -> INSTANCE.getApi()
+        .users()
+        .search(query)
+        .setCursor(cursor)
+        .setLimit(limit)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).compose(UserResponseTransformer.create());
   }
 
   /**
@@ -178,18 +153,13 @@ class UserRemoteDataStore {
    */
   Observable<Response<List<AccountRealm>>> listFollowers(@Nonnull String userId,
       @Nullable String cursor, int limit) {
-    return getIdToken()
-        .flatMapObservable(idToken -> Observable
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .users()
-                .followedBy(userId)
-                .setCursor(cursor)
-                .setLimit(limit)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .compose(UserResponseTransformer.create());
+    return getIdToken().flatMapObservable(idToken -> Observable.fromCallable(() -> INSTANCE.getApi()
+        .users()
+        .followedBy(userId)
+        .setCursor(cursor)
+        .setLimit(limit)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).compose(UserResponseTransformer.create());
   }
 
   /**
@@ -202,18 +172,13 @@ class UserRemoteDataStore {
    */
   Observable<Response<List<AccountRealm>>> listFollowings(@Nonnull String userId,
       @Nullable String cursor, int limit) {
-    return getIdToken()
-        .flatMapObservable(idToken -> Observable
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .users()
-                .follows(userId)
-                .setCursor(cursor)
-                .setLimit(limit)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .compose(UserResponseTransformer.create());
+    return getIdToken().flatMapObservable(idToken -> Observable.fromCallable(() -> INSTANCE.getApi()
+        .users()
+        .follows(userId)
+        .setCursor(cursor)
+        .setLimit(limit)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).compose(UserResponseTransformer.create());
   }
 
   /**
@@ -224,37 +189,27 @@ class UserRemoteDataStore {
    * @return the observable
    */
   Observable<Response<List<AccountRealm>>> listRecommendedUsers(@Nonnull String cursor, int limit) {
-    return getIdToken()
-        .flatMapObservable(idToken -> Observable
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .users()
-                .listRecommendedUsers()
-                .setCursor(cursor)
-                .setLimit(limit)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .compose(UserResponseTransformer.create());
+    return getIdToken().flatMapObservable(idToken -> Observable.fromCallable(() -> INSTANCE.getApi()
+        .users()
+        .listRecommendedUsers()
+        .setCursor(cursor)
+        .setLimit(limit)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).compose(UserResponseTransformer.create());
   }
 
   Observable<List<CountryRealm>> listVisitedCountries(@Nonnull String userId) {
-    return getIdToken()
-        .flatMapObservable(idToken -> Observable
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .users()
-                .visited(userId)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .map(collection -> {
-          if (collection == null) {
-            return Collections.emptyList();
-          }
+    return getIdToken().flatMapObservable(idToken -> Observable.fromCallable(() -> INSTANCE.getApi()
+        .users()
+        .visited(userId)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).map(collection -> {
+      if (collection == null) {
+        return Collections.emptyList();
+      }
 
-          return Stream.of(collection.getItems()).map(CountryRealm::new).toList();
-        });
+      return Stream.of(collection.getItems()).map(CountryRealm::new).toList();
+    });
   }
 
   /**
@@ -265,18 +220,13 @@ class UserRemoteDataStore {
    * @return the observable
    */
   Observable<Response<List<AccountRealm>>> listNewUsers(@Nonnull String cursor, int limit) {
-    return getIdToken()
-        .flatMapObservable(idToken -> Observable
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .users()
-                .listNewUsers()
-                .setCursor(cursor)
-                .setLimit(limit)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .compose(UserResponseTransformer.create());
+    return getIdToken().flatMapObservable(idToken -> Observable.fromCallable(() -> INSTANCE.getApi()
+        .users()
+        .listNewUsers()
+        .setCursor(cursor)
+        .setLimit(limit)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).compose(UserResponseTransformer.create());
   }
 
   /**
@@ -287,14 +237,11 @@ class UserRemoteDataStore {
    * @return the completable
    */
   Completable relationship(@Nonnull String userId, @Nonnull String action) {
-    return getIdToken().flatMapCompletable(idToken -> Completable
-        .fromAction(() -> INSTANCE
-            .getApi()
-            .users()
-            .relationship(userId, action)
-            .setRequestHeaders(setIdTokenHeader(idToken))
-            .execute())
-        .subscribeOn(Schedulers.io()));
+    return getIdToken().flatMapCompletable(idToken -> Completable.fromAction(() -> INSTANCE.getApi()
+        .users()
+        .relationship(userId, action)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io()));
   }
 
   /**
@@ -304,8 +251,7 @@ class UserRemoteDataStore {
    * @return the single
    */
   Single<Boolean> checkUsername(@Nonnull String username) {
-    return Single
-        .fromCallable(() -> INSTANCE.getApi().users().checkUsername(username).execute())
+    return Single.fromCallable(() -> INSTANCE.getApi().users().checkUsername(username).execute())
         .subscribeOn(Schedulers.io())
         .map(WrappedBoolean::getAvailable);
   }
@@ -317,8 +263,7 @@ class UserRemoteDataStore {
    * @return the single
    */
   Single<Boolean> checkEmail(@Nonnull String email) {
-    return Single
-        .fromCallable(() -> INSTANCE.getApi().users().checkEmail(email).execute())
+    return Single.fromCallable(() -> INSTANCE.getApi().users().checkEmail(email).execute())
         .subscribeOn(Schedulers.io())
         .map(WrappedBoolean::getAvailable);
   }
@@ -329,29 +274,21 @@ class UserRemoteDataStore {
    * @return the game info
    */
   Single<GameInfoRealm> getGameInfo() {
-    return getIdToken()
-        .flatMap(idToken -> Single
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .users()
-                .me()
-                .getGameInfo()
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .map(GameInfoRealm::new);
+    return getIdToken().flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+        .users()
+        .me()
+        .getGameInfo()
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).map(GameInfoRealm::new);
   }
 
   Completable removeVisitedCountry(@Nonnull String countyCode) {
-    return getIdToken().flatMapCompletable(idToken -> Completable
-        .fromAction(() -> INSTANCE
-            .getApi()
-            .users()
-            .me()
-            .visited(countyCode)
-            .setRequestHeaders(setIdTokenHeader(idToken))
-            .execute())
-        .subscribeOn(Schedulers.io()));
+    return getIdToken().flatMapCompletable(idToken -> Completable.fromAction(() -> INSTANCE.getApi()
+        .users()
+        .me()
+        .visited(countyCode)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io()));
   }
 
   private HttpHeaders setIdTokenHeader(@Nonnull String idToken) {

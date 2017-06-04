@@ -38,7 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 )
 public class UserEndpoint {
 
-  private final AccountController accountController = AccountControllerProvider.of().create();
+  private final UserController userController = AccountControllerProvider.of().create();
 
   /**
    * Returns the {@link Account} with the corresponding ID.
@@ -59,7 +59,7 @@ public class UserEndpoint {
         .on(AuthValidator.create(user))
         .on(NotFoundValidator.create(userId, "Invalid userId."));
 
-    return accountController.getAccount(userId, user);
+    return userController.getAccount(userId, user);
   }
 
   /**
@@ -79,14 +79,14 @@ public class UserEndpoint {
         .on(BadRequestValidator.create(request.getHeader(OAuth2.HeaderType.AUTHORIZATION),
             "Authorization Header cannot be null."));
 
-    return accountController.insertAccount(request);
+    return userController.insertAccount(request);
   }
 
   @ApiMethod(name = "admin.users.test.register",
       path = "admin/users/test",
       httpMethod = ApiMethod.HttpMethod.POST)
   public Account registerUserTest(@Named("token") String base64Token) throws ServiceException {
-    return accountController.insertAccountTest(base64Token);
+    return userController.insertAccountTest(base64Token);
   }
 
   /**
@@ -103,7 +103,7 @@ public class UserEndpoint {
 
     EndpointsValidator.create().on(BadRequestValidator.create(username, "username is required."));
 
-    return accountController.checkUsername(username);
+    return userController.checkUsername(username);
   }
 
   @ApiMethod(name = "users.checkEmail",
@@ -113,7 +113,7 @@ public class UserEndpoint {
 
     EndpointsValidator.create().on(BadRequestValidator.create(email, "email is required."));
 
-    return accountController.checkEmail(email);
+    return userController.checkEmail(email);
   }
 
   /**
@@ -140,7 +140,7 @@ public class UserEndpoint {
         .on(BadRequestValidator.create(query, "query is required."))
         .on(AuthValidator.create(user));
 
-    return accountController.searchAccounts(query, Optional.fromNullable(cursor),
+    return userController.searchAccounts(query, Optional.fromNullable(cursor),
         Optional.fromNullable(limit));
   }
 
@@ -154,7 +154,7 @@ public class UserEndpoint {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
-    return accountController.listRecommendedUsers(Optional.fromNullable(cursor),
+    return userController.listRecommendedUsers(Optional.fromNullable(cursor),
         Optional.fromNullable(limit), user);
   }
 
@@ -177,7 +177,7 @@ public class UserEndpoint {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
-    return accountController.listNewUsers(Optional.fromNullable(cursor),
+    return userController.listNewUsers(Optional.fromNullable(cursor),
         Optional.fromNullable(limit), user);
   }
 
@@ -195,7 +195,7 @@ public class UserEndpoint {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
-    return accountController.getAccount(user.getUserId(), user);
+    return userController.getAccount(user.getUserId(), user);
   }
 
   /**
@@ -231,7 +231,7 @@ public class UserEndpoint {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
-    return accountController.updateAccount(
+    return userController.updateAccount(
         user.getUserId(),
         Optional.fromNullable(mediaId),
         Optional.fromNullable(username),
@@ -257,7 +257,7 @@ public class UserEndpoint {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
-    accountController.deleteAccount(user.getUserId());
+    userController.deleteAccount(user.getUserId());
   }
 
   /**
@@ -270,7 +270,7 @@ public class UserEndpoint {
       path = "admin/users",
       httpMethod = ApiMethod.HttpMethod.POST)
   public Account registerAdmin() throws ServiceException {
-    return accountController.insertAdmin();
+    return userController.insertAdmin();
   }
 
   /**
@@ -288,6 +288,6 @@ public class UserEndpoint {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
-    accountController.deleteAccount(userId);
+    userController.deleteAccount(userId);
   }
 }

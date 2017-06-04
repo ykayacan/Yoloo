@@ -2,6 +2,10 @@ package com.yoloo.android.data.db;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
+import com.yoloo.android.data.feed.BlogPostFeedItem;
+import com.yoloo.android.data.feed.FeedItem;
+import com.yoloo.android.data.feed.RichPostFeedItem;
+import com.yoloo.android.data.feed.TextPostFeedItem;
 import com.yoloo.android.data.util.RealmListParcelConverter;
 import com.yoloo.android.util.Objects;
 import com.yoloo.backend.yolooApi.model.Post;
@@ -12,6 +16,7 @@ import io.realm.annotations.Index;
 import io.realm.annotations.PrimaryKey;
 import java.util.Date;
 import java.util.List;
+import javax.annotation.Nullable;
 import org.parceler.Parcel;
 import org.parceler.ParcelPropertyConverter;
 
@@ -56,13 +61,9 @@ public class PostRealm extends RealmObject {
 
   long commentCount;
 
-  int reportCount;
-
   String title;
 
   double rank;
-
-  @Index boolean feedItem;
 
   @Index boolean pending;
 
@@ -97,12 +98,46 @@ public class PostRealm extends RealmObject {
     voteDir = dto.getDirection();
     voteCount = dto.getVoteCount();
     commentCount = dto.getCommentCount();
-    reportCount = dto.getReportCount();
     title = dto.getTitle();
     rank = dto.getRank();
     groupId = dto.getGroup();
     postType = dto.getPostType();
     bookmarked = dto.getBookmarked();
+  }
+
+  public PostRealm(PostRealm other) {
+    id = other.getId();
+    ownerId = other.getOwnerId();
+    owner = other.isOwner();
+    avatarUrl = other.getAvatarUrl();
+    username = other.getUsername();
+    content = other.getContent();
+    bounty = other.getBounty();
+    medias = other.getMedias();
+    tags = other.getTags();
+    groupId = other.getGroupId();
+    acceptedCommentId = other.getAcceptedCommentId();
+    created = other.getCreated();
+    voteDir = other.getVoteDir();
+    voteCount = other.getVoteCount();
+    commentCount = other.getCommentCount();
+    title = other.getTitle();
+    rank = other.getRank();
+    pending = other.isPending();
+    bookmarked = other.isBookmarked();
+    postType = other.getPostType();
+  }
+
+  @Nullable public FeedItem<?> mapToFeedItem() {
+    if (isTextPost()) {
+      return new TextPostFeedItem(this);
+    } else if (isRichPost()) {
+      return new RichPostFeedItem(this);
+    } else if (isBlogPost()) {
+      return new BlogPostFeedItem(this);
+    } else {
+      return null;
+    }
   }
 
   public String getId() {
@@ -159,7 +194,7 @@ public class PostRealm extends RealmObject {
     return this;
   }
 
-  public List<MediaRealm> getMedias() {
+  public RealmList<MediaRealm> getMedias() {
     return medias;
   }
 
@@ -244,15 +279,6 @@ public class PostRealm extends RealmObject {
     return this;
   }
 
-  public int getReportCount() {
-    return reportCount;
-  }
-
-  public PostRealm setReportCount(int reportCount) {
-    this.reportCount = reportCount;
-    return this;
-  }
-
   public int getPostType() {
     return postType;
   }
@@ -282,15 +308,6 @@ public class PostRealm extends RealmObject {
 
   public String getTagNamesAsString() {
     return Stream.of(tags).map(TagRealm::getName).collect(Collectors.joining(","));
-  }
-
-  public boolean isFeedItem() {
-    return feedItem;
-  }
-
-  public PostRealm setFeedItem(boolean feedItem) {
-    this.feedItem = feedItem;
-    return this;
   }
 
   public boolean isPending() {
@@ -349,37 +366,34 @@ public class PostRealm extends RealmObject {
 
   @Override public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof PostRealm)) return false;
+    if (o == null || getClass() != o.getClass()) return false;
     PostRealm postRealm = (PostRealm) o;
-    return isOwner() == postRealm.isOwner()
-        && getBounty() == postRealm.getBounty()
-        && getVoteDir() == postRealm.getVoteDir()
-        && getVoteCount() == postRealm.getVoteCount()
-        && getCommentCount() == postRealm.getCommentCount()
-        && getReportCount() == postRealm.getReportCount()
-        && Double.compare(postRealm.getRank(), getRank()) == 0
-        && isFeedItem() == postRealm.isFeedItem()
-        && isPending() == postRealm.isPending()
-        && isBookmarked() == postRealm.isBookmarked()
-        && getPostType() == postRealm.getPostType()
-        && Objects.equal(getId(), postRealm.getId())
-        && Objects.equal(getOwnerId(), postRealm.getOwnerId())
-        && Objects.equal(getAvatarUrl(), postRealm.getAvatarUrl())
-        && Objects.equal(getUsername(), postRealm.getUsername())
-        && Objects.equal(getContent(), postRealm.getContent())
-        && Objects.equal(getMedias(), postRealm.getMedias())
-        && Objects.equal(getTags(), postRealm.getTags())
-        && Objects.equal(getGroupId(), postRealm.getGroupId())
-        && Objects.equal(getAcceptedCommentId(), postRealm.getAcceptedCommentId())
-        && Objects.equal(getCreated(), postRealm.getCreated())
-        && Objects.equal(getTitle(), postRealm.getTitle());
+    return owner == postRealm.owner &&
+        bounty == postRealm.bounty &&
+        voteDir == postRealm.voteDir &&
+        voteCount == postRealm.voteCount &&
+        commentCount == postRealm.commentCount &&
+        Double.compare(postRealm.rank, rank) == 0 &&
+        pending == postRealm.pending &&
+        bookmarked == postRealm.bookmarked &&
+        postType == postRealm.postType &&
+        Objects.equal(id, postRealm.id) &&
+        Objects.equal(ownerId, postRealm.ownerId) &&
+        Objects.equal(avatarUrl, postRealm.avatarUrl) &&
+        Objects.equal(username, postRealm.username) &&
+        Objects.equal(content, postRealm.content) &&
+        Objects.equal(medias, postRealm.medias) &&
+        Objects.equal(tags, postRealm.tags) &&
+        Objects.equal(groupId, postRealm.groupId) &&
+        Objects.equal(acceptedCommentId, postRealm.acceptedCommentId) &&
+        Objects.equal(created, postRealm.created) &&
+        Objects.equal(title, postRealm.title);
   }
 
   @Override public int hashCode() {
-    return Objects.hashCode(getId(), getOwnerId(), isOwner(), getAvatarUrl(), getUsername(),
-        getContent(), getBounty(), getMedias(), getTags(), getGroupId(), getAcceptedCommentId(),
-        getCreated(), getVoteDir(), getVoteCount(), getCommentCount(), getReportCount(), getTitle(),
-        getRank(), isFeedItem(), isPending(), isBookmarked(), getPostType());
+    return Objects.hashCode(id, ownerId, owner, avatarUrl, username, content, bounty, medias, tags,
+        groupId, acceptedCommentId, created, voteDir, voteCount, commentCount, title, rank, pending,
+        bookmarked, postType);
   }
 
   @Override public String toString() {
@@ -399,10 +413,8 @@ public class PostRealm extends RealmObject {
         ", voteDir=" + voteDir +
         ", voteCount=" + voteCount +
         ", commentCount=" + commentCount +
-        ", reportCount=" + reportCount +
         ", title='" + title + '\'' +
         ", rank=" + rank +
-        ", feedItem=" + feedItem +
         ", pending=" + pending +
         ", bookmarked=" + bookmarked +
         ", postType=" + postType +

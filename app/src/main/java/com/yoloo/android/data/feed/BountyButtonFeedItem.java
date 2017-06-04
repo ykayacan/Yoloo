@@ -1,5 +1,6 @@
 package com.yoloo.android.data.feed;
 
+import com.yoloo.android.util.Objects;
 import javax.annotation.Nonnull;
 
 import static com.yoloo.android.util.Preconditions.checkNotNull;
@@ -21,8 +22,8 @@ public final class BountyButtonFeedItem implements FeedItem<String> {
     this.buttonName = buttonName;
   }
 
-  @Nonnull @Override public String id() {
-    return getClass().getName();
+  @Nonnull @Override public String getId() {
+    return BountyButtonFeedItem.class.getName();
   }
 
   @Nonnull @Override public String getItem() {
@@ -31,15 +32,13 @@ public final class BountyButtonFeedItem implements FeedItem<String> {
 
   @Override public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof BountyButtonFeedItem)) return false;
-
+    if (o == null || getClass() != o.getClass()) return false;
     BountyButtonFeedItem that = (BountyButtonFeedItem) o;
-
-    return buttonName.equals(that.buttonName);
+    return Objects.equal(buttonName, that.buttonName);
   }
 
   @Override public int hashCode() {
-    return buttonName.hashCode();
+    return Objects.hashCode(buttonName);
   }
 
   @Override public String toString() {

@@ -1,13 +1,11 @@
 package com.yoloo.android.feature.models.trendingblogs;
 
-import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import com.airbnb.epoxy.EpoxyModel;
 import com.airbnb.epoxy.EpoxyModelGroup;
 import com.airbnb.epoxy.SimpleEpoxyModel;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.RequestManager;
-import com.bumptech.glide.load.Transformation;
 import com.yoloo.android.R;
 import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.data.feed.TrendingBlogListFeedItem;
@@ -17,13 +15,13 @@ import java.util.List;
 public class TrendingBlogListModelGroup extends EpoxyModelGroup {
 
   public TrendingBlogListModelGroup(TrendingBlogListFeedItem item, Callbacks callbacks,
-      RequestManager glide, Transformation<Bitmap> bitmapTransformation) {
-    super(R.layout.item_trending_blogs, buildModels(item, callbacks, glide, bitmapTransformation));
-    id(item.id());
+      RequestManager glide) {
+    super(R.layout.item_trending_blogs, buildModels(item, callbacks, glide));
+    id(item.getId());
   }
 
   private static List<EpoxyModel<?>> buildModels(TrendingBlogListFeedItem item, Callbacks callbacks,
-      RequestManager glide, Transformation<Bitmap> bitmapTransformation) {
+      RequestManager glide) {
     List<EpoxyModel<?>> models = new ArrayList<>();
 
     models.add(new SimpleEpoxyModel(R.layout.item_trending_blog_header_text));
@@ -35,18 +33,9 @@ public class TrendingBlogListModelGroup extends EpoxyModelGroup {
     List<TrendingBlogModel_> blogModels = Stream
         .of(item.getItem())
         .map(post -> new TrendingBlogModel_()
-            .id("trending_" + post.getId())
-            .avatarUrl(post.getAvatarUrl())
-            .username(post.getUsername())
-            .created(post.getCreated().getTime() / 1000)
-            .bountyCount(post.getBounty())
-            .thumbUrl(post.getMedias().get(0).getThumbSizeUrl())
-            .title(post.getTitle())
-            .content(post.getContent())
-            .owner(post.isOwner())
-            .bookmarked(post.isBookmarked())
+            .id(post.getId())
+            .post(post)
             .glide(glide)
-            .bitmapTransformation(bitmapTransformation)
             .onBookmarkClickListener(v -> callbacks.onTrendingBlogBookmarkClicked(post))
             .onClickListener(v -> callbacks.onTrendingBlogClicked(post)))
         .toList();

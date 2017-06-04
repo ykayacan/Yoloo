@@ -22,13 +22,13 @@ import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
-import com.bumptech.glide.load.Transformation;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.yoloo.android.R;
 import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.ui.recyclerview.BaseEpoxyHolder;
+import com.yoloo.android.ui.widget.AvatarView;
 import com.yoloo.android.ui.widget.CompatTextView;
 import com.yoloo.android.ui.widget.VoteView;
 import com.yoloo.android.ui.widget.linkabletextview.LinkableTextView;
@@ -36,6 +36,7 @@ import com.yoloo.android.ui.widget.timeview.TimeTextView;
 import com.yoloo.android.util.CountUtil;
 import com.yoloo.android.util.DrawableHelper;
 import com.yoloo.android.util.ReadMoreUtil;
+import com.yoloo.android.util.glide.AvatarTarget;
 
 import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;
 
@@ -43,11 +44,9 @@ import static com.airbnb.epoxy.EpoxyAttribute.Option.DoNotHash;
 public abstract class RichPostModel extends EpoxyModelWithHolder<RichPostModel.PostHolder> {
 
   @EpoxyAttribute PostRealm post;
-  @EpoxyAttribute String groupName;
   @EpoxyAttribute boolean detailLayout;
   @EpoxyAttribute(DoNotHash) PostCallbacks callbacks;
   @EpoxyAttribute(DoNotHash) RequestManager glide;
-  @EpoxyAttribute(DoNotHash) Transformation<Bitmap> transformation;
   @EpoxyAttribute(DoNotHash) ConstraintSet set;
 
   @Override public void bind(PostHolder holder) {
@@ -57,14 +56,13 @@ public abstract class RichPostModel extends EpoxyModelWithHolder<RichPostModel.P
     //noinspection unchecked
     glide
         .load(post.getAvatarUrl().replace("s96-c", "s64-c-rw"))
-        .bitmapTransform(transformation)
         .placeholder(R.drawable.ic_player_72dp)
-        .into(holder.ivUserAvatar);
+        .into(new AvatarTarget(holder.ivUserAvatar));
 
     holder.tvUsername.setText(post.getUsername());
     holder.tvTime.setTimeStamp(post.getCreated().getTime() / 1000);
     holder.tvGroupName.setText(
-        holder.itemView.getContext().getString(R.string.feed_item_group_name, groupName));
+        holder.itemView.getContext().getString(R.string.feed_item_group_name, post.getGroupId()));
 
     holder.tvBounty.setVisibility(post.getBounty() == 0 ? View.GONE : View.VISIBLE);
     holder.tvBounty.setText(String.valueOf(post.getBounty()));
@@ -220,7 +218,7 @@ public abstract class RichPostModel extends EpoxyModelWithHolder<RichPostModel.P
   }
 
   static class PostHolder extends BaseEpoxyHolder {
-    @BindView(R.id.iv_item_feed_user_avatar) ImageView ivUserAvatar;
+    @BindView(R.id.iv_item_feed_user_avatar) AvatarView ivUserAvatar;
     @BindView(R.id.tv_item_feed_username) TextView tvUsername;
     @BindView(R.id.tv_item_feed_time) TimeTextView tvTime;
     @BindView(R.id.tv_item_feed_group_name) TextView tvGroupName;

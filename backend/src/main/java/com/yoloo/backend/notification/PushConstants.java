@@ -17,4 +17,5 @@ public final class PushConstants {
   public static final String LEVEL = "level";
   public static final String GAME_ACTION = "gameAction";
   public static final String USER_ID = "userId";
+  public static final String GROUP_NAME = "groupName";
 }

@@ -88,7 +88,8 @@
   <string name="label_notification_title">Bildirimler</string>
   <string name="label_notification_comment">\@%1$s senin gönderine yorum yaptı.</string>
   <string name="label_notification_mention">\@%1$s bir yorumda senden bahsetti: %2$s</string>
-  <string name="label_notification_new_post">\@%1$s yeni bir gönderi paylaştı</string>
+  <string name="label_notification_new_user_post">\@%1$s yeni bir gönderi paylaştı</string>
+  <string name="label_notification_new_group_post">%1$s grubunda yeni bir gönderi paylaşıldı</string>
   <string name="label_notification_follow">\@%1$s seni takip etti</string>
   <string name="label_notification_accept">Yorumun kabul edildi</string>
   <string name="label_notification_game_level_up">🎊🎉 Tebrikler! %1$s. seviyeye ulaştın</string>
@@ -315,4 +316,5 @@
 
   <string name="chat_list_dialog_title">Seçenekler</string>
   <string name="chat_list_dialog_options_delete">Sil</string>
+  <string name="group_more">Diğer</string>
 </resources>

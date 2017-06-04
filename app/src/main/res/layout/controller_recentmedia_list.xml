@@ -5,7 +5,6 @@
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:background="@color/background_grey_100"
-  android:fitsSystemWindows="true"
   app:contentViewId="@+id/swipe"
   app:emptyLayout="@layout/layout_recent_media_list_empty_view"
   app:errorLayout="@layout/layout_error_view"

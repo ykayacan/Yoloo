@@ -5,6 +5,7 @@ import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 import com.yoloo.android.R;
 import com.yoloo.android.YolooApp;
+import com.yoloo.android.util.Objects;
 import com.yoloo.backend.yolooApi.model.AccountDTO;
 import io.realm.RealmList;
 import io.realm.RealmObject;
@@ -256,8 +257,7 @@ public class AccountRealm extends RealmObject {
     return this;
   }
 
-  @Nullable
-  public String getSubscribedGroupIds() {
+  @Nullable public String getSubscribedGroupIds() {
     return subscribedGroupIds;
   }
 
@@ -392,122 +392,45 @@ public class AccountRealm extends RealmObject {
 
   @Override public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof AccountRealm)) return false;
-
+    if (o == null || getClass() != o.getClass()) return false;
     AccountRealm that = (AccountRealm) o;
-
-    if (isMe() != that.isMe()) return false;
-    if (isFollowing() != that.isFollowing()) return false;
-    if (getFollowingCount() != that.getFollowingCount()) return false;
-    if (getFollowerCount() != that.getFollowerCount()) return false;
-    if (getPostCount() != that.getPostCount()) return false;
-    if (getCountryCount() != that.getCountryCount()) return false;
-    if (getLevel() != that.getLevel()) return false;
-    if (getPointCount() != that.getPointCount()) return false;
-    if (getBountyCount() != that.getBountyCount()) return false;
-    if (isPending() != that.isPending()) return false;
-    if (isRecent() != that.isRecent()) return false;
-    if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) return false;
-    if (getUsername() != null ? !getUsername().equals(that.getUsername())
-        : that.getUsername() != null) {
-      return false;
-    }
-    if (getRealname() != null ? !getRealname().equals(that.getRealname())
-        : that.getRealname() != null) {
-      return false;
-    }
-    if (getEmail() != null ? !getEmail().equals(that.getEmail()) : that.getEmail() != null) {
-      return false;
-    }
-    if (getAvatarUrl() != null ? !getAvatarUrl().equals(that.getAvatarUrl())
-        : that.getAvatarUrl() != null) {
-      return false;
-    }
-    if (getBio() != null ? !getBio().equals(that.getBio()) : that.getBio() != null) return false;
-    if (getGender() != null ? !getGender().equals(that.getGender()) : that.getGender() != null) {
-      return false;
-    }
-    if (getWebsiteUrl() != null ? !getWebsiteUrl().equals(that.getWebsiteUrl())
-        : that.getWebsiteUrl() != null) {
-      return false;
-    }
-    if (getBirthdate() != null ? !getBirthdate().equals(that.getBirthdate())
-        : that.getBirthdate() != null) {
-      return false;
-    }
-    if (getLangCode() != null ? !getLangCode().equals(that.getLangCode())
-        : that.getLangCode() != null) {
-      return false;
-    }
-    if (getCountry() != null ? !getCountry().equals(that.getCountry())
-        : that.getCountry() != null) {
-      return false;
-    }
-    if (getVisitedCountries() != null ? !getVisitedCountries().equals(that.getVisitedCountries())
-        : that.getVisitedCountries() != null) {
-      return false;
-    }
-    if (getLevelTitle() != null ? !getLevelTitle().equals(that.getLevelTitle())
-        : that.getLevelTitle() != null) {
-      return false;
-    }
-    if (getLocalSaveDate() != null ? !getLocalSaveDate().equals(that.getLocalSaveDate())
-        : that.getLocalSaveDate() != null) {
-      return false;
-    }
-    if (getIdToken() != null ? !getIdToken().equals(that.getIdToken())
-        : that.getIdToken() != null) {
-      return false;
-    }
-    if (getSubscribedGroupIds() != null ? !getSubscribedGroupIds().equals(
-        that.getSubscribedGroupIds()) : that.getSubscribedGroupIds() != null) {
-      return false;
-    }
-    if (getPassword() != null ? !getPassword().equals(that.getPassword())
-        : that.getPassword() != null) {
-      return false;
-    }
-    if (getTravelerTypeIds() != null ? !getTravelerTypeIds().equals(that.getTravelerTypeIds())
-        : that.getTravelerTypeIds() != null) {
-      return false;
-    }
-    return getFacebookId() != null ? getFacebookId().equals(that.getFacebookId())
-        : that.getFacebookId() == null;
+    return me == that.me &&
+        following == that.following &&
+        followingCount == that.followingCount &&
+        followerCount == that.followerCount &&
+        postCount == that.postCount &&
+        countryCount == that.countryCount &&
+        level == that.level &&
+        pointCount == that.pointCount &&
+        bountyCount == that.bountyCount &&
+        pending == that.pending &&
+        recent == that.recent &&
+        Objects.equal(id, that.id) &&
+        Objects.equal(username, that.username) &&
+        Objects.equal(realname, that.realname) &&
+        Objects.equal(email, that.email) &&
+        Objects.equal(avatarUrl, that.avatarUrl) &&
+        Objects.equal(bio, that.bio) &&
+        Objects.equal(gender, that.gender) &&
+        Objects.equal(websiteUrl, that.websiteUrl) &&
+        Objects.equal(birthdate, that.birthdate) &&
+        Objects.equal(langCode, that.langCode) &&
+        Objects.equal(country, that.country) &&
+        Objects.equal(visitedCountries, that.visitedCountries) &&
+        Objects.equal(levelTitle, that.levelTitle) &&
+        Objects.equal(localSaveDate, that.localSaveDate) &&
+        Objects.equal(idToken, that.idToken) &&
+        Objects.equal(subscribedGroupIds, that.subscribedGroupIds) &&
+        Objects.equal(password, that.password) &&
+        Objects.equal(travelerTypeIds, that.travelerTypeIds) &&
+        Objects.equal(facebookId, that.facebookId);
   }
 
   @Override public int hashCode() {
-    int result = getId() != null ? getId().hashCode() : 0;
-    result = 31 * result + (isMe() ? 1 : 0);
-    result = 31 * result + (getUsername() != null ? getUsername().hashCode() : 0);
-    result = 31 * result + (getRealname() != null ? getRealname().hashCode() : 0);
-    result = 31 * result + (getEmail() != null ? getEmail().hashCode() : 0);
-    result = 31 * result + (getAvatarUrl() != null ? getAvatarUrl().hashCode() : 0);
-    result = 31 * result + (getBio() != null ? getBio().hashCode() : 0);
-    result = 31 * result + (getGender() != null ? getGender().hashCode() : 0);
-    result = 31 * result + (getWebsiteUrl() != null ? getWebsiteUrl().hashCode() : 0);
-    result = 31 * result + (getBirthdate() != null ? getBirthdate().hashCode() : 0);
-    result = 31 * result + (getLangCode() != null ? getLangCode().hashCode() : 0);
-    result = 31 * result + (getCountry() != null ? getCountry().hashCode() : 0);
-    result = 31 * result + (getVisitedCountries() != null ? getVisitedCountries().hashCode() : 0);
-    result = 31 * result + (isFollowing() ? 1 : 0);
-    result = 31 * result + (int) (getFollowingCount() ^ (getFollowingCount() >>> 32));
-    result = 31 * result + (int) (getFollowerCount() ^ (getFollowerCount() >>> 32));
-    result = 31 * result + (int) (getPostCount() ^ (getPostCount() >>> 32));
-    result = 31 * result + getCountryCount();
-    result = 31 * result + (getLevelTitle() != null ? getLevelTitle().hashCode() : 0);
-    result = 31 * result + getLevel();
-    result = 31 * result + getPointCount();
-    result = 31 * result + getBountyCount();
-    result = 31 * result + (isPending() ? 1 : 0);
-    result = 31 * result + (getLocalSaveDate() != null ? getLocalSaveDate().hashCode() : 0);
-    result = 31 * result + (isRecent() ? 1 : 0);
-    result = 31 * result + (getIdToken() != null ? getIdToken().hashCode() : 0);
-    result =
-        31 * result + (getSubscribedGroupIds() != null ? getSubscribedGroupIds().hashCode() : 0);
-    result = 31 * result + (getPassword() != null ? getPassword().hashCode() : 0);
-    result = 31 * result + (getTravelerTypeIds() != null ? getTravelerTypeIds().hashCode() : 0);
-    result = 31 * result + (getFacebookId() != null ? getFacebookId().hashCode() : 0);
-    return result;
+    return Objects.hashCode(id, me, username, realname, email, avatarUrl, bio, gender, websiteUrl,
+        birthdate, langCode, country, visitedCountries, following, followingCount, followerCount,
+        postCount, countryCount, levelTitle, level, pointCount, bountyCount, pending, localSaveDate,
+        recent, idToken, subscribedGroupIds, password, travelerTypeIds, facebookId);
   }
 
   @Override public String toString() {

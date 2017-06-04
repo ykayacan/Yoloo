@@ -9,7 +9,7 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.google.appengine.tools.development.testing.LocalTaskQueueTestConfig;
 import com.google.common.base.Optional;
 import com.googlecode.objectify.Key;
-import com.yoloo.backend.account.AccountController;
+import com.yoloo.backend.account.UserController;
 import com.yoloo.backend.account.AccountControllerProvider;
 import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.post.PostController;
@@ -40,8 +40,8 @@ public class FeedControllerTest extends TestBase {
   @Override public void setUp() {
     super.setUp();
 
-    AccountController accountController = AccountControllerProvider.of().create();
-    accountController.insertTestAccount();
+    UserController userController = AccountControllerProvider.of().create();
+    userController.insertTestAccount();
     postController = PostControllerFactory.of().create();
   }
 

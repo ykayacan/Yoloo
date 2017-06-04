@@ -36,7 +36,7 @@ class GroupPresenter extends MvpPresenter<GroupView> {
     Disposable d = groupRepository
         .subscribe(groupId)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(() -> {
+        .subscribe(group -> {
         }, this::showError);
 
     getDisposable().add(d);
@@ -46,7 +46,7 @@ class GroupPresenter extends MvpPresenter<GroupView> {
     Disposable d = groupRepository
         .unsubscribe(groupId)
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(() -> {
+        .subscribe(group -> {
         }, this::showError);
 
     getDisposable().add(d);

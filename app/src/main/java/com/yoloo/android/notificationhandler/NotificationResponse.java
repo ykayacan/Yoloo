@@ -3,18 +3,19 @@ package com.yoloo.android.notificationhandler;
 import com.squareup.moshi.Json;
 
 public class NotificationResponse {
-  public static String KEY_ACTION = "action";
-  public static String KEY_SENDER_AVATAR_URL = "sAvatarUrl";
-  public static String KEY_SENDER_USERNAME = "sUsername";
-  public static String KEY_POST_ID = "postId";
-  public static String KEY_ACCEPTED_ID = "acceptedId";
-  public static String KEY_COMMENT = "comment";
-  public static String KEY_BOUNTIES = "bounties";
-  public static String KEY_POINTS = "points";
-  public static String KEY_GAME_ACTION = "gameAction";
-  public static String KEY_LEVEL = "level";
-  public static String KEY_USER_ID = "userId";
-  public static String KEY_CHAT_ID = "chatId";
+  public static final String KEY_ACTION = "action";
+  public static final String KEY_SENDER_AVATAR_URL = "sAvatarUrl";
+  public static final String KEY_SENDER_USERNAME = "sUsername";
+  public static final String KEY_POST_ID = "postId";
+  public static final String KEY_ACCEPTED_ID = "acceptedId";
+  public static final String KEY_COMMENT = "comment";
+  public static final String KEY_BOUNTIES = "bounties";
+  public static final String KEY_POINTS = "points";
+  public static final String KEY_GAME_ACTION = "gameAction";
+  public static final String KEY_LEVEL = "level";
+  public static final String KEY_USER_ID = "userId";
+  public static final String KEY_CHAT_ID = "chatId";
+  public static final String GROUP_NAME = "groupName";
 
   @Json(name = "action") private String action;
   @Json(name = "sAvatarUrl") private String senderAvatarUrl;
@@ -27,6 +28,7 @@ public class NotificationResponse {
   @Json(name = "gameAction") private String gameAction;
   @Json(name = "level") private String level;
   @Json(name = "userId") private String userId;
+  @Json(name = "groupName") private String groupName;
 
   public String getAction() {
     return action;
@@ -72,42 +74,24 @@ public class NotificationResponse {
     return userId;
   }
 
-  @Override
-  public String toString() {
-    return "NotificationResponse{"
-        + "action='"
-        + action
-        + '\''
-        + ", senderAvatarUrl='"
-        + senderAvatarUrl
-        + '\''
-        + ", senderUsername='"
-        + senderUsername
-        + '\''
-        + ", postId='"
-        + postId
-        + '\''
-        + ", acceptedCommentId='"
-        + acceptedCommentId
-        + '\''
-        + ", comment='"
-        + comment
-        + '\''
-        + ", bounties='"
-        + bounties
-        + '\''
-        + ", points='"
-        + points
-        + '\''
-        + ", gameAction='"
-        + gameAction
-        + '\''
-        + ", level='"
-        + level
-        + '\''
-        + ", userId='"
-        + userId
-        + '\''
-        + '}';
+  public String getGroupName() {
+    return groupName;
+  }
+
+  @Override public String toString() {
+    return "NotificationResponse{" +
+        "action='" + action + '\'' +
+        ", senderAvatarUrl='" + senderAvatarUrl + '\'' +
+        ", senderUsername='" + senderUsername + '\'' +
+        ", postId='" + postId + '\'' +
+        ", acceptedCommentId='" + acceptedCommentId + '\'' +
+        ", comment='" + comment + '\'' +
+        ", bounties='" + bounties + '\'' +
+        ", points='" + points + '\'' +
+        ", gameAction='" + gameAction + '\'' +
+        ", level='" + level + '\'' +
+        ", userId='" + userId + '\'' +
+        ", groupName='" + groupName + '\'' +
+        '}';
   }
 }

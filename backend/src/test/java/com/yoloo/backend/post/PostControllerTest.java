@@ -126,7 +126,7 @@ public class PostControllerTest extends TestBase {
         postController.insertQuestionPost("Test content", "visa,passport", europe.getWebsafeId(),
             Optional.absent(), Optional.of(10), user);
 
-    PostEntity fetched = postController.getPost(original.getWebsafeId(), user);
+    PostEntity fetched = postController.getPost(original.getWebsafeId(), user.getUserId());
 
     assertNotNull(fetched.getKey());
     assertEquals("Test content", fetched.getContent());
@@ -157,7 +157,7 @@ public class PostControllerTest extends TestBase {
             Optional.absent(), Optional.of(10), user);
     voteController.votePost(original.getWebsafeId(), Vote.Direction.UP.getValue(), user);
 
-    PostEntity fetched = postController.getPost(original.getWebsafeId(), user);
+    PostEntity fetched = postController.getPost(original.getWebsafeId(), user.getUserId());
 
     assertNotNull(fetched.getKey());
     assertEquals("Test content", fetched.getContent());

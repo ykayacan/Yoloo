@@ -74,7 +74,7 @@ android {
       // dev utilizes minSDKVersion = 21 to allow the Android gradle plugin
       // to pre-dex each module and produce an APK that can be tested on
       // Android Lollipop without time consuming dex merging processes.
-      minSdkVersion 16
+      minSdkVersion 21
     }
 
     prod {
@@ -136,7 +136,7 @@ configurations.all {
       final name = details.requested.name
       // force dependencies to use latest version of support libraries
       if (details.requested.group == 'com.android.support' && !name.contains('multidex')) {
-        details.useVersion "$supportLibs_version"
+        details.useVersion "$supportLibVersion"
       }
     }
   }
@@ -151,61 +151,67 @@ dependencies {
   }
 
   // Android
-  implementation "com.android.support:appcompat-v7:$supportLibs_version"
-  implementation "com.android.support:design:$supportLibs_version"
-  implementation "com.android.support:recyclerview-v7:$supportLibs_version"
-  implementation "com.android.support:cardview-v7:$supportLibs_version"
-  implementation "com.android.support:support-compat:$supportLibs_version"
-  implementation "com.android.support:customtabs:$supportLibs_version"
-  implementation "com.android.support:support-vector-drawable:$supportLibs_version"
-  implementation "com.android.support.constraint:constraint-layout:$constraintLayout_version"
-  implementation "com.android.support:multidex:$multidex_version"
+  implementation "com.android.support:appcompat-v7:$supportLibVersion"
+  implementation "com.android.support:design:$supportLibVersion"
+  implementation "com.android.support:recyclerview-v7:$supportLibVersion"
+  implementation "com.android.support:cardview-v7:$supportLibVersion"
+  implementation "com.android.support:support-compat:$supportLibVersion"
+  implementation "com.android.support:customtabs:$supportLibVersion"
+  implementation "com.android.support:support-vector-drawable:$supportLibVersion"
+  implementation "com.android.support.constraint:constraint-layout:$constraintLayoutVersion"
+  implementation "com.android.support:multidex:$multidexVersion"
 
   // Firebase
-  prodImplementation "com.google.firebase:firebase-core:$firebase_version"
-  implementation "com.google.firebase:firebase-auth:$firebase_version"
-  implementation "com.google.firebase:firebase-messaging:$firebase_version"
-  implementation "com.google.firebase:firebase-invites:$firebase_version"
-  implementation "com.google.firebase:firebase-database:$firebase_version"
-  implementation "com.google.firebase:firebase-crash:$firebase_version"
+  prodImplementation "com.google.firebase:firebase-core:$firebaseVersion"
+  implementation "com.google.firebase:firebase-auth:$firebaseVersion"
+  implementation "com.google.firebase:firebase-messaging:$firebaseVersion"
+  implementation "com.google.firebase:firebase-invites:$firebaseVersion"
+  implementation "com.google.firebase:firebase-database:$firebaseVersion"
+  implementation "com.google.firebase:firebase-crash:$firebaseVersion"
 
   // Google Play Services
-  implementation "com.google.android.gms:play-services-auth:$playServices_version"
-
-  implementation 'com.evernote:android-job:1.1.10'
-  implementation 'org.solovyev.android:checkout:1.0.0'
+  implementation "com.google.android.gms:play-services-auth:$playServicesVersion"
 
   // Conductor
-  implementation "com.bluelinelabs:conductor:$conductor_version"
-  implementation "com.bluelinelabs:conductor-support:$conductor_version"
+  implementation "com.bluelinelabs:conductor:$conductorVersion"
+  implementation "com.bluelinelabs:conductor-support:$conductorVersion"
 
   // RxJava 2
-  implementation "io.reactivex.rxjava2:rxjava:$rxJava2_version"
-  implementation "io.reactivex.rxjava2:rxandroid:$rxJava2Android_version"
+  implementation "io.reactivex.rxjava2:rxjava:$rxJavaVersion"
+  implementation "io.reactivex.rxjava2:rxandroid:$rxAndroidVersion"
 
   // Epoxy
-  implementation "com.airbnb.android:epoxy:$epoxy_version"
-  annotationProcessor "com.airbnb.android:epoxy-processor:$epoxy_version"
+  implementation "com.airbnb.android:epoxy:$epoxyVersion"
+  annotationProcessor "com.airbnb.android:epoxy-processor:$epoxyVersion"
 
-  implementation "com.jakewharton:butterknife:$butterKnife_version"
-  annotationProcessor "com.jakewharton:butterknife-compiler:$butterKnife_version"
+  // ButterKnife
+  implementation "com.jakewharton:butterknife:$butterknifeVersion"
+  annotationProcessor "com.jakewharton:butterknife-compiler:$butterknifeVersion"
 
   // Network
   implementation 'com.squareup.okhttp3:okhttp:3.8.0'
   implementation 'com.squareup.okhttp3:okhttp-urlconnection:3.8.0'
 
   // Utility
-  implementation "com.annimon:stream:$annimonStream_version"
+  implementation 'com.evernote:android-job:1.1.10'
+  implementation 'org.solovyev.android:checkout:1.0.0'
+  implementation "com.annimon:stream:$annimonStreamVersion"
   implementation 'com.github.bumptech.glide:glide:3.8.0'
-  implementation "com.jakewharton.timber:timber:$timber_version"
+  implementation "com.jakewharton.timber:timber:$timberVersion"
   implementation 'com.github.adhishlal:asdp:1.1'
   implementation 'uk.co.chrisjenx:calligraphy:2.2.0'
   implementation 'com.squareup.moshi:moshi:1.5.0'
   implementation 'com.github.jksiezni.permissive:permissive:0.2'
-  implementation "com.google.android:flexbox:$flexbox_version"
+  implementation "com.google.android:flexbox:$flexboxVersion"
   implementation 'com.airbnb.android:lottie:2.0.0-rc1'
-  implementation 'com.jakewharton.rxbinding2:rxbinding:2.0.0'
-  implementation 'com.jakewharton.rxbinding2:rxbinding-design:2.0.0'
+
+  implementation "com.jakewharton.rxbinding2:rxbinding:$rxbindingVersion"
+  implementation "com.jakewharton.rxbinding2:rxbinding-support-v4:$rxbindingVersion"
+  implementation "com.jakewharton.rxbinding2:rxbinding-design:$rxbindingVersion"
+  implementation "com.jakewharton.rxbinding2:rxbinding-recyclerview-v7:$rxbindingVersion"
+
+  compile 'com.hannesdorfmann.mosby3:mvi:3.0.4'
+  compile 'com.hannesdorfmann.mosby3:mvi-conductor:3.0.0'
 
   // Views
   implementation('com.sandrios.android:sandriosCamera:1.0.9', {
@@ -214,7 +220,7 @@ dependencies {
   implementation 'com.github.chrisbanes:PhotoView:2.0.0'
   implementation 'com.yalantis:ucrop:2.2.0'
   implementation 'com.github.claudiodegio:MsvSearch:1.2.0'
-  implementation('com.github.igalata:Bubble-Picker:v0.2.1', {
+  implementation('com.github.igalata:Bubble-Picker:v0.2.4', {
     exclude group: 'io.reactivex'
     exclude group: 'org.slf4j'
   })
@@ -235,7 +241,7 @@ dependencies {
   implementation 'com.facebook.stetho:stetho:1.5.0'
   implementation 'com.uphyca:stetho_realm:2.0.0'
 
-  implementation "junit:junit:$junit_version"
+  implementation "junit:junit:$junitVersion"
 
   androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
     exclude group: 'com.android.support', module: 'support-annotations'

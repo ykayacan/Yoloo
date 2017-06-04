@@ -14,11 +14,10 @@
   tools:background="@android:color/white"
   tools:parentTag="android.support.constraint.ConstraintLayout">
 
-  <ImageView
+  <com.yoloo.android.ui.widget.AvatarView
     android:id="@+id/iv_comment_user_avatar"
-    android:layout_width="@dimen/avatar_bounds"
-    android:layout_height="@dimen/avatar_bounds"
-    android:padding="@dimen/avatar_padding"
+    android:layout_width="@dimen/avatar_size"
+    android:layout_height="@dimen/avatar_size"
     android:scaleType="centerCrop"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintTop_toTopOf="parent"

@@ -204,7 +204,7 @@ public class TravelerGroupController extends Controller {
    * @param groupId the group id
    * @param user the user
    */
-  public void subscribe(@Nonnull String groupId, @Nonnull User user) {
+  public TravelerGroupEntity subscribe(@Nonnull String groupId, @Nonnull User user) {
     final Key<Account> accountKey = Key.create(user.getUserId());
     final Key<TravelerGroupEntity> groupKey = Key.create(groupId);
 
@@ -215,7 +215,7 @@ public class TravelerGroupController extends Controller {
     //noinspection SuspiciousMethodCalls
     TravelerGroupEntity group = (TravelerGroupEntity) fetched.get(groupKey);
 
-    ofy().transact(() -> {
+    return ofy().transact(() -> {
       List<Key<TravelerGroupEntity>> subscribedGroupKeys = account.getSubscribedGroupKeys();
       if (subscribedGroupKeys == null) {
         subscribedGroupKeys = new ArrayList<>();
@@ -239,10 +239,12 @@ public class TravelerGroupController extends Controller {
           .withTopSubscribers(topSubscribers);
 
       ofy().save().entities(updatedAccount, updatedGroup);
+
+      return updatedGroup.withSubscribed(true);
     });
   }
 
-  public void unsubscribe(@Nonnull String groupId, @Nonnull User user) {
+  public TravelerGroupEntity unsubscribe(@Nonnull String groupId, @Nonnull User user) {
     final Key<Account> accountKey = Key.create(user.getUserId());
     final Key<TravelerGroupEntity> groupKey = Key.create(groupId);
 
@@ -253,7 +255,7 @@ public class TravelerGroupController extends Controller {
     //noinspection SuspiciousMethodCalls
     TravelerGroupEntity group = (TravelerGroupEntity) fetched.get(groupKey);
 
-    ofy().transact(() -> {
+    return ofy().transact(() -> {
       TravelerGroupEntity updatedGroup = group;
       Account updatedAccount = account;
 
@@ -278,6 +280,8 @@ public class TravelerGroupController extends Controller {
       }
 
       ofy().save().entities(updatedAccount, updatedGroup);
+
+      return updatedGroup.withSubscribed(false);
     });
   }
 

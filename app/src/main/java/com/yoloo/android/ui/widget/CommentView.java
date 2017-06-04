@@ -1,30 +1,28 @@
 package com.yoloo.android.ui.widget;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.util.AttributeSet;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 import butterknife.BindDimen;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import com.bumptech.glide.RequestManager;
-import com.bumptech.glide.load.Transformation;
 import com.yoloo.android.R;
 import com.yoloo.android.data.db.CommentRealm;
 import com.yoloo.android.feature.models.comment.CommentCallbacks;
 import com.yoloo.android.ui.widget.linkabletextview.LinkableTextView;
 import com.yoloo.android.ui.widget.timeview.TimeTextView;
 import com.yoloo.android.util.DrawableHelper;
+import com.yoloo.android.util.glide.AvatarTarget;
 
 public class CommentView extends ConstraintLayout {
 
-  @BindView(R.id.iv_comment_user_avatar) ImageView ivUserAvatar;
+  @BindView(R.id.iv_comment_user_avatar) AvatarView ivUserAvatar;
   @BindView(R.id.tv_comment_username) TextView tvUsername;
   @BindView(R.id.tv_comment_time) TimeTextView tvTime;
   @BindView(R.id.tv_comment_content) LinkableTextView tvContent;
@@ -54,7 +52,7 @@ public class CommentView extends ConstraintLayout {
         .tint();
   }
 
-  public void setComment(CommentRealm comment, boolean showAccept) {
+  public void setComment(CommentRealm comment) {
     this.comment = comment;
 
     tvUsername.setText(comment.getUsername());
@@ -64,17 +62,15 @@ public class CommentView extends ConstraintLayout {
     voteView.setVoteDirection(comment.getVoteDir());
 
     tvAcceptedIndicator.setVisibility(comment.isAccepted() ? View.VISIBLE : View.GONE);
-    tvMarkAsAccepted.setVisibility(showAccept ? VISIBLE : GONE);
+    tvMarkAsAccepted.setVisibility(comment.showAcceptButton() ? VISIBLE : GONE);
   }
 
-  public void setUserAvatar(@NonNull RequestManager glide,
-      @NonNull Transformation<Bitmap> transformation, @NonNull String avatarUrl) {
+  public void setUserAvatar(@NonNull RequestManager glide, @NonNull String avatarUrl) {
     //noinspection unchecked
     glide
         .load(avatarUrl)
-        .bitmapTransform(transformation)
         .placeholder(R.drawable.ic_player_72dp)
-        .into(ivUserAvatar);
+        .into(new AvatarTarget(ivUserAvatar));
   }
 
   public void setCommentCallbacks(CommentCallbacks callbacks) {

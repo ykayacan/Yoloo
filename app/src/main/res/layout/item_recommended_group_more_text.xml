@@ -3,5 +3,5 @@
   android:id="@+id/tv_feed_trending_category_more"
   android:layout_width="wrap_content"
   android:layout_height="wrap_content"
-  android:text="@string/label_feed_explore"
+  android:text="@string/group_more"
   android:textAppearance="@style/TextAppearance.GroupMore" />

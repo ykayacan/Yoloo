@@ -61,7 +61,7 @@ class PostDiskDataStore {
   void addTrendingBlogs(@Nonnull List<PostRealm> posts) {
     Realm realm = Realm.getDefaultInstance();
     realm.executeTransaction(tx -> tx.insertOrUpdate(
-        Stream.of(posts).map(post -> post.setFeedItem(false).setPending(false)).toList()));
+        Stream.of(posts).map(post -> post.setPending(false)).toList()));
     realm.close();
   }
 
@@ -94,7 +94,6 @@ class PostDiskDataStore {
 
       RealmResults<PostRealm> results = realm
           .where(PostRealm.class)
-          .equalTo(PostRealmFields.FEED_ITEM, true)
           .notEqualTo(PostRealmFields.PENDING, true)
           .findAllSorted(PostRealmFields.CREATED, Sort.DESCENDING);
 
@@ -150,7 +149,6 @@ class PostDiskDataStore {
 
       RealmResults<PostRealm> results = realm
           .where(PostRealm.class)
-          .equalTo(PostRealmFields.FEED_ITEM, false)
           .equalTo(PostRealmFields.PENDING, false)
           .equalTo(PostRealmFields.POST_TYPE, PostRealm.TYPE_BLOG)
           .findAllSorted(PostRealmFields.RANK, Sort.DESCENDING);

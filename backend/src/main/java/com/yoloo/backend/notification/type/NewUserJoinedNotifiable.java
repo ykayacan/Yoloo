@@ -8,7 +8,6 @@ import com.yoloo.backend.notification.PushMessage;
 import ix.Ix;
 import java.util.Collections;
 import java.util.List;
-import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 import static com.yoloo.backend.OfyService.ofy;
@@ -23,7 +22,7 @@ public class NewUserJoinedNotifiable implements Notifiable {
   @Override public PushMessage getPushMessage() {
     PushMessage.DataBody dataBody = PushMessage.DataBody
         .builder()
-        .value(PushConstants.ACTION, Action.NEW_USER_JOINED.getValueString())
+        .value(PushConstants.ACTION, Action.USER_JOINED.getValueString())
         .build();
 
     return PushMessage.builder()

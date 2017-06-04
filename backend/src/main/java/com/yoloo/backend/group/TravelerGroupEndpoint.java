@@ -121,22 +121,24 @@ public class TravelerGroupEndpoint {
       path = "groups/{groupId}/subscribe",
       httpMethod = ApiMethod.HttpMethod.POST,
       authenticators = FirebaseAuthenticator.class)
-  public void subscribe(@Named("groupId") String groupId, User user) throws ServiceException {
+  public TravelerGroupEntity subscribe(@Named("groupId") String groupId, User user)
+      throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
-    travelerGroupController.subscribe(groupId, user);
+    return travelerGroupController.subscribe(groupId, user);
   }
 
   @ApiMethod(name = "groups.unsubscribe",
       path = "groups/{groupId}/unsubscribe",
       httpMethod = ApiMethod.HttpMethod.POST,
       authenticators = FirebaseAuthenticator.class)
-  public void unsubscribe(@Named("groupId") String groupId, User user) throws ServiceException {
+  public TravelerGroupEntity unsubscribe(@Named("groupId") String groupId, User user)
+      throws ServiceException {
 
     EndpointsValidator.create().on(AuthValidator.create(user));
 
-    travelerGroupController.unsubscribe(groupId, user);
+    return travelerGroupController.unsubscribe(groupId, user);
   }
 
   /**

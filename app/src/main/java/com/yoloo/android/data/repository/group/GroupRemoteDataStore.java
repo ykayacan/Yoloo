@@ -9,7 +9,6 @@ import com.yoloo.android.data.db.TagRealm;
 import com.yoloo.android.data.repository.tag.transformer.TagResponseTransformer;
 import com.yoloo.android.data.repository.user.UserResponseTransformer;
 import com.yoloo.android.data.sorter.GroupSorter;
-import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
@@ -142,13 +141,16 @@ class GroupRemoteDataStore {
    * @param groupId the group id
    * @return the completable
    */
-  Completable subscribe(@Nonnull String groupId) {
-    return getIdToken().flatMapCompletable(idToken -> Completable.fromCallable(() -> INSTANCE
-        .getApi()
-        .groups()
-        .subscribe(groupId)
-        .setRequestHeaders(setIdTokenHeader(idToken))
-        .execute()));
+  Single<GroupRealm> subscribe(@Nonnull String groupId) {
+    return getIdToken()
+        .flatMap(idToken -> Single
+            .fromCallable(() -> INSTANCE
+                .getApi()
+                .groups()
+                .subscribe(groupId)
+                .setRequestHeaders(setIdTokenHeader(idToken))
+                .execute()))
+        .map(GroupRealm::new);
   }
 
   /**
@@ -157,13 +159,16 @@ class GroupRemoteDataStore {
    * @param groupId the group id
    * @return the completable
    */
-  Completable unsubscribe(@Nonnull String groupId) {
-    return getIdToken().flatMapCompletable(idToken -> Completable.fromCallable(() -> INSTANCE
-        .getApi()
-        .groups()
-        .unsubscribe(groupId)
-        .setRequestHeaders(setIdTokenHeader(idToken))
-        .execute()));
+  Single<GroupRealm> unsubscribe(@Nonnull String groupId) {
+    return getIdToken()
+        .flatMap(idToken -> Single
+            .fromCallable(() -> INSTANCE
+                .getApi()
+                .groups()
+                .unsubscribe(groupId)
+                .setRequestHeaders(setIdTokenHeader(idToken))
+                .execute()))
+        .map(GroupRealm::new);
   }
 
   private HttpHeaders setIdTokenHeader(@Nonnull String idToken) {

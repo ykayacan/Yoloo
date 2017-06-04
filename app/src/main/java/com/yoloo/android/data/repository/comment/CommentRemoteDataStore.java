@@ -11,7 +11,6 @@ import io.reactivex.schedulers.Schedulers;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import timber.log.Timber;
 
 import static com.yoloo.android.data.ApiManager.INSTANCE;
 import static com.yoloo.android.data.ApiManager.getIdToken;
@@ -43,17 +42,12 @@ class CommentRemoteDataStore {
    * @return the single
    */
   Single<CommentRealm> get(@Nonnull String postId, @Nonnull String commentId) {
-    return getIdToken()
-        .flatMap(idToken -> Single
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .posts()
-                .comments()
-                .get(postId, commentId)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .map(CommentRealm::new);
+    return getIdToken().flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+        .posts()
+        .comments()
+        .get(postId, commentId)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).map(CommentRealm::new);
   }
 
   /**
@@ -63,17 +57,12 @@ class CommentRemoteDataStore {
    * @return the single
    */
   Single<CommentRealm> add(@Nonnull CommentRealm comment) {
-    return getIdToken()
-        .flatMap(idToken -> Single
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .posts()
-                .comments()
-                .insert(comment.getPostId(), comment.getContent())
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .map(CommentRealm::new);
+    return getIdToken().flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+        .posts()
+        .comments()
+        .insert(comment.getPostId(), comment.getContent())
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).map(CommentRealm::new);
   }
 
   /**
@@ -83,15 +72,12 @@ class CommentRemoteDataStore {
    * @return the completable
    */
   Completable delete(@Nonnull CommentRealm comment) {
-    return getIdToken().flatMapCompletable(idToken -> Completable
-        .fromAction(() -> INSTANCE
-            .getApi()
-            .posts()
-            .comments()
-            .delete(comment.getPostId(), comment.getId())
-            .setRequestHeaders(setIdTokenHeader(idToken))
-            .execute())
-        .subscribeOn(Schedulers.io()));
+    return getIdToken().flatMapCompletable(idToken -> Completable.fromAction(() -> INSTANCE.getApi()
+        .posts()
+        .comments()
+        .delete(comment.getPostId(), comment.getId())
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io()));
   }
 
   /**
@@ -104,19 +90,14 @@ class CommentRemoteDataStore {
    */
   Observable<Response<List<CommentRealm>>> list(@Nonnull String postId, @Nullable String cursor,
       int limit) {
-    return getIdToken()
-        .flatMapObservable(idToken -> Observable
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .posts()
-                .comments()
-                .list(postId)
-                .setCursor(cursor)
-                .setLimit(limit)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .subscribeOn(Schedulers.io()))
-        .compose(CommentResponseTransformer.create());
+    return getIdToken().flatMapObservable(idToken -> Observable.fromCallable(() -> INSTANCE.getApi()
+        .posts()
+        .comments()
+        .list(postId)
+        .setCursor(cursor)
+        .setLimit(limit)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).subscribeOn(Schedulers.io())).compose(CommentResponseTransformer.create());
   }
 
   /**
@@ -126,35 +107,25 @@ class CommentRemoteDataStore {
    * @return the single
    */
   Single<CommentRealm> accept(@Nonnull CommentRealm comment) {
-    return getIdToken()
-        .flatMap(idToken -> Single
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .posts()
-                .comments()
-                .update(comment.getPostId(), comment.getId())
-                .setAccepted(true)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .map(CommentRealm::new)
-            .subscribeOn(Schedulers.io()));
+    return getIdToken().flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+        .posts()
+        .comments()
+        .update(comment.getPostId(), comment.getId())
+        .setAccepted(true)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).map(CommentRealm::new).subscribeOn(Schedulers.io()));
   }
 
   Single<CommentRealm> vote(@Nonnull String commentId, int direction) {
-    return getIdToken()
-        .flatMap(idToken -> Single
-            .fromCallable(() -> INSTANCE
-                .getApi()
-                .comments()
-                .vote(commentId, direction)
-                .setRequestHeaders(setIdTokenHeader(idToken))
-                .execute())
-            .map(CommentRealm::new)
-            .subscribeOn(Schedulers.io()));
+    return getIdToken().flatMap(idToken -> Single.fromCallable(() -> INSTANCE.getApi()
+        .comments()
+        .vote(commentId, direction)
+        .setRequestHeaders(setIdTokenHeader(idToken))
+        .execute()).map(CommentRealm::new).subscribeOn(Schedulers.io()));
   }
 
   private HttpHeaders setIdTokenHeader(@Nonnull String idToken) {
-    Timber.d("Id Token: %s", idToken);
+    //Timber.d("Id Token: %s", idToken);
     return new HttpHeaders().setAuthorization("Bearer " + idToken);
   }
 }

@@ -4,14 +4,13 @@
   xmlns:tools="http://schemas.android.com/tools"
   tools:showIn="@layout/item_feed_question_text">
 
-  <ImageView
+  <com.yoloo.android.ui.widget.AvatarView
     android:id="@+id/iv_item_feed_user_avatar"
     android:layout_width="@dimen/avatar_size"
     android:layout_height="@dimen/avatar_size"
     android:layout_marginLeft="@dimen/avatar_margin"
     android:layout_marginStart="@dimen/avatar_margin"
     android:scaleType="centerCrop"
-    android:transitionName="@string/transition_avatar"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintTop_toTopOf="parent"
     tools:src="@drawable/login_bg" />
@@ -25,14 +24,17 @@
     app:layout_constraintBottom_toTopOf="@+id/tv_item_feed_time"
     app:layout_constraintLeft_toRightOf="@+id/iv_item_feed_user_avatar"
     app:layout_constraintTop_toTopOf="@+id/iv_item_feed_user_avatar"
-    tools:text="usernameusernameusername"
+    tools:text="username"
     style="@style/Widget.Yoloo.Username" />
 
   <com.yoloo.android.ui.widget.timeview.TimeTextView
     android:id="@+id/tv_item_feed_time"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:drawablePadding="4dp"
+    android:gravity="center"
     android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+    app:drawableStart="@drawable/ic_access_time_black_24dp"
     app:layout_constraintBottom_toBottomOf="@+id/iv_item_feed_user_avatar"
     app:layout_constraintLeft_toLeftOf="@+id/tv_item_feed_username"
     app:layout_constraintTop_toBottomOf="@+id/tv_item_feed_username"

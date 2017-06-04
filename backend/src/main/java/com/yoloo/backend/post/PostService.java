@@ -1,6 +1,5 @@
 package com.yoloo.backend.post;
 
-import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -13,7 +12,6 @@ import com.yoloo.backend.group.TravelerGroupEntity;
 import com.yoloo.backend.media.MediaEntity;
 import com.yoloo.backend.util.StringUtil;
 import com.yoloo.backend.vote.Vote;
-import io.reactivex.Observable;
 import ix.Ix;
 import java.util.List;
 import java.util.Map;
@@ -34,19 +32,20 @@ public class PostService {
 
     final Key<PostEntity> postKey = factory().allocateId(account.getKey(), PostEntity.class);
 
-    Map<Ref<PostShard>, PostShard> shardMap = postShardService.createShardMapWithRef(postKey);
+    Map<Ref<PostEntity.PostShard>, PostEntity.PostShard> shardMap =
+        postShardService.createShardMapWithRef(postKey);
 
     return PostEntity
         .builder()
         .id(postKey.getId())
         .parent(account.getKey())
-        .avatarUrl(account.getAvatarUrl())
-        .username(account.getUsername())
+        .ownerAvatarUrl(account.getAvatarUrl().getValue())
+        .ownerUsername(account.getUsername())
         .title(title.orNull())
         .content(content.orNull())
         .shardRefs(ImmutableList.copyOf(shardMap.keySet()))
         .tags(ImmutableSet.copyOf(StringUtil.splitToIterable(tags, ",")))
-        .travelerGroup(group.getKey())
+        .travelerGroupKey(group.getKey())
         .dir(Vote.Direction.DEFAULT)
         .bounty(checkBounty(bounty, tracker))
         .acceptedCommentKey(null)
@@ -54,32 +53,12 @@ public class PostService {
         .hasMedia(!medias.isEmpty())
         .commentCount(0L)
         .voteCount(0L)
-        .reportCount(0)
         .commented(false)
         .postType(type.getType())
         .created(DateTime.now())
         .shardMap(shardMap)
         .owner(true)
         .build();
-  }
-
-  public Observable<QueryResultIterable<Key<Comment>>> getCommentKeysObservable(
-      Key<PostEntity> postKey) {
-    return Observable.fromCallable(() -> ofy()
-        .load()
-        .type(Comment.class)
-        .filter(Comment.FIELD_POST_KEY + " =", postKey)
-        .keys()
-        .iterable());
-  }
-
-  public Observable<QueryResultIterable<Key<Vote>>> getVoteKeysObservable(Key<PostEntity> postKey) {
-    return Observable.fromCallable(() -> ofy()
-        .load()
-        .type(Vote.class)
-        .filter(Vote.FIELD_VOTABLE_KEY + " =", postKey)
-        .keys()
-        .iterable());
   }
 
   public List<Key<Comment>> getCommentKeys(Key<PostEntity> postKey) {

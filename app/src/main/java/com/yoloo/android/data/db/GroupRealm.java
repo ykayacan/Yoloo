@@ -3,6 +3,7 @@ package com.yoloo.android.data.db;
 import android.content.res.Resources;
 import com.yoloo.android.R;
 import com.yoloo.android.YolooApp;
+import com.yoloo.android.util.Objects;
 import com.yoloo.backend.yolooApi.model.GroupSubscriber;
 import com.yoloo.backend.yolooApi.model.TravelerGroup;
 import io.realm.RealmList;
@@ -90,41 +91,22 @@ public class GroupRealm extends RealmObject implements Chipable {
 
   @Override public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof GroupRealm)) {
-      return false;
-    }
-
+    if (o == null || getClass() != o.getClass()) return false;
     GroupRealm that = (GroupRealm) o;
-
-    return getPostCount() == that.getPostCount()
-        && getSubscriberCount() == that.getSubscriberCount()
-        && Double.compare(that.getRank(), getRank()) == 0
-        && isSubscribed() == that.isSubscribed()
-        && (getId() != null ? getId().equals(that.getId()) : that.getId() == null)
-        && (getName() != null ? getName().equals(that.getName()) : that.getName() == null)
-        && (getImageWithIconUrl() != null ? getImageWithIconUrl().equals(that.getImageWithIconUrl())
-        : that.getImageWithIconUrl() == null)
-        && (getImageWithoutIconUrl() != null ? getImageWithoutIconUrl().equals(
-        that.getImageWithoutIconUrl()) : that.getImageWithoutIconUrl() == null)
-        && (topSubscribers != null ? topSubscribers.equals(that.topSubscribers)
-        : that.topSubscribers == null);
+    return postCount == that.postCount &&
+        subscriberCount == that.subscriberCount &&
+        Double.compare(that.rank, rank) == 0 &&
+        subscribed == that.subscribed &&
+        Objects.equal(id, that.id) &&
+        Objects.equal(name, that.name) &&
+        Objects.equal(imageWithIconUrl, that.imageWithIconUrl) &&
+        Objects.equal(imageWithoutIconUrl, that.imageWithoutIconUrl) &&
+        Objects.equal(topSubscribers, that.topSubscribers);
   }
 
   @Override public int hashCode() {
-    int result;
-    long temp;
-    result = getId() != null ? getId().hashCode() : 0;
-    result = 31 * result + (getName() != null ? getName().hashCode() : 0);
-    result = 31 * result + (getImageWithIconUrl() != null ? getImageWithIconUrl().hashCode() : 0);
-    result =
-        31 * result + (getImageWithoutIconUrl() != null ? getImageWithoutIconUrl().hashCode() : 0);
-    result = 31 * result + (int) (getPostCount() ^ (getPostCount() >>> 32));
-    result = 31 * result + (int) (getSubscriberCount() ^ (getSubscriberCount() >>> 32));
-    temp = Double.doubleToLongBits(getRank());
-    result = 31 * result + (int) (temp ^ (temp >>> 32));
-    result = 31 * result + (isSubscribed() ? 1 : 0);
-    result = 31 * result + (topSubscribers != null ? topSubscribers.hashCode() : 0);
-    return result;
+    return Objects.hashCode(id, name, imageWithIconUrl, imageWithoutIconUrl, postCount,
+        subscriberCount, rank, subscribed, topSubscribers);
   }
 
   @Override public String toString() {

@@ -1,7 +1,6 @@
 package com.yoloo.android.feature.feed;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.support.constraint.ConstraintSet;
 import android.view.View;
 import com.airbnb.epoxy.AutoModel;
@@ -9,7 +8,6 @@ import com.airbnb.epoxy.TypedEpoxyController;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
-import com.bumptech.glide.load.Transformation;
 import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.data.feed.BlogPostFeedItem;
@@ -22,7 +20,7 @@ import com.yoloo.android.data.feed.TextPostFeedItem;
 import com.yoloo.android.data.feed.TrendingBlogListFeedItem;
 import com.yoloo.android.feature.models.BountyButtonModel;
 import com.yoloo.android.feature.models.BountyButtonModel_;
-import com.yoloo.android.feature.models.NewUserWelcome_;
+import com.yoloo.android.feature.models.NewUserWelcomeModel_;
 import com.yoloo.android.feature.models.loader.LoaderModel;
 import com.yoloo.android.feature.models.newusers.NewUserListModelGroup;
 import com.yoloo.android.feature.models.post.BlogPostModel_;
@@ -31,12 +29,10 @@ import com.yoloo.android.feature.models.post.RichPostModel_;
 import com.yoloo.android.feature.models.post.TextPostModel_;
 import com.yoloo.android.feature.models.recommendedgroups.RecommendedGroupListModelGroup;
 import com.yoloo.android.feature.models.trendingblogs.TrendingBlogListModelGroup;
-import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 
 class FeedEpoxyController extends TypedEpoxyController<FeedPresenter.FeedState> {
 
   private final RequestManager glide;
-  private final Transformation<Bitmap> bitmapTransformation;
   private final ConstraintSet constraintSet;
 
   @AutoModel BountyButtonModel_ bountyButton;
@@ -50,7 +46,6 @@ class FeedEpoxyController extends TypedEpoxyController<FeedPresenter.FeedState> 
   private View.OnClickListener onNewUserWelcomeClickListener;
 
   FeedEpoxyController(Context context) {
-    this.bitmapTransformation = new CropCircleTransformation(context);
     this.glide = Glide.with(context);
     this.constraintSet = new ConstraintSet();
     setDebugLoggingEnabled(false);
@@ -88,9 +83,7 @@ class FeedEpoxyController extends TypedEpoxyController<FeedPresenter.FeedState> 
     new TextPostModel_()
         .id(post.getId())
         .post(post)
-        .groupName(post.getGroupId())
         .glide(glide)
-        .transformation(bitmapTransformation)
         .callbacks(postCallbacks)
         .detailLayout(false)
         .addTo(this);
@@ -100,9 +93,7 @@ class FeedEpoxyController extends TypedEpoxyController<FeedPresenter.FeedState> 
     new RichPostModel_()
         .id(post.getId())
         .post(post)
-        .groupName(post.getGroupId())
         .glide(glide)
-        .transformation(bitmapTransformation)
         .callbacks(postCallbacks)
         .detailLayout(false)
         .set(constraintSet)
@@ -113,20 +104,17 @@ class FeedEpoxyController extends TypedEpoxyController<FeedPresenter.FeedState> 
     new BlogPostModel_()
         .id(post.getId())
         .post(post)
-        .groupName(post.getGroupId())
         .glide(glide)
-        .transformation(bitmapTransformation)
         .callbacks(postCallbacks)
         .detailLayout(false)
         .addTo(this);
   }
 
   private void createNewUserWelcomeItem(AccountRealm account) {
-    new NewUserWelcome_()
+    new NewUserWelcomeModel_()
         .id(account.getId())
         .account(account)
         .glide(glide)
-        .transformation(bitmapTransformation)
         .onClickListener(onNewUserWelcomeClickListener)
         .addTo(this);
   }
@@ -138,7 +126,7 @@ class FeedEpoxyController extends TypedEpoxyController<FeedPresenter.FeedState> 
             recommendedGroupListCallbacks, glide).addTo(this);
       } else if (item instanceof TrendingBlogListFeedItem) {
         new TrendingBlogListModelGroup(((TrendingBlogListFeedItem) item),
-            trendingBlogListCallbacks, glide, bitmapTransformation).addTo(this);
+            trendingBlogListCallbacks, glide).addTo(this);
       } else if (item instanceof BountyButtonFeedItem) {
         bountyButton.onBountyClickListener(onBountyButtonClickListener).addTo(this);
       } else if (item instanceof TextPostFeedItem) {

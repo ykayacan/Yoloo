@@ -173,7 +173,7 @@ public class CommentController extends MvpController<CommentView, CommentPresent
 
   private void setupRecyclerView() {
     epoxyController =
-        new CommentEpoxyController(getActivity(), postType, Glide.with(getActivity()));
+        new CommentEpoxyController(Glide.with(getActivity()));
     epoxyController.setCommentCallbacks(this);
 
     final LinearLayoutManager lm = new LinearLayoutManager(getActivity());

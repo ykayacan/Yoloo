@@ -5,7 +5,6 @@ import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.data.db.GroupRealm;
 import com.yoloo.android.data.db.TagRealm;
 import com.yoloo.android.data.sorter.GroupSorter;
-import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.schedulers.Schedulers;
@@ -56,27 +55,24 @@ public class GroupRepository {
   /**
    * List groups observable.
    *
-   * @param sorter the sorter
    * @param cursor the cursor
    * @param limit the limit
    * @return the observable
    */
-  public Observable<Response<List<GroupRealm>>> listGroups(@Nonnull GroupSorter sorter,
-      @Nullable String cursor, int limit) {
+  public Observable<Response<List<GroupRealm>>> listGroups(@Nullable String cursor, int limit) {
     Observable<Response<List<GroupRealm>>> diskObservable =
-        diskDataStore.list(sorter, limit).subscribeOn(Schedulers.io());
+        diskDataStore.list(GroupSorter.DEFAULT, limit).subscribeOn(Schedulers.io());
 
     Observable<Response<List<GroupRealm>>> remoteObservable = remoteDataStore
-        .list(sorter, cursor, limit)
+        .list(GroupSorter.DEFAULT, cursor, limit)
         .doOnNext(response -> diskDataStore.addAll(response.getData()));
 
-    return diskObservable.flatMap(response -> {
-      if (response.getData().isEmpty() || response.getData().size() < 10) {
-        return remoteObservable;
-      }
+    return diskObservable.flatMap(response ->
+        response.getData().size() < 10 ? remoteObservable : Observable.just(response));
+  }
 
-      return Observable.just(response);
-    });
+  public Observable<Response<List<GroupRealm>>> listRecommendedGroups() {
+    return diskDataStore.list(GroupSorter.DEFAULT, 7).subscribeOn(Schedulers.io());
   }
 
   /**
@@ -133,9 +129,9 @@ public class GroupRepository {
    * @param groupId the group id
    * @return the completable
    */
-  public Completable subscribe(@Nonnull String groupId) {
+  public Single<GroupRealm> subscribe(@Nonnull String groupId) {
     return remoteDataStore.subscribe(groupId)
-        .andThen(diskDataStore.subscribe(groupId))
+        .flatMap(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }
 
@@ -145,9 +141,9 @@ public class GroupRepository {
    * @param groupId the group id
    * @return the completable
    */
-  public Completable unsubscribe(@Nonnull String groupId) {
+  public Single<GroupRealm> unsubscribe(@Nonnull String groupId) {
     return remoteDataStore.unsubscribe(groupId)
-        .andThen(diskDataStore.unsubscribe(groupId))
+        .flatMap(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }
 }

@@ -228,7 +228,7 @@ public class PostDetailController extends MvpController<PostDetailView, PostDeta
   }
 
   private void setupRecyclerView() {
-    epoxyController = new PostDetailEpoxyController(getActivity(), Glide.with(getActivity()));
+    epoxyController = new PostDetailEpoxyController(Glide.with(getActivity()));
     epoxyController.setPostCallbacks(this);
     epoxyController.setCommentCallbacks(this);
 

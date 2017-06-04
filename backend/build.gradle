@@ -2,15 +2,13 @@ buildscript {
   repositories {
     jcenter()
     mavenCentral()
-    maven {
-      url "https://plugins.gradle.org/m2/"
-    }
+    maven { url "https://plugins.gradle.org/m2/" }
   }
   dependencies {
     classpath 'com.google.cloud.tools:appengine-gradle-plugin:1.3.2'
     classpath 'com.google.cloud.tools:endpoints-framework-gradle-plugin:1.0.0'
     classpath 'me.tatarka:gradle-retrolambda:3.6.1'
-    classpath 'com.github.ben-manes:gradle-versions-plugin:0.14.0'
+    classpath 'com.github.ben-manes:gradle-versions-plugin:0.15.0'
   }
 }
 
@@ -34,7 +32,7 @@ targetCompatibility = JavaVersion.VERSION_1_8
 
 final APP_ENGINE_VERSION = '1.9.53'
 final JACKSON_VERSION = '2.9.0.pr3'
-final DAGGER2_VERSION = '2.11-rc2'
+final DAGGER2_VERSION = '2.11'
 
 dependencies {
   // App Engine
@@ -48,7 +46,7 @@ dependencies {
   compile 'javax.inject:javax.inject:1'
   providedCompile 'javax.servlet:servlet-api:2.5'
 
-  compile 'com.google.firebase:firebase-admin:5.0.0'
+  compile 'com.google.firebase:firebase-admin:5.0.1'
 
   compile 'com.googlecode.objectify:objectify:5.1.17'
   compile 'commons-fileupload:commons-fileupload:1.3.2'
@@ -96,4 +94,9 @@ appengine {
   stage {
     enableJarClasses = true
   }
+}
+
+endpointsServer {
+  // Endpoints Framework Plugin server-side configuration
+  hostname = "yoloo-151719.appspot.com"
 }

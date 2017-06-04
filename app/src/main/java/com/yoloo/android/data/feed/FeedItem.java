@@ -1,5 +1,6 @@
 package com.yoloo.android.data.feed;
 
+import android.support.annotation.NonNull;
 import javax.annotation.Nonnull;
 
 /**
@@ -14,12 +15,12 @@ public interface FeedItem<M> {
    *
    * @return the string
    */
-  @Nonnull String id();
+  @Nonnull String getId();
 
   /**
    * Gets item.
    *
    * @return the item
    */
-  @Nonnull M getItem();
+  @NonNull @Nonnull M getItem();
 }

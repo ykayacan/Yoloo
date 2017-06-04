@@ -59,7 +59,7 @@ public class QuestionEndpoint {
         .on(BadRequestValidator.create(questionId, "questionId is required."))
         .on(AuthValidator.create(user));
 
-    return postController.getPost(questionId, user);
+    return postController.getPost(questionId, user.getUserId());
   }
 
   /**

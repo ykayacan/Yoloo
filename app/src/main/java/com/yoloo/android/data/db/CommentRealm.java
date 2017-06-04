@@ -1,5 +1,6 @@
 package com.yoloo.android.data.db;
 
+import com.yoloo.android.util.Objects;
 import com.yoloo.backend.yolooApi.model.CommentDTO;
 import io.realm.RealmObject;
 import io.realm.annotations.Index;
@@ -190,70 +191,42 @@ public class CommentRealm extends RealmObject {
     --this.voteCount;
   }
 
-  @Override
-  public boolean equals(Object o) {
+  public boolean showAcceptButton() {
+    return !owner && postOwner && !postAccepted && postType != PostRealm.TYPE_BLOG;
+  }
+
+  public CommentRealm processPostData(PostRealm post) {
+    return setPostType(post.getPostType())
+        .setPostAccepted(post.getAcceptedCommentId() != null)
+        .setPostOwner(post.isOwner());
+  }
+
+  @Override public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof CommentRealm)) return false;
-
+    if (o == null || getClass() != o.getClass()) return false;
     CommentRealm that = (CommentRealm) o;
-
-    if (getVoteDir() != that.getVoteDir()) return false;
-    if (isAccepted() != that.isAccepted()) return false;
-    if (getVoteCount() != that.getVoteCount()) return false;
-    if (isOwner() != that.isOwner()) return false;
-    if (isPostAccepted() != that.isPostAccepted()) return false;
-    if (isPostOwner() != that.isPostOwner()) return false;
-    if (getPostType() != that.getPostType()) return false;
-    if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) return false;
-    if (getOwnerId() != null
-        ? !getOwnerId().equals(that.getOwnerId())
-        : that.getOwnerId() != null) {
-      return false;
-    }
-    if (getUsername() != null
-        ? !getUsername().equals(that.getUsername())
-        : that.getUsername() != null) {
-      return false;
-    }
-    if (getAvatarUrl() != null
-        ? !getAvatarUrl().equals(that.getAvatarUrl())
-        : that.getAvatarUrl() != null) {
-      return false;
-    }
-    if (getPostId() != null ? !getPostId().equals(that.getPostId()) : that.getPostId() != null) {
-      return false;
-    }
-    if (getContent() != null
-        ? !getContent().equals(that.getContent())
-        : that.getContent() != null) {
-      return false;
-    }
-    return getCreated() != null
-        ? getCreated().equals(that.getCreated())
-        : that.getCreated() == null;
+    return voteDir == that.voteDir
+        && accepted == that.accepted
+        && voteCount == that.voteCount
+        && owner == that.owner
+        && postAccepted == that.postAccepted
+        && postOwner == that.postOwner
+        && postType == that.postType
+        && Objects.equal(id, that.id)
+        && Objects.equal(ownerId, that.ownerId)
+        && Objects.equal(username, that.username)
+        && Objects.equal(avatarUrl, that.avatarUrl)
+        && Objects.equal(postId, that.postId)
+        && Objects.equal(content, that.content)
+        && Objects.equal(created, that.created);
   }
 
-  @Override
-  public int hashCode() {
-    int result = getId() != null ? getId().hashCode() : 0;
-    result = 31 * result + (getOwnerId() != null ? getOwnerId().hashCode() : 0);
-    result = 31 * result + (getUsername() != null ? getUsername().hashCode() : 0);
-    result = 31 * result + (getAvatarUrl() != null ? getAvatarUrl().hashCode() : 0);
-    result = 31 * result + (getPostId() != null ? getPostId().hashCode() : 0);
-    result = 31 * result + (getContent() != null ? getContent().hashCode() : 0);
-    result = 31 * result + (getCreated() != null ? getCreated().hashCode() : 0);
-    result = 31 * result + getVoteDir();
-    result = 31 * result + (isAccepted() ? 1 : 0);
-    result = 31 * result + (int) (getVoteCount() ^ (getVoteCount() >>> 32));
-    result = 31 * result + (isOwner() ? 1 : 0);
-    result = 31 * result + (isPostAccepted() ? 1 : 0);
-    result = 31 * result + (isPostOwner() ? 1 : 0);
-    result = 31 * result + getPostType();
-    return result;
+  @Override public int hashCode() {
+    return Objects.hashCode(id, ownerId, username, avatarUrl, postId, content, created, voteDir,
+        accepted, voteCount, owner, postAccepted, postOwner, postType);
   }
 
-  @Override
-  public String toString() {
+  @Override public String toString() {
     return "CommentRealm{"
         + "id='"
         + id

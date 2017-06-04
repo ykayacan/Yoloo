@@ -22,7 +22,6 @@ import com.bluelinelabs.conductor.changehandler.FadeChangeHandler;
 import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler;
 import com.bumptech.glide.Glide;
 import com.yoloo.android.R;
-import com.yoloo.android.data.db.AccountRealm;
 import com.yoloo.android.data.db.CommentRealm;
 import com.yoloo.android.data.db.MediaRealm;
 import com.yoloo.android.data.db.PostRealm;
@@ -136,10 +135,6 @@ public class BlogController extends MvpController<BlogView, BlogPresenter>
     epoxyController.scrollToEnd(recyclerView);
   }
 
-  @Override public void onMeLoaded(AccountRealm me) {
-    epoxyController.setUserId(me.getId());
-  }
-
   @Override public void onPostUpdated(PostRealm post) {
     epoxyController.updateBlog(post);
 
@@ -192,7 +187,7 @@ public class BlogController extends MvpController<BlogView, BlogPresenter>
   }
 
   private void setupRecyclerView() {
-    epoxyController = new BlogEpoxyController(getActivity(), Glide.with(getActivity()));
+    epoxyController = new BlogEpoxyController(Glide.with(getActivity()));
     epoxyController.setPostCallbacks(this);
     epoxyController.setCommentCallbacks(this);
 

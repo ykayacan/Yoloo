@@ -23,7 +23,6 @@ import com.yoloo.backend.notification.type.CommentNotifiable;
 import com.yoloo.backend.notification.type.MentionNotifiable;
 import com.yoloo.backend.notification.type.Notifiable;
 import com.yoloo.backend.post.PostEntity;
-import com.yoloo.backend.post.PostShard;
 import com.yoloo.backend.post.PostShardService;
 import com.yoloo.backend.vote.Vote;
 import com.yoloo.backend.vote.VoteService;
@@ -80,6 +79,7 @@ public class CommentController extends Controller {
         })
         .flatMap(commentShardService::mergeShards)
         .flatMap(comment -> voteService.checkCommentVote(comment, Key.create(user.getUserId())))
+        .map(comment -> comment.withOwner(comment.getWebsafeOwnerId().equals(user.getUserId())))
         .blockingSingle();
   }
 
@@ -104,7 +104,7 @@ public class CommentController extends Controller {
     keyBuilder.add(postKey);
 
     // Get a random shard key.
-    final Key<PostShard> postShardKey = postShardService.getRandomShardKey(postKey);
+    final Key<PostEntity.PostShard> postShardKey = postShardService.getRandomShardKey(postKey);
     keyBuilder.add(postShardKey);
 
     // Create tracker key.
@@ -129,7 +129,7 @@ public class CommentController extends Controller {
     //noinspection SuspiciousMethodCalls
     PostEntity post = (PostEntity) fetched.get(postKey);
     //noinspection SuspiciousMethodCalls
-    PostShard postShard = (PostShard) fetched.get(postShardKey);
+    PostEntity.PostShard postShard = (PostEntity.PostShard) fetched.get(postShardKey);
     //noinspection SuspiciousMethodCalls
     Tracker commenterTracker = (Tracker) fetched.get(commenterTrackerKey);
     //noinspection SuspiciousMethodCalls
@@ -198,7 +198,7 @@ public class CommentController extends Controller {
         notificationService.send(bundle);
       }
 
-      return comment;
+      return comment.withOwner(true);
     });
   }
 
@@ -315,7 +315,7 @@ public class CommentController extends Controller {
         .flatMap(__ -> voteService.checkCommentVote(__, accountKey))
         .blockingSingle();
 
-    return comment.withAccepted(post.getAcceptedCommentKey() != null);
+    return comment.withAccepted(post.getAcceptedCommentKey() != null).withOwner(true);
   }
 
   /**
@@ -329,7 +329,7 @@ public class CommentController extends Controller {
     // Create comment key from websafe id.
     final Key<Comment> commentKey = Key.create(commentId);
     final Key<PostEntity> postKey = Key.create(postId);
-    final Key<PostShard> shardKey = postShardService.getRandomShardKey(postKey);
+    final Key<PostEntity.PostShard> shardKey = postShardService.getRandomShardKey(postKey);
 
     final List<Key<Vote>> voteKeys = ofy()
         .load()
@@ -338,7 +338,7 @@ public class CommentController extends Controller {
         .keys()
         .list();
 
-    PostShard shard = ofy().load().key(shardKey).now();
+    PostEntity.PostShard shard = ofy().load().key(shardKey).now();
     shard.decreaseCommentCount();
 
     // Immutable helper listFeed object to save all entities in a single db write.
@@ -396,8 +396,10 @@ public class CommentController extends Controller {
 
     final QueryResultIterator<Comment> qi = query.iterator();
 
+    // TODO: 31.05.2017 simplify logic
     while (qi.hasNext()) {
       Comment comment = qi.next();
+      comment = comment.withOwner(comment.getWebsafeOwnerId().equals(user.getUserId()));
       if (acceptedCommentId.isPresent()) {
         if (comment.getId() != acceptedCommentId.get()) {
           comments.add(comment);

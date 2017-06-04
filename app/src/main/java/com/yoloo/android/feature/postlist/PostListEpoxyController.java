@@ -1,7 +1,6 @@
 package com.yoloo.android.feature.postlist;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintSet;
@@ -10,7 +9,6 @@ import com.airbnb.epoxy.Typed2EpoxyController;
 import com.annimon.stream.Stream;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
-import com.bumptech.glide.load.Transformation;
 import com.yoloo.android.data.db.PostRealm;
 import com.yoloo.android.data.feed.BlogPostFeedItem;
 import com.yoloo.android.data.feed.FeedItem;
@@ -22,7 +20,6 @@ import com.yoloo.android.feature.models.post.BlogPostModel_;
 import com.yoloo.android.feature.models.post.PostCallbacks;
 import com.yoloo.android.feature.models.post.RichPostModel_;
 import com.yoloo.android.feature.models.post.TextPostModel_;
-import com.yoloo.android.util.glide.transfromation.CropCircleTransformation;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +28,6 @@ import static com.yoloo.android.util.Preconditions.checkNotNull;
 public class PostListEpoxyController extends Typed2EpoxyController<List<FeedItem<?>>, Boolean> {
 
   protected final RequestManager glide;
-  protected final Transformation<Bitmap> bitmapTransformation;
   private final ConstraintSet constraintSet;
 
   protected List<FeedItem<?>> items;
@@ -42,7 +38,6 @@ public class PostListEpoxyController extends Typed2EpoxyController<List<FeedItem
   private PostCallbacks postCallbacks;
 
   public PostListEpoxyController(Context context) {
-    this.bitmapTransformation = new CropCircleTransformation(context);
     this.glide = Glide.with(context);
     this.constraintSet = new ConstraintSet();
     this.items = new ArrayList<>(20);
@@ -101,9 +96,7 @@ public class PostListEpoxyController extends Typed2EpoxyController<List<FeedItem
     new TextPostModel_()
         .id(post.getId())
         .post(post)
-        .groupName(post.getGroupId())
         .glide(glide)
-        .transformation(bitmapTransformation)
         .callbacks(postCallbacks)
         .detailLayout(false)
         .addTo(this);
@@ -113,9 +106,7 @@ public class PostListEpoxyController extends Typed2EpoxyController<List<FeedItem
     new RichPostModel_()
         .id(post.getId())
         .post(post)
-        .groupName(post.getGroupId())
         .glide(glide)
-        .transformation(bitmapTransformation)
         .callbacks(postCallbacks)
         .detailLayout(false)
         .set(constraintSet)
@@ -126,21 +117,16 @@ public class PostListEpoxyController extends Typed2EpoxyController<List<FeedItem
     new BlogPostModel_()
         .id(post.getId())
         .post(post)
-        .groupName(post.getGroupId())
         .glide(glide)
-        .transformation(bitmapTransformation)
         .callbacks(postCallbacks)
         .detailLayout(false)
         .addTo(this);
   }
 
-  protected void onMoreFeedItemType(FeedItem<?> item) {
-  }
-
   private void updateFeedItem(@NonNull FeedItem<?> item) {
     final int size = items.size();
     for (int i = 0; i < size; i++) {
-      if (items.get(i).id().equals(item.id())) {
+      if (items.get(i).getId().equals(item.getId())) {
         items.set(i, item);
         break;
       }

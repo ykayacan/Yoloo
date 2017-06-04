@@ -55,8 +55,7 @@ public class UserRepository {
           }
         }).toObservable();
 
-    Observable<AccountRealm> diskObservable = diskDataStore
-        .get(userId)
+    Observable<AccountRealm> diskObservable = diskDataStore.get(userId)
         .subscribeOn(Schedulers.io())
         .filter(Optional::isPresent)
         .map(Optional::get)
@@ -66,15 +65,13 @@ public class UserRepository {
   }
 
   public Observable<AccountRealm> getMe() {
-    Observable<AccountRealm> diskObservable = diskDataStore
-        .getMe()
+    Observable<AccountRealm> diskObservable = diskDataStore.getMe()
         .subscribeOn(Schedulers.io())
         .filter(Optional::isPresent)
         .map(Optional::get)
         .toObservable();
 
-    Observable<AccountRealm> remoteObservable = remoteDataStore
-        .getMe()
+    Observable<AccountRealm> remoteObservable = remoteDataStore.getMe()
         .doOnSuccess(diskDataStore::add)
         .subscribeOn(Schedulers.io())
         .toObservable();
@@ -83,8 +80,7 @@ public class UserRepository {
   }
 
   public Single<AccountRealm> getLocalMe() {
-    return diskDataStore
-        .getMe()
+    return diskDataStore.getMe()
         .subscribeOn(Schedulers.io())
         .filter(Optional::isPresent)
         .map(Optional::get)
@@ -101,15 +97,13 @@ public class UserRepository {
     Timber.d("Payload: %s", json);
     String base64Payload = Base64.encodeBase64URLSafeString(json.getBytes());
 
-    return remoteDataStore
-        .add(base64Payload)
+    return remoteDataStore.add(base64Payload)
         .doOnSuccess(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }
 
   public Single<AccountRealm> updateMe(@Nonnull AccountRealm account) {
-    return remoteDataStore
-        .update(account)
+    return remoteDataStore.update(account)
         .doOnSuccess(diskDataStore::add)
         .subscribeOn(Schedulers.io());
   }

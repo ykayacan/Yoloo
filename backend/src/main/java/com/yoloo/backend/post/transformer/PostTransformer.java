@@ -13,6 +13,7 @@ import com.yoloo.backend.post.PostEntity;
 import com.yoloo.backend.post.client.Post;
 import ix.Ix;
 import java.util.Collections;
+import java.util.List;
 
 public class PostTransformer implements Transformer<PostEntity, Post> {
   @Override
@@ -22,26 +23,29 @@ public class PostTransformer implements Transformer<PostEntity, Post> {
         .id(in.getWebsafeId())
         .ownerId(in.getWebsafeOwnerId())
         .owner(in.isOwner())
-        .username(in.getUsername())
-        .avatarUrl(in.getAvatarUrl().getValue())
+        .username(in.getOwnerUsername())
+        .avatarUrl(in.getOwnerAvatarUrl())
         .content(in.getContent())
         .acceptedCommentId(in.getAcceptedCommentId())
         .title(in.getTitle())
-        .medias(in.getMedias() == null
-            ? Collections.emptyList()
-            : Ix.from(in.getMedias()).map(this::getMedia).toList())
+        .medias(getMedias(in))
         .tags(in.getTags())
-        .group(TravelerGroupEntity.extractNameFromKey(in.getTravelerGroup()))
+        .group(TravelerGroupEntity.extractNameFromKey(in.getTravelerGroupKey()))
         .bounty(in.getBounty())
         .rank(in.getRank())
         .direction(in.getDir().getValue())
         .voteCount(in.getVoteCount())
         .commentCount(in.getCommentCount())
-        .reportCount(in.getReportCount())
         .bookmarked(in.isBookmarked())
         .postType(in.getPostType())
         .created(in.getCreated().toDate())
         .build();
+  }
+
+  private List<Media> getMedias(PostEntity in) {
+    return in.getMedias() == null
+        ? Collections.emptyList()
+        : Ix.from(in.getMedias()).map(this::getMedia).toList();
   }
 
   @Override

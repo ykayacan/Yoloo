@@ -64,7 +64,7 @@ public final class SendPostJob extends Job {
   }
 
   private PostRealm prepareDraft(PostRealm draft) {
-    return draft.setId(UUID.randomUUID().toString()).setFeedItem(true).setPending(false);
+    return draft.setId(UUID.randomUUID().toString()).setPending(false);
   }
 
   private void broadcastNewPostEvent(PostRealm post) {
@@ -79,7 +79,6 @@ public final class SendPostJob extends Job {
         .setContentTitle(getContext().getString(R.string.label_sending_post))
         .setOnlyAlertOnce(true)
         .setOngoing(true)
-        .setLocalOnly(true)
         .setSmallIcon(R.drawable.ic_cloud_upload_white_24dp)
         .setProgress(0, 100, true)
         .build();
@@ -99,7 +98,6 @@ public final class SendPostJob extends Job {
         .setAutoCancel(true)
         .setSmallIcon(R.drawable.ic_error_black_24dp)
         .setOngoing(false)
-        .setLocalOnly(true)
         .build();
 
     NotificationUtil.show(notification, NOTIFICATION_ERROR_ID);

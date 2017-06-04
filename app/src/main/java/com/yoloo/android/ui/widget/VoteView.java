@@ -32,6 +32,8 @@ public class VoteView extends BaselineGridTextView {
 
   private int direction;
 
+  private VoteState voteState;
+
   public VoteView(Context context) {
     super(context);
     init();
@@ -147,6 +149,14 @@ public class VoteView extends BaselineGridTextView {
         .tint();
   }
 
+  public void setVoteState(VoteState voteState) {
+    this.voteState = voteState;
+  }
+
+  public VoteState getVoteState() {
+    return voteState;
+  }
+
   /**
    * Sets on vote event listener.
    *
@@ -223,5 +233,30 @@ public class VoteView extends BaselineGridTextView {
      * @param direction the direction
      */
     void onVoteEvent(int direction);
+  }
+
+  public interface VoteState {
+    void voteAction(VoteView voteView);
+
+    final class UpState implements VoteState {
+
+      @Override public void voteAction(VoteView voteView) {
+        voteView.setVoteState(this);
+      }
+    }
+
+    final class DefaultState implements VoteState {
+
+      @Override public void voteAction(VoteView voteView) {
+        voteView.setVoteState(this);
+      }
+    }
+
+    final class DownState implements VoteState {
+
+      @Override public void voteAction(VoteView voteView) {
+        voteView.setVoteState(this);
+      }
+    }
   }
 }

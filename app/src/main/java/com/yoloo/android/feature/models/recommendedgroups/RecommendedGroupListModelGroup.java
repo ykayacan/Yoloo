@@ -16,7 +16,7 @@ public class RecommendedGroupListModelGroup extends EpoxyModelGroup {
   public RecommendedGroupListModelGroup(RecommendedGroupListFeedItem item,
       Callbacks callbacks, RequestManager glide) {
     super(R.layout.item_recommended_group_list, buildModels(item, callbacks, glide));
-    id(item.id());
+    id(item.getId());
   }
 
   private static List<EpoxyModel<?>> buildModels(RecommendedGroupListFeedItem item,

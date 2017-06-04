@@ -109,12 +109,6 @@ public class UploadServlet extends HttpServlet {
         .flatMap(file -> {
           final String contentType = file.getContentType();
 
-          /*final ServiceAccountCredentials credentials = ServiceAccountCredentials.fromStream(
-              getServletContext().getResourceAsStream(Constants.FIREBASE_SECRET_JSON_PATH));*/
-
-          /*final Storage storage =
-              StorageOptions.newBuilder().setCredentials(credentials).build().getService();*/
-
           String mediaFileName = MediaUtil.createMediaFileName(contentType);
           String filePath = createMediaPath(origin, accountKey, mediaFileName);
 
