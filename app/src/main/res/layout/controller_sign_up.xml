@@ -137,7 +137,8 @@
           android:drawableStart="@drawable/ic_lock_black_24dp"
           android:hint="@string/hint_password"
           android:inputType="textPassword"
-          android:maxLines="1" />
+          android:maxLines="1"
+          android:importantForAccessibility="no" />
 
       </android.support.design.widget.TextInputLayout>
 
