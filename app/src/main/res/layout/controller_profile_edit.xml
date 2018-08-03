@@ -175,6 +175,7 @@
           android:hint="@string/hint_profile_edit_password"
           android:imeOptions="actionNext"
           android:inputType="textPassword"
+          android:importantForAccessibility="no"
           android:maxLines="1" />
       </android.support.design.widget.TextInputLayout>
 

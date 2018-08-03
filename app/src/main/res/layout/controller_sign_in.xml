@@ -76,6 +76,7 @@
           android:imeActionId="@+id/sign_up"
           android:imeActionLabel="@string/action_sing_up_short"
           android:inputType="textPassword"
+          android:importantForAccessibility="no"
           android:maxLines="1" />
 
         <Button
