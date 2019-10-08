@@ -15,6 +15,6 @@ This project is specifically designed for the use of travelers. The product will
 
 ## ✨ Contributors
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-| [<img src="https://avatars1.githubusercontent.com/u/6842578?v=3" width="100px;"/><br /><sub>Duygu Keşkek</sub>](https://github.com/DuyguKeskek)<br /> 💻  🎨 | [<img src="https://avatars0.githubusercontent.com/u/5319782?v=3" width="100px;"/><br /><sub>Yasin Sinan Kayacan</sub>](https://github.com/krialix)<br /> 💻 |
-| :---: | :---: |
+| [<img src="https://avatars1.githubusercontent.com/u/6842578?v=3" width="100px;"/><br /><sub>Duygu Keşkek</sub>](https://github.com/DuyguKeskek)<br /> 💻  🎨 | [<img src="https://avatars0.githubusercontent.com/u/5319782?v=3" width="100px;"/><br /><sub>Yasin Sinan Kayacan</sub>](https://github.com/ykayacan)<br /> 💻 | [<img src="https://avatars0.githubusercontent.com/u/33685760?v=3" width="100px;"/><br /><sub>Murat Mayadağ</sub>](https://github.com/mmayadag)<br /> :pencil: |
+| :---: | :---: | :---: |
 <!-- ALL-CONTRIBUTORS-LIST:END -->
